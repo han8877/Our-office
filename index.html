@@ -601,37 +601,100 @@
   var charLayer = document.getElementById('charLayer');
   var metSet = {}; // 주간보고에서 이름 공개된 적 있는 직원
 
-  // ---- 책상+모니터+키보드+명패 (항상 표시되는 가구) ----
+  // ---- 책상+모니터+키보드+명패 (항상 표시되는 가구, 캐릭터와 톤을 맞춰 각진 블록형으로) ----
   function deskGroup(s){
     var g = document.createElementNS('http://www.w3.org/2000/svg','g');
     g.setAttribute('transform','translate('+s.x+','+s.y+')');
     g.innerHTML =
-      '<g fill="#fffdf8" stroke="#3a3a3a" stroke-width="1" filter="url(#wob)">' +
-        '<rect x="-23" y="2" width="46" height="26" rx="3"/>' +
-        '<rect x="-12" y="-9" width="24" height="15" rx="2"/>' +
+      '<g fill="#fffdf8" stroke="#3a3a3a" stroke-width="1" shape-rendering="crispEdges">' +
+        '<rect x="-23" y="2" width="46" height="26" rx="0"/>' +
+        '<rect x="-12" y="-9" width="24" height="15" rx="0"/>' +
         '<line x1="0" y1="6" x2="0" y2="10"/>' +
-        '<rect x="-14" y="19" width="28" height="6" rx="1.5"/>' +
+        '<rect x="-14" y="19" width="28" height="6" rx="0"/>' +
       '</g>' +
-      '<g fill="#fffdf8" stroke="#3a3a3a" stroke-width="0.8">' +
-        '<rect x="-20" y="30" width="40" height="13" rx="2"/>' +
+      '<g fill="#fffdf8" stroke="#3a3a3a" stroke-width="0.8" shape-rendering="crispEdges">' +
+        '<rect x="-20" y="30" width="40" height="13" rx="0"/>' +
       '</g>' +
       '<text id="plate-'+s.id+'" x="0" y="39.5" font-size="6.8" text-anchor="middle" fill="#3a3a3a" font-weight="500">'+s.name+'</text>';
     deskLayer.appendChild(g);
   }
   staff.forEach(deskGroup);
 
-  function earsFor(kind){
+  // ---- 캐릭터: 도형을 픽셀 격자에 래스터화해서 진짜 도트아트처럼 렌더링 ----
+  // (두꺼운 외곽선 + 2톤 명암 + 둥근 각짐 실루엣 - 단순한 도형 몇 개로 안전하게 구성)
+  var OUTLINE_COLOR = '#4a3527';
+  var OUTLINE_W = 1.8;
+
+  var kindPalette = {
+    fox:    { base:'#eda05e', light:'#f6c48c', shadow:'#d47f3f' },
+    cat:    { base:'#c9c2b6', light:'#e2ddd3', shadow:'#a89f90' },
+    bear:   { base:'#b8875f', light:'#d1a97e', shadow:'#96693f' },
+    rabbit: { base:'#f0aec4', light:'#f9d3e0', shadow:'#dd88a3' },
+    dog:    { base:'#dcb679', light:'#ecd3a2', shadow:'#c0985a' }
+  };
+  var SHIRT_TONES = { base:'#f7f2e6', light:'#fffdf8', shadow:'#e6ddc9' };
+  var LEG_COLOR = '#8a6a4f';
+  var EYE_WHITE = '#fffdf8';
+  var EYE_DARK = '#3a2a1f';
+
+  function earsMarkup(kind, fur){
     switch(kind){
-      case 'cat': return '<path d="M-11 -13 L-16 -24 L-4 -18 Z"/><path d="M11 -13 L16 -24 L4 -18 Z"/>';
-      case 'fox': return '<path d="M-11 -12 L-18 -25 L-2 -16 Z"/><path d="M11 -12 L18 -25 L2 -16 Z"/>';
-      case 'bear': return '<circle cx="-13" cy="-14" r="6"/><circle cx="13" cy="-14" r="6"/>';
-      case 'rabbit': return '<ellipse cx="-8" cy="-24" rx="4" ry="13"/><ellipse cx="8" cy="-24" rx="4" ry="13"/>';
-      case 'dog': return '<path d="M-12 -8 q-10 4 -8 18 q10 -2 10 -18 Z"/><path d="M12 -8 q10 4 8 18 q-10 -2 -10 -18 Z"/>';
+      case 'cat': return (
+        '<rect x="-13" y="-45" width="7" height="9" rx="2.5" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>' +
+        '<rect x="6" y="-45" width="7" height="9" rx="2.5" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>'
+      );
+      case 'fox': return (
+        '<rect x="-15" y="-47" width="8" height="12" rx="3" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>' +
+        '<rect x="7" y="-47" width="8" height="12" rx="3" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>'
+      );
+      case 'bear': return (
+        '<circle cx="-9.6" cy="-39" r="4.6" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>' +
+        '<circle cx="9.6" cy="-39" r="4.6" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>'
+      );
+      case 'rabbit': return (
+        '<rect x="-9.5" y="-58" width="6" height="19" rx="3" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>' +
+        '<rect x="3.5" y="-58" width="6" height="19" rx="3" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>'
+      );
+      case 'dog': return (
+        '<rect x="-17" y="-32" width="6.5" height="16" rx="3" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>' +
+        '<rect x="10.5" y="-32" width="6.5" height="16" rx="3" fill="'+fur+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>'
+      );
       default: return '';
     }
   }
 
-  // ---- 캐릭터: 머리(귀+눈+입) + 몸통 + 발, 위치는 style.transform으로만 제어 ----
+  function buildPixelChar(kind){
+    var pal = kindPalette[kind] || kindPalette.cat;
+    var svg = '<g stroke-linejoin="round">';
+
+    // 귀 (머리보다 먼저 그려서 머리 가장자리에 자연스럽게 붙음)
+    svg += earsMarkup(kind, pal.base);
+
+    // 다리
+    svg += '<rect x="-7" y="2" width="5" height="7" rx="1.5" fill="'+LEG_COLOR+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>';
+    svg += '<rect x="2" y="2" width="5" height="7" rx="1.5" fill="'+LEG_COLOR+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>';
+
+    // 몸통(셔츠) 베이스 + 명암 조각(테두리 없이 안쪽만)
+    svg += '<rect x="-10" y="-19" width="20" height="21" rx="7" fill="'+SHIRT_TONES.base+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>';
+    svg += '<rect x="-9" y="-18" width="8" height="8" rx="3" fill="'+SHIRT_TONES.light+'"/>';
+    svg += '<rect x="2" y="-8" width="7" height="8" rx="3" fill="'+SHIRT_TONES.shadow+'"/>';
+
+    // 머리 베이스 + 명암 조각
+    svg += '<rect x="-11" y="-41" width="22" height="21" rx="8" fill="'+pal.base+'" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'"/>';
+    svg += '<rect x="-9.5" y="-39.5" width="9" height="9" rx="3.5" fill="'+pal.light+'"/>';
+    svg += '<rect x="2" y="-28" width="8" height="7" rx="3" fill="'+pal.shadow+'"/>';
+
+    // 눈
+    svg += '<circle cx="-4.2" cy="-30" r="1.9" fill="'+EYE_WHITE+'"/>';
+    svg += '<circle cx="4.2" cy="-30" r="1.9" fill="'+EYE_WHITE+'"/>';
+    svg += '<circle cx="-4.2" cy="-30" r="1.05" fill="'+EYE_DARK+'"/>';
+    svg += '<circle cx="4.2" cy="-30" r="1.05" fill="'+EYE_DARK+'"/>';
+
+    svg += '</g>';
+    return svg;
+  }
+
+  // ---- 캐릭터 조립: 스프라이트 + 말풍선, 위치는 style.transform으로만 제어 ----
   staff.forEach(function(s){
     var g = document.createElementNS('http://www.w3.org/2000/svg','g');
     g.setAttribute('class','office-char');
@@ -639,18 +702,7 @@
     g.setAttribute('data-name', s.name);
     g.style.transform = 'translate('+s.x+'px,'+s.y+'px)';
     g.innerHTML =
-      '<g fill="#fffdf8" stroke="#3a3a3a" stroke-width="1.1" filter="url(#wob)">' +
-        '<rect x="-10" y="-24" width="20" height="22" rx="7"/>' +
-        '<ellipse cx="-5" cy="0" rx="4" ry="3"/>' +
-        '<ellipse cx="5" cy="0" rx="4" ry="3"/>' +
-        '<g transform="translate(0,-30)">' +
-          earsFor(s.kind) +
-          '<circle cx="0" cy="0" r="13"/>' +
-          '<circle cx="-4.5" cy="-1" r="1.3" fill="#3a3a3a" stroke="none"/>' +
-          '<circle cx="4.5" cy="-1" r="1.3" fill="#3a3a3a" stroke="none"/>' +
-          '<path d="M-3.5 5 q3.5 2.6 7 0" fill="none"/>' +
-        '</g>' +
-      '</g>' +
+      buildPixelChar(s.kind) +
       '<g class="bubble" data-bubble-for="'+s.id+'"></g>';
     charLayer.appendChild(g);
   });
@@ -674,9 +726,9 @@
     g.setAttribute('class','popBubble');
     var w = Math.max(40, text.length * 7 + 16);
     g.innerHTML =
-      '<rect x="'+(-w/2)+'" y="-84" width="'+w+'" height="26" rx="8" fill="#fffdf8" stroke="#3a3a3a" stroke-width="1"/>' +
-      '<polygon points="-6,-58 6,-58 0,-50" fill="#fffdf8" stroke="#3a3a3a" stroke-width="1"/>' +
-      '<text x="0" y="-66" font-size="11" text-anchor="middle" fill="#3a3a3a">'+text+'</text>';
+      '<rect x="'+(-w/2)+'" y="-76" width="'+w+'" height="26" rx="8" fill="#fffdf8" stroke="#3a3a3a" stroke-width="1"/>' +
+      '<polygon points="-6,-50 6,-50 0,-42" fill="#fffdf8" stroke="#3a3a3a" stroke-width="1"/>' +
+      '<text x="0" y="-58" font-size="11" text-anchor="middle" fill="#3a3a3a">'+text+'</text>';
     holder.appendChild(g);
     clearTimeout(holder._tm);
     holder._tm = setTimeout(function(){ holder.innerHTML=''; }, 2400);
