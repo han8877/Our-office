@@ -1,0 +1,2507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>끄적끄적문구 - 사무실 게임</title>
+<style>
+  body{ margin:0; padding:14px 10px 90px; background:#F7F4EE; font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif; display:flex; flex-direction:column; align-items:center; }
+  h1{ font-size:17px; color:#5c4a3a; margin:0 0 8px; }
+  .row{ width:100%; max-width:1000px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px; }
+  .row.between{ justify-content:space-between; }
+  .stat{ background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; padding:6px 10px; font-size:12.5px; color:#5c4a3a; }
+  .btn{ font-size:12.5px; padding:8px 12px; border-radius:8px; border:1.3px solid #5c4a3a; background:#fff; color:#5c4a3a; cursor:pointer; height:34px; box-sizing:border-box; display:inline-flex; align-items:center; gap:6px; }
+  .btn:active{ transform:scale(0.97); }
+  .btn.active{ background:#5c4a3a; color:#fff; }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; }
+  input[type=text]{ font-size:12.5px; padding:8px 10px; border-radius:8px; border:1.3px solid #5c4a3a; flex:1; min-width:120px; height:34px; box-sizing:border-box; }
+  #stage{ width:100%; max-width:1000px; overflow:hidden; border-radius:12px; background:#fffdf8; position:relative; }
+  #officeSvg{ display:block; width:100%; height:auto; }
+  .office-char{ transition:opacity .9s ease; opacity:0; }
+  .office-char.present{ opacity:1; }
+  .bubble{ }
+  .floater{ font-size:12px; fill:#5c4a3a; animation:floatUp 1.3s ease-out forwards; }
+  @keyframes floatUp{ 0%{ transform:translateY(0); opacity:1; } 100%{ transform:translateY(-26px); opacity:0; } }
+  #toast{ position:fixed; left:50%; bottom:78px; transform:translateX(-50%) translateY(20px); background:#5c4a3a; color:#fff; padding:10px 16px; border-radius:10px; font-size:13px; opacity:0; transition:opacity .35s ease, transform .35s ease; pointer-events:none; z-index:25; max-width:82vw; text-align:center; }
+  #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  #panel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:30; padding:16px; }
+  #panel.show{ display:flex; }
+  #panelInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:460px; width:100%; max-height:82vh; overflow-y:auto; border:1.4px solid #5c4a3a; }
+  #panelInner h2{ font-size:14px; margin:0 0 10px; color:#5c4a3a; }
+  .projBtnRow{ display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+  #projForm{ display:none; flex-direction:column; gap:6px; background:#f7f4ee; border:1px solid #ddd8cc; border-radius:8px; padding:10px; margin-bottom:10px; }
+  #projForm input, #projForm textarea{ border:1px solid #ddd8cc; border-radius:6px; padding:6px 8px; font-size:12px; font-family:inherit; }
+  #projForm textarea{ min-height:50px; resize:vertical; }
+  #projForm .formActions{ display:flex; justify-content:flex-end; }
+  table#projTable{ width:100%; border-collapse:collapse; font-size:11.5px; }
+  table#projTable th, table#projTable td{ border-bottom:1px dashed #ddd8cc; padding:6px 4px; text-align:left; vertical-align:top; }
+  table#projTable th{ color:#8a8a86; font-weight:600; }
+  .projStatus{ display:inline-block; padding:2px 6px; border-radius:6px; font-size:10.5px; }
+  .projStatus.pending{ background:#f0ece0; color:#8a8a86; }
+  .projStatus.done{ background:#5c4a3a; color:#fff; }
+  .projEmpty{ color:#8a8a86; font-size:12px; padding:10px 2px; }
+  @keyframes popFade{ 0%{ opacity:0; } 15%{ opacity:1; } 80%{ opacity:1; } 100%{ opacity:0; } }
+  .popBubble{ animation:popFade 2.2s ease forwards; }
+
+  /* 사운드바: 재생/음소거/볼륨을 한 그룹으로 정렬 */
+  #audioBar{ display:flex; align-items:center; gap:10px; background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; padding:0 10px; height:34px; box-sizing:border-box; }
+  #audioBar button{ background:none; border:none; padding:2px; cursor:pointer; display:flex; align-items:center; }
+  #volSlider{ width:80px; accent-color:#5c4a3a; height:34px; }
+
+  #prodBarWrap{ flex:1; background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; height:16px; position:relative; overflow:visible; }
+  #prodBarTrack{ position:absolute; inset:2px; border-radius:6px; background:#f2efe6; overflow:hidden; }
+  #prodBarFill{ height:100%; width:0%; background:#5c4a3a; transition:width .4s linear; }
+  .floatPlus{ position:absolute; right:2px; top:-4px; font-size:12px; font-weight:700; color:#5c4a3a; animation:floatUpHtml 1.1s ease-out forwards; pointer-events:none; }
+  @keyframes floatUpHtml{ 0%{ transform:translateY(0); opacity:1; } 100%{ transform:translateY(-22px); opacity:0; } }
+
+  #settingsPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:40; padding:16px; }
+  #settingsPanel.show{ display:flex; }
+  #settingsInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:380px; width:100%; max-height:82vh; overflow-y:auto; border:1.4px solid #5c4a3a; }
+  #settingsInner h2{ font-size:14px; margin:0 0 10px; color:#5c4a3a; }
+  #settingsInner h3{ font-size:12px; margin:14px 0 6px; color:#8a8a86; }
+
+  #settingsHub{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:38; padding:16px; }
+  #settingsHub.show{ display:flex; }
+  #settingsHubInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:320px; width:100%; border:1.4px solid #5c4a3a; }
+  #settingsHubInner h2{ font-size:14px; margin:0 0 12px; color:#5c4a3a; }
+  .hubRow{ display:flex; gap:8px; }
+  .hubRow .btn{ flex:1; justify-content:center; height:44px; }
+
+  #creditsPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:41; padding:16px; }
+  #creditsPanel.show{ display:flex; }
+  #creditsInner{ background:#fffdf8; border-radius:14px; padding:20px; max-width:320px; width:100%; border:1.4px solid #5c4a3a; text-align:center; }
+  #creditsInner h2{ font-size:14px; margin:0 0 10px; color:#5c4a3a; }
+  #creditsInner p{ font-size:12.5px; color:#5c4a3a; line-height:1.6; margin:4px 0; }
+
+  #profilePanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:43; padding:16px; }
+  #profilePanel.show{ display:flex; }
+  #profileInner{ background:#fffdf8; border-radius:14px; padding:20px; max-width:300px; width:100%; border:1.4px solid #5c4a3a; }
+  #profileInner h2{ font-size:15px; margin:0; color:#5c4a3a; }
+  #profileInner .setRow label{ width:auto; flex:1; }
+  #profileInner .setRow span{ font-weight:700; }
+
+  #reportPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:43; padding:16px; }
+  #reportPanel.show{ display:flex; }
+  #reportInner{ background:#fffdf8; border-radius:14px; padding:20px; max-width:340px; width:100%; border:1.4px solid #5c4a3a; }
+  #reportInner h2{ font-size:15px; margin:0 0 2px; color:#5c4a3a; }
+  #reportTable{ width:100%; border-collapse:collapse; font-size:12px; }
+  #reportTable th, #reportTable td{ border-bottom:1px dashed #ddd8cc; padding:5px 4px; text-align:left; }
+  #reportTable th{ color:#8a8a86; font-weight:600; }
+
+  #helpPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:42; padding:16px; }
+  #helpPanel.show{ display:flex; }
+  #helpInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:460px; width:100%; max-height:84vh; overflow-y:auto; border:1.4px solid #5c4a3a; font-size:12.5px; color:#5c4a3a; line-height:1.6; }
+  #helpInner h2{ font-size:15px; margin:0 0 10px; color:#5c4a3a; }
+  #helpInner h3{ font-size:12.5px; margin:16px 0 6px; color:#5c4a3a; border-top:1px dashed #ddd8cc; padding-top:12px; }
+  #helpInner h3:first-of-type{ border-top:none; padding-top:0; }
+  #helpInner table{ width:100%; border-collapse:collapse; margin:6px 0; font-size:11.5px; }
+  #helpInner th, #helpInner td{ border-bottom:1px dashed #ddd8cc; padding:5px 4px; text-align:left; vertical-align:top; }
+  #helpInner th{ color:#8a8a86; font-weight:600; }
+  #helpInner code{ background:#f0ece0; border-radius:4px; padding:1px 5px; font-size:11.5px; }
+  #helpInner ul{ margin:4px 0; padding-left:18px; }
+  #helpInner .helpNote{ background:#f7f4ee; border:1px solid #ddd8cc; border-radius:8px; padding:8px 10px; margin-top:6px; }
+  .setRow{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .setRow label{ font-size:11.5px; color:#8a8a86; width:78px; flex-shrink:0; }
+  .setRow input{ border:1px solid #ddd8cc; border-radius:6px; padding:6px 8px; font-size:12px; flex:1; }
+  .settingsActions{ display:flex; gap:8px; margin-top:14px; }
+
+  .mail-overlay{ position:fixed; inset:0; background:rgba(58,58,58,0.45); display:none; align-items:center; justify-content:center; z-index:35; padding:16px; }
+  .mail-overlay.show{ display:flex; }
+  .mail-window{ background:#fffdf8; border:1.4px solid #5c4a3a; border-radius:12px; width:100%; max-width:340px; overflow:hidden; }
+  .mail-head{ display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #ddd8cc; font-size:13px; color:#5c4a3a; }
+  .mail-head button{ background:none; border:none; font-size:16px; cursor:pointer; color:#5c4a3a; }
+  .mail-body{ padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
+  .mail-field{ display:flex; align-items:center; gap:8px; border-bottom:1px solid #eee5d5; padding-bottom:6px; }
+  .mail-field label{ font-size:11.5px; color:#8a8a86; width:52px; flex-shrink:0; }
+  .mail-field input{ border:none; outline:none; font-size:12.5px; flex:1; background:transparent; height:auto; }
+  .mail-body textarea{ border:1px solid #ddd8cc; border-radius:8px; padding:8px; font-size:12.5px; min-height:70px; resize:vertical; font-family:inherit; }
+  .mail-error{ font-size:11.5px; color:#b23b3b; min-height:14px; }
+  .mail-send{ align-self:flex-end; }
+</style>
+</head>
+<body>
+
+<h1 id="companyName">우리의 사무실</h1>
+
+<div class="row between">
+  <div class="stat">지금 시간 <b id="clockText">09:00</b></div>
+  <div class="stat">오늘 주문량 <b id="prodText">0</b>개</div>
+  <div class="stat">연속 접속 <b id="streakText">1</b>일째</div>
+  <button class="btn" id="dexBtn">주요 프로젝트</button>
+  <button class="btn" id="overtimeBtn">야근모드</button>
+  <button class="btn" id="previewBtn">전체 미리보기</button>
+  <button class="btn" id="settingsBtn">설정</button>
+  <button class="btn" id="helpBtn">도움말</button>
+</div>
+
+<div class="row">
+  <input type="text" id="cmdInput" placeholder="/캐릭터명 문장" maxlength="30">
+  <button class="btn" id="cmdBtn">전송</button>
+</div>
+
+<div id="stage">
+<svg id="officeSvg" viewBox="0 0 1000 850" xmlns="http://www.w3.org/2000/svg" role="img">
+<title>끄적끄적문구 사무실</title>
+<desc>동물 얼굴 캐릭터들이 실시간으로 출퇴근하는 손그림 스타일 사무실 방치형 게임 화면</desc>
+<defs>
+<filter id="wob"><feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="2" seed="6" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.7"/></filter>
+<pattern id="curtainCheck" width="7" height="7" patternUnits="userSpaceOnUse">
+  <rect width="7" height="7" fill="#fdfaf3"/>
+  <rect width="3.5" height="3.5" fill="#c0392b"/>
+  <rect x="3.5" y="3.5" width="3.5" height="3.5" fill="#c0392b"/>
+</pattern>
+</defs>
+
+<rect x="20" y="20" width="960" height="800" rx="16" fill="none" stroke="#5c4a3a" stroke-width="1.6"/>
+
+<g fill="none" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+
+<!-- 로고 -->
+<rect x="40" y="50" width="150" height="40" rx="10" stroke-width="1.4" fill="#fffdf8"/>
+<line x1="75" y1="90" x2="75" y2="98" stroke-width="1"/>
+<line x1="125" y1="90" x2="125" y2="98" stroke-width="1"/>
+<text id="officeSignText" x="115" y="75" font-size="18" text-anchor="middle" fill="#5c4a3a" stroke="none">끄적끄적문구</text>
+
+<!-- 창밖 창문(날씨) -->
+<line x1="268" y1="40" x2="422" y2="40" stroke-width="1.3"/>
+<circle cx="268" cy="40" r="3" stroke-width="1"/>
+<circle cx="422" cy="40" r="3" stroke-width="1"/>
+<path d="M274 41 C 265 55 267 76 272 97 L 282 97 C 278 76 278 55 282 41 Z" stroke-width="1" fill="url(#curtainCheck)"/>
+<path d="M416 41 C 425 55 423 76 418 97 L 408 97 C 412 76 412 55 408 41 Z" stroke-width="1" fill="url(#curtainCheck)"/>
+<rect id="windowPane" x="280" y="48" width="130" height="58" rx="3" stroke-width="1.4" fill="#cfe8f2" style="transition:fill .6s ease;"/>
+<line x1="323" y1="48" x2="323" y2="106" stroke-width="0.8"/>
+<line x1="367" y1="48" x2="367" y2="106" stroke-width="0.8"/>
+<line x1="280" y1="77" x2="410" y2="77" stroke-width="0.8"/>
+<rect x="274" y="106" width="142" height="7" rx="2" stroke-width="1.3" fill="#e8dcc8"/>
+
+<!-- 벽시계 -->
+<circle cx="500" cy="95" r="43.5" stroke-width="3" stroke="#d4af37" fill="none"/>
+<circle cx="500" cy="95" r="42" stroke-width="1.5" fill="#fffdf8"/>
+<circle cx="500" cy="95" r="2" fill="#5c4a3a"/>
+<line id="hourHand" x1="500" y1="95" x2="500" y2="70" stroke-width="1.8"/>
+<line id="minHand" x1="500" y1="95" x2="500" y2="60" stroke-width="1.3"/>
+<text x="493" y="65" font-size="11" fill="#5c4a3a" stroke="none">12</text>
+<text x="530" y="99" font-size="11" fill="#5c4a3a" stroke="none">3</text>
+<text x="495" y="130" font-size="11" fill="#5c4a3a" stroke="none">6</text>
+<text x="463" y="99" font-size="11" fill="#5c4a3a" stroke="none">9</text>
+
+<!-- ===== 디자인실장실 (구 디자인부) ===== -->
+<g stroke-width="4">
+<path d="M 610 40 L 610 108 M 610 40 L 665 40"/>
+<path d="M 970 235 L 970 290 L 905 290"/>
+</g>
+<g stroke="#e7ddc9" stroke-width="1.6">
+<path d="M 610 42 L 610 106 M 612 40 L 663 40"/>
+<path d="M 968 235 L 968 288 L 907 288"/>
+</g>
+
+<!-- 실장 테이블 (신규, 회의용 원형 테이블+의자2) -->
+<g stroke-width="1.1">
+<ellipse cx="680" cy="150" rx="42" ry="20" fill="#f3ece0" stroke-width="1.1"/><ellipse cx="680" cy="150" rx="39" ry="18" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="670.8" cy="144.4" rx="14.7" ry="6.0" fill="#fbf6ea" stroke="none" opacity="0.7"/>
+<rect x="672.80" y="114.00" width="14.40" height="16.00" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="674.38" y="106.80" width="11.23" height="9.00" rx="2" fill="#b98d60"/><line x1="676.18" y1="109.68" x2="683.82" y2="109.68" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="676.18" y1="112.74" x2="683.82" y2="112.74" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="675.68" y1="128.72" x2="675.68" y2="132.92" stroke-width="1.25" stroke-linecap="round"/><line x1="684.32" y1="128.72" x2="684.32" y2="132.92" stroke-width="1.25" stroke-linecap="round"/><rect x="677.70" y="118.48" width="4.61" height="3.84" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="672.80" y="170.00" width="14.40" height="16.00" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="674.38" y="184.20" width="11.23" height="9.00" rx="2" fill="#b98d60"/><line x1="676.18" y1="187.26" x2="683.82" y2="187.26" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="676.18" y1="190.32" x2="683.82" y2="190.32" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="675.68" y1="167.08" x2="675.68" y2="171.28" stroke-width="1.25" stroke-linecap="round"/><line x1="684.32" y1="167.08" x2="684.32" y2="171.28" stroke-width="1.25" stroke-linecap="round"/><rect x="677.70" y="177.68" width="4.61" height="3.84" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+</g>
+
+<!-- 이동식 화이트보드 (거치대+바퀴+마카트레이) -->
+<g stroke-width="1.1">
+<rect x="805" y="26" width="96" height="58" rx="3" fill="#d4cfc2"/>
+<rect x="809" y="30" width="88" height="50" rx="1.5" fill="#fdfdfb" stroke="#c9c4b8" stroke-width="0.8"/>
+<text x="815" y="52" font-size="9" fill="#5c4a3a" stroke="none">근무 09:00~18:00</text>
+<text x="815" y="67" font-size="9" fill="#5c4a3a" stroke="none">점심 12:00~13:00</text>
+<rect x="805" y="84" width="96" height="9" rx="1.5" fill="#e8e4da" stroke-width="0.9"/>
+<circle cx="812" cy="88.5" r="1.9" fill="#e8935a" stroke="none"/>
+<circle cx="818" cy="88.5" r="1.9" fill="#8fbf6f" stroke="none"/>
+<circle cx="824" cy="88.5" r="1.9" fill="#d88fb0" stroke="none"/>
+<circle cx="830" cy="88.5" r="1.9" fill="#e3b23c" stroke="none"/>
+<rect x="850" y="86.5" width="14" height="4" rx="1.5" fill="#3a3a3a" stroke="none"/>
+<rect x="866" y="86.5" width="14" height="4" rx="1.5" fill="#c0392b" stroke="none"/>
+<rect x="882" y="86.5" width="14" height="4" rx="1.5" fill="#3a7ac0" stroke="none"/>
+<line x1="820" y1="93" x2="820" y2="128" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="886" y1="93" x2="886" y2="128" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="806" y1="130" x2="834" y2="130" stroke-width="1.4" stroke-linecap="round"/>
+<line x1="872" y1="130" x2="900" y2="130" stroke-width="1.4" stroke-linecap="round"/>
+</g>
+<g fill="#5c4a3a" stroke="none"><circle cx="806" cy="130" r="2.6"/><circle cx="834" cy="130" r="2.6"/><circle cx="872" cy="130" r="2.6"/><circle cx="900" cy="130" r="2.6"/></g>
+
+<g class="cabinet" data-cx="945" data-cy="345" style="cursor:pointer;pointer-events:all;" stroke-width="1.1">
+<rect x="928" y="320" width="34" height="50" rx="2" fill="#f3ece0"/>
+<rect x="928" y="320" width="34" height="5" fill="#e6ddc9" stroke="none"/>
+<rect x="928" y="366" width="34" height="4" fill="#d9cfb8" stroke="none" opacity="0.6"/>
+<line x1="945" y1="320" x2="945" y2="370" stroke-width="0.7"/>
+<rect x="932" y="328" width="11" height="34" rx="1.3" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="947" y="328" width="11" height="34" rx="1.3" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="942.6" y="341" width="1.5" height="8" rx="0.7" fill="#5c4a3a" stroke="none"/>
+<rect x="945.9" y="341" width="1.5" height="8" rx="0.7" fill="#5c4a3a" stroke="none"/>
+</g>
+<g class="cabinet" data-cx="907" data-cy="185" style="cursor:pointer;pointer-events:all;" stroke-width="1.1">
+<rect x="890" y="160" width="34" height="50" rx="4" fill="#f3ece0"/>
+<rect x="890" y="160" width="34" height="5" rx="2" fill="#e6ddc9" stroke="none"/>
+<rect x="890" y="206" width="34" height="4" rx="1" fill="#d9cfb8" stroke="none" opacity="0.6"/>
+<line x1="907" y1="160" x2="907" y2="210" stroke-width="0.7"/>
+<rect x="894" y="168" width="11" height="34" rx="1.3" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="909" y="168" width="11" height="34" rx="1.3" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="904.6" y="181" width="1.5" height="8" rx="0.7" fill="#5c4a3a" stroke="none"/>
+<rect x="907.9" y="181" width="1.5" height="8" rx="0.7" fill="#5c4a3a" stroke="none"/>
+</g>
+<g stroke-width="0.9">
+<g transform="translate(930,98)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M 0.0 0.0 Q -0.9 -5.8 -6.4 -7.7 Q -5.5 -1.9 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-5.2" y2="-6.3" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 1.5 -8.5 -1.3 -13.2 Q -2.8 -4.7 0.0 0.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-1.1" y2="-10.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 0.0 -9.3 0.0 -14.0 Q 0.0 -4.7 0.0 0.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="0.0" y2="-11.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q -1.5 -8.5 1.3 -13.2 Q 2.8 -4.7 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="1.1" y2="-10.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 0.9 -5.8 6.4 -7.7 Q 5.5 -1.9 0.0 0.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="5.2" y2="-6.3" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+</g>
+<rect x="921.0" y="98.0" width="18.0" height="7" rx="2" fill="#c98a5e" stroke-width="0.8"/><rect x="921.0" y="98.0" width="18.0" height="2" rx="1" fill="#dba876" stroke="none"/><rect x="922.5" y="102.0" width="15.0" height="2" rx="1" fill="#a8703f" stroke="none" opacity="0.5"/>
+</g>
+
+<!-- 실장 책상은 deskLayer에서 JS로 생성 -->
+
+<!-- ===== 노트 디자인팀 ===== -->
+<g stroke-width="4">
+<path d="M 40 170 L 40 245 M 40 170 L 115 170"/>
+<path d="M 470 415 L 470 490 L 395 490"/>
+</g>
+<g stroke="#e7ddc9" stroke-width="1.6">
+<path d="M 40 172 L 40 243 M 42 170 L 113 170"/>
+<path d="M 468 415 L 468 488 L 397 488"/>
+</g>
+
+<g class="cabinet" data-cx="436" data-cy="212" style="cursor:pointer;pointer-events:all;" stroke-width="1.1">
+<rect x="420" y="190" width="32" height="48" rx="4" fill="#f3ece0"/>
+<rect x="420" y="190" width="32" height="5" rx="2" fill="#e6ddc9" stroke="none"/>
+<rect x="420" y="234" width="32" height="4" rx="1" fill="#d9cfb8" stroke="none" opacity="0.6"/>
+<line x1="436" y1="190" x2="436" y2="238" stroke-width="0.7"/>
+<rect x="424" y="198" width="10" height="32" rx="1.3" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="438" y="198" width="10" height="32" rx="1.3" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="433.6" y="210" width="1.5" height="8" rx="0.7" fill="#5c4a3a" stroke="none"/>
+<rect x="436.9" y="210" width="1.5" height="8" rx="0.7" fill="#5c4a3a" stroke="none"/>
+<text x="414" y="248" font-size="6.5" fill="#5c4a3a" stroke="none">수납장</text>
+</g>
+
+<!-- 노트디자인팀 책상 4개는 deskLayer에서 JS로 생성 -->
+
+<!-- ===== 경영지원팀 (신규, 홍보팀 위 빈칸) ===== -->
+<g stroke-width="4">
+<path d="M 40 500 L 40 540 M 40 500 L 108 500"/>
+<path d="M 470 598 L 470 630 L 418 630"/>
+</g>
+<g stroke="#e7ddc9" stroke-width="1.6">
+<path d="M 40 502 L 40 538 M 42 500 L 106 500"/>
+<path d="M 468 598 L 468 628 L 420 628"/>
+</g>
+
+<!-- 경영지원팀 책상 3개는 deskLayer에서 JS로 생성 -->
+
+<!-- ===== 스티커 디자인팀 ===== -->
+<g stroke-width="4">
+<path d="M 970 290 L 970 355 M 970 290 L 905 290"/>
+<path d="M 490 545 L 490 600 L 545 600"/>
+</g>
+<g stroke="#e7ddc9" stroke-width="1.6">
+<path d="M 968 292 L 968 353 M 968 290 L 907 290"/>
+<path d="M 492 545 L 492 598 L 543 598"/>
+</g>
+
+<g class="cabinet" data-cx="916" data-cy="574" style="cursor:pointer;pointer-events:all;" stroke-width="1.1">
+<rect x="900" y="555" width="32" height="38" rx="4" fill="#f3ece0"/>
+<rect x="900" y="555" width="32" height="5" rx="2" fill="#e6ddc9" stroke="none"/>
+<rect x="900" y="589" width="32" height="4" rx="1" fill="#d9cfb8" stroke="none" opacity="0.6"/>
+<line x1="916" y1="555" x2="916" y2="593" stroke-width="0.7"/>
+<rect x="904" y="562" width="10" height="24" rx="1.3" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="918" y="562" width="10" height="24" rx="1.3" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="913.6" y="571" width="1.5" height="7" rx="0.7" fill="#5c4a3a" stroke="none"/>
+<rect x="916.9" y="571" width="1.5" height="7" rx="0.7" fill="#5c4a3a" stroke="none"/>
+<text x="894" y="602" font-size="6.5" fill="#5c4a3a" stroke="none">수납장</text>
+</g>
+
+<!-- 스티커디자인팀 책상 4개는 deskLayer에서 JS로 생성 -->
+
+<!-- 입구 -->
+<rect x="50" y="650" width="55" height="100" rx="8" stroke-width="1.3" fill="#e8dcc8"/>
+<rect x="58" y="660" width="39" height="38" rx="3" fill="none" stroke="#5c4a3a" stroke-width="0.7" opacity="0.5"/>
+<rect x="58" y="704" width="39" height="38" rx="3" fill="none" stroke="#5c4a3a" stroke-width="0.7" opacity="0.5"/>
+<line x1="50" y1="650" x2="105" y2="650" stroke-width="0.9"/>
+<rect x="94" y="690" width="4" height="11" rx="2" fill="#c9a179" stroke-width="0.7"/>
+<circle cx="96" cy="695" r="1.3" fill="#5c4a3a" stroke="none"/>
+<rect x="46" y="752" width="63" height="6" rx="2.5" fill="#d88f5a" stroke-width="0.8"/>
+<line x1="52" y1="755" x2="103" y2="755" stroke-width="0.35" opacity="0.4"/>
+<text x="55" y="770" font-size="10" fill="#5c4a3a" stroke="none">입구</text>
+<g id="lunchSign" style="opacity:0; transition:opacity .4s ease;">
+  <rect x="46" y="775" width="64" height="20" rx="3" stroke-width="1.2"/>
+  <text x="50" y="789" font-size="9" fill="#5c4a3a" stroke="none">점심시간</text>
+</g>
+
+<!-- ===== 홍보팀 ===== -->
+<g stroke-width="4">
+<path d="M 120 640 L 120 685 M 120 640 L 185 640"/>
+<path d="M 460 755 L 460 790 L 405 790"/>
+</g>
+<g stroke="#e7ddc9" stroke-width="1.6">
+<path d="M 120 642 L 120 683 M 122 640 L 183 640"/>
+<path d="M 458 755 L 458 788 L 407 788"/>
+</g>
+
+<!-- 복합기 1 (노트-스티커 디자인팀 사이) -->
+<g stroke-width="1.1">
+<rect x="470" y="340" width="30" height="40" rx="4" fill="#e8e4da"/>
+<rect x="474" y="332" width="22" height="10" rx="1" fill="#fffdf8"/>
+<rect x="473" y="348" width="24" height="3" rx="1" fill="#c9c4b8" stroke="none"/>
+<rect x="475" y="361" width="14" height="10" rx="1" fill="#fffdf8" stroke-width="0.6"/>
+<circle cx="493" cy="363" r="1.2" fill="#8fbf6f" stroke="none"/>
+<circle cx="493" cy="368" r="1.2" fill="#e89a5a" stroke="none"/>
+<text x="462" y="387" font-size="7" fill="#5c4a3a" stroke="none">복합기</text>
+</g>
+
+<!-- 복합기 2 (노트-스티커 디자인팀 사이, 하단) -->
+<g stroke-width="1.1">
+<rect x="485" y="470" width="30" height="40" rx="4" fill="#e8e4da"/>
+<rect x="489" y="462" width="22" height="10" rx="1" fill="#fffdf8"/>
+<rect x="488" y="478" width="24" height="3" rx="1" fill="#c9c4b8" stroke="none"/>
+<rect x="490" y="491" width="14" height="10" rx="1" fill="#fffdf8" stroke-width="0.6"/>
+<circle cx="508" cy="493" r="1.2" fill="#8fbf6f" stroke="none"/>
+<circle cx="508" cy="498" r="1.2" fill="#e89a5a" stroke="none"/>
+<text x="477" y="517" font-size="7" fill="#5c4a3a" stroke="none">복합기</text>
+</g>
+
+<!-- 서랍 (홍보팀) -->
+<g stroke-width="1">
+<rect x="425" y="655" width="30" height="34" rx="3" fill="#f3ece0"/>
+<rect x="425" y="655" width="30" height="3" rx="1.5" fill="#e6ddc9" stroke="none"/>
+<rect x="427" y="660" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="437" y="663.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<rect x="427" y="670" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="437" y="673.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<rect x="427" y="680" width="26" height="7" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="437" y="682.7" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<text x="420" y="696" font-size="7" fill="#5c4a3a" stroke="none">서랍</text>
+</g>
+
+<!-- 서랍 (경영지원팀) -->
+<g stroke-width="1">
+<rect x="115" y="595" width="30" height="34" rx="3" fill="#f3ece0"/>
+<rect x="115" y="595" width="30" height="3" rx="1.5" fill="#e6ddc9" stroke="none"/>
+<rect x="117" y="600" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="127" y="603.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<rect x="117" y="610" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="127" y="613.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<rect x="117" y="620" width="26" height="7" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="127" y="622.7" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<text x="110" y="636" font-size="7" fill="#5c4a3a" stroke="none">서랍</text>
+</g>
+
+<!-- 서랍 (스티커 디자인팀) -->
+<g stroke-width="1">
+<rect x="555" y="560" width="30" height="34" rx="3" fill="#f3ece0"/>
+<rect x="555" y="560" width="30" height="3" rx="1.5" fill="#e6ddc9" stroke="none"/>
+<rect x="557" y="565" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="567" y="568.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<rect x="557" y="575" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="567" y="578.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<rect x="557" y="585" width="26" height="7" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
+<rect x="567" y="587.7" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<text x="550" y="601" font-size="7" fill="#5c4a3a" stroke="none">서랍</text>
+</g>
+
+<!-- 홍보팀 책상 2개는 deskLayer에서 JS로 생성 -->
+
+<!-- ===== 회의실 ===== -->
+<g stroke-width="4">
+<path d="M 690 630 L 690 675 M 690 630 L 645 630"/>
+<path d="M 490 765 L 490 800 L 535 800"/>
+</g>
+<g stroke="#e7ddc9" stroke-width="1.6">
+<path d="M 688 632 L 688 673 M 688 630 L 647 630"/>
+<path d="M 492 765 L 492 798 L 533 798"/>
+</g>
+<g stroke-width="1.1">
+<ellipse cx="590" cy="725" rx="75" ry="30" fill="#f3ece0" stroke-width="1.1"/><ellipse cx="590" cy="725" rx="72" ry="28" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="573.5" cy="716.6" rx="26.2" ry="9.0" fill="#fbf6ea" stroke="none" opacity="0.7"/>
+<rect x="581.90" y="672.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="583.68" y="663.76" width="12.64" height="10.80" rx="2" fill="#b98d60"/><line x1="585.70" y1="667.22" x2="594.30" y2="667.22" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="585.70" y1="670.89" x2="594.30" y2="670.89" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="585.14" y1="690.06" x2="585.14" y2="695.10" stroke-width="1.25" stroke-linecap="round"/><line x1="594.86" y1="690.06" x2="594.86" y2="695.10" stroke-width="1.25" stroke-linecap="round"/><rect x="587.41" y="677.78" width="5.18" height="4.61" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="581.90" y="758.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="583.68" y="775.44" width="12.64" height="10.80" rx="2" fill="#b98d60"/><line x1="585.70" y1="779.11" x2="594.30" y2="779.11" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="585.70" y1="782.78" x2="594.30" y2="782.78" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="585.14" y1="754.90" x2="585.14" y2="759.94" stroke-width="1.25" stroke-linecap="round"/><line x1="594.86" y1="754.90" x2="594.86" y2="759.94" stroke-width="1.25" stroke-linecap="round"/><rect x="587.41" y="767.62" width="5.18" height="4.61" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="524.90" y="690.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="518.42" y="692.51" width="8.10" height="14.98" rx="2" fill="#b98d60"/><line x1="521.01" y1="694.91" x2="521.01" y2="705.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="523.77" y1="694.91" x2="523.77" y2="705.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="539.80" y1="694.24" x2="543.58" y2="694.24" stroke-width="1.25" stroke-linecap="round"/><line x1="539.80" y1="705.76" x2="543.58" y2="705.76" stroke-width="1.25" stroke-linecap="round"/><rect x="529.44" y="696.93" width="3.89" height="6.14" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="524.90" y="740.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="518.42" y="742.51" width="8.10" height="14.98" rx="2" fill="#b98d60"/><line x1="521.01" y1="744.91" x2="521.01" y2="755.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="523.77" y1="744.91" x2="523.77" y2="755.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="539.80" y1="744.24" x2="543.58" y2="744.24" stroke-width="1.25" stroke-linecap="round"/><line x1="539.80" y1="755.76" x2="543.58" y2="755.76" stroke-width="1.25" stroke-linecap="round"/><rect x="529.44" y="746.93" width="3.89" height="6.14" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="638.90" y="690.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="653.48" y="692.51" width="8.10" height="14.98" rx="2" fill="#b98d60"/><line x1="656.23" y1="694.91" x2="656.23" y2="705.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="658.99" y1="694.91" x2="658.99" y2="705.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="636.42" y1="694.24" x2="640.20" y2="694.24" stroke-width="1.25" stroke-linecap="round"/><line x1="636.42" y1="705.76" x2="640.20" y2="705.76" stroke-width="1.25" stroke-linecap="round"/><rect x="646.68" y="696.93" width="3.89" height="6.14" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="638.90" y="740.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="653.48" y="742.51" width="8.10" height="14.98" rx="2" fill="#b98d60"/><line x1="656.23" y1="744.91" x2="656.23" y2="755.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="658.99" y1="744.91" x2="658.99" y2="755.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="636.42" y1="744.24" x2="640.20" y2="744.24" stroke-width="1.25" stroke-linecap="round"/><line x1="636.42" y1="755.76" x2="640.20" y2="755.76" stroke-width="1.25" stroke-linecap="round"/><rect x="646.68" y="746.93" width="3.89" height="6.14" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+</g>
+
+<!-- ===== 재고창고 (스티커 디자인팀 우측 여백) ===== -->
+<g stroke-width="4">
+<path d="M 815 367 L 815 400 M 815 367 L 860 367"/>
+<path d="M 965 500 L 965 534 L 920 534"/>
+</g>
+<g stroke="#e7ddc9" stroke-width="1.6">
+<path d="M 815 369 L 815 398 M 817 367 L 858 367"/>
+<path d="M 963 500 L 963 532 L 922 532"/>
+</g>
+
+<!-- 모빌랙 1 (절반 크기) -->
+<g stroke="#8a8578" stroke-width="1">
+<line x1="829" y1="396" x2="829" y2="456" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="858" y1="396" x2="858" y2="456" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="827" y1="408" x2="860" y2="408" stroke-width="1.1"/>
+<line x1="827" y1="409.8" x2="860" y2="409.8" stroke-width="1.1"/>
+<line x1="827" y1="431" x2="860" y2="431" stroke-width="1.1"/>
+<line x1="827" y1="432.8" x2="860" y2="432.8" stroke-width="1.1"/>
+</g>
+<g fill="#5c4a3a" stroke="none"><circle cx="829" cy="456" r="2.3"/><circle cx="858" cy="456" r="2.3"/></g>
+<g stroke="#5c4a3a" stroke-width="0.55" stroke-linejoin="round">
+<rect x="831" y="398" width="26" height="2.6" rx="0.8" fill="#e0a98f"/>
+<rect x="831" y="401.2" width="26" height="2.6" rx="0.8" fill="#a8c4d4"/>
+<rect x="831" y="404.4" width="26" height="2.6" rx="0.8" fill="#8fbf6f"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="0.5" stroke-linejoin="round">
+<rect x="831.5" y="412" width="15" height="11" rx="1.3" fill="#fdeccb" transform="rotate(-5 839 417.5)"/>
+<rect x="840" y="414" width="15" height="11" rx="1.3" fill="#fffdf8" transform="rotate(4 847.5 419.5)"/>
+<circle cx="836" cy="417" r="1.3" fill="#e8935a" stroke="none"/><circle cx="841" cy="419" r="1.3" fill="#7fa8c9" stroke="none"/>
+<circle cx="847" cy="416" r="1.3" fill="#8fbf6f" stroke="none"/><circle cx="852" cy="420" r="1.3" fill="#d88fb0" stroke="none"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="0.6" stroke-linejoin="round">
+<rect x="830.5" y="437" width="9" height="9" rx="1" fill="#d9b88a"/><line x1="830.5" y1="441.5" x2="839.5" y2="441.5" stroke-width="0.35" opacity="0.6"/>
+<rect x="840.5" y="438" width="9" height="8" rx="1" fill="#e3c69a"/><line x1="840.5" y1="442" x2="849.5" y2="442" stroke-width="0.35" opacity="0.6"/>
+<rect x="850.5" y="437" width="8" height="9" rx="1" fill="#cfa876"/><line x1="850.5" y1="441.5" x2="858.5" y2="441.5" stroke-width="0.35" opacity="0.6"/>
+</g>
+
+<!-- 모빌랙 2 (절반 크기) -->
+<g stroke="#8a8578" stroke-width="1">
+<line x1="866" y1="396" x2="866" y2="456" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="895" y1="396" x2="895" y2="456" stroke-width="1.6" stroke-linecap="round"/>
+<line x1="864" y1="408" x2="897" y2="408" stroke-width="1.1"/>
+<line x1="864" y1="409.8" x2="897" y2="409.8" stroke-width="1.1"/>
+<line x1="864" y1="431" x2="897" y2="431" stroke-width="1.1"/>
+<line x1="864" y1="432.8" x2="897" y2="432.8" stroke-width="1.1"/>
+</g>
+<g fill="#5c4a3a" stroke="none"><circle cx="866" cy="456" r="2.3"/><circle cx="895" cy="456" r="2.3"/></g>
+<g stroke="#5c4a3a" stroke-width="0.55" stroke-linejoin="round">
+<rect x="868" y="398" width="26" height="2.6" rx="0.8" fill="#f6d8c2"/>
+<rect x="868" y="401.2" width="26" height="2.6" rx="0.8" fill="#cfe3e6"/>
+<rect x="868" y="404.4" width="26" height="2.6" rx="0.8" fill="#e3d9ec"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="0.5" stroke-linejoin="round">
+<rect x="868.5" y="412" width="15" height="11" rx="1.3" fill="#fffdf8" transform="rotate(5 876 417.5)"/>
+<rect x="877" y="414" width="15" height="11" rx="1.3" fill="#fdeccb" transform="rotate(-4 884.5 419.5)"/>
+<circle cx="873" cy="417" r="1.3" fill="#d88fb0" stroke="none"/><circle cx="878" cy="419" r="1.3" fill="#e3b23c" stroke="none"/>
+<circle cx="884" cy="416" r="1.3" fill="#7fa8c9" stroke="none"/><circle cx="889" cy="420" r="1.3" fill="#8fbf6f" stroke="none"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="0.6" stroke-linejoin="round">
+<rect x="867.5" y="437" width="9" height="9" rx="1" fill="#e3c69a"/><line x1="867.5" y1="441.5" x2="876.5" y2="441.5" stroke-width="0.35" opacity="0.6"/>
+<rect x="877.5" y="438" width="9" height="8" rx="1" fill="#d9b88a"/><line x1="877.5" y1="442" x2="886.5" y2="442" stroke-width="0.35" opacity="0.6"/>
+<rect x="887.5" y="437" width="8" height="9" rx="1" fill="#cfa876"/><line x1="887.5" y1="441.5" x2="895.5" y2="441.5" stroke-width="0.35" opacity="0.6"/>
+</g>
+
+<!-- 공기청정기 (창고) -->
+<g stroke-width="1">
+<rect x="912" y="392" width="14" height="26" rx="3" fill="#f3ece0"/>
+<rect x="914" y="396" width="10" height="14" rx="1.6" fill="#dcecec"/>
+<line x1="915.5" y1="399" x2="922.5" y2="399" stroke-width="0.35" opacity="0.5"/>
+<line x1="915.5" y1="402" x2="922.5" y2="402" stroke-width="0.35" opacity="0.5"/>
+<line x1="915.5" y1="405" x2="922.5" y2="405" stroke-width="0.35" opacity="0.5"/>
+<circle cx="919" cy="413" r="1.2" fill="#8fbf6f" stroke-width="0.4"/>
+</g>
+
+<!-- 창고용 미니 테이블 + 의자 2개 -->
+<g stroke-width="1.1">
+<ellipse cx="935" cy="498" rx="15" ry="8" fill="#f3ece0" stroke-width="1"/>
+<ellipse cx="935" cy="498" rx="12.5" ry="6" fill="none" stroke="#d8c9ac" stroke-width="0.7"/>
+</g>
+<g stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round">
+<rect x="927.80" y="473.00" width="14.40" height="16.00" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="929.38" y="465.80" width="11.23" height="9.00" rx="2" fill="#b98d60"/><line x1="931.18" y1="468.68" x2="938.82" y2="468.68" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="931.18" y1="471.74" x2="938.82" y2="471.74" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="930.68" y1="487.72" x2="930.68" y2="491.92" stroke-width="1.25" stroke-linecap="round"/><line x1="939.32" y1="487.72" x2="939.32" y2="491.92" stroke-width="1.25" stroke-linecap="round"/><rect x="932.70" y="477.48" width="4.61" height="3.84" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="927.80" y="507.00" width="14.40" height="16.00" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="929.38" y="521.20" width="11.23" height="9.00" rx="2" fill="#b98d60"/><line x1="931.18" y1="524.26" x2="938.82" y2="524.26" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="931.18" y1="527.32" x2="938.82" y2="527.32" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="930.68" y1="504.08" x2="930.68" y2="508.28" stroke-width="1.25" stroke-linecap="round"/><line x1="939.32" y1="504.08" x2="939.32" y2="508.28" stroke-width="1.25" stroke-linecap="round"/><rect x="932.70" y="514.68" width="4.61" height="3.84" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+</g>
+
+<!-- 재고창고 라벨: 항상 맨 위에 오도록 마지막에 그림 -->
+<rect x="820" y="371" width="86" height="19" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
+<text x="829" y="384" font-size="12" font-weight="700" fill="#5c4a3a" stroke="none" font-family="-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif">재고창고</text>
+
+<!-- 공기청정기 (사무실 복도 2곳) -->
+<g stroke-width="1">
+<rect x="473" y="666" width="14" height="26" rx="3" fill="#f3ece0"/>
+<rect x="475" y="670" width="10" height="14" rx="1.6" fill="#dcecec"/>
+<line x1="476.5" y1="673" x2="483.5" y2="673" stroke-width="0.35" opacity="0.5"/>
+<line x1="476.5" y1="676" x2="483.5" y2="676" stroke-width="0.35" opacity="0.5"/>
+<line x1="476.5" y1="679" x2="483.5" y2="679" stroke-width="0.35" opacity="0.5"/>
+<circle cx="480" cy="687" r="1.2" fill="#8fbf6f" stroke-width="0.4"/>
+</g>
+<g stroke-width="1">
+<rect x="38" y="287" width="14" height="26" rx="3" fill="#f3ece0"/>
+<rect x="40" y="291" width="10" height="14" rx="1.6" fill="#dcecec"/>
+<line x1="41.5" y1="294" x2="48.5" y2="294" stroke-width="0.35" opacity="0.5"/>
+<line x1="41.5" y1="297" x2="48.5" y2="297" stroke-width="0.35" opacity="0.5"/>
+<line x1="41.5" y1="300" x2="48.5" y2="300" stroke-width="0.35" opacity="0.5"/>
+<circle cx="45" cy="308" r="1.2" fill="#8fbf6f" stroke-width="0.4"/>
+</g>
+
+<!-- ===== 탕비실 ===== -->
+<g stroke-width="4">
+<path d="M 710 630 L 710 675 M 710 630 L 765 630"/>
+<path d="M 970 755 L 970 800 L 915 800"/>
+</g>
+<g stroke="#e7ddc9" stroke-width="1.6">
+<path d="M 712 632 L 712 673 M 712 630 L 763 630"/>
+<path d="M 968 755 L 968 798 L 917 798"/>
+</g>
+<g stroke-width="1.1">
+<rect x="725" y="675" width="45" height="68" rx="6" fill="#dcecec"/>
+<rect x="725" y="675" width="45" height="33" rx="6" fill="#cfe3e3" stroke="none" opacity="0.5"/>
+<line x1="725" y1="708" x2="770" y2="708" stroke-width="0.8"/>
+<rect x="762" y="681" width="2.2" height="12" rx="1.1" fill="#5c4a3a" stroke="none"/>
+<rect x="762" y="714" width="2.2" height="20" rx="1.1" fill="#5c4a3a" stroke="none"/>
+<text x="718" y="756" font-size="7.5" fill="#5c4a3a" stroke="none">냉장고</text>
+</g>
+<g stroke-width="1.1">
+<rect x="787" y="670" width="55" height="32" rx="4" fill="#e8e4da"/>
+<ellipse cx="814" cy="686" rx="17" ry="8" fill="#cfc9bb" stroke-width="0.9"/>
+<ellipse cx="814" cy="687" rx="13" ry="5.5" fill="#b8b2a3" stroke="none" opacity="0.6"/>
+<path d="M 814 670 q 0 -10 8 -10 q 6 0 6 5" fill="none" stroke-width="1"/>
+<circle cx="828" cy="665" r="1.3" fill="#5c4a3a" stroke="none"/>
+<rect x="833" y="674" width="5" height="7" rx="1.5" fill="#8fbf6f" stroke-width="0.6"/>
+<text x="783" y="708" font-size="7.5" fill="#5c4a3a" stroke="none">싱크대</text>
+</g>
+<g class="cabinet" data-cx="877" data-cy="678" style="cursor:pointer;pointer-events:all;" stroke-width="1.1">
+<rect x="855" y="650" width="45" height="55" rx="4" fill="#f3ece0"/>
+<rect x="855" y="650" width="45" height="5" rx="2" fill="#e6ddc9" stroke="none"/>
+<rect x="855" y="701" width="45" height="4" rx="1" fill="#d9cfb8" stroke="none" opacity="0.6"/>
+<line x1="877" y1="650" x2="877" y2="705" stroke-width="0.8"/>
+<rect x="860" y="659" width="15" height="38" rx="1.5" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="879" y="659" width="15" height="38" rx="1.5" fill="none" stroke-width="0.5" opacity="0.5"/>
+<rect x="874.6" y="675" width="1.8" height="9" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<rect x="878.6" y="675" width="1.8" height="9" rx="0.8" fill="#5c4a3a" stroke="none"/>
+<text x="850" y="719" font-size="7.5" fill="#5c4a3a" stroke="none">수납장</text>
+</g>
+<g stroke-width="1.1">
+<rect x="787" y="712" width="42" height="26" rx="4" fill="#e8e4da"/>
+<rect x="792" y="716" width="20" height="14" rx="1" fill="#9a9c8f" stroke-width="0.8"/>
+<line x1="796" y1="716" x2="796" y2="730" stroke-width="0.35" opacity="0.5"/>
+<line x1="800" y1="716" x2="800" y2="730" stroke-width="0.35" opacity="0.5"/>
+<line x1="804" y1="716" x2="804" y2="730" stroke-width="0.35" opacity="0.5"/>
+<line x1="808" y1="716" x2="808" y2="730" stroke-width="0.35" opacity="0.5"/>
+<rect x="811.5" y="715" width="1.5" height="16" fill="#5c4a3a" stroke="none"/>
+<circle cx="820" cy="720" r="1.5" fill="#fffdf8" stroke-width="0.5"/>
+<rect x="817" y="725" width="6" height="2.3" rx="0.5" fill="#fffdf8" stroke-width="0.5"/>
+<text x="778" y="754" font-size="7.5" fill="#5c4a3a" stroke="none">전자레인지</text>
+</g>
+<g stroke-width="1.1">
+<rect x="885" y="682" width="30" height="4" rx="1.5" fill="#8a8578" stroke-width="0.6"/>
+<path d="M900 660 q-11 0 -11 12 q0 11 11 11 q11 0 11 -11 q0 -12 -11 -12 z" fill="#e0ccb4"/>
+<path d="M893 668 q7 -2 14 0" fill="none" stroke="#c9a179" stroke-width="0.7" opacity="0.7"/>
+<path d="M911 668 q8 0 8 5 q0 5 -8 5" fill="none" stroke-width="0.9"/>
+<ellipse cx="900" cy="649" rx="4" ry="1.6" fill="#c9a179" stroke-width="0.7"/>
+<circle cx="900" cy="649" r="1" fill="#5c4a3a" stroke="none"/>
+<text x="885" y="714" font-size="7.5" fill="#5c4a3a" stroke="none">커피포트</text>
+</g>
+<!-- 탕비실 신규 테이블 (분홍 표시 자리) -->
+<g stroke-width="1.1">
+<ellipse cx="925" cy="755" rx="30" ry="22" fill="#f3ece0" stroke-width="1.1"/><ellipse cx="925" cy="755" rx="27" ry="20" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="918.4" cy="748.8" rx="10.5" ry="6.6" fill="#fbf6ea" stroke="none" opacity="0.7"/>
+<rect x="918.70" y="718.80" width="12.60" height="14.40" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="920.09" y="712.32" width="9.83" height="8.10" rx="2" fill="#b98d60"/><line x1="921.66" y1="714.91" x2="928.34" y2="714.91" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="921.66" y1="717.67" x2="928.34" y2="717.67" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="921.22" y1="732.05" x2="921.22" y2="735.83" stroke-width="1.25" stroke-linecap="round"/><line x1="928.78" y1="732.05" x2="928.78" y2="735.83" stroke-width="1.25" stroke-linecap="round"/><rect x="922.98" y="722.83" width="4.03" height="3.46" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="918.70" y="776.80" width="12.60" height="14.40" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="920.09" y="789.58" width="9.83" height="8.10" rx="2" fill="#b98d60"/><line x1="921.66" y1="792.33" x2="928.34" y2="792.33" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="921.66" y1="795.09" x2="928.34" y2="795.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="921.22" y1="774.17" x2="921.22" y2="777.95" stroke-width="1.25" stroke-linecap="round"/><line x1="928.78" y1="774.17" x2="928.78" y2="777.95" stroke-width="1.25" stroke-linecap="round"/><rect x="922.98" y="783.71" width="4.03" height="3.46" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="893.70" y="747.80" width="12.60" height="14.40" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="888.66" y="749.38" width="6.30" height="11.23" rx="2" fill="#b98d60"/><line x1="890.68" y1="751.18" x2="890.68" y2="758.82" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="892.82" y1="751.18" x2="892.82" y2="758.82" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="905.29" y1="750.68" x2="908.23" y2="750.68" stroke-width="1.25" stroke-linecap="round"/><line x1="905.29" y1="759.32" x2="908.23" y2="759.32" stroke-width="1.25" stroke-linecap="round"/><rect x="897.23" y="752.70" width="3.02" height="4.61" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+<rect x="943.70" y="747.80" width="12.60" height="14.40" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="955.04" y="749.38" width="6.30" height="11.23" rx="2" fill="#b98d60"/><line x1="957.18" y1="751.18" x2="957.18" y2="758.82" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="959.32" y1="751.18" x2="959.32" y2="758.82" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="941.77" y1="750.68" x2="944.71" y2="750.68" stroke-width="1.25" stroke-linecap="round"/><line x1="941.77" y1="759.32" x2="944.71" y2="759.32" stroke-width="1.25" stroke-linecap="round"/><rect x="949.75" y="752.70" width="3.02" height="4.61" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
+</g>
+
+<!-- 화분1: 산세베리아(창가) -->
+<g transform="translate(255,72)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M -1.4 0.8 Q -7.5 -5.9 -15.9 -25.4 Q -8.4 -19.5 1.4 -0.8 Z" fill="#79ad61" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="-13.5" y2="-21.6" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.5 0.5 Q -6.4 -9.3 -11.1 -34.2 Q -4.7 -25.0 1.5 -0.5 Z" fill="#8fbf6f" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="-9.5" y2="-29.1" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.6 0.2 Q -4.2 -9.2 -3.3 -31.8 Q 0.8 -22.6 1.6 -0.2 Z" fill="#a3d191" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="-2.8" y2="-27.1" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.6 -0.2 Q -2.1 -10.5 3.6 -33.8 Q 5.7 -23.3 1.6 0.2 Z" fill="#79ad61" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="3.0" y2="-28.7" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.5 -0.5 Q -0.3 -9.5 9.3 -28.5 Q 9.5 -19.0 1.5 0.5 Z" fill="#8fbf6f" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="7.9" y2="-24.3" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.4 -0.8 Q 1.4 -8.3 13.8 -22.0 Q 12.4 -13.7 1.4 0.8 Z" fill="#a3d191" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="11.7" y2="-18.7" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<rect x="-9" y="0" width="18" height="7" rx="2" fill="#c98a5e" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.1" rx="1.4" fill="#c98a5e" stroke="none" opacity="0.6"/>
+</g>
+
+<!-- 화분2: 피들리프(스티커팀 상단) -->
+<g transform="translate(862,330)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<line x1="0" y1="0" x2="0" y2="-34" stroke-width="1.3"/>
+<path d="M 0.0 0.0 Q 1.9 -9.7 -7.5 -13.0 Q -9.4 -3.2 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-6.1" y2="-10.7" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -5.0 Q 9.1 -8.9 6.6 -18.5 Q -2.6 -14.6 0.0 -5.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="-5.0" x2="5.4" y2="-16.1" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -11.0 Q 2.9 -20.5 -6.1 -24.7 Q -9.0 -15.2 0.0 -11.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="0.0" y1="-11.0" x2="-5.0" y2="-22.2" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -16.0 Q 9.3 -19.6 7.0 -29.2 Q -2.2 -25.7 0.0 -16.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="-16.0" x2="5.8" y2="-26.9" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -21.0 Q 3.2 -30.4 -5.6 -34.9 Q -8.8 -25.5 0.0 -21.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="-21.0" x2="-4.6" y2="-32.4" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -26.0 Q 9.0 -30.2 6.1 -39.7 Q -2.9 -35.5 0.0 -26.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="0.0" y1="-26.0" x2="5.0" y2="-37.2" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<rect x="-9" y="0" width="18" height="8" rx="2" fill="#f3ece0" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.4" rx="1.4" fill="#fffdf8" stroke="none" opacity="0.6"/>
+</g>
+
+<!-- 화분3: 포토스(탕비실 옆) -->
+<g transform="translate(948,672)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M 0.0 0.0 Q -0.4 -9.1 -9.4 -10.4 Q -9.0 -1.3 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-7.7" y2="-8.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 2.5 -8.8 -5.7 -12.8 Q -8.1 -4.0 0.0 0.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-4.7" y2="-10.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 4.8 -7.7 -1.9 -13.9 Q -6.7 -6.1 0.0 0.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-1.6" y2="-11.4" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 6.7 -6.1 1.9 -13.9 Q -4.8 -7.7 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="1.6" y2="-11.4" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 8.1 -4.0 5.7 -12.8 Q -2.5 -8.8 0.0 0.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="4.7" y2="-10.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 9.0 -1.3 9.4 -10.4 Q 0.4 -9.1 0.0 0.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="7.7" y2="-8.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M9 -2 Q22 5 25 16 Q27 24 24 30" fill="none" stroke="#79ad61" stroke-width="1.1" stroke-linecap="round"/>
+<path d="M 22.0 10.0 Q 25.8 11.3 27.6 7.8 Q 23.8 6.5 22.0 10.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="22.0" y1="10.0" x2="26.6" y2="8.2" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 25.0 20.0 Q 28.6 21.7 30.8 18.4 Q 27.2 16.7 25.0 20.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="25.0" y1="20.0" x2="29.8" y2="18.7" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M-9 -2 Q-22 5 -25 16 Q-27 24 -23 30" fill="none" stroke="#79ad61" stroke-width="1.1" stroke-linecap="round"/>
+<path d="M -22.0 10.0 Q -23.8 6.5 -27.6 7.8 Q -25.8 11.3 -22.0 10.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="-22.0" y1="10.0" x2="-26.6" y2="8.2" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M -24.0 20.0 Q -26.2 16.7 -29.8 18.4 Q -27.6 21.7 -24.0 20.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="-24.0" y1="20.0" x2="-28.8" y2="18.7" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<rect x="-9" y="0" width="18" height="7" rx="2" fill="#c98a5e" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.1" rx="1.4" fill="#c98a5e" stroke="none" opacity="0.6"/>
+</g>
+
+<!-- 화분4: 필레아(노트팀 우측) -->
+<g transform="translate(75,575)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<line x1="0.0" y1="0.0" x2="-10.0" y2="-5.4" stroke-width="0.5"/>
+<circle cx="-10.0" cy="-8.4" r="4.2" fill="#79ad61"/>
+<line x1="0.0" y1="0.0" x2="-8.0" y2="-10.9" stroke-width="0.5"/>
+<circle cx="-8.0" cy="-13.9" r="4.2" fill="#8fbf6f"/>
+<line x1="0.0" y1="0.0" x2="-2.5" y2="-8.8" stroke-width="0.5"/>
+<circle cx="-2.5" cy="-11.7" r="4.2" fill="#a3d191"/>
+<line x1="0.0" y1="0.0" x2="1.5" y2="-14.0" stroke-width="0.5"/>
+<circle cx="1.5" cy="-16.9" r="4.2" fill="#6fa055"/>
+<line x1="0.0" y1="0.0" x2="4.4" y2="-9.3" stroke-width="0.5"/>
+<circle cx="4.4" cy="-12.2" r="4.2" fill="#79ad61"/>
+<line x1="0.0" y1="0.0" x2="8.6" y2="-9.3" stroke-width="0.5"/>
+<circle cx="8.6" cy="-12.3" r="4.2" fill="#8fbf6f"/>
+<line x1="0.0" y1="0.0" x2="8.4" y2="-4.1" stroke-width="0.5"/>
+<circle cx="8.4" cy="-7.1" r="4.2" fill="#a3d191"/>
+<rect x="-9" y="0" width="18" height="8" rx="2" fill="#e0a3a8" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.4" rx="1.4" fill="#e0a3a8" stroke="none" opacity="0.6"/>
+</g>
+
+<!-- 화분5: 고사리(경영지원팀 구석) -->
+<g transform="translate(432,730)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M 0.0 0.0 Q -6.1 -10.9 -17.0 -17.0 Q -10.9 -6.1 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-13.9" y2="-13.9" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q -3.3 -14.0 -12.7 -24.9 Q -9.4 -10.9 0.0 0.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-10.4" y2="-20.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 1.6 -11.4 -3.4 -21.7 Q -5.1 -10.3 0.0 0.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="-2.8" y2="-17.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 5.1 -10.3 3.4 -21.7 Q -1.6 -11.4 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="2.8" y2="-17.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 9.4 -10.9 12.7 -24.9 Q 3.3 -14.0 0.0 0.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="10.4" y2="-20.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 0.0 Q 10.9 -6.1 17.0 -17.0 Q 6.1 -10.9 0.0 0.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="0.0" y1="0.0" x2="13.9" y2="-13.9" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<rect x="-9" y="0" width="18" height="7" rx="2" fill="#d9c9a8" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.1" rx="1.4" fill="#d9c9a8" stroke="none" opacity="0.6"/>
+</g>
+
+<!-- 화분6: 산세베리아 박스(회의실 구석) -->
+<g transform="translate(671,675)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M -1.6 0.7 Q -7.8 -9.0 -15.5 -34.7 Q -7.6 -25.7 1.6 -0.7 Z" fill="#79ad61" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="-13.1" y2="-29.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.7 0.4 Q -6.6 -12.0 -10.6 -42.7 Q -4.1 -30.7 1.7 -0.4 Z" fill="#8fbf6f" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="-9.0" y2="-36.3" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.7 0.1 Q -4.3 -11.7 -2.8 -39.9 Q 1.5 -28.2 1.7 -0.1 Z" fill="#a3d191" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="-2.4" y2="-33.9" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.7 -0.2 Q -2.2 -12.9 4.4 -41.8 Q 6.6 -28.9 1.7 0.2 Z" fill="#79ad61" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="3.7" y2="-35.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.7 -0.5 Q -0.2 -11.9 10.5 -36.5 Q 10.7 -24.6 1.7 0.5 Z" fill="#8fbf6f" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="8.9" y2="-31.0" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<path d="M -1.6 -0.8 Q 1.1 -10.2 14.0 -28.8 Q 13.0 -18.6 1.6 0.8 Z" fill="#a3d191" stroke-width="0.5"/>
+<line x1="0.0" y1="0.0" x2="11.9" y2="-24.4" stroke="#5c8a48" stroke-width="0.4" opacity="0.45"/>
+<rect x="-12" y="0" width="24" height="9" rx="1.5" fill="#b9c9a8" stroke-width="0.7"/><rect x="-12" y="0" width="24" height="2.7" rx="1.0499999999999998" fill="#b9c9a8" stroke="none" opacity="0.6"/>
+</g>
+
+<!-- 화분8: 와이어스탠드(복합기 사이) -->
+<g transform="translate(330,410)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M -1.6 0 C -6 -8 -6 -18 -3 -26 C -1 -18 -0.5 -8 -1.6 0 Z" fill="#79ad61" stroke-width="0.55"/>
+<path d="M -0.6 0 C -3 -9 -2.5 -20 0 -28 C 2 -19 1.8 -8 -0.6 0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<path d="M 0.6 0 C 3 -9 2.5 -20 0 -28 C -1.5 -19 -1.5 -8 0.6 0 Z" fill="#a3d191" stroke-width="0.55"/>
+<path d="M 1.6 0 C 6 -8 6 -18 3 -26 C 1 -18 0.5 -8 1.6 0 Z" fill="#79ad61" stroke-width="0.55"/>
+<path d="M 3 1 C 8 -5 10 -13 8 -19 C 5 -13 3 -6 3 1 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<path d="M -3 1 C -8 -5 -10 -13 -8 -19 C -5 -13 -3 -6 -3 1 Z" fill="#a3d191" stroke-width="0.55"/>
+<rect x="-8.0" y="0.0" width="16.0" height="7" rx="2" fill="#c98a5e" stroke-width="0.8"/><rect x="-8.0" y="0.0" width="16.0" height="2" rx="1" fill="#dba876" stroke="none"/><rect x="-6.5" y="4.0" width="13.0" height="2" rx="1" fill="#a8703f" stroke="none" opacity="0.5"/>
+</g>
+
+<!-- 화분9: 아가베(노트팀 우측 하단) -->
+<g transform="translate(625,115)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M -1.0 1.5 Q -8.0 -1.2 -19.7 -13.8 Q -11.7 -12.6 1.0 -1.5 Z" fill="#5c9098" stroke-width="0.5"/>
+<path d="M -1.5 1.0 Q -7.8 -4.8 -16.1 -22.9 Q -8.3 -18.1 1.5 -1.0 Z" fill="#7ab0b8" stroke-width="0.5"/>
+<path d="M -1.7 0.5 Q -6.1 -8.2 -8.8 -30.8 Q -2.7 -22.5 1.7 -0.5 Z" fill="#4a7880" stroke-width="0.5"/>
+<path d="M -1.8 0.0 Q -3.6 -10.2 0.0 -34.0 Q 3.6 -23.8 1.8 0.0 Z" fill="#6aa0a8" stroke-width="0.5"/>
+<path d="M -1.7 -0.5 Q -0.8 -10.2 8.8 -30.8 Q 9.6 -20.5 1.7 0.5 Z" fill="#5c9098" stroke-width="0.5"/>
+<path d="M -1.5 -1.0 Q 1.9 -8.9 16.1 -22.9 Q 14.2 -14.0 1.5 1.0 Z" fill="#7ab0b8" stroke-width="0.5"/>
+<path d="M -1.0 -1.5 Q 3.8 -7.1 19.7 -13.8 Q 15.8 -6.7 1.0 1.5 Z" fill="#4a7880" stroke-width="0.5"/>
+<rect x="-9" y="0" width="18" height="8" rx="2" fill="#d9c9a8" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.4" rx="1.4" fill="#d9c9a8" stroke="none" opacity="0.6"/>
+</g>
+
+<!-- 화분10: 몬스테라(홍보팀-회의실 사이) -->
+<g transform="translate(670,450)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<line x1="0" y1="0" x2="0" y2="-7" stroke-width="1"/>
+<path d="M 0.0 -5.0 Q 1.9 -14.1 -3.1 -14.6 Q -2.6 -17.4 -6.6 -17.4 Q -6.0 -21.8 -14.7 -21.3 Q -16.1 -12.7 -11.6 -12.9 Q -12.1 -8.9 -9.2 -9.1 Q -9.3 -4.1 0.0 -5.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="-5.0" x2="-12.5" y2="-18.9" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -5.0 Q 4.8 -13.7 0.1 -16.7 Q 1.5 -19.4 -2.3 -21.3 Q -0.3 -25.6 -8.9 -29.4 Q -13.0 -21.0 -8.7 -19.0 Q -10.4 -15.0 -7.6 -13.9 Q -9.3 -8.5 0.0 -5.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="-5.0" x2="-7.6" y2="-25.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -5.0 Q 7.5 -12.0 4.1 -16.8 Q 6.4 -19.0 3.4 -22.4 Q 6.8 -26.0 0.0 -33.0 Q -6.8 -26.0 -3.4 -22.4 Q -6.4 -19.0 -4.1 -16.8 Q -7.5 -12.0 0.0 -5.0 Z" fill="#a3d191" stroke-width="0.55"/>
+<line x1="0.0" y1="-5.0" x2="0.0" y2="-28.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -5.0 Q 9.3 -8.5 7.6 -13.9 Q 10.4 -15.0 8.7 -19.0 Q 13.0 -21.0 8.9 -29.4 Q 0.3 -25.6 2.3 -21.3 Q -1.5 -19.4 -0.1 -16.7 Q -4.8 -13.7 0.0 -5.0 Z" fill="#79ad61" stroke-width="0.55"/>
+<line x1="0.0" y1="-5.0" x2="7.6" y2="-25.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<path d="M 0.0 -5.0 Q 9.3 -4.1 9.2 -9.1 Q 12.1 -8.9 11.6 -12.9 Q 16.1 -12.7 14.7 -21.3 Q 6.0 -21.8 6.6 -17.4 Q 2.6 -17.4 3.1 -14.6 Q -1.9 -14.1 0.0 -5.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<line x1="0.0" y1="-5.0" x2="12.5" y2="-18.9" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
+<rect x="-10" y="0" width="20" height="8" rx="2" fill="#e0a3a8" stroke-width="0.7"/><rect x="-10" y="0" width="20" height="2.4" rx="1.4" fill="#e0a3a8" stroke="none" opacity="0.6"/>
+</g>
+<g transform="translate(620,216)"><rect x="0" y="0" width="32" height="62" rx="2" fill="#e8dcc8" stroke="#5c4a3a" stroke-width="1.1"/><g stroke="none"><rect x="3.0" y="9.9" width="3.0" height="12.1" rx="0.5" fill="#a9c9d6"/><rect x="6.8" y="5.5" width="3.5" height="16.5" rx="0.5" fill="#e8b4bd"/><rect x="11.1" y="9.5" width="3.5" height="12.5" rx="0.5" fill="#c3d69b"/><rect x="15.4" y="9.7" width="2.5" height="12.3" rx="0.5" fill="#e8c896"/><rect x="18.7" y="7.5" width="2.5" height="14.5" rx="0.5" fill="#c9b3d9"/><rect x="22.0" y="8.8" width="3.0" height="13.2" rx="0.5" fill="#9fc48a"/><rect x="25.8" y="5.9" width="3.5" height="16.1" rx="0.5" fill="#a9c9d6"/><rect x="3.0" y="29.2" width="3.5" height="12.8" rx="0.5" fill="#e8b4bd"/><rect x="7.3" y="29.2" width="2.5" height="12.8" rx="0.5" fill="#c3d69b"/><rect x="10.6" y="27.6" width="3.0" height="14.4" rx="0.5" fill="#e8c896"/><rect x="14.4" y="27.6" width="2.5" height="14.4" rx="0.5" fill="#c9b3d9"/><rect x="17.7" y="29.4" width="3.0" height="12.6" rx="0.5" fill="#9fc48a"/><rect x="21.5" y="29.5" width="3.5" height="12.5" rx="0.5" fill="#a9c9d6"/><rect x="25.8" y="25.3" width="2.5" height="16.7" rx="0.5" fill="#e8b4bd"/><rect x="3.0" y="48.2" width="2.5" height="13.8" rx="0.5" fill="#c3d69b"/><rect x="6.3" y="47.6" width="3.5" height="14.4" rx="0.5" fill="#e8c896"/><rect x="10.6" y="48.9" width="3.5" height="13.1" rx="0.5" fill="#c9b3d9"/><rect x="14.9" y="49.8" width="2.5" height="12.2" rx="0.5" fill="#9fc48a"/><rect x="18.2" y="47.4" width="2.5" height="14.6" rx="0.5" fill="#a9c9d6"/><rect x="21.5" y="48.7" width="3.0" height="13.3" rx="0.5" fill="#e8b4bd"/><rect x="25.3" y="48.0" width="3.0" height="14.0" rx="0.5" fill="#c3d69b"/></g><line x1="1.5" y1="22" x2="30.5" y2="22" stroke="#5c4a3a" stroke-width="0.8"/><line x1="1.5" y1="42" x2="30.5" y2="42" stroke="#5c4a3a" stroke-width="0.8"/><line x1="1.5" y1="62" x2="30.5" y2="62" stroke="#5c4a3a" stroke-width="0.8"/></g>
+
+<g transform="translate(330,268)"><rect x="0" y="0" width="32" height="62" rx="2" fill="#e8dcc8" stroke="#5c4a3a" stroke-width="1.1"/><g stroke="none"><rect x="3.0" y="6.7" width="2.5" height="15.3" rx="0.5" fill="#a9c9d6"/><rect x="6.3" y="7.4" width="3.0" height="14.6" rx="0.5" fill="#e8b4bd"/><rect x="10.1" y="9.5" width="3.5" height="12.5" rx="0.5" fill="#c3d69b"/><rect x="14.4" y="8.2" width="3.0" height="13.8" rx="0.5" fill="#e8c896"/><rect x="18.2" y="10.0" width="3.0" height="12.0" rx="0.5" fill="#c9b3d9"/><rect x="22.0" y="7.7" width="3.0" height="14.3" rx="0.5" fill="#9fc48a"/><rect x="25.8" y="6.0" width="3.0" height="16.0" rx="0.5" fill="#a9c9d6"/><rect x="3.0" y="26.0" width="3.5" height="16.0" rx="0.5" fill="#e8b4bd"/><rect x="7.3" y="26.0" width="3.5" height="16.0" rx="0.5" fill="#c3d69b"/><rect x="11.6" y="27.6" width="2.5" height="14.4" rx="0.5" fill="#e8c896"/><rect x="14.9" y="26.3" width="3.0" height="15.7" rx="0.5" fill="#c9b3d9"/><rect x="18.7" y="26.2" width="3.0" height="15.8" rx="0.5" fill="#9fc48a"/><rect x="22.5" y="25.1" width="3.5" height="16.9" rx="0.5" fill="#a9c9d6"/><rect x="26.8" y="28.8" width="2.5" height="13.2" rx="0.5" fill="#e8b4bd"/><rect x="3.0" y="45.6" width="3.0" height="16.4" rx="0.5" fill="#c3d69b"/><rect x="6.8" y="46.3" width="2.5" height="15.7" rx="0.5" fill="#e8c896"/><rect x="10.1" y="47.1" width="3.0" height="14.9" rx="0.5" fill="#c9b3d9"/><rect x="13.9" y="45.4" width="3.0" height="16.6" rx="0.5" fill="#9fc48a"/><rect x="17.7" y="49.5" width="3.0" height="12.5" rx="0.5" fill="#a9c9d6"/><rect x="21.5" y="45.6" width="2.5" height="16.4" rx="0.5" fill="#e8b4bd"/><rect x="24.8" y="45.0" width="2.5" height="17.0" rx="0.5" fill="#c3d69b"/></g><line x1="1.5" y1="22" x2="30.5" y2="22" stroke="#5c4a3a" stroke-width="0.8"/><line x1="1.5" y1="42" x2="30.5" y2="42" stroke="#5c4a3a" stroke-width="0.8"/><line x1="1.5" y1="62" x2="30.5" y2="62" stroke="#5c4a3a" stroke-width="0.8"/></g>
+
+<!-- 쓰레기통 (빈 공간 2곳) -->
+<g stroke-width="1">
+<path d="M432 590 l-2 20 h18 l-2 -20 z" fill="#d9c9b4"/>
+<line x1="434" y1="594" x2="433" y2="608" stroke="#b39b7d" stroke-width="0.6" opacity="0.6"/>
+<line x1="440" y1="594" x2="440" y2="608" stroke="#b39b7d" stroke-width="0.6" opacity="0.6"/>
+<line x1="446" y1="594" x2="447" y2="608" stroke="#b39b7d" stroke-width="0.6" opacity="0.6"/>
+<path d="M424.5 610 l31 0 l-2 3.5 l-27 0 z" fill="#b39b7d" stroke-width="0.6"/>
+<ellipse cx="440" cy="590" rx="9.5" ry="2.3" fill="#c2ab86" stroke-width="0.9"/>
+<path d="M434 588 q6 -2.6 12 0" fill="none" stroke="#5c4a3a" stroke-width="0.7" opacity="0.6"/>
+<path d="M436.5 586.5 q1.8 -2.6 4.3 -1 q1.6 1.6 -0.3 3.3 q-2.6 1.2 -4 -2.3 Z" fill="#fdfaf3" stroke-width="0.5" opacity="0.85"/>
+</g>
+<g stroke-width="1">
+<path d="M935 235 l-2 20 h18 l-2 -20 z" fill="#d9c9b4"/>
+<line x1="937" y1="239" x2="936" y2="253" stroke="#b39b7d" stroke-width="0.6" opacity="0.6"/>
+<line x1="943" y1="239" x2="943" y2="253" stroke="#b39b7d" stroke-width="0.6" opacity="0.6"/>
+<line x1="949" y1="239" x2="950" y2="253" stroke="#b39b7d" stroke-width="0.6" opacity="0.6"/>
+<path d="M927.5 255 l31 0 l-2 3.5 l-27 0 z" fill="#b39b7d" stroke-width="0.6"/>
+<ellipse cx="943" cy="235" rx="9.5" ry="2.3" fill="#c2ab86" stroke-width="0.9"/>
+<path d="M937 233 q6 -2.6 12 0" fill="none" stroke="#5c4a3a" stroke-width="0.7" opacity="0.6"/>
+<path d="M939.5 231.5 q1.8 -2.6 4.3 -1 q1.6 1.6 -0.3 3.3 q-2.6 1.2 -4 -2.3 Z" fill="#fdfaf3" stroke-width="0.5" opacity="0.85"/>
+</g>
+
+<g id="dustLayer"></g>
+<g id="charLayer"></g>
+<g id="deskLayer"></g>
+
+</g>
+
+<!-- ===== 팀 라벨 (경계선 위가 아닌, 각 영역 내부 좌상단으로 배치) ===== -->
+<g id="crispLabels" font-family="-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif" fill="#5c4a3a">
+<rect x="618" y="52" width="114" height="21" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
+<text id="label-lead" x="628" y="66" font-size="13" font-weight="700">디자인실장실</text>
+<rect x="45" y="182" width="104" height="21" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
+<text id="label-note" x="55" y="196" font-size="13" font-weight="700">노트 디자인팀</text>
+<rect x="45" y="510" width="94" height="21" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
+<text id="label-biz" x="55" y="524" font-size="13" font-weight="700">경영지원팀</text>
+<rect x="495" y="302" width="124" height="21" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
+<text id="label-sticker" x="505" y="316" font-size="13" font-weight="700">스티커 디자인팀</text>
+<rect x="125" y="645" width="64" height="19" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
+<text id="label-pr" x="135" y="657" font-size="13" font-weight="700">홍보팀</text>
+<text x="505" y="654" font-size="13" font-weight="700">회의실</text>
+<text id="label-break" x="715" y="658" font-size="13" font-weight="700">탕비실</text>
+</g>
+
+<rect id="windowNightOverlay" x="280" y="48" width="130" height="58" rx="3" fill="#1c1c2e" opacity="0" style="transition:opacity .6s ease; pointer-events:none;"/>
+<g id="windowWeather" fill="none" stroke="#5c4a3a" stroke-linecap="round">
+<g id="sunIcon" style="opacity:1; transition:opacity .5s ease;">
+<circle cx="345" cy="62" r="7" stroke-width="1"/>
+<line x1="345" y1="50" x2="345" y2="53" stroke-width="1"/>
+<line x1="345" y1="71" x2="345" y2="74" stroke-width="1"/>
+<line x1="333" y1="62" x2="336" y2="62" stroke-width="1"/>
+<line x1="354" y1="62" x2="357" y2="62" stroke-width="1"/>
+<line x1="337" y1="54" x2="339" y2="56" stroke-width="1"/>
+<line x1="351" y1="68" x2="353" y2="70" stroke-width="1"/>
+</g>
+<g id="windowRain" style="opacity:0; transition:opacity .5s ease;">
+<line x1="298" y1="54" x2="293" y2="72" stroke-width="1"/>
+<line x1="340" y1="52" x2="335" y2="70" stroke-width="1"/>
+<line x1="383" y1="56" x2="378" y2="74" stroke-width="1"/>
+</g>
+<g id="moonIcon" style="opacity:0; transition:opacity .5s ease;">
+<path d="M348 52 a9 9 0 1 0 0 18 a7 7 0 0 1 0 -18 z" stroke-width="1"/>
+</g>
+</g>
+<g id="floaters"></g>
+<g id="bubbleLayer"></g>
+</svg>
+</div>
+
+<div class="row between">
+  <div id="audioBar">
+    <button id="playBtn" aria-label="배경음 재생/일시정지" title="배경음 재생/일시정지">
+      <svg id="playIcon" width="12" height="12" viewBox="0 0 12 12"><polygon points="2,1 11,6 2,11" fill="#5c4a3a"/></svg>
+    </button>
+    <button id="muteBtn" aria-label="음소거" title="음소거">
+      <svg id="muteIcon" width="14" height="12" viewBox="0 0 14 12"><polygon points="1,4 4,4 7,1 7,11 4,8 1,8" fill="#5c4a3a"/><path d="M9 3 q3 3 0 6" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
+    </button>
+    <input type="range" id="volSlider" min="0" max="1" step="0.05" value="0.6" title="음량 조절">
+  </div>
+  <div style="display:flex; gap:8px;">
+    <button class="btn" id="meetingBtn">회의</button>
+    <button class="btn" id="breakBtn">탕비실</button>
+    <button class="btn" id="cleanBtn">청소</button>
+    <button class="btn" id="mailOpenBtn" aria-label="메일 보내기">
+      <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="11" rx="1.5" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M1 1 L8 7 L15 1" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
+      메일 보내기
+    </button>
+  </div>
+</div>
+
+<div class="row">
+  <div id="prodBarWrap">
+    <div id="prodBarTrack"><div id="prodBarFill"></div></div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="mailOverlay">
+  <div class="mail-window">
+    <div class="mail-head"><span>새 메일 작성</span><button id="mailCloseX">×</button></div>
+    <div class="mail-body">
+      <div class="mail-field"><label>받는사람</label><input type="text" id="mailTo" placeholder="(주)끄적끄적문구 디자인실장실" value="(주)끄적끄적문구 디자인실장실"></div>
+      <div class="mail-field"><label>보내는사람</label><input type="text" id="mailFrom" value="나"></div>
+      <div class="mail-field"><label>제목</label><input type="text" id="mailSubject" placeholder="제목 없음"></div>
+      <textarea id="mailBody" placeholder="내용을 입력하세요" maxlength="60"></textarea>
+      <div class="mail-error" id="mailError"></div>
+      <button class="btn mail-send" id="mailSendBtn">보내기</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="panel">
+  <div id="panelInner">
+    <h2>추진 사업 목록</h2>
+    <div class="projBtnRow">
+      <button class="btn" id="projAddBtn">추가</button>
+      <button class="btn" id="projSaveBtn">저장</button>
+      <button class="btn" id="projSelectBtn">선택</button>
+      <button class="btn" id="projDeleteBtn">삭제</button>
+    </div>
+    <div id="projForm">
+      <input type="text" id="projName" placeholder="사업명">
+      <input type="text" id="projPeriod" placeholder="사업 기간 (예: 2026.09 ~ 2026.12)">
+      <textarea id="projContent" placeholder="주요 내용"></textarea>
+      <input type="text" id="projBudget" placeholder="예산 (예: 5,000,000원)">
+      <input type="number" id="projDuration" placeholder="완료까지 걸리는 시간 (분)" min="1">
+    </div>
+    <table id="projTable">
+      <thead><tr><th></th><th>사업명</th><th>기간</th><th>예산</th><th>남은시간</th><th>상태</th></tr></thead>
+      <tbody id="projTableBody"></tbody>
+    </table>
+    <div id="projEmptyMsg" class="projEmpty" style="display:none;">등록된 사업이 없어요. '추가'를 눌러 시작해보세요.</div>
+    <button class="btn" id="panelCloseBtn" style="margin-top:10px;">닫기</button>
+  </div>
+</div>
+
+<div id="settingsHub">
+  <div id="settingsHubInner">
+    <h2>설정</h2>
+    <div class="hubRow">
+      <button class="btn" id="hubCreditsBtn">제작자 소개</button>
+      <button class="btn" id="hubRenameBtn">이름 변경</button>
+    </div>
+    <div class="hubRow" style="margin-top:8px;">
+      <button class="btn" id="hubReportBtn">주간 리포트</button>
+    </div>
+  </div>
+</div>
+
+<div id="creditsPanel">
+  <div id="creditsInner">
+    <h2>제작자 소개</h2>
+    <p>© 2026 우리의 사무실. All rights reserved.</p>
+    <p>Made by Han JH</p>
+    <button class="btn" id="creditsCloseBtn" style="margin-top:12px;">닫기</button>
+  </div>
+</div>
+
+<div id="reportPanel">
+  <div id="reportInner">
+    <h2>주간 리포트</h2>
+    <p style="font-size:12px; color:#8a8a86; margin:0 0 10px;">최근 7일간의 기록이에요</p>
+    <table id="reportTable">
+      <thead><tr><th>날짜</th><th>주문량</th><th>완료 사업</th></tr></thead>
+      <tbody id="reportTableBody"></tbody>
+    </table>
+    <div id="reportTotals" style="margin-top:10px; font-size:12.5px; color:#5c4a3a;"></div>
+    <button class="btn" id="reportCloseBtn" style="margin-top:14px;">닫기</button>
+  </div>
+</div>
+
+<div id="profilePanel">
+  <div id="profileInner">
+    <h2 id="profileName">-</h2>
+    <p id="profileRole" style="color:#8a8a86; font-size:12px; margin:0 0 10px;">-</p>
+    <p id="profileBio" style="color:#5c4a3a; font-size:12.5px; line-height:1.5; margin:0 0 12px; padding:8px 10px; background:#f7f2e4; border-radius:6px;">-</p>
+    <div class="setRow"><label>대화한 횟수</label><span id="profileTalks">0</span></div>
+    <div class="setRow"><label>야근한 횟수</label><span id="profileOvertime">0</span></div>
+    <div id="profileLeaveNote" class="helpNote" style="display:none;">오늘은 연차예요 🌴</div>
+    <button class="btn" id="profileCloseBtn" style="margin-top:12px;">닫기</button>
+  </div>
+</div>
+
+<div id="helpPanel">
+  <div id="helpInner">
+    <h2>이용 가이드</h2>
+
+    <h3>1. &lt;우리의 사무실&gt;은 어떤 게임인가요?</h3>
+    <p>작은 캐릭터들이 열심히 근무하는 사무실 운영 게임, &lt;우리의 사무실&gt;은 화면을 켜두고 회사를 운영하는 기분을 느낄 수 있는 게임이자 사용자가 목표한 일을 체크해주는 타이머 기능을 갖춘 게임입니다.</p>
+    <p>사무실의 시각은 현재 시각과 연동되어 있으며, 9시 출근, 12시 점심… 일반 직장인들의 일상과 비슷한 하루로 흘러갑니다. 단지 지켜보는 것 뿐 아니라 캐릭터들과 소통할 수 있는 기능도 함께 있으니 재미있게 즐겨보세요.</p>
+
+    <h3>2. 시간과 연동된다면 어떤 기능들이 있나요?</h3>
+    <p>시간에 따른 기능들입니다.</p>
+    <table>
+      <tr><th>시각</th><th>내용</th></tr>
+      <tr><td>08:30~09:00</td><td>직원 출근 (한 명씩 랜덤한 시간에 출근)</td></tr>
+      <tr><td>12:00</td><td>실장이 "점심시간입니다."라고 말하고 전 직원이 줄지어 퇴장</td></tr>
+      <tr><td>13:00</td><td>직원들이 순서대로 복귀하며, 가장 먼저 들어온 직원이 "배부르다."고 말함</td></tr>
+      <tr><td>18:00</td><td>모두 퇴근</td></tr>
+    </table>
+    <p>언제 접속해도 그 시각에 맞는 출퇴근 상태로 시작하며, 근무 중 직원들은 랜덤으로 작동되는 혼잣말을 합니다. 창밖 날씨는 대체적으로 화창한데 가끔 비가 옵니다. 저녁(야근모드)부터 창밖만 어두워집니다.</p>
+
+    <h3>3. 어떤 회사이며, 직원 구성은 어떻게 되어있나요?</h3>
+    <p>기본 설정되어 있는 회사는 '(주)끄적끄적문구'이며 총 15명이 근무하는 회사입니다.</p>
+    <table>
+      <tr><th>부서</th><th>인원</th><th>구성</th></tr>
+      <tr><td>실장실</td><td>1명</td><td>실장 (검은 안경 착용)</td></tr>
+      <tr><td>경영지원팀</td><td>3명</td><td>팀장·인사담당자·회계담당자</td></tr>
+      <tr><td>노트 디자인팀</td><td>4명</td><td>팀장·디자이너·기획담당·인턴</td></tr>
+      <tr><td>스티커 디자인팀</td><td>4명</td><td>팀장·디자이너·기획담당·인턴</td></tr>
+      <tr><td>홍보팀</td><td>3명</td><td>팀장·디자이너·기획담당</td></tr>
+    </table>
+
+    <h3>4. 재미있는 기능은 어떤 것이 있나요?</h3>
+    <p>7개 버튼을 이용하며 사무실의 운영자가 될 수 있어요.</p>
+    <table>
+      <tr><th>버튼</th><th>내용</th></tr>
+      <tr><td>설정</td><td>제작자 소개, 이름 변경 (회사명, 직원 이름 변경 가능)</td></tr>
+      <tr><td>주요 프로젝트</td><td>사업 등록·관리 (5번 설명 참고)</td></tr>
+      <tr><td>야근모드</td><td>전원 퇴근 후 랜덤 2~4명만 남아 야근 시작</td></tr>
+      <tr><td>말풍선 띄우기</td><td><code>/직원이름(또는 직책) 문장</code> 입력 시 해당 캐릭터 말풍선 작동 (예: <code>/이노트 배고파</code>)</td></tr>
+      <tr><td>회의</td><td>랜덤 6명, 10초간 회의실행, 회의 끝날 때까지 비활성</td></tr>
+      <tr><td>탕비실</td><td>회의 중이 아닌 직원 중 랜덤 2명이 잡담</td></tr>
+      <tr><td>메일 보내기</td><td>직원 중 한 명이 메일 내용의 최대 20자를 말풍선에 띄움</td></tr>
+    </table>
+
+    <h3>5. 주요 프로젝트(타이머)는 어떤 기능인가요?</h3>
+    <p>직원들이 함께 이루고 싶은 주요 프로젝트를 설정할 수 있으며, 사용자가 입력한 내용에 대한 타이머로 활용할 수 있어요.</p>
+    <p><code>추가</code> → 사업명·기간·내용·예산 + 완료까지 걸리는 시간(분) 입력 → <code>저장</code> (최대 10개)</p>
+    <p>사업마다 각자 설정한 시간이 지나면 자동 완료돼요. 그리고 그 순간 전 직원이 "프로젝트 완료!"를 외칩니다. 실제 시각 기준 저장이라 새로고침해도 카운트는 유지됩니다.</p>
+
+    <h3>6. 실장님의 한마디</h3>
+    <p>화면을 켜둔 채 15분째가 되면, 실장이 노란 말풍선으로 "지켜보고 있는 눈이 느껴져.."라고 가끔 혼잣말을 합니다. 바로 사용자를 인식하고 있는 모습이예요.</p>
+
+    <button class="btn" id="helpCloseBtn" style="margin-top:14px;">닫기</button>
+  </div>
+</div>
+
+<div id="settingsPanel">
+  <div id="settingsInner">
+    <h2>이름 변경</h2>
+    <div class="setRow"><label>회사 이름</label><input type="text" id="setCompany"></div>
+    <h3>팀 이름</h3>
+    <div class="setRow"><label>디자인실장실</label><input type="text" id="setTeam-lead"></div>
+    <div class="setRow"><label>경영지원팀</label><input type="text" id="setTeam-biz"></div>
+    <div class="setRow"><label>노트디자인팀</label><input type="text" id="setTeam-note"></div>
+    <div class="setRow"><label>스티커디자인팀</label><input type="text" id="setTeam-sticker"></div>
+    <div class="setRow"><label>홍보팀</label><input type="text" id="setTeam-pr"></div>
+    <h3>직원 이름</h3>
+    <div id="setStaffList"></div>
+    <div class="settingsActions">
+      <button class="btn" id="settingsSaveBtn">저장</button>
+      <button class="btn" id="settingsCloseBtn">닫기</button>
+    </div>
+    <div class="settingsActions">
+      <button class="btn" id="settingsExportBtn">내보내기</button>
+      <button class="btn" id="settingsImportBtn">불러오기</button>
+      <input type="file" id="settingsImportFile" accept="application/json" style="display:none;">
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ===== 기본 설정값 (설정창에서 편집 가능, localStorage에 저장 시도) =====
+  var defaultSettings = {
+    company: '(주)끄적끄적문구',
+    teams: { lead:'디자인실장실', biz:'경영지원팀', note:'노트 디자인팀', sticker:'스티커 디자인팀', pr:'홍보팀' },
+    names: {
+      kobujang:'최실장',
+      nabujang:'나팀장', choiinsa:'최인사', parkhoegye:'박회계',
+      kimnote:'김팀장', leenote:'이노트', jungnote:'정노트', hannote:'전노트',
+      jungsti:'정팀장', hansti:'손스티', yoosti:'유스티', chosti:'조스티',
+      yoohongbo:'유홍보', seohongbo:'서홍보', minhongbo:'민홍보'
+    }
+  };
+  var settings = JSON.parse(JSON.stringify(defaultSettings));
+  try{
+    var saved = localStorage.getItem('ggj_office_settings_v2');
+    if(saved){
+      var parsed = JSON.parse(saved);
+      if(parsed.company) settings.company = parsed.company;
+      if(parsed.teams) Object.assign(settings.teams, parsed.teams);
+      if(parsed.names) Object.assign(settings.names, parsed.names);
+    }
+  }catch(e){ /* localStorage 사용 불가 시 기본값으로 진행 */ }
+
+  // 예전 이름("코부장")이 저장되어 있던 경우 자동으로 최신 기본 이름으로 보정
+  if(settings.names.kobujang === '코부장'){
+    settings.names.kobujang = '최실장';
+    try{ localStorage.setItem('ggj_office_settings_v2', JSON.stringify(settings)); }catch(e){}
+  }
+
+  // ===== 직원 명단: id / 역할 / 소속팀키 / 책상좌표 / 생김새 =====
+  var staff = [
+    { id:'kobujang',  role:'디자인실장',   teamKey:'lead',    x:770, y:105, kind:'fox', palKey:'fox', shirt:'#e0a98f', acc:['glasses'] },
+
+    { id:'nabujang',   role:'팀장',        teamKey:'biz',     x:180, y:565, kind:'bear', palKey:'bear', shirt:'#cfe3e6', acc:['watch'], pattern:'dots' },
+    { id:'choiinsa',   role:'인사담당자',   teamKey:'biz',     x:280, y:565, kind:'cat', palKey:'cat', shirt:'#f7dfe3', acc:['earring'], pattern:'stripes' },
+    { id:'parkhoegye', role:'회계담당자',   teamKey:'biz',     x:380, y:565, kind:'rabbit', palKey:'rabbit', shirt:'#e7ecd0', acc:['necklace'], pattern:'check' },
+
+    { id:'kimnote', role:'팀장',      teamKey:'note', x:113, y:280, kind:'dog', palKey:'dog', shirt:'#fdeccb', acc:[], pattern:'triangle' },
+    { id:'leenote', role:'디자이너',   teamKey:'note', x:273, y:280, kind:'tiger', palKey:'tiger', shirt:'#e3d9ec', acc:['watch'], pattern:'dots' },
+    { id:'jungnote',role:'기획담당',   teamKey:'note', x:113, y:400, kind:'giraffe', palKey:'giraffe', shirt:'#f6d8c2', acc:[], pattern:'stripes' },
+    { id:'hannote', role:'인턴',      teamKey:'note', x:273, y:400, kind:'raccoon', palKey:'raccoon', shirt:'#d8ece0', acc:[], pattern:'check' },
+
+    { id:'jungsti', role:'팀장',      teamKey:'sticker', x:563, y:400, kind:'monkey', palKey:'monkey', shirt:'#a8c4d4', acc:['necklace'] },
+    { id:'hansti',  role:'디자이너',   teamKey:'sticker', x:723, y:400, kind:'horse', palKey:'horse', shirt:'#f7dfe3', acc:[], pattern:'triangle' },
+    { id:'yoosti',  role:'기획담당',   teamKey:'sticker', x:563, y:500, kind:'cow', palKey:'cow', shirt:'#e7ecd0', acc:['earring'], pattern:'dots' },
+    { id:'chosti',  role:'인턴',      teamKey:'sticker', x:723, y:500, kind:'frog', palKey:'frog', shirt:'#e3d9ec', acc:[], pattern:'stripes' },
+
+    { id:'yoohongbo', role:'팀장',    teamKey:'pr', x:180, y:715, kind:'hedgehog', palKey:'hedgehog', shirt:'#f6d8c2', acc:['watch'], pattern:'check' },
+    { id:'seohongbo', role:'디자이너', teamKey:'pr', x:280, y:715, kind:'fox', palKey:'fox2', shirt:'#cfe3e6', acc:['earring'], pattern:'triangle' },
+    { id:'minhongbo', role:'기획담당', teamKey:'pr', x:380, y:715, kind:'bear', palKey:'bear2', shirt:'#fdeccb', acc:[], pattern:'dots' }
+  ];
+  staff.forEach(function(s){ s.name = settings.names[s.id] || s.id; });
+
+  var ENTRANCE = { x:78, y:690 };
+
+  var deskLayer = document.getElementById('deskLayer');
+  var charLayer = document.getElementById('charLayer');
+  var bubbleLayer = document.getElementById('bubbleLayer');
+  var dustLayer = document.getElementById('dustLayer');
+  var metSet = {}; // 주간보고에서 이름 공개된 적 있는 직원
+
+  // ---- 책상+모니터+키보드+명패 (항상 표시되는 가구, 캐릭터와 톤을 맞춰 각진 블록형으로) ----
+  var DESK_DECOR_COLORS = ['#e8935a','#8fbf6f','#7fa8c9','#d88fb0','#e3b23c'];
+  function deskDecorMarkup(s){
+    var idx = seedHash(s.id+'-decoritem') % 4;
+    var col = DESK_DECOR_COLORS[seedHash(s.id+'-decorcol') % DESK_DECOR_COLORS.length];
+    var svg = '<g stroke="#5c4a3a" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round">';
+    if(idx === 0){
+      // 머그컵
+      svg += '<rect x="-21" y="20" width="6" height="7" rx="1" fill="'+col+'"/>' +
+             '<path d="M -15 21.5 q 3 0 3 2.2 q 0 2.2 -3 2.2" fill="none"/>';
+    } else if(idx === 1){
+      // 연필꽂이
+      svg += '<rect x="-21" y="16" width="6" height="11" rx="0.6" fill="#c9a876"/>' +
+             '<line x1="-19.5" y1="16" x2="-18.5" y2="10" stroke="'+col+'" stroke-width="1.1"/>' +
+             '<line x1="-18" y1="16" x2="-16.6" y2="9.5" stroke="#7fa8c9" stroke-width="1.1"/>' +
+             '<line x1="-16.5" y1="16" x2="-15.5" y2="10.5" stroke="#e3b23c" stroke-width="1.1"/>';
+    } else if(idx === 2){
+      // 메모지 스택
+      svg += '<rect x="-21.5" y="22.5" width="7" height="5" rx="0.4" fill="#fdeccb"/>' +
+             '<rect x="-21" y="21" width="7" height="5" rx="0.4" fill="#f0aec4"/>' +
+             '<rect x="-20.5" y="19.5" width="7" height="5" rx="0.4" fill="'+col+'"/>';
+    } else {
+      // 미니 화분
+      svg += '<rect x="-21" y="21" width="6" height="6" rx="0.8" fill="#c9a876"/>' +
+             '<path d="M -18 21 C -19.5 17 -20.5 15 -19 12" fill="none" stroke="#8fbf6f" stroke-width="1.2"/>' +
+             '<path d="M -18 21 C -17 16.5 -16 15 -17 11.5" fill="none" stroke="#6fa055" stroke-width="1.2"/>';
+    }
+    svg += '</g>';
+    return svg;
+  }
+  function deskGroup(s){
+    var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('transform','translate('+s.x+','+s.y+')');
+    g.innerHTML =
+      // 책상 상판 (미세 음영)
+      '<g stroke="#5c4a3a" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="-23" y="2" width="46" height="26" rx="1.4" fill="#fffdf8"/>' +
+        '<rect x="-23" y="2" width="46" height="4" rx="1.4" fill="#f2ead9" stroke="none"/>' +
+      '</g>' +
+      // 모니터 뒷모습: 캐릭터가 화면을 보고 사용자는 뒤판을 봄
+      '<g stroke="#5c4a3a" stroke-width="0.85" stroke-linecap="round" stroke-linejoin="round">' +
+        '<rect x="-13" y="-9" width="26" height="14" rx="1.4" fill="#c9c4b8"/>' +
+        '<rect x="-9" y="-6" width="4" height="9" rx="1" fill="#b3ada0" stroke="none"/>' +
+        '<rect x="-2" y="-6" width="4" height="9" rx="1" fill="#b3ada0" stroke="none"/>' +
+        '<rect x="5" y="-6" width="4" height="9" rx="1" fill="#b3ada0" stroke="none"/>' +
+        '<circle cx="9.5" cy="-5.5" r="0.9" fill="#8a8578" stroke="none"/>' +
+        '<rect x="-1.6" y="5" width="3.2" height="4" fill="#a39d8f"/>' +
+        '<rect x="-6" y="9" width="12" height="2.2" rx="1" fill="#a39d8f"/>' +
+      '</g>' +
+      // 키보드 + 마우스: 모니터 바로 앞(캐릭터 쪽)에 배치
+      '<g stroke="#5c4a3a" stroke-width="0.6" stroke-linejoin="round">' +
+        '<rect x="-11" y="12" width="20" height="6" rx="1" fill="#fffdf8"/>' +
+        '<line x1="-9" y1="14" x2="7" y2="14" stroke-width="0.35" opacity="0.5"/>' +
+        '<line x1="-9" y1="16" x2="7" y2="16" stroke-width="0.35" opacity="0.5"/>' +
+        '<rect x="11" y="13" width="5" height="7.5" rx="2.2" fill="#fffdf8"/>' +
+      '</g>' +
+      // 책상 앞쪽 여백에 랜덤 소품 (컵/연필꽂이/메모지/화분 중 1개, 직원마다 고정 랜덤)
+      deskDecorMarkup(s) +
+      '<g style="cursor:pointer;pointer-events:all;" data-plate-for="'+s.id+'">' +
+        '<rect x="-20" y="30" width="40" height="13" rx="0" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.8" shape-rendering="crispEdges"/>' +
+        '<text id="plate-'+s.id+'" x="0" y="39.5" font-size="6.8" text-anchor="middle" fill="#5c4a3a" font-weight="400" stroke="none">'+s.name+'</text>' +
+      '</g>';
+    deskLayer.appendChild(g);
+  }
+  staff.forEach(deskGroup);
+  deskLayer.addEventListener('click', function(e){
+    var target = e.target.closest ? e.target.closest('[data-plate-for]') : null;
+    if(target) openProfile(target.getAttribute('data-plate-for'));
+  });
+
+  // ---- 캐릭터: 도형을 픽셀 격자에 래스터화해서 진짜 도트아트처럼 렌더링 ----
+  // (두꺼운 외곽선 + 2톤 명암 + 둥근 각짐 실루엣 - 단순한 도형 몇 개로 안전하게 구성)
+  var OUTLINE_COLOR = '#4a3527';
+  var OUTLINE_W = 1.8;
+
+  var DARK = '#3a2a1f';
+  var LEG_COLOR = '#8a6a4f';
+  var BLUSH = '#f4a99a';
+
+  var kindPalette = {
+    fox:     { base:'#eda05e', light:'#f6c48c' },
+    fox2:    { base:'#e8935a', light:'#f2b57e' },
+    cat:     { base:'#b9b2a6', light:'#d9d3c7' },
+    bear:    { base:'#b8875f', light:'#d8b48d' },
+    bear2:   { base:'#9c6b46', light:'#c69268' },
+    rabbit:  { base:'#f0aec4', light:'#f9d3e0' },
+    dog:     { base:'#dcb679', light:'#ecd3a2' },
+    tiger:   { base:'#f0973f', light:'#ffcf8a' },
+    monkey:  { base:'#a9765a', light:'#e0bd9c' },
+    horse:   { base:'#8b5e3c', light:'#c69a72' },
+    cow:     { base:'#f7f3ea', light:'#3a2a1f' },
+    giraffe: { base:'#e7c26a', light:'#c8894b' },
+    raccoon: { base:'#9a978d', light:'#c9c6bc' },
+    hedgehog:{ base:'#a9825f', light:'#e0c8a8' },
+    frog:    { base:'#8fbf6f', light:'#c9e6b0' }
+  };
+
+  function earsMarkup(kind, pal){
+    switch(kind){
+      case 'fox': case 'fox2':
+        return '<path d="M -14 -34 C -15 -40 -13 -47 -8 -49 C -6 -49.7 -4.5 -48 -5 -46 C -6 -42 -7 -37 -9 -33 C -10.5 -30.5 -13 -31.5 -14 -34 Z" fill="'+pal.base+'"/>' +
+               '<path d="M 14 -34 C 15 -40 13 -47 8 -49 C 6 -49.7 4.5 -48 5 -46 C 6 -42 7 -37 9 -33 C 10.5 -30.5 13 -31.5 14 -34 Z" fill="'+pal.base+'"/>' +
+               '<path d="M -11.5 -34.5 C -12 -38.5 -10.8 -43 -7.8 -44.5 C -8.2 -41 -9 -37 -10.3 -33.5 Z" fill="'+pal.light+'"/>' +
+               '<path d="M 11.5 -34.5 C 12 -38.5 10.8 -43 7.8 -44.5 C 8.2 -41 9 -37 10.3 -33.5 Z" fill="'+pal.light+'"/>';
+      case 'cat':
+        return '<path d="M -12.5 -35 C -13 -39 -11.5 -43.5 -8 -44.8 C -6 -45.4 -4.8 -43.8 -5.3 -42 C -6 -39 -7 -35.5 -8.8 -32.8 C -10 -31 -12 -32.5 -12.5 -35 Z" fill="'+pal.base+'"/>' +
+               '<path d="M 12.5 -35 C 13 -39 11.5 -43.5 8 -44.8 C 6 -45.4 4.8 -43.8 5.3 -42 C 6 -39 7 -35.5 8.8 -32.8 C 10 -31 12 -32.5 12.5 -35 Z" fill="'+pal.base+'"/>' +
+               '<path d="M -10.3 -35.3 C -10.5 -38 -9.6 -41 -7.6 -42 C -7.9 -39.3 -8.5 -36.5 -9.5 -34 Z" fill="'+pal.light+'"/>' +
+               '<path d="M 10.3 -35.3 C 10.5 -38 9.6 -41 7.6 -42 C 7.9 -39.3 8.5 -36.5 9.5 -34 Z" fill="'+pal.light+'"/>';
+      case 'bear': case 'bear2':
+        return '<circle cx="-9.5" cy="-40" r="5.2" fill="'+pal.base+'"/><circle cx="9.5" cy="-40" r="5.2" fill="'+pal.base+'"/>' +
+               '<circle cx="-9.5" cy="-40" r="2.6" fill="'+pal.light+'"/><circle cx="9.5" cy="-40" r="2.6" fill="'+pal.light+'"/>';
+      case 'rabbit':
+        return '<ellipse cx="-6.5" cy="-48" rx="3" ry="11" fill="'+pal.base+'"/><ellipse cx="6.5" cy="-48" rx="3" ry="11" fill="'+pal.base+'"/>' +
+               '<ellipse cx="-6.5" cy="-47" rx="1.4" ry="8" fill="'+pal.light+'"/><ellipse cx="6.5" cy="-47" rx="1.4" ry="8" fill="'+pal.light+'"/>';
+      case 'dog':
+        return '<ellipse cx="-13" cy="-25" rx="3.8" ry="7.8" fill="'+pal.base+'"/><ellipse cx="13" cy="-25" rx="3.8" ry="7.8" fill="'+pal.base+'"/>';
+      case 'tiger':
+        return earsMarkup('cat', pal) +
+               '<path d="M -12 -34 C -11.5 -37 -10.5 -40 -9 -42.5 L -8 -41 C -9 -38.5 -10 -36 -10.8 -33.5 Z" fill="'+DARK+'"/>' +
+               '<path d="M 12 -34 C 11.5 -37 10.5 -40 9 -42.5 L 8 -41 C 9 -38.5 10 -36 10.8 -33.5 Z" fill="'+DARK+'"/>' +
+               '<path d="M -3 -41.5 C -3.3 -40 -3 -38.5 -2.6 -37.2" fill="none" stroke="'+DARK+'" stroke-width="0.8"/>' +
+               '<path d="M 3 -41.5 C 3.3 -40 3 -38.5 2.6 -37.2" fill="none" stroke="'+DARK+'" stroke-width="0.8"/>';
+      case 'monkey':
+        return '<circle cx="-11" cy="-31" r="4.6" fill="'+pal.base+'"/><circle cx="11" cy="-31" r="4.6" fill="'+pal.base+'"/>' +
+               '<circle cx="-11" cy="-31" r="2.6" fill="'+pal.light+'"/><circle cx="11" cy="-31" r="2.6" fill="'+pal.light+'"/>';
+      case 'horse':
+        return '<path d="M -9 -36 C -10 -42 -8.5 -49 -5 -51 C -3.5 -51.8 -2.3 -50 -2.8 -48 C -3.8 -44 -4.5 -39 -5.5 -35 C -6.5 -32.5 -8.3 -33.5 -9 -36 Z" fill="'+pal.base+'"/>' +
+               '<path d="M 9 -36 C 10 -42 8.5 -49 5 -51 C 3.5 -51.8 2.3 -50 2.8 -48 C 3.8 -44 4.5 -39 5.5 -35 C 6.5 -32.5 8.3 -33.5 9 -36 Z" fill="'+pal.base+'"/>' +
+               '<path d="M -1 -43 C -0.5 -45.5 0.5 -45.5 1 -43 C 0.6 -41 -0.6 -41 -1 -43 Z" fill="'+pal.base+'"/>';
+      case 'cow':
+        return '<ellipse cx="-13" cy="-32" rx="4.2" ry="3.2" fill="'+pal.light+'"/><ellipse cx="13" cy="-32" rx="4.2" ry="3.2" fill="'+pal.light+'"/>' +
+               '<path d="M -6 -41 C -6.5 -44.5 -5.5 -47 -4 -48 C -4.3 -45.5 -4.5 -43 -4.5 -40.5 Z" fill="'+pal.light+'" stroke="'+pal.base+'" stroke-width="0.6"/>' +
+               '<path d="M 6 -41 C 6.5 -44.5 5.5 -47 4 -48 C 4.3 -45.5 4.5 -43 4.5 -40.5 Z" fill="'+pal.light+'" stroke="'+pal.base+'" stroke-width="0.6"/>' +
+               '<ellipse cx="-5" cy="-28" rx="2.6" ry="2.2" fill="'+pal.base+'" opacity="0.55"/>' +
+               '<ellipse cx="6" cy="-34" rx="2" ry="1.7" fill="'+pal.base+'" opacity="0.55"/>';
+      case 'giraffe':
+        return '<ellipse cx="-11" cy="-33" rx="3.4" ry="2.6" fill="'+pal.light+'"/><ellipse cx="11" cy="-33" rx="3.4" ry="2.6" fill="'+pal.light+'"/>' +
+               '<path d="M -4 -42 C -4.3 -46 -4.3 -49.5 -4 -51.5 C -3 -51.7 -2.6 -51.7 -2 -51.5 C -2.2 -49.2 -2.4 -46 -2.6 -42.5 Z" fill="'+pal.base+'"/>' +
+               '<path d="M 4 -42 C 4.3 -46 4.3 -49.5 4 -51.5 C 3 -51.7 2.6 -51.7 2 -51.5 C 2.2 -49.2 2.4 -46 2.6 -42.5 Z" fill="'+pal.base+'"/>' +
+               '<circle cx="-3" cy="-51.6" r="1.5" fill="'+pal.light+'"/><circle cx="3" cy="-51.6" r="1.5" fill="'+pal.light+'"/>' +
+               '<ellipse cx="-6" cy="-27" rx="2.2" ry="1.8" fill="'+pal.base+'" opacity="0.5"/>' +
+               '<ellipse cx="5" cy="-33" rx="1.8" ry="1.5" fill="'+pal.base+'" opacity="0.5"/>';
+      case 'raccoon':
+        return '<circle cx="-10" cy="-40" r="4.6" fill="'+pal.base+'"/><circle cx="10" cy="-40" r="4.6" fill="'+pal.base+'"/>' +
+               '<circle cx="-10" cy="-40" r="2.4" fill="'+DARK+'"/><circle cx="10" cy="-40" r="2.4" fill="'+DARK+'"/>' +
+               '<path d="M -9.5 -32.5 C -6.5 -34.5 -1.5 -34.5 -0.5 -31.5 C -3.5 -33 -7 -32.8 -9.5 -30.8 Z" fill="'+DARK+'" opacity="0.75"/>' +
+               '<path d="M 9.5 -32.5 C 6.5 -34.5 1.5 -34.5 0.5 -31.5 C 3.5 -33 7 -32.8 9.5 -30.8 Z" fill="'+DARK+'" opacity="0.75"/>';
+      case 'hedgehog': {
+        var s='', spikes=[-8,-4,0,4,8];
+        spikes.forEach(function(x,i){
+          var h = i%2===0 ? 9 : 12;
+          s += '<path d="M '+(x-3)+' -40 L '+x+' '+(-40-h)+' L '+(x+3)+' -40 Z" fill="'+pal.base+'"/>';
+        });
+        return s + '<circle cx="-9.5" cy="-33" r="2.6" fill="'+pal.light+'"/><circle cx="9.5" cy="-33" r="2.6" fill="'+pal.light+'"/>';
+      }
+      case 'frog': return '';
+      default: return '';
+    }
+  }
+
+  function accessoryMarkup(acc){
+    if(acc==='glasses'){
+      return '<g fill="none" stroke="#1e1e1e" stroke-width="1.1">' +
+        '<rect x="-6.8" y="-32.3" width="5.2" height="4.8" rx="1.4"/>' +
+        '<rect x="1.6" y="-32.3" width="5.2" height="4.8" rx="1.4"/>' +
+        '<line x1="-1.6" y1="-30" x2="1.6" y2="-30"/>' +
+        '<line x1="-8.6" y1="-30.3" x2="-6.8" y2="-30.6"/>' +
+        '<line x1="6.8" y1="-30.6" x2="8.6" y2="-30.3"/>' +
+      '</g>';
+    }
+    if(acc==='earring'){
+      return '<circle cx="-11.5" cy="-27" r="1" fill="#e0b84a"/><circle cx="11.5" cy="-27" r="1" fill="#e0b84a"/>';
+    }
+    if(acc==='necklace'){
+      return '<path d="M -6 -18.5 Q 0 -14.5 6 -18.5" fill="none" stroke="#e0b84a" stroke-width="1"/><circle cx="0" cy="-14.3" r="1.3" fill="#e0b84a"/>';
+    }
+    if(acc==='watch'){
+      return '<rect x="9.3" y="-8.5" width="4.6" height="3" rx="1" fill="#7a7a7a"/><rect x="10.6" y="-9.3" width="2" height="4.6" rx="0.8" fill="#5c4a3a"/>';
+    }
+    return '';
+  }
+
+  function shadeColor(hex, amt){
+    var num = parseInt(hex.slice(1), 16);
+    var r = Math.min(255, Math.max(0, (num >> 16) + amt));
+    var g = Math.min(255, Math.max(0, ((num >> 8) & 0xff) + amt));
+    var b = Math.min(255, Math.max(0, (num & 0xff) + amt));
+    return '#' + (0x1000000 + r*0x10000 + g*0x100 + b).toString(16).slice(1);
+  }
+  function shirtPatternDefs(uid, base, pattern){
+    var accent = shadeColor(base, -38);
+    var pid = 'pat-' + uid;
+    var body = '';
+    if(pattern === 'dots'){
+      body = '<rect width="6" height="6" fill="'+base+'"/><circle cx="1.6" cy="1.6" r="1.05" fill="'+accent+'"/><circle cx="4.6" cy="4.6" r="1.05" fill="'+accent+'"/>';
+    } else if(pattern === 'stripes'){
+      body = '<rect width="6" height="6" fill="'+base+'"/><rect x="0" y="0" width="2.6" height="6" fill="'+accent+'"/>';
+    } else if(pattern === 'check'){
+      body = '<rect width="6" height="6" fill="'+base+'"/><rect x="0" y="0" width="3" height="3" fill="'+accent+'"/><rect x="3" y="3" width="3" height="3" fill="'+accent+'"/>';
+    } else if(pattern === 'triangle'){
+      body = '<rect width="6" height="6" fill="'+base+'"/><polygon points="1.5,0.8 3.6,4.6 -0.6,4.6" fill="'+accent+'"/>';
+    } else {
+      return null;
+    }
+    var transform = (pattern==='stripes') ? ' patternTransform="rotate(24)"' : (pattern==='triangle' ? ' patternTransform="rotate(-6)"' : '');
+    return '<defs><pattern id="'+pid+'" width="6" height="6" patternUnits="userSpaceOnUse"'+transform+'>'+body+'</pattern></defs>';
+  }
+  function buildPixelChar(kind, uid, s){
+    var palKey = (s && s.palKey) || kind;
+    var pal = kindPalette[palKey] || kindPalette.cat;
+    var shirt = (s && s.shirt) || '#faf6ec';
+    var acc = (s && s.acc) || [];
+    var patternDefs = (s && s.pattern) ? shirtPatternDefs(uid, shirt, s.pattern) : null;
+    var shirtFill = patternDefs ? 'url(#pat-'+uid+')' : shirt;
+
+    var svg = '<g stroke="none">';
+    if(patternDefs) svg += patternDefs;
+
+    // 다리
+    svg += '<ellipse cx="-4.5" cy="6.5" rx="3.2" ry="3.6" fill="'+LEG_COLOR+'"/><ellipse cx="4.5" cy="6.5" rx="3.2" ry="3.6" fill="'+LEG_COLOR+'"/>';
+
+    // 귀 (머리보다 먼저 그려서 자연스럽게 겹침)
+    svg += earsMarkup(kind, pal);
+
+    // 팔
+    svg += '<ellipse cx="-11.5" cy="-6" rx="3.4" ry="4.6" fill="'+shirtFill+'"/><ellipse cx="11.5" cy="-6" rx="3.4" ry="4.6" fill="'+shirtFill+'"/>';
+
+    // 몸통
+    svg += '<path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="'+shirtFill+'"/>';
+
+    if(acc.indexOf('necklace') !== -1) svg += accessoryMarkup('necklace');
+
+    if(kind === 'frog'){
+      svg += '<circle cx="0" cy="-33" r="10.5" fill="'+pal.base+'"/>';
+      svg += '<circle cx="-7" cy="-42" r="4.2" fill="'+pal.base+'"/><circle cx="7" cy="-42" r="4.2" fill="'+pal.base+'"/>';
+      svg += '<circle cx="-7" cy="-42" r="2.3" fill="#fff"/><circle cx="7" cy="-42" r="2.3" fill="#fff"/>';
+      svg += '<circle cx="-7" cy="-42" r="1.2" fill="'+DARK+'"/><circle cx="7" cy="-42" r="1.2" fill="'+DARK+'"/>';
+      svg += '<path d="M -6 -27 Q 0 -25 6 -27" fill="none" stroke="'+DARK+'" stroke-width="0.9" stroke-linecap="round"/>';
+    } else {
+      // 머리
+      svg += '<circle cx="0" cy="-30.5" r="12" fill="'+pal.base+'"/>';
+      // 볼터치
+      svg += '<ellipse cx="-7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.7"/><ellipse cx="7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.7"/>';
+      // 눈
+      svg += '<circle cx="-4.3" cy="-31" r="1.3" fill="'+DARK+'"/><circle cx="4.3" cy="-31" r="1.3" fill="'+DARK+'"/>';
+      // 코+입
+      svg += '<ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="'+DARK+'"/>';
+      svg += '<path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.7" stroke-linecap="round"/>';
+      svg += '<path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.7" stroke-linecap="round"/>';
+    }
+
+    acc.forEach(function(a){ if(a!=='necklace') svg += accessoryMarkup(a); });
+
+    svg += '</g>';
+    return svg;
+  }
+
+  // ---- 캐릭터 조립: 스프라이트 + 말풍선, 위치는 style.transform으로만 제어 ----
+  staff.forEach(function(s){
+    var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','office-char');
+    g.setAttribute('id','char-'+s.id);
+    g.setAttribute('data-name', s.name);
+    g.style.transform = 'translate('+s.x+'px,'+s.y+'px)';
+    g.innerHTML = buildPixelChar(s.kind, s.id, s);
+    charLayer.appendChild(g);
+  });
+
+  function byId(id){ return document.getElementById(id); }
+  function charEl(id){ return byId('char-'+id); }
+
+  function toast(msg){
+    var t = byId('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast._tm);
+    toast._tm = setTimeout(function(){ t.classList.remove('show'); }, 1800);
+  }
+
+  function showBubble(s, text, bgColor){
+    var charEl2 = charEl(s.id);
+    if(!charEl2) return;
+    var holder = bubbleLayer.querySelector('[data-bubble-for="'+s.id+'"]');
+    if(!holder){
+      holder = document.createElementNS('http://www.w3.org/2000/svg','g');
+      holder.setAttribute('data-bubble-for', s.id);
+      bubbleLayer.appendChild(holder);
+    }
+    holder.style.transform = charEl2.style.transform || ('translate('+s.x+'px,'+s.y+'px)');
+    holder.innerHTML = '';
+    var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','popBubble');
+    var w = Math.max(40, text.length * 7 + 16);
+    var fill = bgColor || '#fffdf8';
+    g.innerHTML =
+      '<rect x="'+(-w/2)+'" y="-76" width="'+w+'" height="26" rx="8" fill="'+fill+'" stroke="#5c4a3a" stroke-width="1"/>' +
+      '<polygon points="-6,-50 6,-50 0,-42" fill="'+fill+'" stroke="#5c4a3a" stroke-width="1"/>' +
+      '<text x="0" y="-58" font-size="11" text-anchor="middle" fill="#5c4a3a" stroke="none">'+text+'</text>';
+    holder.appendChild(g);
+    clearTimeout(holder._tm);
+    holder._tm = setTimeout(function(){ holder.innerHTML=''; }, 2400);
+  }
+
+  // ---- 위치 이동 유틸: style.transform만 사용 (SVG attribute와 절대 섞지 않음) ----
+  function setPos(id, x, y, animate, dur){
+    var el = charEl(id);
+    if(animate){
+      el.style.transition = 'transform '+(dur||1)+'s ease';
+    } else {
+      el.style.transition = 'none';
+    }
+    el.style.transform = 'translate('+x+'px,'+y+'px)';
+  }
+
+  function showInstant(id){
+    var s = staffMap[id];
+    setPos(id, s.x, s.y, false);
+    charEl(id).classList.add('present');
+    metSet[id] = true;
+  }
+  function hideInstant(id){
+    var s = staffMap[id];
+    charEl(id).classList.remove('present');
+    setPos(id, s.x, s.y, false);
+  }
+  function setAllInstant(present){
+    staff.forEach(function(s){ present ? showInstant(s.id) : hideInstant(s.id); });
+  }
+
+  function walkIn(s, onArrive){
+    setPos(s.id, ENTRANCE.x, ENTRANCE.y, false);
+    charEl(s.id).classList.add('present');
+    metSet[s.id] = true;
+    requestAnimationFrame(function(){
+      requestAnimationFrame(function(){
+        setPos(s.id, s.x, s.y, true, 1);
+        if(onArrive) setTimeout(onArrive, 1000);
+      });
+    });
+  }
+  function walkOut(s, onLeave){
+    setPos(s.id, ENTRANCE.x, ENTRANCE.y, true, 1);
+    setTimeout(function(){
+      charEl(s.id).classList.remove('present');
+      setPos(s.id, s.x, s.y, false);
+      if(onLeave) onLeave();
+    }, 1050);
+  }
+
+  var staffMap = {};
+  staff.forEach(function(s){ staffMap[s.id] = s; });
+
+  // ===== 날짜 유틸 / 공휴일 / 랜덤 연차 =====
+  function pad2(n){ return n<10 ? '0'+n : ''+n; }
+  function dateKey(d){ d = d || new Date(); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+
+  // 2026년 대한민국 공휴일 (검색 기반, 참고용)
+  var KR_HOLIDAYS_2026 = [
+    '2026-01-01', // 신정
+    '2026-02-16','2026-02-17','2026-02-18', // 설날 연휴
+    '2026-03-01', // 삼일절
+    '2026-05-05', // 어린이날
+    '2026-05-24', // 부처님오신날
+    '2026-06-06', // 현충일
+    '2026-07-17', // 제헌절
+    '2026-08-15','2026-08-17', // 광복절 + 대체공휴일
+    '2026-09-24','2026-09-25','2026-09-26', // 추석 연휴
+    '2026-10-03','2026-10-05', // 개천절 + 대체공휴일
+    '2026-10-09', // 한글날
+    '2026-12-25'  // 크리스마스
+  ];
+
+  function isWeekend(d){ var day = (d||new Date()).getDay(); return day===0 || day===6; }
+  function isHoliday(d){ return KR_HOLIDAYS_2026.indexOf(dateKey(d)) !== -1; }
+  function isNonWorkingDay(d){ return isWeekend(d) || isHoliday(d); }
+
+  // 문자열 기반 간단 시드 해시 (날짜별로 항상 같은 결과를 주기 위함)
+  function seedHash(str){
+    var h = 0;
+    for(var i=0;i<str.length;i++){ h = (h*31 + str.charCodeAt(i)) >>> 0; }
+    return h;
+  }
+
+  // 오늘 연차인 직원(있다면) — 매일 약 35% 확률로 한 명이 랜덤하게 연차
+  function getOnLeaveStaffToday(){
+    var key = dateKey();
+    var flagVal = seedHash(key+'-leaveflag') % 100;
+    if(flagVal >= 35) return null;
+    var idx = seedHash(key+'-leaveidx') % staff.length;
+    return staff[idx];
+  }
+  function isOnLeaveToday(id){
+    var s = getOnLeaveStaffToday();
+    return !!s && s.id === id;
+  }
+
+  // ===== 탭 비활성 상태에서의 알림 (제목 깜빡임) =====
+  var baseTabTitle = document.title;
+  var tabFlashTimer = null;
+  function notifyTab(msg){
+    if(!document.hidden) return;
+    clearInterval(tabFlashTimer);
+    var toggle = false;
+    document.title = msg;
+    tabFlashTimer = setInterval(function(){
+      document.title = toggle ? baseTabTitle : msg;
+      toggle = !toggle;
+    }, 1200);
+  }
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden && tabFlashTimer){
+      clearInterval(tabFlashTimer);
+      tabFlashTimer = null;
+      document.title = baseTabTitle;
+    }
+  });
+
+  // ===== 하루 사이클: 08:30~09:00 랜덤 출근 / 12시 점심(실장 멘트+줄퇴장) / 13시 복귀(첫 직원 멘트) =====
+  var flag830=false, flag9=false, flag12=false, flag13=false, flag18=false, flagHolidayNotice=false;
+
+  // 08:30이 되면, 각 직원마다 0~30분 사이 랜덤한 시각에 혼자 걸어들어오도록 예약 (연차자는 제외)
+  function scheduleRandomArrivals(){
+    if(isNonWorkingDay()) return;
+    var leave = getOnLeaveStaffToday();
+    staff.forEach(function(s){
+      if(leave && s.id === leave.id) return;
+      var offsetMin = Math.random() * 29.5;
+      setTimeout(function(){
+        if(!charEl(s.id).classList.contains('present')) walkIn(s);
+      }, offsetMin * 60000);
+    });
+    toast('직원들이 하나둘 출근하기 시작합니다' + (leave ? ' (' + leave.name + '님은 오늘 연차예요)' : ''));
+  }
+
+  // 9시 정각에는 예약이 늦었더라도 무조건 전원 출근 상태로 보정 (연차자는 제외)
+  function ensureAllArrived(){
+    if(isNonWorkingDay()) return;
+    var leave = getOnLeaveStaffToday();
+    staff.forEach(function(s){
+      if(leave && s.id === leave.id) return;
+      if(!charEl(s.id).classList.contains('present')) showInstant(s.id);
+    });
+  }
+
+  function lunchOut(){
+    if(isNonWorkingDay()) return;
+    var lead = staffMap['kobujang'];
+    showBubble(lead, '점심시간입니다.');
+    toast('점심시간입니다');
+    setTimeout(function(){
+      staff.forEach(function(s, i){
+        setTimeout(function(){ walkOut(s); }, i*180);
+      });
+    }, 1300);
+  }
+
+  function lunchReturn(){
+    if(isNonWorkingDay()) return;
+    var leave = getOnLeaveStaffToday();
+    staff.forEach(function(s, i){
+      if(leave && s.id === leave.id) return;
+      setTimeout(function(){
+        walkIn(s, function(){
+          if(i===0) showBubble(s, '배부르다.');
+        });
+      }, i*260);
+    });
+    toast('점심시간이 끝났습니다');
+  }
+
+  function eveningLeave(){
+    if(isNonWorkingDay()) return;
+    toast('퇴근 시간입니다. 오늘도 수고하셨습니다');
+    staff.forEach(function(s, i){
+      setTimeout(function(){ walkOut(s); }, i*180);
+    });
+  }
+
+  function applyPhaseForLoad(h, m){
+    if(isNonWorkingDay()){
+      setAllInstant(false);
+      toast('오늘은 쉬는 날입니다');
+      flag830=true; flag9=true; flag12=true; flag13=true; flag18=true; flagHolidayNotice=true;
+      return;
+    }
+
+    var leave = getOnLeaveStaffToday();
+    var minutesNow = h*60 + m;
+    var t830 = 8*60+30, t900 = 9*60;
+
+    if(minutesNow < t830){
+      setAllInstant(false);
+    } else if(minutesNow < t900){
+      // 08:30~09:00 사이에 접속 -> 이미 도착했어야 할 인원은 즉시 표시, 나머지는 남은 시간만큼 예약
+      var elapsedMin = minutesNow - t830;
+      staff.forEach(function(s){
+        if(leave && s.id === leave.id){ hideInstant(s.id); return; }
+        var offsetMin = Math.random() * 29.5;
+        if(elapsedMin >= offsetMin){
+          showInstant(s.id);
+        } else {
+          hideInstant(s.id);
+          setTimeout(function(){
+            if(!charEl(s.id).classList.contains('present')) walkIn(s);
+          }, (offsetMin - elapsedMin) * 60000);
+        }
+      });
+    } else {
+      var working = (h>=9 && h<12) || (h>=13 && h<18);
+      staff.forEach(function(s){
+        if(leave && s.id === leave.id){ hideInstant(s.id); }
+        else if(working){ showInstant(s.id); }
+        else { hideInstant(s.id); }
+      });
+    }
+
+    flag830 = minutesNow >= t830;
+    flag9  = h >= 9;
+    flag12 = h >= 12;
+    flag13 = h >= 13;
+    flag18 = h >= 18;
+  }
+
+  // ===== 시계 =====
+  var hourHand = byId('hourHand');
+  var minHand = byId('minHand');
+  var clockText = byId('clockText');
+  var lunchSign = byId('lunchSign');
+  var windowOverlay = byId('windowNightOverlay');
+  var sunIcon = byId('sunIcon');
+  var rainIcon = byId('windowRain');
+  var moonIcon = byId('moonIcon');
+  var overtimeMode = false;
+
+  function pad(n){ return n<10 ? '0'+n : ''+n; }
+
+  function updateClock(){
+    var now = new Date();
+    var h = now.getHours(), m = now.getMinutes();
+    clockText.textContent = pad(h)+':'+pad(m);
+
+    var hourAngle = ((h%12) + m/60) / 12 * 360;
+    var minAngle = m/60 * 360;
+    hourHand.setAttribute('transform','rotate('+hourAngle+' 500 95)');
+    minHand.setAttribute('transform','rotate('+minAngle+' 500 95)');
+
+    lunchSign.style.opacity = (h===12) ? 1 : 0;
+
+    var isNight = (h>=19 || h<7);
+    windowOverlay.style.opacity = (isNight || overtimeMode) ? 0.55 : 0;
+    moonIcon.style.opacity = isNight ? 1 : 0;
+    sunIcon.style.opacity = isNight ? 0 : (rainOn ? 0 : 1);
+
+    // 하루 사이클 트리거 (정시에 한 번씩만)
+    if(isNonWorkingDay()){
+      if(!flagHolidayNotice){ flagHolidayNotice=true; toast('오늘은 쉬는 날입니다'); setAllInstant(false); }
+    } else if(!overtimeMode){
+      if(h===8 && m===30 && !flag830){ flag830=true; scheduleRandomArrivals(); }
+      if(h===9 && m===0 && !flag9){ flag9=true; ensureAllArrived(); }
+      if(h===12 && m===0 && !flag12){ flag12=true; lunchOut(); }
+      if(h===13 && m===0 && !flag13){ flag13=true; lunchReturn(); }
+      if(h===18 && m===0 && !flag18){ flag18=true; eveningLeave(); }
+    }
+    if(h===0 && m===0){ flag830=false; flag9=false; flag12=false; flag13=false; flag18=false; flagHolidayNotice=false; }
+  }
+
+  // ===== 날씨: 맑음 15 : 비 1 비율 =====
+  var rainOn = false;
+  function toggleWeatherRandomly(){
+    rainOn = Math.random() < (1/16);
+    rainIcon.style.opacity = rainOn ? 1 : 0;
+    var windowPane = byId('windowPane');
+    if(windowPane) windowPane.style.fill = rainOn ? '#c9cdd1' : '#cfe8f2';
+    updateClock();
+  }
+  toggleWeatherRandomly();
+  setInterval(toggleWeatherRandomly, 25000);
+
+  setInterval(updateClock, 1000);
+
+  // 최초 로드시 현재 시각에 맞춰 즉시 상태 세팅 (9시 이후면 바로 출근해있는 상태)
+  (function initialLoad(){
+    var now = new Date();
+    applyPhaseForLoad(now.getHours(), now.getMinutes());
+    updateClock();
+  })();
+
+  // ===== 주문량 진행바: 근무시간에만, 너무 잦지 않게 증가 =====
+  var prodText = byId('prodText');
+  var prodFill = byId('prodBarFill');
+  var orderCount = 0;
+  var prodProgress = 0;
+
+  function floatPlusOne(){
+    var wrap = byId('prodBarWrap');
+    var span = document.createElement('div');
+    span.className = 'floatPlus';
+    span.textContent = '+1';
+    wrap.appendChild(span);
+    setTimeout(function(){ span.remove(); }, 1100);
+  }
+
+  setInterval(function(){
+    var h = new Date().getHours();
+    var working = (h>=9 && h<18 && h!==12) && !isNonWorkingDay();
+    if(!working) return;
+    prodProgress += 2 + Math.random()*5; // 랜덤하게 서서히 증가
+    if(prodProgress >= 100){
+      prodProgress = 0;
+      orderCount++;
+      prodText.textContent = orderCount;
+      floatPlusOne();
+      ensureDailyLogFresh();
+      dailyLog.orders++;
+      saveDailyLog();
+    }
+    prodFill.style.width = prodProgress + '%';
+  }, 1400);
+
+  // ===== 근무 중 랜덤 잡담 (너무 빈번하지 않게) =====
+  var idleLines = [
+    '졸리다', '헉 실수했다', '야근확정', '그 파일 어디갔지', '이건 쉽네',
+    '오 됐다!', '나 좀 천재인듯', '그러고보니...', '내일 연차쓸까',
+    '드디어 다했다.', '이걸 내가 왜…', '어깨아파', '오예!', '음..어떡하지'
+  ];
+  setInterval(function(){
+    if(Math.random() >= 0.3) return; // 낮은 확률로만 발동
+    var present = staff.filter(function(s){ return charEl(s.id).classList.contains('present'); });
+    if(present.length === 0) return;
+    var pick = present[Math.floor(Math.random()*present.length)];
+    var line = idleLines[Math.floor(Math.random()*idleLines.length)];
+    showBubble(pick, line);
+  }, 7000);
+
+  // ===== 직원끼리 저절로 나누는 짧은 잡담 (근무 중 가끔) =====
+  var deskChatPairs = [
+    ['이거 다 하셨어요?', '아직이요 ㅠㅠ'],
+    ['커피 한 잔 하실래요?', '좋아요 이따가요'],
+    ['오늘 날씨 좋네요', '그러게요'],
+    ['이 폰트 어때요?', '괜찮은데요?'],
+    ['점심 뭐 드실거예요?', '아직 고민중이에요'],
+    ['이번 주 회의 언제죠?', '곧 잡힐 것 같아요']
+  ];
+  setInterval(function(){
+    if(Math.random() >= 0.18) return;
+    if(inMeeting && Object.keys(inMeeting).length && Math.random()<0.5) return;
+    var present = staff.filter(function(s){ return charEl(s.id).classList.contains('present') && !inMeeting[s.id]; });
+    if(present.length < 2) return;
+    var shuffled = present.slice().sort(function(){ return Math.random()-0.5; });
+    var a = shuffled[0], b = shuffled[1];
+    var pair = deskChatPairs[Math.floor(Math.random()*deskChatPairs.length)];
+    showBubble(a, pair[0]);
+    setTimeout(function(){ showBubble(b, pair[1]); }, 1300);
+  }, 20000);
+
+  // ===== 명령어 입력: /이름(또는 직책) 메시지 =====
+  byId('cmdBtn').addEventListener('click', runCommand);
+  byId('cmdInput').addEventListener('keydown', function(e){
+    if(e.key === 'Enter') runCommand();
+  });
+  function runCommand(){
+    var input = byId('cmdInput');
+    var raw = input.value.trim();
+    if(!raw) return;
+    var content = raw.replace(/^\//,'');
+
+    var found = null, msg = '';
+
+    // 1) 알려진 이름/직책이 문장 맨 앞에 오는지 먼저 확인 (띄어쓰기 위치와 무관하게 안전하게 매칭)
+    var byName = staff.slice().sort(function(a,b){ return b.name.length - a.name.length; });
+    for(var i=0;i<byName.length;i++){
+      if(content.indexOf(byName[i].name) === 0){
+        found = byName[i];
+        msg = content.slice(byName[i].name.length).trim();
+        break;
+      }
+    }
+    if(!found){
+      var byRole = staff.slice().sort(function(a,b){ return b.role.length - a.role.length; });
+      for(var j=0;j<byRole.length;j++){
+        if(content.indexOf(byRole[j].role) === 0){
+          found = byRole[j];
+          msg = content.slice(byRole[j].role.length).trim();
+          break;
+        }
+      }
+    }
+    // 2) 그래도 못 찾으면 기존 방식(첫 공백 기준)으로 한 번 더 시도
+    if(!found){
+      var firstSpace = content.indexOf(' ');
+      var namePart = firstSpace===-1 ? content : content.slice(0,firstSpace);
+      msg = firstSpace===-1 ? '' : content.slice(firstSpace+1).trim();
+      found = staff.find(function(s){ return s.name.indexOf(namePart) !== -1; })
+           || staff.find(function(s){ return s.role.indexOf(namePart) !== -1; });
+    }
+
+    if(!msg) msg = '...';
+
+    if(found){
+      if(!charEl(found.id).classList.contains('present')) showInstant(found.id);
+      showBubble(found, msg);
+      toast(found.name+'에게 메시지를 보냈습니다');
+      bumpTalk(found.id);
+    } else {
+      toast('직원을 찾을 수 없어요');
+    }
+    input.value = '';
+  }
+
+  // ===== 주요 프로젝트 (추진 사업 목록) =====
+  // 사업마다 설정한 시간(분)이 지나면 자동으로 '완료' 처리되고 전 직원이 외침
+  var panel = byId('panel');
+  var projects = [];
+  try{
+    var savedProj = localStorage.getItem('ggj_office_projects_v1');
+    if(savedProj) projects = JSON.parse(savedProj) || [];
+  }catch(e){ projects = []; }
+  // 구버전 데이터 호환: dueAt이 없는 미완료 항목은 안전하게 보정
+  projects.forEach(function(p){
+    if(!p.done && !p.dueAt) p.dueAt = Date.now() + (p.durationMin||7)*60000;
+  });
+
+  var projSelectMode = false;
+  var nextProjId = (projects.reduce(function(m,p){ return Math.max(m, p.id||0); }, 0)) + 1;
+
+  function saveProjects(){
+    try{ localStorage.setItem('ggj_office_projects_v1', JSON.stringify(projects)); }catch(e){}
+  }
+
+  // ===== 직원별 통계 (대화 횟수 / 야근 횟수) =====
+  var staffStats = {};
+  try{
+    var savedStats = localStorage.getItem('ggj_office_stats_v1');
+    if(savedStats) staffStats = JSON.parse(savedStats) || {};
+  }catch(e){ staffStats = {}; }
+  staff.forEach(function(s){
+    if(!staffStats[s.id]) staffStats[s.id] = { talks:0, overtime:0 };
+  });
+  function saveStats(){ try{ localStorage.setItem('ggj_office_stats_v1', JSON.stringify(staffStats)); }catch(e){} }
+  function bumpTalk(id){ if(staffStats[id]){ staffStats[id].talks++; saveStats(); } }
+  function bumpOvertime(id){ if(staffStats[id]){ staffStats[id].overtime++; saveStats(); } }
+
+  // ===== 연속 접속일(스트릭) =====
+  var streakInfo = { lastDate:null, streak:0 };
+  try{
+    var savedStreak = localStorage.getItem('ggj_office_streak_v1');
+    if(savedStreak) streakInfo = JSON.parse(savedStreak) || streakInfo;
+  }catch(e){}
+  (function updateStreak(){
+    var today = dateKey();
+    if(streakInfo.lastDate === today){ /* 오늘 이미 반영됨 */ }
+    else {
+      var y = new Date(); y.setDate(y.getDate()-1);
+      if(streakInfo.lastDate === dateKey(y)) streakInfo.streak = (streakInfo.streak||0) + 1;
+      else streakInfo.streak = 1;
+      streakInfo.lastDate = today;
+      try{ localStorage.setItem('ggj_office_streak_v1', JSON.stringify(streakInfo)); }catch(e){}
+    }
+  })();
+  var streakTextEl = byId('streakText');
+  if(streakTextEl) streakTextEl.textContent = streakInfo.streak || 1;
+
+  // ===== 일별 로그 (주간 리포트용: 최근 7일 주문량/완료 사업 수) =====
+  var dailyLog = { date:dateKey(), orders:0, completions:0 };
+  var dailyHistory = [];
+  try{
+    var savedLog = localStorage.getItem('ggj_office_dailylog_v1');
+    if(savedLog){
+      var parsedLog = JSON.parse(savedLog);
+      if(parsedLog.today) dailyLog = parsedLog.today;
+      if(parsedLog.history) dailyHistory = parsedLog.history;
+    }
+  }catch(e){}
+  function saveDailyLog(){
+    try{ localStorage.setItem('ggj_office_dailylog_v1', JSON.stringify({ today:dailyLog, history:dailyHistory })); }catch(e){}
+  }
+  function ensureDailyLogFresh(){
+    var today = dateKey();
+    if(dailyLog.date !== today){
+      dailyHistory.unshift({ date:dailyLog.date, orders:dailyLog.orders, completions:dailyLog.completions });
+      dailyHistory = dailyHistory.slice(0,7);
+      dailyLog = { date: today, orders:0, completions:0 };
+      saveDailyLog();
+    }
+  }
+  ensureDailyLogFresh();
+  setInterval(ensureDailyLogFresh, 60000);
+
+  function formatRemain(ms){
+    if(ms <= 0) return '곧 완료';
+    var totalSec = Math.ceil(ms/1000);
+    var h = Math.floor(totalSec/3600);
+    var m = Math.floor((totalSec%3600)/60);
+    var sec = totalSec%60;
+    if(h>0) return h+'시간 '+m+'분';
+    return m+'분 '+(sec<10?'0':'')+sec+'초';
+  }
+
+  function renderProjects(){
+    var body = byId('projTableBody');
+    body.innerHTML = '';
+    var emptyMsg = byId('projEmptyMsg');
+    emptyMsg.style.display = projects.length ? 'none' : 'block';
+    projects.forEach(function(p){
+      var tr = document.createElement('tr');
+      var checkCell = projSelectMode ? '<input type="checkbox" class="projCheck" data-id="'+p.id+'">' : '';
+      var remainCell = p.done ? '-' : formatRemain(p.dueAt - Date.now());
+      tr.innerHTML =
+        '<td>'+checkCell+'</td>' +
+        '<td>'+p.name+'</td>' +
+        '<td>'+(p.period||'-')+'</td>' +
+        '<td>'+(p.budget||'-')+'</td>' +
+        '<td>'+remainCell+'</td>' +
+        '<td><span class="projStatus '+(p.done?'done':'pending')+'">'+(p.done?'완료':'진행중')+'</span></td>';
+      body.appendChild(tr);
+    });
+  }
+
+  byId('dexBtn').addEventListener('click', function(){
+    renderProjects();
+    panel.classList.add('show');
+  });
+  byId('panelCloseBtn').addEventListener('click', function(){ panel.classList.remove('show'); });
+  panel.addEventListener('click', function(e){ if(e.target===panel) panel.classList.remove('show'); });
+
+  byId('projAddBtn').addEventListener('click', function(){
+    if(projects.length >= 10){ toast('사업은 최대 10개까지 등록할 수 있어요'); return; }
+    var form = byId('projForm');
+    form.style.display = (form.style.display === 'flex') ? 'none' : 'flex';
+    byId('projName').value = '';
+    byId('projPeriod').value = '';
+    byId('projContent').value = '';
+    byId('projBudget').value = '';
+    byId('projDuration').value = '';
+  });
+
+  byId('projSaveBtn').addEventListener('click', function(){
+    var form = byId('projForm');
+    if(form.style.display !== 'flex'){ toast("'추가'를 먼저 눌러주세요"); return; }
+    var name = byId('projName').value.trim();
+    if(!name){ toast('사업명을 입력해주세요'); return; }
+    var durationMin = parseFloat(byId('projDuration').value);
+    if(!durationMin || durationMin <= 0){ toast('완료까지 걸리는 시간(분)을 입력해주세요'); return; }
+    if(projects.length >= 10){ toast('사업은 최대 10개까지 등록할 수 있어요'); return; }
+    projects.push({
+      id: nextProjId++,
+      name: name,
+      period: byId('projPeriod').value.trim(),
+      content: byId('projContent').value.trim(),
+      budget: byId('projBudget').value.trim(),
+      durationMin: durationMin,
+      dueAt: Date.now() + durationMin*60000,
+      done: false
+    });
+    saveProjects();
+    renderProjects();
+    form.style.display = 'none';
+    toast("'"+name+"' 사업을 등록했습니다 ("+durationMin+"분 뒤 완료)");
+  });
+
+  byId('projSelectBtn').addEventListener('click', function(){
+    projSelectMode = !projSelectMode;
+    byId('projSelectBtn').classList.toggle('active', projSelectMode);
+    renderProjects();
+  });
+
+  byId('projDeleteBtn').addEventListener('click', function(){
+    if(!projSelectMode){ toast("'선택'을 먼저 눌러 삭제할 사업을 체크하세요"); return; }
+    var checked = Array.prototype.slice.call(document.querySelectorAll('.projCheck:checked'));
+    if(checked.length === 0){ toast('삭제할 사업을 선택해주세요'); return; }
+    var ids = checked.map(function(c){ return parseInt(c.getAttribute('data-id'),10); });
+    projects = projects.filter(function(p){ return ids.indexOf(p.id) === -1; });
+    saveProjects();
+    projSelectMode = false;
+    byId('projSelectBtn').classList.remove('active');
+    renderProjects();
+    toast('선택한 사업을 삭제했습니다');
+  });
+
+  // 사업별 완료 시각(dueAt)을 1초마다 확인 -> 도달하면 완료 처리 + 전 직원 외침
+  setInterval(function(){
+    var now = Date.now();
+    var justCompleted = [];
+    projects.forEach(function(p){
+      if(!p.done && p.dueAt <= now){
+        p.done = true;
+        justCompleted.push(p);
+      }
+    });
+    if(justCompleted.length){
+      saveProjects();
+      ensureDailyLogFresh();
+      dailyLog.completions += justCompleted.length;
+      saveDailyLog();
+      justCompleted.forEach(function(p){
+        toast("'"+p.name+"' 사업이 완료되었습니다!");
+        celebrateAll();
+      });
+    }
+    if(panel.classList.contains('show')) renderProjects();
+  }, 1000);
+
+  // 전 직원이 동시에 말풍선으로 외치는 연출 (자리에 없던 직원도 잠깐 등장)
+  function celebrateAll(){
+    var leaveCel = getOnLeaveStaffToday();
+    staff.forEach(function(s){
+      if(leaveCel && s.id === leaveCel.id) return;
+      if(!charEl(s.id).classList.contains('present')) showInstant(s.id);
+      showBubble(s, '프로젝트 완료!');
+    });
+    notifyTab('🎉 완료! | ' + baseTabTitle);
+  }
+
+  // 15분마다 실장이 노란 말풍선으로 혼잣말
+  setInterval(function(){
+    var lead = staffMap['kobujang'];
+    if(!lead || isOnLeaveToday(lead.id)) return;
+    if(!charEl(lead.id).classList.contains('present')) showInstant(lead.id);
+    showBubble(lead, '지켜보고 있는 눈이 느껴져..', '#fff3a0');
+    notifyTab('👀 실장님 | ' + baseTabTitle);
+  }, 15*60*1000);
+
+  // ===== 야근모드: 전원 퇴근 후 2~4명만 남김, 창밖만 어두워짐 =====
+  var overtimeBtn = byId('overtimeBtn');
+  overtimeBtn.addEventListener('click', function(){
+    overtimeMode = !overtimeMode;
+    overtimeBtn.classList.toggle('active', overtimeMode);
+    overtimeBtn.textContent = overtimeMode ? '야근모드 ON' : '야근모드';
+
+    if(overtimeMode){
+      setAllInstant(false);
+      var leaveOT = getOnLeaveStaffToday();
+      var pool = staff.filter(function(s){ return !leaveOT || s.id !== leaveOT.id; });
+      var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
+      var callCount = Math.floor(Math.random()*3) + 2;
+      var called = shuffled.slice(0, callCount);
+      called.forEach(function(s, i){ setTimeout(function(){ walkIn(s); }, i*260); bumpOvertime(s.id); });
+      toast('야근모드 시작 — ' + called.map(function(s){return s.name;}).join(', ') + '만 남아 야근합니다');
+    } else {
+      toast('야근모드를 종료합니다');
+      var now = new Date();
+      applyPhaseForLoad(now.getHours(), now.getMinutes());
+    }
+    updateClock();
+  });
+
+  // ===== 전체 미리보기 =====
+  byId('previewBtn').addEventListener('click', function(){
+    setAllInstant(true);
+    toast('전체 직원을 미리봅니다');
+  });
+
+  // ===== 회의: 랜덤 6명, 10초간 회의실행, 버튼 비활성화 =====
+  var meetingBtn = byId('meetingBtn');
+  var meetingSeats = [
+    {x:590,y:682},{x:590,y:768},{x:533,y:700},{x:533,y:750},{x:647,y:700},{x:647,y:750}
+  ];
+  var inMeeting = {}; // 현재 회의 중인 직원 id 추적
+
+  meetingBtn.addEventListener('click', function(){
+    if(meetingBtn.disabled) return;
+    meetingBtn.disabled = true;
+    meetingBtn.textContent = '회의 중';
+
+    var leaveMt = getOnLeaveStaffToday();
+    var poolMt = staff.filter(function(s){ return !leaveMt || s.id !== leaveMt.id; });
+    var shuffled = poolMt.slice().sort(function(){ return Math.random()-0.5; });
+    var chosen = shuffled.slice(0,6);
+    chosen.forEach(function(s, i){
+      charEl(s.id).classList.add('present');
+      metSet[s.id] = true;
+      inMeeting[s.id] = true;
+      setPos(s.id, meetingSeats[i].x, meetingSeats[i].y, true, 0.9);
+    });
+    toast('회의를 시작합니다 — ' + chosen.map(function(s){return s.name;}).join(', '));
+
+    setTimeout(function(){
+      chosen.forEach(function(s){
+        setPos(s.id, s.x, s.y, true, 0.9);
+        delete inMeeting[s.id];
+      });
+      meetingBtn.disabled = false;
+      meetingBtn.textContent = '회의';
+      toast('회의가 끝났습니다');
+    }, 10000);
+  });
+
+  // ===== 탕비실: 사무실에 있고(출근 상태) 회의 중이 아닌 직원 중 랜덤 2명 =====
+  var breakBtn = byId('breakBtn');
+  var breakSeats = [ {x:900,y:755}, {x:950,y:755} ];
+  var breakDialogues = [
+    ['커피 좋아하세요?', '네 좋아해요'],
+    ['졸려요', '저도요'],
+    ['배고파요..', '간식 드릴까요?'],
+    ['그 얘기 들었어요?', '무슨..?'],
+    ['그 영화 봤어요?', '네! 재밌어요!']
+  ];
+  breakBtn.addEventListener('click', function(){
+    if(breakBtn.disabled) return;
+
+    var pool = staff.filter(function(s){
+      return charEl(s.id).classList.contains('present') && !inMeeting[s.id];
+    });
+    if(pool.length < 2){
+      toast('지금 탕비실에 갈 수 있는 직원이 부족해요');
+      return;
+    }
+    breakBtn.disabled = true;
+
+    var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
+    var chosen = shuffled.slice(0,2);
+    chosen.forEach(function(s, i){
+      setPos(s.id, breakSeats[i].x, breakSeats[i].y, true, 0.9);
+    });
+    toast(chosen.map(function(s){return s.name;}).join(', ')+'이(가) 탕비실로 향합니다');
+
+    setTimeout(function(){
+      var pair = breakDialogues[Math.floor(Math.random()*breakDialogues.length)];
+      showBubble(chosen[0], pair[0]);
+      setTimeout(function(){ showBubble(chosen[1], pair[1]); }, 1300);
+    }, 1000);
+
+    setTimeout(function(){
+      chosen.forEach(function(s){ setPos(s.id, s.x, s.y, true, 0.9); });
+      breakBtn.disabled = false;
+    }, 6200);
+  });
+
+  // ===== 먼지: 10분마다 바닥에 하나씩 쌓이고, 청소 버튼으로 전부 제거 =====
+  var DUST_KEY = 'officeDustV1';
+  var DUST_INTERVAL = 10 * 60 * 1000;
+  var DUST_MAX = 40;
+
+  function loadDustState(){
+    try{
+      var raw = JSON.parse(localStorage.getItem(DUST_KEY));
+      if(raw && Array.isArray(raw.items) && typeof raw.lastSpawn === 'number') return raw;
+    }catch(e){}
+    return { items: [], lastSpawn: Date.now() };
+  }
+  function saveDustState(state){
+    try{ localStorage.setItem(DUST_KEY, JSON.stringify(state)); }catch(e){}
+  }
+  function dustMarkup(style){
+    if(style === 0){
+      // 먼지 뭉치 (동글동글)
+      return '<ellipse cx="0" cy="0" rx="7" ry="3" fill="#c9c2b0" opacity="0.5"/>' +
+             '<circle cx="-3.5" cy="-1.8" r="1.9" fill="#d9d3c2" opacity="0.65"/>' +
+             '<circle cx="2.8" cy="-2.2" r="1.5" fill="#d9d3c2" opacity="0.65"/>' +
+             '<circle cx="0" cy="0" r="2.3" fill="#cfc8b6" opacity="0.7"/>' +
+             '<circle cx="4.8" cy="-0.3" r="1.2" fill="#d9d3c2" opacity="0.6"/>';
+    }
+    // 먼지 얼룩 (바닥 자국)
+    return '<ellipse cx="0" cy="1" rx="9" ry="3.6" fill="#c2bba8" opacity="0.3"/>' +
+           '<ellipse cx="0" cy="1" rx="5.4" ry="2.1" fill="#b3ab97" opacity="0.26"/>';
+  }
+  function renderDust(state){
+    dustLayer.innerHTML = state.items.map(function(d){
+      return '<g class="dustPiece" data-dust-id="'+d.id+'" style="transform:translate('+d.x.toFixed(1)+'px,'+d.y.toFixed(1)+'px); transition:opacity .5s ease;">'+dustMarkup(d.style)+'</g>';
+    }).join('');
+  }
+  function randDustPos(){
+    var W_MIN=60,W_MAX=950,H_MIN=60,H_MAX=820;
+    var obstaclesRect = [
+      [40,50,190,95],      // 회사 로고
+      [255,165,475,265],   // 창문+시계 영역
+      [40,645,110,760],    // 입구 문+매트
+      [815,367,965,534],   // 재고창고
+      [470,332,500,387],   // 복합기1
+      [485,462,515,517],   // 복합기2
+      [425,655,455,696],   // 서랍(홍보팀)
+      [115,595,145,636],   // 서랍(경영지원팀)
+      [555,560,585,601]    // 서랍(스티커팀)
+    ];
+    var obstaclesCircle = [
+      [945,345,30],[907,185,30],[436,212,30],[916,574,30],[877,678,30],
+      [405,675,25],[747,709,30],[814,686,32],[808,725,25],[900,671,20],
+      [440,600,15],[943,245,15],
+      [255,75,18],[862,300,20],[948,672,18],[75,575,18],[432,730,18],[670,660,26],[921,98,15],
+      [636,247,22],[389,421,22],
+      [680,150,55],[590,725,95],[925,755,45],
+      [480,679,20],[45,300,20],
+      [625,115,18],[670,450,18],[330,410,18]
+    ];
+    for(var tries=0; tries<40; tries++){
+      var x = W_MIN + Math.random()*(W_MAX-W_MIN);
+      var y = H_MIN + Math.random()*(H_MAX-H_MIN);
+      var ok = true;
+      for(var i=0;i<staff.length;i++){
+        var s = staff[i];
+        if(Math.abs(x-s.x)<32 && Math.abs(y-s.y)<48){ ok=false; break; }
+      }
+      if(ok){
+        for(var j=0;j<obstaclesRect.length;j++){
+          var r = obstaclesRect[j];
+          if(x>=r[0]&&x<=r[2]&&y>=r[1]&&y<=r[3]){ ok=false; break; }
+        }
+      }
+      if(ok){
+        for(var k=0;k<obstaclesCircle.length;k++){
+          var c = obstaclesCircle[k];
+          var dx=x-c[0], dy=y-c[1];
+          if(dx*dx+dy*dy < c[2]*c[2]){ ok=false; break; }
+        }
+      }
+      if(ok) return { x:x, y:y };
+    }
+    // 40번 시도해도 못 찾으면 기존 안전 복도로 폴백
+    return { x: 476 + Math.random()*22, y: 200 + Math.random()*580 };
+  }
+  function tickDust(){
+    var state = loadDustState();
+    var now = Date.now();
+    var changed = false;
+    while(now - state.lastSpawn >= DUST_INTERVAL && state.items.length < DUST_MAX){
+      state.lastSpawn += DUST_INTERVAL;
+      var pos = randDustPos();
+      state.items.push({ id:'d'+state.lastSpawn+'-'+Math.floor(Math.random()*1000), x:pos.x, y:pos.y, style: Math.random()<0.5?0:1 });
+      changed = true;
+    }
+    if(now - state.lastSpawn > DUST_INTERVAL) state.lastSpawn = now;
+    saveDustState(state);
+    if(changed) renderDust(state);
+    return state;
+  }
+
+  renderDust(tickDust());
+  setInterval(tickDust, 60*1000);
+
+  var cleanBtn = byId('cleanBtn');
+  cleanBtn.addEventListener('click', function(){
+    var state = loadDustState();
+    if(state.items.length === 0){
+      toast('아직 사무실이 깨끗해요');
+      return;
+    }
+    var pieces = dustLayer.querySelectorAll('.dustPiece');
+    pieces.forEach(function(p){ p.style.opacity = '0'; });
+    setTimeout(function(){
+      state.items = [];
+      state.lastSpawn = Date.now();
+      saveDustState(state);
+      renderDust(state);
+    }, 500);
+    toast('사무실을 청소했습니다 ✨');
+  });
+
+  // ===== 메일: 보내면 랜덤 직원이 내용을 20자까지만 읽음 =====
+  var mailOverlay = byId('mailOverlay');
+  byId('mailOpenBtn').addEventListener('click', function(){ mailOverlay.classList.add('show'); });
+  byId('mailCloseX').addEventListener('click', closeMail);
+  mailOverlay.addEventListener('click', function(e){ if(e.target===mailOverlay) closeMail(); });
+  function closeMail(){
+    mailOverlay.classList.remove('show');
+    byId('mailError').textContent = '';
+  }
+  byId('mailSendBtn').addEventListener('click', function(){
+    var subject = byId('mailSubject').value.trim();
+    var body = byId('mailBody').value.trim();
+    var err = byId('mailError');
+    if(!subject || !body){
+      err.textContent = '제목과 내용을 입력해주세요';
+      return;
+    }
+    err.textContent = '';
+    closeMail();
+    byId('mailSubject').value = '';
+    byId('mailBody').value = '';
+    toast('메일을 보냈습니다');
+
+    var reader = staff[Math.floor(Math.random()*staff.length)];
+    if(!charEl(reader.id).classList.contains('present')) showInstant(reader.id);
+    var readText = body.length > 20 ? body.slice(0,20) : body;
+    readText += '...';
+    setTimeout(function(){ showBubble(reader, readText); }, 500);
+  });
+
+  // ===== 사운드 (소리 없음, UI/상태만) =====
+  var isPlaying = false, isMuted = false, volume = 0.6;
+  var playBtn = byId('playBtn'), muteBtn = byId('muteBtn'), volSlider = byId('volSlider');
+  playBtn.addEventListener('click', function(){
+    isPlaying = !isPlaying;
+    playBtn.querySelector('svg').innerHTML = isPlaying
+      ? '<rect x="2" y="1" width="3" height="10" fill="#5c4a3a"/><rect x="7" y="1" width="3" height="10" fill="#5c4a3a"/>'
+      : '<polygon points="2,1 11,6 2,11" fill="#5c4a3a"/>';
+    toast(isPlaying ? '배경음 재생 (사운드 준비 중)' : '배경음 일시정지');
+  });
+  muteBtn.addEventListener('click', function(){
+    isMuted = !isMuted;
+    muteBtn.classList.toggle('active', isMuted);
+    toast(isMuted ? '음소거 되었습니다' : '음소거를 해제했습니다');
+  });
+  volSlider.addEventListener('input', function(){
+    volume = parseFloat(volSlider.value);
+    volSlider.title = '음량 조절: ' + Math.round(volume*100) + '%';
+  });
+  volSlider.title = '음량 조절: 60%';
+
+  // ===== 설정: 회사명 / 팀명 / 직원명 편집 및 저장 =====
+  var settingsPanel = byId('settingsPanel');
+  var teamOrder = ['lead','biz','note','sticker','pr'];
+
+  function renderSettingsForm(){
+    byId('setCompany').value = settings.company;
+    teamOrder.forEach(function(k){ byId('setTeam-'+k).value = settings.teams[k]; });
+
+    var wrap = byId('setStaffList');
+    wrap.innerHTML = '';
+    teamOrder.forEach(function(k){
+      var members = staff.filter(function(s){ return s.teamKey===k; });
+      members.forEach(function(s){
+        var row = document.createElement('div');
+        row.className = 'setRow';
+        row.innerHTML = '<label>'+settings.teams[k]+' · '+s.role+'</label><input type="text" id="setName-'+s.id+'" value="'+s.name+'">';
+        wrap.appendChild(row);
+      });
+    });
+  }
+
+  function applySettingsToDOM(){
+    byId('officeSignText').textContent = settings.company;
+    byId('label-lead').textContent = settings.teams.lead;
+    byId('label-biz').textContent = settings.teams.biz;
+    byId('label-note').textContent = settings.teams.note;
+    byId('label-sticker').textContent = settings.teams.sticker;
+    byId('label-pr').textContent = settings.teams.pr;
+    staff.forEach(function(s){
+      s.name = settings.names[s.id];
+      var plate = byId('plate-'+s.id);
+      if(plate) plate.textContent = s.name;
+      var charG = charEl(s.id);
+      if(charG) charG.setAttribute('data-name', s.name);
+    });
+  }
+
+  var settingsHub = byId('settingsHub');
+  var creditsPanel = byId('creditsPanel');
+
+  byId('settingsBtn').addEventListener('click', function(){
+    settingsHub.classList.add('show');
+  });
+  settingsHub.addEventListener('click', function(e){
+    if(e.target===settingsHub) settingsHub.classList.remove('show');
+  });
+
+  byId('hubCreditsBtn').addEventListener('click', function(){
+    settingsHub.classList.remove('show');
+    creditsPanel.classList.add('show');
+  });
+  byId('creditsCloseBtn').addEventListener('click', function(){
+    creditsPanel.classList.remove('show');
+  });
+  creditsPanel.addEventListener('click', function(e){
+    if(e.target===creditsPanel) creditsPanel.classList.remove('show');
+  });
+
+  var staffBio = {
+    kobujang:   '미적감각은 따라올 자 없는 아티스트',
+    nabujang:   '재테크 관심 많은 효율 우선자',
+    choiinsa:   '고양이 두 마리 키우는 따뜻한 집사',
+    parkhoegye: '꼼꼼하고 섬세한 회사 스마트 에이스',
+    kimnote:    '운동과 여행 좋아하는 에너자이저',
+    leenote:    '4개 국어 가능한 다재다능 댄싱머신',
+    jungnote:   '독서와 영화보기가 취미인 인문학자',
+    hannote:    '게임과 만화 이야기라면 밤새 가능한 덕후',
+    jungsti:    '커피 좋아하고 예쁜 카페 많이 알고 있음',
+    hansti:     '새로운 맛집 찾아다니는 미식 탐험가',
+    yoosti:     '좋은게 좋은거인 태평양 마음 보유자',
+    chosti:     '아침 일찍 하루를 여는 부지런한 얼리버드',
+    yoohongbo:  '가벼운 맥주 한 잔, 안주 한 입 언제나 환영',
+    seohongbo:  '반려견과 산책이 최고의 힐링인 사람',
+    minhongbo:  '손재주 좋아서 뭐든 뚝딱 만드는 만능러'
+  };
+
+  var profilePanel = byId('profilePanel');
+  function openProfile(id){
+    var s = staffMap[id];
+    if(!s) return;
+    var st = staffStats[id] || { talks:0, overtime:0 };
+    byId('profileName').textContent = s.name;
+    byId('profileRole').textContent = settings.teams[s.teamKey] + ' · ' + s.role;
+    byId('profileBio').textContent = staffBio[id] || '';
+    byId('profileTalks').textContent = st.talks;
+    byId('profileOvertime').textContent = st.overtime;
+    byId('profileLeaveNote').style.display = isOnLeaveToday(id) ? 'block' : 'none';
+    profilePanel.classList.add('show');
+  }
+  byId('profileCloseBtn').addEventListener('click', function(){ profilePanel.classList.remove('show'); });
+  profilePanel.addEventListener('click', function(e){ if(e.target===profilePanel) profilePanel.classList.remove('show'); });
+
+  var reportPanel = byId('reportPanel');
+  function renderReport(){
+    ensureDailyLogFresh();
+    var rows = [{ date: dailyLog.date, orders: dailyLog.orders, completions: dailyLog.completions, isToday:true }]
+      .concat(dailyHistory.map(function(d){ return { date:d.date, orders:d.orders, completions:d.completions, isToday:false }; }));
+    var body = byId('reportTableBody');
+    body.innerHTML = '';
+    var totalOrders = 0, totalCompletions = 0;
+    rows.forEach(function(r){
+      totalOrders += r.orders;
+      totalCompletions += r.completions;
+      var tr = document.createElement('tr');
+      var label = r.isToday ? r.date + ' (오늘)' : r.date;
+      tr.innerHTML = '<td>'+label+'</td><td>'+r.orders+'개</td><td>'+r.completions+'건</td>';
+      body.appendChild(tr);
+    });
+    byId('reportTotals').textContent = '7일 합계 — 주문량 '+totalOrders+'개 · 완료 사업 '+totalCompletions+'건';
+  }
+  byId('hubReportBtn').addEventListener('click', function(){
+    settingsHub.classList.remove('show');
+    renderReport();
+    reportPanel.classList.add('show');
+  });
+  byId('reportCloseBtn').addEventListener('click', function(){ reportPanel.classList.remove('show'); });
+  reportPanel.addEventListener('click', function(e){ if(e.target===reportPanel) reportPanel.classList.remove('show'); });
+
+  var helpPanel = byId('helpPanel');
+  byId('helpBtn').addEventListener('click', function(){
+    helpPanel.classList.add('show');
+  });
+  byId('helpCloseBtn').addEventListener('click', function(){
+    helpPanel.classList.remove('show');
+  });
+  helpPanel.addEventListener('click', function(e){
+    if(e.target===helpPanel) helpPanel.classList.remove('show');
+  });
+
+  byId('hubRenameBtn').addEventListener('click', function(){
+    settingsHub.classList.remove('show');
+    renderSettingsForm();
+    settingsPanel.classList.add('show');
+  });
+  byId('settingsCloseBtn').addEventListener('click', function(){
+    settingsPanel.classList.remove('show');
+  });
+  settingsPanel.addEventListener('click', function(e){
+    if(e.target===settingsPanel) settingsPanel.classList.remove('show');
+  });
+  byId('settingsSaveBtn').addEventListener('click', function(){
+    settings.company = byId('setCompany').value.trim() || settings.company;
+    teamOrder.forEach(function(k){
+      var v = byId('setTeam-'+k).value.trim();
+      if(v) settings.teams[k] = v;
+    });
+    staff.forEach(function(s){
+      var v = byId('setName-'+s.id).value.trim();
+      if(v) settings.names[s.id] = v;
+    });
+    applySettingsToDOM();
+    try{ localStorage.setItem('ggj_office_settings_v2', JSON.stringify(settings)); }
+    catch(e){ toast('저장 완료 (이 세션에서만 유지돼요)'); settingsPanel.classList.remove('show'); return; }
+    settingsPanel.classList.remove('show');
+    toast('설정을 저장했습니다');
+  });
+
+  // ===== 설정 내보내기 / 불러오기 (JSON 파일) =====
+  byId('settingsExportBtn').addEventListener('click', function(){
+    var exportData = {
+      type: 'ggj-office-export',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      settings: settings,
+      projects: projects,
+      stats: staffStats
+    };
+    var blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = '우리의사무실_설정_' + dateKey() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    toast('설정 파일을 내보냈습니다');
+  });
+
+  byId('settingsImportBtn').addEventListener('click', function(){
+    byId('settingsImportFile').click();
+  });
+  byId('settingsImportFile').addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var data = JSON.parse(reader.result);
+        if(data.settings){
+          if(data.settings.company) settings.company = data.settings.company;
+          if(data.settings.teams) Object.assign(settings.teams, data.settings.teams);
+          if(data.settings.names) Object.assign(settings.names, data.settings.names);
+        }
+        if(Array.isArray(data.projects)){
+          projects = data.projects;
+          nextProjId = (projects.reduce(function(m,p){ return Math.max(m, p.id||0); }, 0)) + 1;
+          saveProjects();
+        }
+        if(data.stats){
+          Object.assign(staffStats, data.stats);
+          saveStats();
+        }
+        applySettingsToDOM();
+        try{ localStorage.setItem('ggj_office_settings_v2', JSON.stringify(settings)); }catch(err){}
+        renderSettingsForm();
+        toast('설정을 불러왔습니다');
+      }catch(err){
+        toast('파일을 읽을 수 없어요. 올바른 설정 파일인지 확인해주세요');
+      }
+      byId('settingsImportFile').value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  // 저장된 이름이 있었다면 화면에도 반영
+  applySettingsToDOM();
+
+})();
+</script>
+
+</body>
+</html>
