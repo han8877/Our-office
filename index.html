@@ -174,9 +174,61 @@
   .dayLogRow{ display:flex; gap:8px; font-size:11.5px; color:#5c4a3a; padding:4px 2px; border-bottom:1px dashed #ddd8cc; }
   .dayLogRow:last-child{ border-bottom:none; }
   .dayLogTime{ color:#8a8a86; flex-shrink:0; width:34px; }
+
+  /* ===== 접속(인트로) 화면 ===== */
+  #introScreen{ position:fixed; inset:0; background:#F7F4EE; display:none; flex-direction:column; align-items:center; justify-content:center; z-index:50; padding:24px 16px; box-sizing:border-box; text-align:center; }
+  #introScreen.show{ display:flex; }
+  #introScreen .introBoss{ width:190px; height:auto; margin-bottom:2px; }
+  #introScreen h1{ font-size:20px; color:#5c4a3a; margin:4px 0 26px; }
+  #introScreen .enterBtn{ font-size:15px; padding:13px 30px; height:auto; }
+  #introScreen .introCopyright{ position:absolute; left:0; right:0; bottom:20px; font-size:10.5px; color:#8a8a86; line-height:1.6; }
 </style>
 </head>
 <body>
+
+<div id="introScreen" class="show">
+  <svg class="introBoss" viewBox="-40 -80 80 98" xmlns="http://www.w3.org/2000/svg" role="img">
+    <title>사장님 인사</title>
+    <g stroke="none">
+      <rect x="-34" y="-73" width="68" height="24" rx="8" fill="#fffdf8" stroke="#5c4a3a" stroke-width="1"/>
+      <polygon points="-6,-49 6,-49 0,-41" fill="#fffdf8" stroke="#5c4a3a" stroke-width="1"/>
+      <text x="0" y="-58" font-size="9.5" text-anchor="middle" fill="#5c4a3a" stroke="none">오늘도 반가워요~</text>
+    </g>
+    <g stroke="none">
+      <ellipse cx="-4.5" cy="6.5" rx="3.2" ry="3.6" fill="#8a6a4f"/><ellipse cx="4.5" cy="6.5" rx="3.2" ry="3.6" fill="#8a6a4f"/>
+      <path d="M -12.5 -35 C -13 -39 -11.5 -43.5 -8 -44.8 C -6 -45.4 -4.8 -43.8 -5.3 -42 C -6 -39 -7 -35.5 -8.8 -32.8 C -10 -31 -12 -32.5 -12.5 -35 Z" fill="#f0973f"/>
+      <path d="M 12.5 -35 C 13 -39 11.5 -43.5 8 -44.8 C 6 -45.4 4.8 -43.8 5.3 -42 C 6 -39 7 -35.5 8.8 -32.8 C 10 -31 12 -32.5 12.5 -35 Z" fill="#f0973f"/>
+      <path d="M -10.3 -35.3 C -10.5 -38 -9.6 -41 -7.6 -42 C -7.9 -39.3 -8.5 -36.5 -9.5 -34 Z" fill="#ffcf8a"/>
+      <path d="M 10.3 -35.3 C 10.5 -38 9.6 -41 7.6 -42 C 7.9 -39.3 8.5 -36.5 9.5 -34 Z" fill="#ffcf8a"/>
+      <path d="M -12 -34 C -11.5 -37 -10.5 -40 -9 -42.5 L -8 -41 C -9 -38.5 -10 -36 -10.8 -33.5 Z" fill="#3a2a1f"/>
+      <path d="M 12 -34 C 11.5 -37 10.5 -40 9 -42.5 L 8 -41 C 9 -38.5 10 -36 10.8 -33.5 Z" fill="#3a2a1f"/>
+      <ellipse cx="-11.5" cy="-6" rx="3.4" ry="4.6" fill="#8a8a86"/><ellipse cx="11.5" cy="-6" rx="3.4" ry="4.6" fill="#8a8a86"/>
+      <path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="#8a8a86"/>
+      <path d="M -6 -18 L -1 -12 L -4 -10 Z" fill="#33363b"/>
+      <path d="M 6 -18 L 1 -12 L 4 -10 Z" fill="#33363b"/>
+      <path d="M -2 -16 L 2 -16 L 1.2 -6 L 0 -3 L -1.2 -6 Z" fill="#7a3b3b"/>
+      <circle cx="0" cy="-30.5" r="12" fill="#f0973f"/>
+      <ellipse cx="-7.5" cy="-27" rx="2.3" ry="1.6" fill="#f4a99a" opacity="0.7"/><ellipse cx="7.5" cy="-27" rx="2.3" ry="1.6" fill="#f4a99a" opacity="0.7"/>
+      <circle cx="-4.3" cy="-31" r="1.3" fill="#3a2a1f"/><circle cx="4.3" cy="-31" r="1.3" fill="#3a2a1f"/>
+      <ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="#3a2a1f"/>
+      <path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="#3a2a1f" stroke-width="0.7" stroke-linecap="round"/>
+      <path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="#3a2a1f" stroke-width="0.7" stroke-linecap="round"/>
+      <g fill="none" stroke="#d4af37" stroke-width="1.1">
+        <rect x="-6.8" y="-32.3" width="5.2" height="4.8" rx="1.4"/>
+        <rect x="1.6" y="-32.3" width="5.2" height="4.8" rx="1.4"/>
+        <line x1="-1.6" y1="-30" x2="1.6" y2="-30"/>
+        <line x1="-8.6" y1="-30.3" x2="-6.8" y2="-30.6"/>
+        <line x1="6.8" y1="-30.6" x2="8.6" y2="-30.3"/>
+      </g>
+    </g>
+  </svg>
+  <h1>우리의 사무실</h1>
+  <button class="btn enterBtn" id="enterOfficeBtn">출근하기</button>
+  <div class="introCopyright">
+    <div>© 2026 우리의 사무실. All rights reserved.</div>
+    <div>Made by Han JH</div>
+  </div>
+</div>
 
 <h1 id="companyName">우리의 사무실</h1>
 
@@ -3996,6 +4048,11 @@
       byId('settingsImportFile').value = '';
     };
     reader.readAsText(file);
+  });
+
+  // ===== 접속(인트로) 화면: 출근하기 버튼 =====
+  byId('enterOfficeBtn').addEventListener('click', function(){
+    byId('introScreen').classList.remove('show');
   });
 
   // 저장된 이름이 있었다면 화면에도 반영
