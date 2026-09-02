@@ -67,6 +67,12 @@
   .hubRow{ display:flex; gap:8px; }
   .hubRow .btn{ flex:1; justify-content:center; height:44px; }
 
+  #resetConfirmPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:44; padding:16px; }
+  #resetConfirmPanel.show{ display:flex; }
+  #resetConfirmInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:320px; width:100%; border:1.4px solid #5c4a3a; }
+  #resetConfirmInner h2{ font-size:14px; margin:0 0 8px; color:#5c4a3a; }
+  #resetConfirmInner p{ font-size:12px; color:#8a8a86; line-height:1.6; margin:0; }
+
   #creditsPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:41; padding:16px; }
   #creditsPanel.show{ display:flex; }
   #creditsInner{ background:#fffdf8; border-radius:14px; padding:20px; max-width:320px; width:100%; border:1.4px solid #5c4a3a; text-align:center; }
@@ -117,6 +123,25 @@
   .mail-body textarea{ border:1px solid #ddd8cc; border-radius:8px; padding:8px; font-size:12.5px; min-height:70px; resize:vertical; font-family:inherit; }
   .mail-error{ font-size:11.5px; color:#b23b3b; min-height:14px; }
   .mail-send{ align-self:flex-end; }
+
+  .msg-badge{ display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; border:2.4px solid #6b9e6b; background:transparent; box-sizing:border-box; margin-left:2px; }
+  .msg-badge.has-count{ border:none; background:#e8935a; color:#fff; font-size:9px; font-weight:600; line-height:1; }
+  .noteBoxBtn{ font-size:11px; color:#5c4a3a; border:1px solid #5c4a3a; border-radius:6px; padding:3px 7px; background:#fff; cursor:pointer; }
+  .mail-head .headRight{ display:flex; gap:6px; align-items:center; }
+  .rosterRow{ display:flex; align-items:center; gap:6px; padding:5px 2px; border-bottom:1px dashed #ddd8cc; }
+  .rosterRow:last-child{ border-bottom:none; }
+  .rosterDot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .rosterAvatar{ width:20px; height:20px; border-radius:50%; flex-shrink:0; border:1px solid #5c4a3a; box-sizing:border-box; }
+  .rosterName{ font-size:11px; color:#5c4a3a; width:40px; flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rosterStatus{ flex:1; font-size:10px; color:#8a8a86; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rosterNoteBtn{ font-size:9.5px; color:#5c4a3a; background:#fff; border:1px solid #5c4a3a; border-radius:6px; padding:3px 6px; cursor:pointer; white-space:nowrap; flex-shrink:0; }
+  #messengerOverlay .mail-window{ max-width:300px; }
+  #messengerOverlay .mail-body{ max-height:56vh; overflow-y:auto; padding-top:4px; }
+  #messengerOverlay .mail-head{ padding:8px 10px; font-size:12.5px; }
+  .headRight{ gap:4px; }
+  .noteBoxBtn{ font-size:10.5px; padding:4px 8px; }
+  .noteItem{ border:1px solid #ddd8cc; border-radius:8px; padding:8px; font-size:12px; color:#5c4a3a; }
+  .noteItem .noteMeta{ font-size:10.5px; color:#8a8a86; margin-bottom:4px; }
 </style>
 </head>
 <body>
@@ -845,6 +870,11 @@
       <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="11" rx="1.5" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M1 1 L8 7 L15 1" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
       메일 보내기
     </button>
+    <button class="btn" id="messengerBtn" aria-label="메신저">
+      <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="9" rx="2" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M4 9.5 L4 11.5 L6.5 9.5" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
+      메신저
+      <span id="msgBadge" class="msg-badge"></span>
+    </button>
   </div>
 </div>
 
@@ -864,6 +894,44 @@
       <textarea id="mailBody" placeholder="내용을 입력하세요" maxlength="60"></textarea>
       <div class="mail-error" id="mailError"></div>
       <button class="btn mail-send" id="mailSendBtn">보내기</button>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="messengerOverlay">
+  <div class="mail-window" style="max-width:340px;">
+    <div class="mail-head">
+      <span>메신저 접속자</span>
+      <div class="headRight">
+        <button class="noteBoxBtn" id="inboxOpenBtn">받은쪽지함</button>
+        <button class="noteBoxBtn" id="sentOpenBtn">보낸쪽지함</button>
+        <button id="messengerCloseX">×</button>
+      </div>
+    </div>
+    <div class="mail-body" style="padding-top:6px;">
+      <div id="rosterList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="noteComposeOverlay">
+  <div class="mail-window">
+    <div class="mail-head"><span>쪽지 작성</span><button id="noteComposeCloseX">×</button></div>
+    <div class="mail-body">
+      <div class="mail-field"><label>받는사람</label><span id="noteToText" style="font-size:12.5px; color:#5c4a3a;"></span></div>
+      <div class="mail-field"><label>보내는사람</label><input type="text" id="noteFrom" value="나"></div>
+      <textarea id="noteBody" placeholder="내용은 최대 150자까지만 가능합니다." maxlength="150"></textarea>
+      <div class="mail-error" id="noteError"></div>
+      <button class="btn mail-send" id="noteSendBtn">보내기</button>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="noteBoxOverlay">
+  <div class="mail-window">
+    <div class="mail-head"><span id="noteBoxTitle">받은쪽지함</span><div class="headRight"><button class="noteBoxBtn" id="noteBoxClearBtn">비우기</button><button id="noteBoxCloseX">×</button></div></div>
+    <div class="mail-body">
+      <div id="noteBoxList" style="display:flex; flex-direction:column; gap:8px; max-height:320px; overflow-y:auto;"></div>
     </div>
   </div>
 </div>
@@ -904,6 +972,20 @@
     <div class="hubRow" style="margin-top:8px;">
       <button class="btn" id="hubReportBtn">주간 리포트</button>
     </div>
+    <div class="hubRow" style="margin-top:8px;">
+      <button class="btn" id="hubResetBtn">초기화</button>
+    </div>
+  </div>
+</div>
+
+<div id="resetConfirmPanel">
+  <div id="resetConfirmInner">
+    <h2>초기화</h2>
+    <p>회사명·이름·프로젝트·통계·쪽지 등 모든 설정이 기본값으로 되돌아갑니다. 되돌릴 수 없어요.</p>
+    <div class="hubRow" style="margin-top:14px;">
+      <button class="btn" id="resetCancelBtn">취소</button>
+      <button class="btn" id="resetConfirmBtn">초기화</button>
+    </div>
   </div>
 </div>
 
@@ -936,7 +1018,7 @@
     <p id="profileBio" style="color:#5c4a3a; font-size:12.5px; line-height:1.5; margin:0 0 12px; padding:8px 10px; background:#f7f2e4; border-radius:6px;">-</p>
     <div class="setRow"><label>대화한 횟수</label><span id="profileTalks">0</span></div>
     <div class="setRow"><label>야근한 횟수</label><span id="profileOvertime">0</span></div>
-    <div id="profileLeaveNote" class="helpNote" style="display:none;">오늘은 연차예요 🌴</div>
+    <div id="profileLeaveNote" class="helpNote" style="display:none;"></div>
     <button class="btn" id="profileCloseBtn" style="margin-top:12px;">닫기</button>
   </div>
 </div>
@@ -1480,6 +1562,61 @@
     return !!s && s.id === id;
   }
 
+  // 오늘 출장인 직원(있다면) — 매일 약 20% 확률로 한 명, 연차자와는 겹치지 않음 (하루 종일 부재)
+  function getOnTripStaffToday(){
+    var key = dateKey();
+    var flagVal = seedHash(key+'-tripflag') % 100;
+    if(flagVal >= 20) return null;
+    var leave = getOnLeaveStaffToday();
+    var pool = staff.filter(function(s){ return !leave || s.id !== leave.id; });
+    if(pool.length === 0) return null;
+    var idx = seedHash(key+'-tripidx') % pool.length;
+    return pool[idx];
+  }
+  function isOnTripToday(id){
+    var s = getOnTripStaffToday();
+    return !!s && s.id === id;
+  }
+
+  // 하루 종일 자리를 비우는 직원 id 목록(연차/출장) — { id: 'leave'|'trip' }
+  function getOutAllDayIds(){
+    var ids = {};
+    var leave = getOnLeaveStaffToday();
+    if(leave) ids[leave.id] = 'leave';
+    var trip = getOnTripStaffToday();
+    if(trip) ids[trip.id] = 'trip';
+    return ids;
+  }
+
+  // 오늘 조퇴하는 직원(있다면) — 매일 약 20% 확률로 한 명, 14:30~17:29 사이 랜덤 시각에 조퇴 (연차/출장자는 제외)
+  function getEarlyLeaveStaffToday(){
+    var key = dateKey();
+    var flagVal = seedHash(key+'-earlyflag') % 100;
+    if(flagVal >= 20) return null;
+    var outIds = getOutAllDayIds();
+    var pool = staff.filter(function(s){ return !outIds[s.id]; });
+    if(pool.length === 0) return null;
+    var idx = seedHash(key+'-earlyidx') % pool.length;
+    var person = pool[idx];
+    var offsetMin = seedHash(key+'-earlytime') % 180; // 0~179분
+    var totalMin = 14*60 + 30 + offsetMin; // 14:30 ~ 17:29
+    return { staff:person, hour:Math.floor(totalMin/60), minute:totalMin%60 };
+  }
+  // 지금 이 순간 기준으로, 해당 직원이 이미 조퇴해서 자리에 없어야 하는지
+  function hasLeftEarlyByNow(id, h, m){
+    var el = getEarlyLeaveStaffToday();
+    if(!el || el.staff.id !== id) return false;
+    var mNow = (h!=null ? h : new Date().getHours())*60 + (m!=null ? m : new Date().getMinutes());
+    var mEarly = el.hour*60 + el.minute;
+    return mNow >= mEarly;
+  }
+  // 오늘 하루 기준으로 이 직원이 "지금은 없는" 상태인지(연차/출장/조퇴 통합)
+  function isGoneForDay(id){
+    var outIds = getOutAllDayIds();
+    if(outIds[id]) return true;
+    return hasLeftEarlyByNow(id);
+  }
+
   // ===== 탭 비활성 상태에서의 알림 (제목 깜빡임) =====
   var baseTabTitle = document.title;
   var tabFlashTimer = null;
@@ -1502,28 +1639,33 @@
   });
 
   // ===== 하루 사이클: 08:30~09:00 랜덤 출근 / 12시 점심(실장 멘트+줄퇴장) / 13시 복귀(첫 직원 멘트) =====
-  var flag830=false, flag9=false, flag12=false, flag13=false, flag18=false, flagHolidayNotice=false;
+  var flag830=false, flag9=false, flag12=false, flag13=false, flag18=false, flagHolidayNotice=false, flagEarly=false;
 
-  // 08:30이 되면, 각 직원마다 0~30분 사이 랜덤한 시각에 혼자 걸어들어오도록 예약 (연차자는 제외)
+  // 08:30이 되면, 각 직원마다 0~30분 사이 랜덤한 시각에 혼자 걸어들어오도록 예약 (연차/출장자는 제외)
   function scheduleRandomArrivals(){
     if(isNonWorkingDay()) return;
-    var leave = getOnLeaveStaffToday();
+    var outIds = getOutAllDayIds();
     staff.forEach(function(s){
-      if(leave && s.id === leave.id) return;
+      if(outIds[s.id]) return;
       var offsetMin = Math.random() * 29.5;
       setTimeout(function(){
         if(!charEl(s.id).classList.contains('present')) walkIn(s);
       }, offsetMin * 60000);
     });
-    toast('직원들이 하나둘 출근하기 시작합니다' + (leave ? ' (' + leave.name + '님은 오늘 연차예요)' : ''));
+    var leave = getOnLeaveStaffToday();
+    var trip = getOnTripStaffToday();
+    var notes = [];
+    if(leave) notes.push(leave.name+'님은 오늘 연차예요');
+    if(trip) notes.push(trip.name+'님은 오늘 출장이에요');
+    toast('직원들이 하나둘 출근하기 시작합니다' + (notes.length ? ' (' + notes.join(', ') + ')' : ''));
   }
 
-  // 9시 정각에는 예약이 늦었더라도 무조건 전원 출근 상태로 보정 (연차자는 제외)
+  // 9시 정각에는 예약이 늦었더라도 무조건 전원 출근 상태로 보정 (연차/출장자는 제외)
   function ensureAllArrived(){
     if(isNonWorkingDay()) return;
-    var leave = getOnLeaveStaffToday();
+    var outIds = getOutAllDayIds();
     staff.forEach(function(s){
-      if(leave && s.id === leave.id) return;
+      if(outIds[s.id]) return;
       if(!charEl(s.id).classList.contains('present')) showInstant(s.id);
     });
   }
@@ -1531,7 +1673,7 @@
   function lunchOut(){
     if(isNonWorkingDay()) return;
     var lead = staffMap['kobujang'];
-    showBubble(lead, '점심시간입니다.');
+    if(!isGoneForDay(lead.id)) showBubble(lead, '점심시간입니다.');
     toast('점심시간입니다');
     setTimeout(function(){
       staff.forEach(function(s, i){
@@ -1542,9 +1684,10 @@
 
   function lunchReturn(){
     if(isNonWorkingDay()) return;
-    var leave = getOnLeaveStaffToday();
+    var outIds = getOutAllDayIds();
     staff.forEach(function(s, i){
-      if(leave && s.id === leave.id) return;
+      if(outIds[s.id]) return;
+      if(hasLeftEarlyByNow(s.id)) return;
       setTimeout(function(){
         walkIn(s, function(){
           if(i===0) showBubble(s, '배부르다.');
@@ -1562,6 +1705,17 @@
     });
   }
 
+  // 조퇴 시각이 되면 해당 직원 혼자 먼저 퇴근
+  function triggerEarlyLeave(s){
+    if(!charEl(s.id).classList.contains('present')){
+      hideInstant(s.id);
+      return;
+    }
+    showBubble(s, '먼저 조퇴할게요.');
+    toast(s.name+'님이 조퇴합니다');
+    setTimeout(function(){ walkOut(s); }, 1000);
+  }
+
   function applyPhaseForLoad(h, m){
     if(isNonWorkingDay()){
       setAllInstant(false);
@@ -1570,7 +1724,7 @@
       return;
     }
 
-    var leave = getOnLeaveStaffToday();
+    var outIds = getOutAllDayIds();
     var minutesNow = h*60 + m;
     var t830 = 8*60+30, t900 = 9*60;
 
@@ -1580,7 +1734,7 @@
       // 08:30~09:00 사이에 접속 -> 이미 도착했어야 할 인원은 즉시 표시, 나머지는 남은 시간만큼 예약
       var elapsedMin = minutesNow - t830;
       staff.forEach(function(s){
-        if(leave && s.id === leave.id){ hideInstant(s.id); return; }
+        if(outIds[s.id]){ hideInstant(s.id); return; }
         var offsetMin = Math.random() * 29.5;
         if(elapsedMin >= offsetMin){
           showInstant(s.id);
@@ -1594,7 +1748,8 @@
     } else {
       var working = (h>=9 && h<12) || (h>=13 && h<18);
       staff.forEach(function(s){
-        if(leave && s.id === leave.id){ hideInstant(s.id); }
+        if(outIds[s.id]){ hideInstant(s.id); }
+        else if(hasLeftEarlyByNow(s.id, h, m)){ hideInstant(s.id); }
         else if(working){ showInstant(s.id); }
         else { hideInstant(s.id); }
       });
@@ -1605,6 +1760,8 @@
     flag12 = h >= 12;
     flag13 = h >= 13;
     flag18 = h >= 18;
+    var earlyToday = getEarlyLeaveStaffToday();
+    flagEarly = !earlyToday || hasLeftEarlyByNow(earlyToday.staff.id, h, m);
   }
 
   // ===== 시계 =====
@@ -1646,8 +1803,13 @@
       if(h===12 && m===0 && !flag12){ flag12=true; lunchOut(); }
       if(h===13 && m===0 && !flag13){ flag13=true; lunchReturn(); }
       if(h===18 && m===0 && !flag18){ flag18=true; eveningLeave(); }
+      var earlyToday = getEarlyLeaveStaffToday();
+      if(earlyToday && h===earlyToday.hour && m===earlyToday.minute && !flagEarly){
+        flagEarly = true;
+        triggerEarlyLeave(earlyToday.staff);
+      }
     }
-    if(h===0 && m===0){ flag830=false; flag9=false; flag12=false; flag13=false; flag18=false; flagHolidayNotice=false; }
+    if(h===0 && m===0){ flag830=false; flag9=false; flag12=false; flag13=false; flag18=false; flagHolidayNotice=false; flagEarly=false; }
   }
 
   // ===== 날씨: 맑음 15 : 비 1 비율 =====
@@ -1699,6 +1861,9 @@
       ensureDailyLogFresh();
       dailyLog.orders++;
       saveDailyLog();
+      lifetime.orders++;
+      saveLifetime();
+      maybeTriggerCourierVisit();
     }
     prodFill.style.width = prodProgress + '%';
   }, 1400);
@@ -1988,9 +2153,8 @@
 
   // 전 직원이 동시에 말풍선으로 외치는 연출 (자리에 없던 직원도 잠깐 등장)
   function celebrateAll(){
-    var leaveCel = getOnLeaveStaffToday();
     staff.forEach(function(s){
-      if(leaveCel && s.id === leaveCel.id) return;
+      if(isGoneForDay(s.id)) return;
       if(!charEl(s.id).classList.contains('present')) showInstant(s.id);
       showBubble(s, '프로젝트 완료!');
     });
@@ -2000,7 +2164,7 @@
   // 15분마다 실장이 노란 말풍선으로 혼잣말
   setInterval(function(){
     var lead = staffMap['kobujang'];
-    if(!lead || isOnLeaveToday(lead.id)) return;
+    if(!lead || isGoneForDay(lead.id)) return;
     if(!charEl(lead.id).classList.contains('present')) showInstant(lead.id);
     showBubble(lead, '지켜보고 있는 눈이 느껴져..', '#fff3a0');
     notifyTab('👀 실장님 | ' + baseTabTitle);
@@ -2015,8 +2179,7 @@
 
     if(overtimeMode){
       setAllInstant(false);
-      var leaveOT = getOnLeaveStaffToday();
-      var pool = staff.filter(function(s){ return !leaveOT || s.id !== leaveOT.id; });
+      var pool = staff.filter(function(s){ return !isGoneForDay(s.id); });
       var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
       var callCount = Math.floor(Math.random()*3) + 2;
       var called = shuffled.slice(0, callCount);
@@ -2042,20 +2205,28 @@
     {x:590,y:682},{x:590,y:768},{x:533,y:700},{x:533,y:750},{x:647,y:700},{x:647,y:750}
   ];
   var inMeeting = {}; // 현재 회의 중인 직원 id 추적
+  var busyStaff = {}; // 회의/탕비실/방문객 이벤트 등 다른 동작 중인 직원(중복 참여 방지)
+  function markBusy(id){ busyStaff[id] = true; }
+  function clearBusy(id){ delete busyStaff[id]; }
+  function isBusy(id){ return !!busyStaff[id]; }
 
   meetingBtn.addEventListener('click', function(){
     if(meetingBtn.disabled) return;
     meetingBtn.disabled = true;
     meetingBtn.textContent = '회의 중';
 
-    var leaveMt = getOnLeaveStaffToday();
-    var poolMt = staff.filter(function(s){ return !leaveMt || s.id !== leaveMt.id; });
+    lifetime.meetings++;
+    saveLifetime();
+    maybeTriggerVendorVisit();
+
+    var poolMt = staff.filter(function(s){ return !isGoneForDay(s.id) && !isBusy(s.id); });
     var shuffled = poolMt.slice().sort(function(){ return Math.random()-0.5; });
     var chosen = shuffled.slice(0,6);
     chosen.forEach(function(s, i){
       charEl(s.id).classList.add('present');
       metSet[s.id] = true;
       inMeeting[s.id] = true;
+      markBusy(s.id);
       setPos(s.id, meetingSeats[i].x, meetingSeats[i].y, true, 0.9);
     });
     toast('회의를 시작합니다 — ' + chosen.map(function(s){return s.name;}).join(', '));
@@ -2064,6 +2235,7 @@
       chosen.forEach(function(s){
         setPos(s.id, s.x, s.y, true, 0.9);
         delete inMeeting[s.id];
+        clearBusy(s.id);
       });
       meetingBtn.disabled = false;
       meetingBtn.textContent = '회의';
@@ -2085,7 +2257,7 @@
     if(breakBtn.disabled) return;
 
     var pool = staff.filter(function(s){
-      return charEl(s.id).classList.contains('present') && !inMeeting[s.id];
+      return charEl(s.id).classList.contains('present') && !isBusy(s.id);
     });
     if(pool.length < 2){
       toast('지금 탕비실에 갈 수 있는 직원이 부족해요');
@@ -2093,9 +2265,14 @@
     }
     breakBtn.disabled = true;
 
+    lifetime.breaks++;
+    saveLifetime();
+    maybeTriggerBossVisit();
+
     var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
     var chosen = shuffled.slice(0,2);
     chosen.forEach(function(s, i){
+      markBusy(s.id);
       setPos(s.id, breakSeats[i].x, breakSeats[i].y, true, 0.9);
     });
     toast(chosen.map(function(s){return s.name;}).join(', ')+'이(가) 탕비실로 향합니다');
@@ -2107,10 +2284,337 @@
     }, 1000);
 
     setTimeout(function(){
-      chosen.forEach(function(s){ setPos(s.id, s.x, s.y, true, 0.9); });
+      chosen.forEach(function(s){ setPos(s.id, s.x, s.y, true, 0.9); clearBusy(s.id); });
       breakBtn.disabled = false;
     }, 6200);
   });
+
+  // ===== 누적 카운터 (택배/회의/탕비실 방문 이벤트 트리거용) =====
+  var LIFETIME_KEY = 'ggj_office_lifetime_v1';
+  var lifetime = { orders:0, meetings:0, breaks:0 };
+  try{
+    var savedLife = localStorage.getItem(LIFETIME_KEY);
+    if(savedLife){
+      var parsedLife = JSON.parse(savedLife);
+      if(parsedLife) lifetime = { orders:parsedLife.orders||0, meetings:parsedLife.meetings||0, breaks:parsedLife.breaks||0 };
+    }
+  }catch(e){}
+  function saveLifetime(){ try{ localStorage.setItem(LIFETIME_KEY, JSON.stringify(lifetime)); }catch(e){} }
+
+  // ===== 깜짝 방문객: 사장님 / 택배기사 / 업체직원 =====
+  var VISITOR_ENTRANCE = { x:78, y:740 };
+  var VISITOR_WAREHOUSE = { x:900, y:470 };
+  var VISITOR_WINDOW = { x:345, y:140 };
+  var VISITOR_BREAK = { x:747, y:745 };
+  var VISITOR_LEAD_TABLE = { x:680, y:122 };
+  var VISITOR_VENDOR_TABLE = { x:680, y:178 };
+  var VISITOR_NOTE_LEAD_DESK = { x:155, y:280 };
+  var VISITOR_STICKER_LEAD_DESK = { x:605, y:400 };
+
+  function visitorNamePlate(label){
+    return '<g stroke="none">' +
+      '<rect x="-20" y="14" width="40" height="13" rx="0" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.8" shape-rendering="crispEdges"/>' +
+      '<text x="0" y="23.5" font-size="6.8" text-anchor="middle" fill="#5c4a3a" font-weight="400" stroke="none">'+label+'</text>' +
+    '</g>';
+  }
+
+  function buildVisitorBoss(){
+    return '<g stroke="none">' +
+      '<ellipse cx="-4.5" cy="6.5" rx="3.2" ry="3.6" fill="'+LEG_COLOR+'"/><ellipse cx="4.5" cy="6.5" rx="3.2" ry="3.6" fill="'+LEG_COLOR+'"/>' +
+      '<path d="M -12.5 -35 C -13 -39 -11.5 -43.5 -8 -44.8 C -6 -45.4 -4.8 -43.8 -5.3 -42 C -6 -39 -7 -35.5 -8.8 -32.8 C -10 -31 -12 -32.5 -12.5 -35 Z" fill="#f0973f"/>' +
+      '<path d="M 12.5 -35 C 13 -39 11.5 -43.5 8 -44.8 C 6 -45.4 4.8 -43.8 5.3 -42 C 6 -39 7 -35.5 8.8 -32.8 C 10 -31 12 -32.5 12.5 -35 Z" fill="#f0973f"/>' +
+      '<path d="M -10.3 -35.3 C -10.5 -38 -9.6 -41 -7.6 -42 C -7.9 -39.3 -8.5 -36.5 -9.5 -34 Z" fill="#ffcf8a"/>' +
+      '<path d="M 10.3 -35.3 C 10.5 -38 9.6 -41 7.6 -42 C 7.9 -39.3 8.5 -36.5 9.5 -34 Z" fill="#ffcf8a"/>' +
+      '<path d="M -12 -34 C -11.5 -37 -10.5 -40 -9 -42.5 L -8 -41 C -9 -38.5 -10 -36 -10.8 -33.5 Z" fill="'+DARK+'"/>' +
+      '<path d="M 12 -34 C 11.5 -37 10.5 -40 9 -42.5 L 8 -41 C 9 -38.5 10 -36 10.8 -33.5 Z" fill="'+DARK+'"/>' +
+      '<ellipse cx="-11.5" cy="-6" rx="3.4" ry="4.6" fill="#8a8a86"/><ellipse cx="11.5" cy="-6" rx="3.4" ry="4.6" fill="#8a8a86"/>' +
+      '<path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="#8a8a86"/>' +
+      '<path d="M -6 -18 L -1 -12 L -4 -10 Z" fill="#33363b"/>' +
+      '<path d="M 6 -18 L 1 -12 L 4 -10 Z" fill="#33363b"/>' +
+      '<path d="M -2 -16 L 2 -16 L 1.2 -6 L 0 -3 L -1.2 -6 Z" fill="#7a3b3b"/>' +
+      '<circle cx="0" cy="-30.5" r="12" fill="#f0973f"/>' +
+      '<ellipse cx="-7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.7"/><ellipse cx="7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.7"/>' +
+      '<circle cx="-4.3" cy="-31" r="1.3" fill="'+DARK+'"/><circle cx="4.3" cy="-31" r="1.3" fill="'+DARK+'"/>' +
+      '<ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="'+DARK+'"/>' +
+      '<path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.7" stroke-linecap="round"/>' +
+      '<path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.7" stroke-linecap="round"/>' +
+      '<g fill="none" stroke="#d4af37" stroke-width="1.1">' +
+        '<rect x="-6.8" y="-32.3" width="5.2" height="4.8" rx="1.4"/>' +
+        '<rect x="1.6" y="-32.3" width="5.2" height="4.8" rx="1.4"/>' +
+        '<line x1="-1.6" y1="-30" x2="1.6" y2="-30"/>' +
+        '<line x1="-8.6" y1="-30.3" x2="-6.8" y2="-30.6"/>' +
+        '<line x1="6.8" y1="-30.6" x2="8.6" y2="-30.3"/>' +
+      '</g>' +
+    '</g>' + visitorNamePlate('사장님');
+  }
+
+  function buildVisitorCourier(){
+    return '<g stroke="none">' +
+      '<path d="M 9 0 C 20 -6 26 -22 18 -34 C 26 -30 30 -16 24 -4 C 21 4 14 8 8 6 Z" fill="#c9906a"/>' +
+      '<path d="M 14 -4 C 20 -8 23 -18 18 -28 C 22 -24 24 -16 21 -8 C 19 -3 16 0 13 0 Z" fill="#e8c39f" opacity="0.8"/>' +
+      '<ellipse cx="-4.5" cy="6.5" rx="3.2" ry="3.6" fill="'+LEG_COLOR+'"/><ellipse cx="4.5" cy="6.5" rx="3.2" ry="3.6" fill="'+LEG_COLOR+'"/>' +
+      '<circle cx="-9" cy="-41" r="4" fill="#c9906a"/><circle cx="9" cy="-41" r="4" fill="#c9906a"/>' +
+      '<circle cx="-9" cy="-41" r="2" fill="#e8c39f"/><circle cx="9" cy="-41" r="2" fill="#e8c39f"/>' +
+      '<ellipse cx="-11.5" cy="-6" rx="3.4" ry="4.6" fill="#e8c39f"/><ellipse cx="11.5" cy="-6" rx="3.4" ry="4.6" fill="#e8c39f"/>' +
+      '<path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="#3a7ac0"/>' +
+      '<path d="M -8 -10 C -4 -8 4 -8 8 -10" fill="none" stroke="#e3b23c" stroke-width="1.4" stroke-linecap="round"/>' +
+      '<circle cx="0" cy="-30.5" r="12" fill="#c9906a"/>' +
+      '<ellipse cx="-7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.7"/><ellipse cx="7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.7"/>' +
+      '<circle cx="-4.3" cy="-31" r="1.3" fill="'+DARK+'"/><circle cx="4.3" cy="-31" r="1.3" fill="'+DARK+'"/>' +
+      '<ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="'+DARK+'"/>' +
+      '<path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.7" stroke-linecap="round"/>' +
+      '<path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.7" stroke-linecap="round"/>' +
+      '<path d="M -10.5 -34 C -10.5 -42 -5.5 -47 0 -47 C 5.5 -47 10.5 -42 10.5 -34 C 10.5 -33 -10.5 -33 -10.5 -34 Z" fill="#3a7ac0"/>' +
+      '<ellipse cx="4" cy="-33.5" rx="6" ry="2" fill="#2f6aa8"/>' +
+      '<circle cx="0" cy="-46.5" r="1.2" fill="#2f6aa8"/>' +
+    '</g>' + visitorNamePlate('택배 기사');
+  }
+
+  function buildVisitorVendor(){
+    return '<g stroke="none">' +
+      '<rect x="-14" y="-19" width="28" height="19" rx="4" fill="#9a978d"/>' +
+      '<rect x="-12" y="-16" width="8" height="10" rx="2" fill="#c9c6bc"/>' +
+      '<ellipse cx="-4.5" cy="6.5" rx="3.2" ry="3.6" fill="'+LEG_COLOR+'"/><ellipse cx="4.5" cy="6.5" rx="3.2" ry="3.6" fill="'+LEG_COLOR+'"/>' +
+      '<path d="M -12.5 -35 C -13 -39 -11.5 -43.5 -8 -44.8 C -6 -45.4 -4.8 -43.8 -5.3 -42 C -6 -39 -7 -35.5 -8.8 -32.8 C -10 -31 -12 -32.5 -12.5 -35 Z" fill="#b9b2a6"/>' +
+      '<path d="M 12.5 -35 C 13 -39 11.5 -43.5 8 -44.8 C 6 -45.4 4.8 -43.8 5.3 -42 C 6 -39 7 -35.5 8.8 -32.8 C 10 -31 12 -32.5 12.5 -35 Z" fill="#b9b2a6"/>' +
+      '<path d="M -10.3 -35.3 C -10.5 -38 -9.6 -41 -7.6 -42 C -7.9 -39.3 -8.5 -36.5 -9.5 -34 Z" fill="#d9d3c7"/>' +
+      '<path d="M 10.3 -35.3 C 10.5 -38 9.6 -41 7.6 -42 C 7.9 -39.3 8.5 -36.5 9.5 -34 Z" fill="#d9d3c7"/>' +
+      '<ellipse cx="-11.5" cy="-6" rx="3.4" ry="4.6" fill="#5c8f5c"/><ellipse cx="11.5" cy="-6" rx="3.4" ry="4.6" fill="#5c8f5c"/>' +
+      '<path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="#5c8f5c"/>' +
+      '<path d="M -8 -18 C -9 -10 -9 -2 -7 4" fill="none" stroke="#6f6c62" stroke-width="1.3"/>' +
+      '<path d="M 8 -18 C 9 -10 9 -2 7 4" fill="none" stroke="#6f6c62" stroke-width="1.3"/>' +
+      '<circle cx="0" cy="-30.5" r="12" fill="#b9b2a6"/>' +
+      '<ellipse cx="-7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.7"/><ellipse cx="7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.7"/>' +
+      '<circle cx="-4.3" cy="-31" r="1.3" fill="'+DARK+'"/><circle cx="4.3" cy="-31" r="1.3" fill="'+DARK+'"/>' +
+      '<ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="'+DARK+'"/>' +
+      '<path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.7" stroke-linecap="round"/>' +
+      '<path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.7" stroke-linecap="round"/>' +
+    '</g>' + visitorNamePlate('업체 직원');
+  }
+
+  var visitorDefs = {
+    boss:    { id:'visitorBoss',    build:buildVisitorBoss },
+    courier: { id:'visitorCourier', build:buildVisitorCourier },
+    vendor:  { id:'visitorVendor',  build:buildVisitorVendor }
+  };
+  Object.keys(visitorDefs).forEach(function(key){
+    var v = visitorDefs[key];
+    var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','office-char');
+    g.setAttribute('id','char-'+v.id);
+    g.style.transform = 'translate('+ENTRANCE.x+'px,'+ENTRANCE.y+'px)';
+    g.innerHTML = v.build();
+    charLayer.appendChild(g);
+  });
+
+  var visitorEventActive = false;
+
+  function allPresentStaffSay(text){
+    var present = staff.filter(function(s){ return charEl(s.id).classList.contains('present'); });
+    present.forEach(function(s, i){
+      setTimeout(function(){ showBubble(s, text); }, i*60);
+    });
+  }
+
+  function ensureStaffOnStage(id){
+    if(!charEl(id).classList.contains('present')) showInstant(id);
+  }
+
+  function clearBubble(id){
+    var holder = bubbleLayer.querySelector('[data-bubble-for="'+id+'"]');
+    if(holder){ clearTimeout(holder._tm); holder.innerHTML = ''; }
+  }
+
+  // ---- 택배기사 방문 (누적 주문 100개마다, 8초) ----
+  function maybeTriggerCourierVisit(){
+    if(visitorEventActive) return;
+    if(lifetime.orders <= 0 || lifetime.orders % 100 !== 0) return;
+    visitorEventActive = true;
+
+    var courierObj = { id:visitorDefs.courier.id };
+    var candidates = staff.filter(function(s){
+      return (s.teamKey==='note' || s.teamKey==='sticker') && s.role !== '팀장' && !isBusy(s.id) && !isGoneForDay(s.id);
+    });
+    if(candidates.length === 0){ visitorEventActive = false; return; }
+    var respondent = candidates[Math.floor(Math.random()*candidates.length)];
+    ensureStaffOnStage(respondent.id);
+    markBusy(respondent.id);
+
+    setPos(courierObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(courierObj.id).classList.add('present');
+    showBubble(courierObj, '택배 왔습니다. 어디다 놓을까요?');
+
+    setTimeout(function(){
+      showBubble(respondent, '앗! 재고창고에 놔주세요.');
+    }, 1100);
+
+    setTimeout(function(){
+      clearBubble(courierObj.id);
+      setPos(courierObj.id, VISITOR_WAREHOUSE.x, VISITOR_WAREHOUSE.y, true, 2.0);
+    }, 2200);
+
+    setTimeout(function(){
+      showBubble(courierObj, '안녕히 계세요.');
+    }, 4300);
+
+    setTimeout(function(){
+      clearBubble(courierObj.id);
+      setPos(courierObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, true, 2.0);
+    }, 5400);
+
+    setTimeout(function(){
+      charEl(courierObj.id).classList.remove('present');
+      clearBusy(respondent.id);
+      visitorEventActive = false;
+    }, 7600);
+  }
+
+  // ---- 업체직원 방문 (누적 회의 12번마다) ----
+  function maybeTriggerVendorVisit(){
+    if(visitorEventActive) return;
+    if(lifetime.meetings <= 0 || lifetime.meetings % 12 !== 0) return;
+    visitorEventActive = true;
+
+    var vendorObj = { id:visitorDefs.vendor.id };
+    var pr = staffMap['yoohongbo'];
+    var lead = staffMap['kobujang'];
+    var noteLead = staffMap['kimnote'];
+    var stickerLead = staffMap['jungsti'];
+    if(isBusy(pr.id) || isBusy(lead.id) || isGoneForDay(pr.id) || isGoneForDay(lead.id)){ visitorEventActive = false; return; }
+    ensureStaffOnStage(pr.id);
+    ensureStaffOnStage(lead.id);
+    markBusy(pr.id);
+    markBusy(lead.id);
+
+    setPos(vendorObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(vendorObj.id).classList.add('present');
+    showBubble(vendorObj, '저..회의때문에..');
+
+    setTimeout(function(){
+      showBubble(pr, '아! 실장님 방으로 가시면 돼요.');
+    }, 900);
+
+    setTimeout(function(){
+      clearBubble(pr.id);
+      clearBubble(vendorObj.id);
+      clearBusy(pr.id);
+      setPos(vendorObj.id, VISITOR_VENDOR_TABLE.x, VISITOR_VENDOR_TABLE.y, true, 1.8);
+      setPos(lead.id, VISITOR_LEAD_TABLE.x, VISITOR_LEAD_TABLE.y, true, 1.8);
+    }, 1900);
+
+    setTimeout(function(){
+      showBubble(lead, '다음 저희 사업은 바로..');
+    }, 3800);
+
+    setTimeout(function(){
+      showBubble(vendorObj, '네, 알겠습니다!');
+    }, 4700);
+
+    setTimeout(function(){
+      showBubble(lead, '좋아요. 조심히 가세요.');
+    }, 5600);
+
+    setTimeout(function(){
+      showBubble(vendorObj, '그럼...');
+    }, 6500);
+
+    setTimeout(function(){
+      clearBubble(vendorObj.id);
+      clearBubble(lead.id);
+      setPos(lead.id, lead.x, lead.y, true, 0.9);
+      clearBusy(lead.id);
+      setPos(vendorObj.id, VISITOR_NOTE_LEAD_DESK.x, VISITOR_NOTE_LEAD_DESK.y, true, 1.6);
+    }, 7300);
+
+    // ---- 노트 디자인팀 팀장과의 대화 ----
+    setTimeout(function(){
+      if(noteLead && !isGoneForDay(noteLead.id)){
+        ensureStaffOnStage(noteLead.id);
+        markBusy(noteLead.id);
+        showBubble(vendorObj, '그렇게 진행할까요?');
+      }
+    }, 8900);
+
+    setTimeout(function(){
+      if(noteLead && !isGoneForDay(noteLead.id)) showBubble(noteLead, '네. 좋아요.');
+    }, 9900);
+
+    setTimeout(function(){
+      clearBubble(vendorObj.id);
+      if(noteLead) clearBusy(noteLead.id);
+      setPos(vendorObj.id, VISITOR_STICKER_LEAD_DESK.x, VISITOR_STICKER_LEAD_DESK.y, true, 1.6);
+    }, 10900);
+
+    // ---- 스티커 디자인팀 팀장과의 대화 ----
+    setTimeout(function(){
+      if(stickerLead && !isGoneForDay(stickerLead.id)){
+        ensureStaffOnStage(stickerLead.id);
+        markBusy(stickerLead.id);
+        showBubble(vendorObj, '그렇게 진행할까요?');
+      }
+    }, 12500);
+
+    setTimeout(function(){
+      if(stickerLead && !isGoneForDay(stickerLead.id)) showBubble(stickerLead, '좋죠좋죠~');
+    }, 13500);
+
+    setTimeout(function(){
+      clearBubble(vendorObj.id);
+      if(stickerLead) clearBusy(stickerLead.id);
+      setPos(vendorObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, true, 1.5);
+    }, 14500);
+
+    setTimeout(function(){
+      charEl(vendorObj.id).classList.remove('present');
+      visitorEventActive = false;
+    }, 16000);
+  }
+
+  // ---- 사장님 방문 (누적 탕비실 이용 20번마다, 10초) ----
+  function maybeTriggerBossVisit(){
+    if(visitorEventActive) return;
+    if(lifetime.breaks <= 0 || lifetime.breaks % 20 !== 0) return;
+    visitorEventActive = true;
+
+    var bossObj = { id:visitorDefs.boss.id };
+    setPos(bossObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(bossObj.id).classList.add('present');
+    allPresentStaffSay('!!!');
+
+    setTimeout(function(){
+      setPos(bossObj.id, VISITOR_BREAK.x, VISITOR_BREAK.y, true, 2.0);
+    }, 600);
+
+    setTimeout(function(){
+      setPos(bossObj.id, VISITOR_WAREHOUSE.x, VISITOR_WAREHOUSE.y, true, 2.0);
+    }, 2700);
+
+    setTimeout(function(){
+      setPos(bossObj.id, VISITOR_WINDOW.x, VISITOR_WINDOW.y, true, 1.8);
+    }, 4800);
+
+    setTimeout(function(){
+      showBubble(bossObj, '탕비실 간식 충전 완료');
+    }, 6600);
+
+    setTimeout(function(){
+      allPresentStaffSay('감사합니다!');
+    }, 7700);
+
+    setTimeout(function(){
+      showBubble(bossObj, '힘내요!');
+    }, 8400);
+
+    setTimeout(function(){
+      clearBubble(bossObj.id);
+      setPos(bossObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, true, 1.5);
+    }, 8800);
+
+    setTimeout(function(){
+      charEl(bossObj.id).classList.remove('present');
+      visitorEventActive = false;
+    }, 10300);
+  }
 
   // ===== 먼지: 10분마다 바닥에 하나씩 쌓이고, 청소 버튼으로 전부 제거 =====
   var DUST_KEY = 'officeDustV1';
@@ -2261,6 +2765,194 @@
     setTimeout(function(){ showBubble(reader, readText); }, 500);
   });
 
+  // ===== 메신저: 접속자 목록 + 쪽지 작성/보관함 =====
+  var messengerContacts = [{ id:'boss', name:'사장님', avatar:'#f0973f', isBoss:true }].concat(
+    staff.map(function(s){
+      var pal = kindPalette[s.palKey] || kindPalette[s.kind] || kindPalette.cat;
+      return { id:s.id, name:s.name, avatar:pal.base, isBoss:false };
+    })
+  );
+
+  function isBossOnline(){
+    var h = new Date().getHours();
+    return !isNonWorkingDay() && h>=9 && h<18;
+  }
+  function contactStatus(c){
+    if(c.isBoss){
+      var on = isBossOnline();
+      return { online:on, text: on ? '' : '외근중' };
+    }
+    if(isOnLeaveToday(c.id)) return { online:false, text:'연차' };
+    if(isOnTripToday(c.id)) return { online:false, text:'출장' };
+    if(hasLeftEarlyByNow(c.id)) return { online:false, text:'조퇴' };
+    var present = charEl(c.id) && charEl(c.id).classList.contains('present');
+    if(!present) return { online:false, text:'출근 전' };
+    if(typeof inMeeting !== 'undefined' && inMeeting[c.id]) return { online:true, text:'회의중' };
+    return { online:true, text:'' };
+  }
+
+  var messengerOverlay = byId('messengerOverlay');
+  function renderRoster(){
+    var wrap = byId('rosterList');
+    wrap.innerHTML = '';
+    messengerContacts.forEach(function(c){
+      var st = contactStatus(c);
+      var row = document.createElement('div');
+      row.className = 'rosterRow';
+
+      var dot = document.createElement('span');
+      dot.className = 'rosterDot';
+      dot.style.background = st.online ? '#6b9e6b' : '#b4b2a9';
+
+      var avatar = document.createElement('div');
+      avatar.className = 'rosterAvatar';
+      avatar.style.background = c.avatar;
+
+      var name = document.createElement('span');
+      name.className = 'rosterName';
+      name.textContent = c.name;
+
+      var status = document.createElement('span');
+      status.className = 'rosterStatus';
+      status.textContent = st.text;
+
+      var noteBtn = document.createElement('button');
+      noteBtn.className = 'rosterNoteBtn';
+      noteBtn.textContent = '쪽지보내기';
+      noteBtn.addEventListener('click', function(){ openNoteCompose(c); });
+
+      row.appendChild(dot);
+      row.appendChild(avatar);
+      row.appendChild(name);
+      row.appendChild(status);
+      row.appendChild(noteBtn);
+      wrap.appendChild(row);
+    });
+  }
+  byId('messengerBtn').addEventListener('click', function(){ renderRoster(); messengerOverlay.classList.add('show'); });
+  byId('messengerCloseX').addEventListener('click', function(){ messengerOverlay.classList.remove('show'); });
+  messengerOverlay.addEventListener('click', function(e){ if(e.target===messengerOverlay) messengerOverlay.classList.remove('show'); });
+
+  // ---- 쪽지 저장(최대 7개, 초과 시 오래된 것부터 자동 삭제) ----
+  var NOTES_MAX = 7;
+  var NOTES_INBOX_KEY = 'ggj_office_notes_inbox_v1';
+  var NOTES_SENT_KEY = 'ggj_office_notes_sent_v1';
+  function loadNotes(key){
+    try{ var raw = JSON.parse(localStorage.getItem(key)); if(Array.isArray(raw)) return raw; }catch(e){}
+    return [];
+  }
+  function saveNotes(key, arr){ try{ localStorage.setItem(key, JSON.stringify(arr)); }catch(e){} }
+  function pushNote(key, note){
+    var arr = loadNotes(key);
+    arr.push(note);
+    while(arr.length > NOTES_MAX) arr.shift();
+    saveNotes(key, arr);
+    return arr;
+  }
+  function updateMsgBadge(){
+    var unread = loadNotes(NOTES_INBOX_KEY).filter(function(n){ return !n.read; }).length;
+    var badge = byId('msgBadge');
+    if(unread > 0){
+      badge.textContent = unread;
+      badge.classList.add('has-count');
+    } else {
+      badge.textContent = '';
+      badge.classList.remove('has-count');
+    }
+  }
+  updateMsgBadge();
+
+  // ---- 쪽지 작성 ----
+  var noteComposeOverlay = byId('noteComposeOverlay');
+  var currentNoteTarget = null;
+  function openNoteCompose(c){
+    currentNoteTarget = c;
+    byId('noteToText').textContent = c.name;
+    byId('noteFrom').value = '나';
+    byId('noteBody').value = '';
+    byId('noteError').textContent = '';
+    messengerOverlay.classList.remove('show');
+    noteComposeOverlay.classList.add('show');
+  }
+  byId('noteComposeCloseX').addEventListener('click', function(){ noteComposeOverlay.classList.remove('show'); });
+  noteComposeOverlay.addEventListener('click', function(e){ if(e.target===noteComposeOverlay) noteComposeOverlay.classList.remove('show'); });
+
+  var noteReplyLines = ['넵 확인했습니다!', '네 알겠습니다', '좋은 생각이네요', '조금 이따 답할게요', '확인 중입니다', '오케이!'];
+
+  byId('noteSendBtn').addEventListener('click', function(){
+    var from = byId('noteFrom').value.trim() || '나';
+    var body = byId('noteBody').value.trim();
+    var err = byId('noteError');
+    if(!body){ err.textContent = '내용을 입력해주세요'; return; }
+    if(!currentNoteTarget) return;
+    err.textContent = '';
+
+    var target = currentNoteTarget;
+    pushNote(NOTES_SENT_KEY, { id:'n'+Date.now(), to:target.name, from:from, body:body, ts:Date.now() });
+    noteComposeOverlay.classList.remove('show');
+    toast(target.name+'에게 쪽지를 보냈습니다');
+
+    if(!target.isBoss){
+      if(charEl(target.id) && !charEl(target.id).classList.contains('present')) showInstant(target.id);
+      var s = staff.find(function(x){ return x.id===target.id; });
+      if(s) showBubble(s, body.length>20 ? body.slice(0,20)+'...' : body);
+    }
+
+    setTimeout(function(){
+      var reply = noteReplyLines[Math.floor(Math.random()*noteReplyLines.length)];
+      pushNote(NOTES_INBOX_KEY, { id:'n'+(Date.now()+1), from:target.name, body:reply, ts:Date.now(), read:false });
+      updateMsgBadge();
+      toast(target.name+'에게서 쪽지가 도착했습니다');
+    }, 2500 + Math.random()*2000);
+  });
+
+  // ---- 쪽지함(받은/보낸) ----
+  var noteBoxOverlay = byId('noteBoxOverlay');
+  var currentNoteBoxType = 'inbox';
+  function renderNoteBox(type){
+    currentNoteBoxType = type;
+    var key = type==='inbox' ? NOTES_INBOX_KEY : NOTES_SENT_KEY;
+    var arr = loadNotes(key).slice().reverse();
+    byId('noteBoxTitle').textContent = type==='inbox' ? '받은쪽지함' : '보낸쪽지함';
+    var list = byId('noteBoxList');
+    list.innerHTML = '';
+    if(arr.length === 0){
+      list.innerHTML = '<div class="projEmpty">아직 쪽지가 없어요</div>';
+    } else {
+      arr.forEach(function(n){
+        var item = document.createElement('div');
+        item.className = 'noteItem';
+        var meta = document.createElement('div');
+        meta.className = 'noteMeta';
+        meta.textContent = type==='inbox' ? (n.from+' 보냄') : (n.to+'에게 보냄');
+        var body = document.createElement('div');
+        body.textContent = n.body;
+        item.appendChild(meta);
+        item.appendChild(body);
+        list.appendChild(item);
+      });
+    }
+    if(type==='inbox'){
+      var inbox = loadNotes(key);
+      inbox.forEach(function(n){ n.read = true; });
+      saveNotes(key, inbox);
+      updateMsgBadge();
+    }
+    messengerOverlay.classList.remove('show');
+    noteBoxOverlay.classList.add('show');
+  }
+  byId('inboxOpenBtn').addEventListener('click', function(){ renderNoteBox('inbox'); });
+  byId('sentOpenBtn').addEventListener('click', function(){ renderNoteBox('sent'); });
+  byId('noteBoxCloseX').addEventListener('click', function(){ noteBoxOverlay.classList.remove('show'); });
+  noteBoxOverlay.addEventListener('click', function(e){ if(e.target===noteBoxOverlay) noteBoxOverlay.classList.remove('show'); });
+  byId('noteBoxClearBtn').addEventListener('click', function(){
+    var key = currentNoteBoxType==='inbox' ? NOTES_INBOX_KEY : NOTES_SENT_KEY;
+    saveNotes(key, []);
+    if(currentNoteBoxType==='inbox') updateMsgBadge();
+    renderNoteBox(currentNoteBoxType);
+    toast('쪽지함을 비웠습니다');
+  });
+
   // ===== 사운드 (소리 없음, UI/상태만) =====
   var isPlaying = false, isMuted = false, volume = 0.6;
   var playBtn = byId('playBtn'), muteBtn = byId('muteBtn'), volSlider = byId('volSlider');
@@ -2340,6 +3032,35 @@
     if(e.target===creditsPanel) creditsPanel.classList.remove('show');
   });
 
+  var resetConfirmPanel = byId('resetConfirmPanel');
+  byId('hubResetBtn').addEventListener('click', function(){
+    settingsHub.classList.remove('show');
+    resetConfirmPanel.classList.add('show');
+  });
+  byId('resetCancelBtn').addEventListener('click', function(){
+    resetConfirmPanel.classList.remove('show');
+  });
+  resetConfirmPanel.addEventListener('click', function(e){
+    if(e.target===resetConfirmPanel) resetConfirmPanel.classList.remove('show');
+  });
+  byId('resetConfirmBtn').addEventListener('click', function(){
+    var resetKeys = [
+      'ggj_office_settings_v2',
+      'ggj_office_projects_v1',
+      'ggj_office_stats_v1',
+      'ggj_office_streak_v1',
+      'ggj_office_dailylog_v1',
+      'officeDustV1',
+      'ggj_office_notes_inbox_v1',
+      'ggj_office_notes_sent_v1',
+      'ggj_office_lifetime_v1'
+    ];
+    try{
+      resetKeys.forEach(function(k){ localStorage.removeItem(k); });
+    }catch(e){}
+    location.reload();
+  });
+
   var staffBio = {
     kobujang:   '미적감각은 따라올 자 없는 아티스트',
     nabujang:   '재테크 관심 많은 효율 우선자',
@@ -2368,7 +3089,19 @@
     byId('profileBio').textContent = staffBio[id] || '';
     byId('profileTalks').textContent = st.talks;
     byId('profileOvertime').textContent = st.overtime;
-    byId('profileLeaveNote').style.display = isOnLeaveToday(id) ? 'block' : 'none';
+    var leaveNote = byId('profileLeaveNote');
+    if(isOnLeaveToday(id)){
+      leaveNote.textContent = '오늘은 연차예요 🌴';
+      leaveNote.style.display = 'block';
+    } else if(isOnTripToday(id)){
+      leaveNote.textContent = '오늘은 출장 중이에요 🚗';
+      leaveNote.style.display = 'block';
+    } else if(hasLeftEarlyByNow(id)){
+      leaveNote.textContent = '오늘은 먼저 조퇴했어요 🏃';
+      leaveNote.style.display = 'block';
+    } else {
+      leaveNote.style.display = 'none';
+    }
     profilePanel.classList.add('show');
   }
   byId('profileCloseBtn').addEventListener('click', function(){ profilePanel.classList.remove('show'); });
