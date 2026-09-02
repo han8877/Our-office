@@ -140,8 +140,38 @@
   #messengerOverlay .mail-head{ padding:8px 10px; font-size:12.5px; }
   .headRight{ gap:4px; }
   .noteBoxBtn{ font-size:10.5px; padding:4px 8px; }
+  .mail-head .noteBoxBtn{ background:#fff; border:1px solid #5c4a3a; color:#5c4a3a; font-size:10.5px; padding:4px 8px; border-radius:6px; cursor:pointer; position:relative; }
+  .mail-head .noteBoxBtn.has-alert::after{ content:''; position:absolute; top:-3px; right:-3px; width:7px; height:7px; border-radius:50%; background:#e8935a; border:1px solid #fffdf8; }
   .noteItem{ border:1px solid #ddd8cc; border-radius:8px; padding:8px; font-size:12px; color:#5c4a3a; }
   .noteItem .noteMeta{ font-size:10.5px; color:#8a8a86; margin-bottom:4px; }
+
+  .chatListRow{ display:flex; align-items:center; gap:8px; padding:7px 2px; border-bottom:1px dashed #ddd8cc; cursor:pointer; }
+  .chatListRow:last-child{ border-bottom:none; }
+  .chatListRow:active{ background:#f7f4ee; }
+  .chatListAvatar{ width:22px; height:22px; border-radius:50%; flex-shrink:0; border:1px solid #5c4a3a; box-sizing:border-box; }
+  .chatListName{ font-size:12px; color:#5c4a3a; flex:1; }
+  .chatListDot{ width:8px; height:8px; border-radius:50%; background:#e8935a; flex-shrink:0; opacity:0; }
+  .chatListDot.show{ opacity:1; }
+  .chatListSectionHeader{ font-size:11px; color:#8a8a86; font-weight:600; padding:8px 2px 4px; }
+  .chatListSectionHeader:first-child{ padding-top:2px; }
+  #chatMessages{ display:flex; flex-direction:column; max-height:320px; overflow-y:auto; padding:2px; }
+  .chatMsgRow{ display:flex; gap:6px; margin-bottom:10px; align-items:flex-start; }
+  .chatMsgRow.mine{ flex-direction:row-reverse; }
+  .chatAvatar{ width:20px; height:20px; border-radius:50%; border:1px solid #5c4a3a; flex-shrink:0; box-sizing:border-box; margin-top:14px; }
+  .chatBubbleWrap{ display:flex; flex-direction:column; max-width:72%; }
+  .chatMsgRow.mine .chatBubbleWrap{ align-items:flex-end; }
+  .chatSenderName{ font-size:10px; color:#8a8a86; margin-bottom:2px; }
+  .chatBubble{ background:#fff; border:1px solid #ddd8cc; border-radius:10px; padding:6px 10px; font-size:12.5px; color:#5c4a3a; word-break:break-word; }
+  .chatMsgRow.mine .chatBubble{ background:#5c4a3a; color:#fff; border-color:#5c4a3a; }
+  .chatTime{ font-size:9px; color:#b4b2a9; margin-top:2px; }
+  #chatInputRow{ display:flex; gap:6px; }
+  #chatInputRow input{ flex:1; }
+  .chatBubble.deleted{ color:#b4b2a9; font-style:italic; border-style:dashed; background:transparent; }
+  .chatSystemMsg{ text-align:center; font-size:11px; color:#8a8a86; margin:8px 0; }
+  .quickReplyChip{ font-size:10.5px; color:#5c4a3a; background:#fff; border:1px solid #5c4a3a; border-radius:12px; padding:4px 9px; cursor:pointer; }
+  .dayLogRow{ display:flex; gap:8px; font-size:11.5px; color:#5c4a3a; padding:4px 2px; border-bottom:1px dashed #ddd8cc; }
+  .dayLogRow:last-child{ border-bottom:none; }
+  .dayLogTime{ color:#8a8a86; flex-shrink:0; width:34px; }
 </style>
 </head>
 <body>
@@ -900,16 +930,53 @@
 
 <div class="mail-overlay" id="messengerOverlay">
   <div class="mail-window" style="max-width:340px;">
-    <div class="mail-head">
-      <span>메신저 접속자</span>
-      <div class="headRight">
+    <div class="mail-head" style="flex-direction:column; align-items:stretch; gap:6px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span>메신저</span>
+        <button id="messengerCloseX">×</button>
+      </div>
+      <div class="headRight" style="justify-content:flex-end; flex-wrap:wrap;">
+        <button class="noteBoxBtn" id="groupChatBtn">전체채팅</button>
+        <button class="noteBoxBtn" id="chatBtn">채팅</button>
+        <button class="noteBoxBtn" id="dayLogBtn">오늘의 기록</button>
         <button class="noteBoxBtn" id="inboxOpenBtn">받은쪽지함</button>
         <button class="noteBoxBtn" id="sentOpenBtn">보낸쪽지함</button>
-        <button id="messengerCloseX">×</button>
       </div>
     </div>
     <div class="mail-body" style="padding-top:6px;">
       <div id="rosterList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="dayLogOverlay">
+  <div class="mail-window" style="max-width:320px;">
+    <div class="mail-head"><span id="dayLogTitle">오늘의 기록</span><button id="dayLogCloseX">×</button></div>
+    <div class="mail-body">
+      <div id="dayLogList" style="display:flex; flex-direction:column; gap:6px; max-height:56vh; overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="chatListOverlay">
+  <div class="mail-window" style="max-width:300px;">
+    <div class="mail-head"><span>채팅</span><button id="chatListCloseX">×</button></div>
+    <div class="mail-body" style="padding-top:6px;">
+      <div id="chatListBody" style="max-height:56vh; overflow-y:auto;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="chatWindowOverlay">
+  <div class="mail-window" style="max-width:320px;">
+    <div class="mail-head"><span id="chatWindowTitle">전체채팅</span><button id="chatWindowCloseX">×</button></div>
+    <div class="mail-body">
+      <div id="chatMessages"></div>
+      <div id="chatQuickReplies" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+      <div id="chatInputRow">
+        <input type="text" id="chatInput" placeholder="메시지를 입력하세요" maxlength="150">
+        <button class="btn" id="chatSendBtn">전송</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1135,25 +1202,25 @@
 
   // ===== 직원 명단: id / 역할 / 소속팀키 / 책상좌표 / 생김새 =====
   var staff = [
-    { id:'kobujang',  role:'디자인실장',   teamKey:'lead',    x:770, y:105, kind:'fox', palKey:'fox', shirt:'#e0a98f', acc:['glasses'] },
+    { id:'kobujang',  role:'디자인실장',   teamKey:'lead',    x:770, y:105, kind:'fox', palKey:'fox', shirt:'#e0a98f', acc:['glasses'], personality:'calm', chatFreq:'mid' },
 
-    { id:'nabujang',   role:'팀장',        teamKey:'biz',     x:180, y:565, kind:'bear', palKey:'bear', shirt:'#cfe3e6', acc:['watch'], pattern:'dots' },
-    { id:'choiinsa',   role:'인사담당자',   teamKey:'biz',     x:280, y:565, kind:'cat', palKey:'cat', shirt:'#f7dfe3', acc:['earring'], pattern:'stripes' },
-    { id:'parkhoegye', role:'회계담당자',   teamKey:'biz',     x:380, y:565, kind:'rabbit', palKey:'rabbit', shirt:'#e7ecd0', acc:['necklace'], pattern:'check' },
+    { id:'nabujang',   role:'팀장',        teamKey:'biz',     x:180, y:565, kind:'bear', palKey:'bear', shirt:'#cfe3e6', acc:['watch'], pattern:'dots', personality:'meticulous', chatFreq:'mid' },
+    { id:'choiinsa',   role:'인사담당자',   teamKey:'biz',     x:280, y:565, kind:'cat', palKey:'cat', shirt:'#f7dfe3', acc:['earring'], pattern:'stripes', personality:'warm', chatFreq:'high' },
+    { id:'parkhoegye', role:'회계담당자',   teamKey:'biz',     x:380, y:565, kind:'rabbit', palKey:'rabbit', shirt:'#e7ecd0', acc:['necklace'], pattern:'check', personality:'meticulous', chatFreq:'mid' },
 
-    { id:'kimnote', role:'팀장',      teamKey:'note', x:113, y:280, kind:'dog', palKey:'dog', shirt:'#fdeccb', acc:[], pattern:'triangle' },
-    { id:'leenote', role:'디자이너',   teamKey:'note', x:273, y:280, kind:'tiger', palKey:'tiger', shirt:'#e3d9ec', acc:['watch'], pattern:'dots' },
-    { id:'jungnote',role:'기획담당',   teamKey:'note', x:113, y:400, kind:'giraffe', palKey:'giraffe', shirt:'#f6d8c2', acc:[], pattern:'stripes' },
-    { id:'hannote', role:'인턴',      teamKey:'note', x:273, y:400, kind:'raccoon', palKey:'raccoon', shirt:'#d8ece0', acc:[], pattern:'check' },
+    { id:'kimnote', role:'팀장',      teamKey:'note', x:113, y:280, kind:'dog', palKey:'dog', shirt:'#fdeccb', acc:[], pattern:'triangle', personality:'chatty', chatFreq:'high' },
+    { id:'leenote', role:'디자이너',   teamKey:'note', x:273, y:280, kind:'tiger', palKey:'tiger', shirt:'#e3d9ec', acc:['watch'], pattern:'dots', personality:'playful', chatFreq:'high' },
+    { id:'jungnote',role:'기획담당',   teamKey:'note', x:113, y:400, kind:'giraffe', palKey:'giraffe', shirt:'#f6d8c2', acc:[], pattern:'stripes', personality:'quiet', chatFreq:'low' },
+    { id:'hannote', role:'인턴',      teamKey:'note', x:273, y:400, kind:'raccoon', palKey:'raccoon', shirt:'#d8ece0', acc:[], pattern:'check', personality:'intern', chatFreq:'high' },
 
-    { id:'jungsti', role:'팀장',      teamKey:'sticker', x:563, y:400, kind:'monkey', palKey:'monkey', shirt:'#a8c4d4', acc:['necklace'] },
-    { id:'hansti',  role:'디자이너',   teamKey:'sticker', x:723, y:400, kind:'horse', palKey:'horse', shirt:'#f7dfe3', acc:[], pattern:'triangle' },
-    { id:'yoosti',  role:'기획담당',   teamKey:'sticker', x:563, y:500, kind:'cow', palKey:'cow', shirt:'#e7ecd0', acc:['earring'], pattern:'dots' },
-    { id:'chosti',  role:'인턴',      teamKey:'sticker', x:723, y:500, kind:'frog', palKey:'frog', shirt:'#e3d9ec', acc:[], pattern:'stripes' },
+    { id:'jungsti', role:'팀장',      teamKey:'sticker', x:563, y:400, kind:'monkey', palKey:'monkey', shirt:'#a8c4d4', acc:['necklace'], personality:'chatty', chatFreq:'high' },
+    { id:'hansti',  role:'디자이너',   teamKey:'sticker', x:723, y:400, kind:'horse', palKey:'horse', shirt:'#f7dfe3', acc:[], pattern:'triangle', personality:'playful', chatFreq:'high' },
+    { id:'yoosti',  role:'기획담당',   teamKey:'sticker', x:563, y:500, kind:'cow', palKey:'cow', shirt:'#e7ecd0', acc:['earring'], pattern:'dots', personality:'calm', chatFreq:'mid' },
+    { id:'chosti',  role:'인턴',      teamKey:'sticker', x:723, y:500, kind:'frog', palKey:'frog', shirt:'#e3d9ec', acc:[], pattern:'stripes', personality:'intern', chatFreq:'high' },
 
-    { id:'yoohongbo', role:'팀장',    teamKey:'pr', x:180, y:715, kind:'hedgehog', palKey:'hedgehog', shirt:'#f6d8c2', acc:['watch'], pattern:'check' },
-    { id:'seohongbo', role:'디자이너', teamKey:'pr', x:280, y:715, kind:'fox', palKey:'fox2', shirt:'#cfe3e6', acc:['earring'], pattern:'triangle' },
-    { id:'minhongbo', role:'기획담당', teamKey:'pr', x:380, y:715, kind:'bear', palKey:'bear2', shirt:'#fdeccb', acc:[], pattern:'dots' }
+    { id:'yoohongbo', role:'팀장',    teamKey:'pr', x:180, y:715, kind:'hedgehog', palKey:'hedgehog', shirt:'#f6d8c2', acc:['watch'], pattern:'check', personality:'chatty', chatFreq:'high' },
+    { id:'seohongbo', role:'디자이너', teamKey:'pr', x:280, y:715, kind:'fox', palKey:'fox2', shirt:'#cfe3e6', acc:['earring'], pattern:'triangle', personality:'quiet', chatFreq:'low' },
+    { id:'minhongbo', role:'기획담당', teamKey:'pr', x:380, y:715, kind:'bear', palKey:'bear2', shirt:'#fdeccb', acc:[], pattern:'dots', personality:'playful', chatFreq:'high' }
   ];
   staff.forEach(function(s){ s.name = settings.names[s.id] || s.id; });
 
@@ -1499,6 +1566,7 @@
     setPos(s.id, ENTRANCE.x, ENTRANCE.y, false);
     charEl(s.id).classList.add('present');
     metSet[s.id] = true;
+    if(typeof logDayEvent === 'function') logDayEvent('🐾', s.name+' 출근');
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         setPos(s.id, s.x, s.y, true, 1);
@@ -1508,6 +1576,7 @@
   }
   function walkOut(s, onLeave){
     setPos(s.id, ENTRANCE.x, ENTRANCE.y, true, 1);
+    if(typeof logDayEvent === 'function') logDayEvent('🚪', s.name+' 퇴근');
     setTimeout(function(){
       charEl(s.id).classList.remove('present');
       setPos(s.id, s.x, s.y, false);
@@ -1640,6 +1709,7 @@
 
   // ===== 하루 사이클: 08:30~09:00 랜덤 출근 / 12시 점심(실장 멘트+줄퇴장) / 13시 복귀(첫 직원 멘트) =====
   var flag830=false, flag9=false, flag12=false, flag13=false, flag18=false, flagHolidayNotice=false, flagEarly=false;
+  var clockInitialized = false; // 최초 상태 세팅(applyPhaseForLoad)이 끝나기 전에는 정시 트리거가 발동하지 않도록
 
   // 08:30이 되면, 각 직원마다 0~30분 사이 랜덤한 시각에 혼자 걸어들어오도록 예약 (연차/출장자는 제외)
   function scheduleRandomArrivals(){
@@ -1685,14 +1755,23 @@
   function lunchReturn(){
     if(isNonWorkingDay()) return;
     var outIds = getOutAllDayIds();
-    staff.forEach(function(s, i){
-      if(outIds[s.id]) return;
-      if(hasLeftEarlyByNow(s.id)) return;
+    var eligible = staff.filter(function(s){
+      return !outIds[s.id] && !hasLeftEarlyByNow(s.id);
+    }).map(function(s){
+      return { s:s, offsetMs: Math.random() * 5 * 60000 }; // 13:00~13:05 사이 랜덤, 순차 복귀
+    });
+    if(!eligible.length){ toast('점심시간이 끝났습니다'); return; }
+    eligible.sort(function(a,b){ return a.offsetMs - b.offsetMs; });
+    var firstBackId = eligible[0].s.id;
+    eligible.forEach(function(entry){
+      var s = entry.s;
       setTimeout(function(){
-        walkIn(s, function(){
-          if(i===0) showBubble(s, '배부르다.');
-        });
-      }, i*260);
+        if(!charEl(s.id).classList.contains('present')){
+          walkIn(s, function(){
+            if(s.id === firstBackId) showBubble(s, '아~배부르다');
+          });
+        }
+      }, entry.offsetMs);
     });
     toast('점심시간이 끝났습니다');
   }
@@ -1724,44 +1803,50 @@
       return;
     }
 
-    var outIds = getOutAllDayIds();
     var minutesNow = h*60 + m;
     var t830 = 8*60+30, t900 = 9*60;
 
-    if(minutesNow < t830){
-      setAllInstant(false);
-    } else if(minutesNow < t900){
-      // 08:30~09:00 사이에 접속 -> 이미 도착했어야 할 인원은 즉시 표시, 나머지는 남은 시간만큼 예약
-      var elapsedMin = minutesNow - t830;
-      staff.forEach(function(s){
-        if(outIds[s.id]){ hideInstant(s.id); return; }
-        var offsetMin = Math.random() * 29.5;
-        if(elapsedMin >= offsetMin){
-          showInstant(s.id);
-        } else {
-          hideInstant(s.id);
-          setTimeout(function(){
-            if(!charEl(s.id).classList.contains('present')) walkIn(s);
-          }, (offsetMin - elapsedMin) * 60000);
-        }
-      });
-    } else {
-      var working = (h>=9 && h<12) || (h>=13 && h<18);
-      staff.forEach(function(s){
-        if(outIds[s.id]){ hideInstant(s.id); }
-        else if(hasLeftEarlyByNow(s.id, h, m)){ hideInstant(s.id); }
-        else if(working){ showInstant(s.id); }
-        else { hideInstant(s.id); }
-      });
-    }
-
+    // 아래 표시 로직에서 예외가 나더라도, 이후 updateClock의 정시 트리거(lunchOut/eveningLeave 등)가
+    // 유령처럼 다시 발동해 전원이 우르르 퇴근하지 않도록 플래그를 먼저 확정해둔다.
     flag830 = minutesNow >= t830;
     flag9  = h >= 9;
     flag12 = h >= 12;
     flag13 = h >= 13;
     flag18 = h >= 18;
-    var earlyToday = getEarlyLeaveStaffToday();
-    flagEarly = !earlyToday || hasLeftEarlyByNow(earlyToday.staff.id, h, m);
+    var earlyTodayPre = getEarlyLeaveStaffToday();
+    flagEarly = !earlyTodayPre || hasLeftEarlyByNow(earlyTodayPre.staff.id, h, m);
+
+    try{
+      var outIds = getOutAllDayIds();
+      if(minutesNow < t830){
+        setAllInstant(false);
+      } else if(minutesNow < t900){
+        // 08:30~09:00 사이에 접속 -> 이미 도착했어야 할 인원은 즉시 표시, 나머지는 남은 시간만큼 예약
+        var elapsedMin = minutesNow - t830;
+        staff.forEach(function(s){
+          if(outIds[s.id]){ hideInstant(s.id); return; }
+          var offsetMin = Math.random() * 29.5;
+          if(elapsedMin >= offsetMin){
+            showInstant(s.id);
+          } else {
+            hideInstant(s.id);
+            setTimeout(function(){
+              if(!charEl(s.id).classList.contains('present')) walkIn(s);
+            }, (offsetMin - elapsedMin) * 60000);
+          }
+        });
+      } else {
+        var working = (h>=9 && h<12) || (h>=13 && h<18);
+        staff.forEach(function(s){
+          if(outIds[s.id]){ hideInstant(s.id); }
+          else if(hasLeftEarlyByNow(s.id, h, m)){ hideInstant(s.id); }
+          else if(working){ showInstant(s.id); }
+          else { hideInstant(s.id); }
+        });
+      }
+    }catch(e){
+      console.error('applyPhaseForLoad error', e);
+    }
   }
 
   // ===== 시계 =====
@@ -1794,25 +1879,49 @@
     moonIcon.style.opacity = isNight ? 1 : 0;
     sunIcon.style.opacity = isNight ? 0 : (rainOn ? 0 : 1);
 
-    // 하루 사이클 트리거 (정시에 한 번씩만)
+    // 하루 사이클 트리거 (정시에 한 번씩만) — 최초 상태 세팅이 끝난 뒤에만 동작
+    if(!clockInitialized) return;
     if(isNonWorkingDay()){
       if(!flagHolidayNotice){ flagHolidayNotice=true; toast('오늘은 쉬는 날입니다'); setAllInstant(false); }
     } else if(!overtimeMode){
-      if(h===8 && m===30 && !flag830){ flag830=true; scheduleRandomArrivals(); }
-      if(h===9 && m===0 && !flag9){ flag9=true; ensureAllArrived(); }
-      if(h===12 && m===0 && !flag12){ flag12=true; lunchOut(); }
-      if(h===13 && m===0 && !flag13){ flag13=true; lunchReturn(); }
-      if(h===18 && m===0 && !flag18){ flag18=true; eveningLeave(); }
+      if(!flag830 && (h>8 || (h===8 && m>=30))){ flag830=true; scheduleRandomArrivals(); }
+      if(!flag9 && h>=9){ flag9=true; ensureAllArrived(); }
+      if(!flag12 && h>=12){ flag12=true; lunchOut(); }
+      if(!flag13 && h>=13){ flag13=true; lunchReturn(); }
+      if(!flag18 && h>=18){ flag18=true; eveningLeave(); }
       var earlyToday = getEarlyLeaveStaffToday();
-      if(earlyToday && h===earlyToday.hour && m===earlyToday.minute && !flagEarly){
+      if(earlyToday && !flagEarly && (h*60+m) >= (earlyToday.hour*60+earlyToday.minute)){
         flagEarly = true;
         triggerEarlyLeave(earlyToday.staff);
       }
     }
-    if(h===0 && m===0){ flag830=false; flag9=false; flag12=false; flag13=false; flag18=false; flagHolidayNotice=false; flagEarly=false; }
+    if(h===0 && m===0){
+      flag830=false; flag9=false; flag12=false; flag13=false; flag18=false; flagHolidayNotice=false; flagEarly=false;
+      if(typeof usedConversationIds !== 'undefined') usedConversationIds = {};
+    }
   }
 
-  // ===== 날씨: 맑음 15 : 비 1 비율 =====
+  // ===== 보정 안전장치: 탭이 백그라운드 등으로 타이머를 놓쳐도, 20초마다 현재 시각 기준
+  // 있어야 할 상태와 실제 상태가 어긋나면 조용히 맞춰준다 (연차/출장/조퇴/회의·탕비실·방문 중은 건드리지 않음) =====
+  function syncAttendanceToClock(){
+    if(isNonWorkingDay()) return;
+    var now = new Date();
+    var h = now.getHours(), m = now.getMinutes();
+    var minutesNow = h*60 + m;
+    if(minutesNow < 9*60) return; // 출근 유예 시간대(08:30~09:00)는 개별 예약 로직을 존중
+    var outIds = getOutAllDayIds();
+    var working = (h>=9 && h<12) || (h>=13 && h<18);
+    staff.forEach(function(s){
+      if(isBusy(s.id)) return; // 회의/탕비실/방문객 대응 중인 직원은 건드리지 않음
+      var shouldBePresent = !outIds[s.id] && !hasLeftEarlyByNow(s.id, h, m) && working;
+      var isPresent = charEl(s.id).classList.contains('present');
+      if(shouldBePresent && !isPresent) showInstant(s.id);
+      else if(!shouldBePresent && isPresent) hideInstant(s.id);
+    });
+  }
+  setInterval(syncAttendanceToClock, 20000);
+
+
   var rainOn = false;
   function toggleWeatherRandomly(){
     rainOn = Math.random() < (1/16);
@@ -1830,6 +1939,7 @@
   (function initialLoad(){
     var now = new Date();
     applyPhaseForLoad(now.getHours(), now.getMinutes());
+    clockInitialized = true;
     updateClock();
   })();
 
@@ -2230,6 +2340,14 @@
       setPos(s.id, meetingSeats[i].x, meetingSeats[i].y, true, 0.9);
     });
     toast('회의를 시작합니다 — ' + chosen.map(function(s){return s.name;}).join(', '));
+    if(chosen.length && typeof pushChat === 'function'){
+      var starter = chosen[0];
+      var palS = kindPalette[starter.palKey] || kindPalette[starter.kind] || kindPalette.cat;
+      pushChat(CHAT_GROUP_KEY, { from:starter.name, body:'회의를 시작합니다.', ts:Date.now(), mine:false, avatar:palS.base });
+      logDayEvent('📋', '회의 시작');
+      if(isViewingChatKey(CHAT_GROUP_KEY)) renderChatWindow();
+      updateMsgBadge();
+    }
 
     setTimeout(function(){
       chosen.forEach(function(s){
@@ -2240,6 +2358,23 @@
       meetingBtn.disabled = false;
       meetingBtn.textContent = '회의';
       toast('회의가 끝났습니다');
+      if(chosen.length && typeof pushChat === 'function'){
+        var ender = chosen[0];
+        var palE = kindPalette[ender.palKey] || kindPalette[ender.kind] || kindPalette.cat;
+        pushChat(CHAT_GROUP_KEY, { from:ender.name, body:'오늘 회의는 여기까지 할게요.', ts:Date.now(), mine:false, avatar:palE.base });
+        logDayEvent('📋', '회의 종료');
+        if(isViewingChatKey(CHAT_GROUP_KEY)) renderChatWindow();
+        updateMsgBadge();
+        if(chosen.length > 1 && Math.random() < 0.6){
+          var follower = chosen[1];
+          var palF = kindPalette[follower.palKey] || kindPalette[follower.kind] || kindPalette.cat;
+          setTimeout(function(){
+            pushChat(CHAT_GROUP_KEY, { from:follower.name, body:'아까 회의 내용 정리해둘게요.', ts:Date.now(), mine:false, avatar:palF.base });
+            if(isViewingChatKey(CHAT_GROUP_KEY)) renderChatWindow();
+            updateMsgBadge();
+          }, 1400);
+        }
+      }
     }, 10000);
   });
 
@@ -2777,10 +2912,29 @@
     var h = new Date().getHours();
     return !isNonWorkingDay() && h>=9 && h<18;
   }
+  var defaultStatusMsg = {
+    boss:       '오늘 하루도 화이팅',
+    kobujang:   '오늘도 감각적으로',
+    nabujang:   '가성비가 최고죠',
+    choiinsa:   '고양이 보고싶다',
+    parkhoegye: '숫자는 거짓말 안해요',
+    kimnote:    '이번 주말은 등산',
+    leenote:    '댄스 연습 중',
+    jungnote:   '책 읽는 중입니다',
+    hannote:    '신작 만화 정주행',
+    jungsti:    '카페인은 사랑',
+    hansti:     '점심 뭐 먹지',
+    yoosti:     '다 괜찮아요~',
+    chosti:     '오늘도 일찍 출근!',
+    yoohongbo:  '불금이 기다려진다',
+    seohongbo:  '강아지랑 산책 중',
+    minhongbo:  '뭐든 만들어드림'
+  };
+
   function contactStatus(c){
     if(c.isBoss){
       var on = isBossOnline();
-      return { online:on, text: on ? '' : '외근중' };
+      return { online:on, text: on ? (defaultStatusMsg.boss||'') : '외근중' };
     }
     if(isOnLeaveToday(c.id)) return { online:false, text:'연차' };
     if(isOnTripToday(c.id)) return { online:false, text:'출장' };
@@ -2788,7 +2942,7 @@
     var present = charEl(c.id) && charEl(c.id).classList.contains('present');
     if(!present) return { online:false, text:'출근 전' };
     if(typeof inMeeting !== 'undefined' && inMeeting[c.id]) return { online:true, text:'회의중' };
-    return { online:true, text:'' };
+    return { online:true, text: defaultStatusMsg[c.id] || '' };
   }
 
   var messengerOverlay = byId('messengerOverlay');
@@ -2829,7 +2983,11 @@
       wrap.appendChild(row);
     });
   }
-  byId('messengerBtn').addEventListener('click', function(){ renderRoster(); messengerOverlay.classList.add('show'); });
+  byId('messengerBtn').addEventListener('click', function(){
+    renderRoster();
+    updateMsgBadge();
+    messengerOverlay.classList.add('show');
+  });
   byId('messengerCloseX').addEventListener('click', function(){ messengerOverlay.classList.remove('show'); });
   messengerOverlay.addEventListener('click', function(e){ if(e.target===messengerOverlay) messengerOverlay.classList.remove('show'); });
 
@@ -2851,6 +3009,8 @@
   }
   function updateMsgBadge(){
     var unread = loadNotes(NOTES_INBOX_KEY).filter(function(n){ return !n.read; }).length;
+    if(typeof hasGroupUnread === 'function' && hasGroupUnread()) unread += 1;
+    if(typeof hasOtherChatUnread === 'function' && hasOtherChatUnread()) unread += 1;
     var badge = byId('msgBadge');
     if(unread > 0){
       badge.textContent = unread;
@@ -2859,6 +3019,7 @@
       badge.textContent = '';
       badge.classList.remove('has-count');
     }
+    if(typeof updateHeaderAlerts === 'function') updateHeaderAlerts();
   }
   updateMsgBadge();
 
@@ -2899,7 +3060,8 @@
     }
 
     setTimeout(function(){
-      var reply = noteReplyLines[Math.floor(Math.random()*noteReplyLines.length)];
+      var replyPool = target.isBoss && typeof bossReplyLines !== 'undefined' ? bossReplyLines : noteReplyLines;
+      var reply = replyPool[Math.floor(Math.random()*replyPool.length)];
       pushNote(NOTES_INBOX_KEY, { id:'n'+(Date.now()+1), from:target.name, body:reply, ts:Date.now(), read:false });
       updateMsgBadge();
       toast(target.name+'에게서 쪽지가 도착했습니다');
@@ -2952,6 +3114,560 @@
     renderNoteBox(currentNoteBoxType);
     toast('쪽지함을 비웠습니다');
   });
+
+  // ===== 채팅(전체채팅 / 1:1) =====
+  var CHAT_GROUP_KEY = 'ggj_office_groupchat_v1';
+  var CHAT_MAX = 40;
+  function chatKeyFor(id){ return 'ggj_office_chat_v1_'+id; }
+  function loadChat(key){
+    try{ var raw = JSON.parse(localStorage.getItem(key)); if(Array.isArray(raw)) return raw; }catch(e){}
+    return [];
+  }
+  function saveChat(key, arr){ try{ localStorage.setItem(key, JSON.stringify(arr)); }catch(e){} }
+  function pushChat(key, msg){
+    var arr = loadChat(key);
+    arr.push(msg);
+    while(arr.length > CHAT_MAX) arr.shift();
+    saveChat(key, arr);
+    return arr;
+  }
+  function chatTimeLabel(ts){
+    var d = new Date(ts);
+    return pad2(d.getHours())+':'+pad2(d.getMinutes());
+  }
+
+  var chatListOverlay = byId('chatListOverlay');
+  var chatWindowOverlay = byId('chatWindowOverlay');
+  var currentChatTarget = null; // null = 전체채팅, {isRoom:true,...} = 팀 채팅방, 그 외 = 1:1 대상
+
+  var teamRoomLabels = { biz:'경영지원팀', note:'노트디자인팀', sticker:'스티커디자인팀', pr:'홍보팀' };
+  var teamRooms = ['biz','note','sticker','pr'].map(function(tk){
+    return { id:'team_'+tk, name:teamRoomLabels[tk], isRoom:true, teamKey:tk, avatar:'#c9c2b0' };
+  });
+
+  function buildChatListRow(target, key){
+    var row = document.createElement('div');
+    row.className = 'chatListRow';
+    var avatar = document.createElement('div');
+    avatar.className = 'chatListAvatar';
+    avatar.style.background = target.avatar;
+    var name = document.createElement('span');
+    name.className = 'chatListName';
+    name.textContent = target.name;
+    var dot = document.createElement('span');
+    dot.className = 'chatListDot' + (roomHasUnread(key) ? ' show' : '');
+    row.appendChild(avatar);
+    row.appendChild(name);
+    row.appendChild(dot);
+    row.addEventListener('click', function(){ openChatWindow(target); });
+    return row;
+  }
+
+  function renderChatList(){
+    var wrap = byId('chatListBody');
+    wrap.innerHTML = '';
+
+    var groupHeader = document.createElement('div');
+    groupHeader.className = 'chatListSectionHeader';
+    groupHeader.textContent = '그룹채팅';
+    wrap.appendChild(groupHeader);
+    teamRooms.forEach(function(room){
+      wrap.appendChild(buildChatListRow(room, chatKeyFor(room.id)));
+    });
+
+    var dmHeader = document.createElement('div');
+    dmHeader.className = 'chatListSectionHeader';
+    dmHeader.textContent = '개별채팅';
+    wrap.appendChild(dmHeader);
+    messengerContacts.forEach(function(c){
+      wrap.appendChild(buildChatListRow(c, chatKeyFor(c.id)));
+    });
+  }
+  byId('chatBtn').addEventListener('click', function(){
+    renderChatList();
+    messengerOverlay.classList.remove('show');
+    chatListOverlay.classList.add('show');
+  });
+  byId('chatListCloseX').addEventListener('click', function(){ chatListOverlay.classList.remove('show'); });
+  chatListOverlay.addEventListener('click', function(e){ if(e.target===chatListOverlay) chatListOverlay.classList.remove('show'); });
+
+  byId('groupChatBtn').addEventListener('click', function(){ openChatWindow(null); });
+
+  function renderChatWindow(){
+    var key = currentChatTarget ? chatKeyFor(currentChatTarget.id) : CHAT_GROUP_KEY;
+    var arr = loadChat(key);
+    byId('chatWindowTitle').textContent = currentChatTarget ? currentChatTarget.name : '전체채팅';
+    var wrap = byId('chatMessages');
+    wrap.innerHTML = '';
+    if(arr.length === 0){
+      wrap.innerHTML = '<div class="projEmpty">대화를 시작해보세요</div>';
+    } else {
+      arr.forEach(function(m){
+        if(m.system){
+          var sysRow = document.createElement('div');
+          sysRow.className = 'chatSystemMsg';
+          sysRow.textContent = m.icon + ' ' + m.body;
+          wrap.appendChild(sysRow);
+          return;
+        }
+        var row = document.createElement('div');
+        row.className = 'chatMsgRow' + (m.mine ? ' mine' : '');
+        if(!m.mine){
+          var av = document.createElement('div');
+          av.className = 'chatAvatar';
+          av.style.background = m.avatar || '#b9b2a6';
+          row.appendChild(av);
+        }
+        var bwrap = document.createElement('div');
+        bwrap.className = 'chatBubbleWrap';
+        if(!m.mine){
+          var nm = document.createElement('div');
+          nm.className = 'chatSenderName';
+          nm.textContent = m.from;
+          bwrap.appendChild(nm);
+        }
+        var bubble = document.createElement('div');
+        bubble.className = 'chatBubble' + (m.deleted ? ' deleted' : '');
+        bubble.textContent = m.deleted ? '(메시지가 삭제되었습니다)' : m.body;
+        bwrap.appendChild(bubble);
+        var time = document.createElement('div');
+        time.className = 'chatTime';
+        time.textContent = chatTimeLabel(m.ts);
+        bwrap.appendChild(time);
+        row.appendChild(bwrap);
+        wrap.appendChild(row);
+      });
+    }
+    wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  var quickReplyPresets = ['잘하고 있어요!', '회의실로 와주세요.', '커피 마실래요?', '오늘 업무 어때요?', '퇴근하세요!'];
+  function renderQuickReplies(){
+    var wrap = byId('chatQuickReplies');
+    wrap.innerHTML = '';
+    var isOneOnOne = currentChatTarget && !currentChatTarget.isRoom;
+    if(!isOneOnOne) return;
+    quickReplyPresets.forEach(function(text){
+      var chip = document.createElement('button');
+      chip.className = 'quickReplyChip';
+      chip.textContent = text;
+      chip.addEventListener('click', function(){
+        byId('chatInput').value = text;
+        sendChatMessage();
+      });
+      wrap.appendChild(chip);
+    });
+  }
+
+  // ===== 메신저 안읽음(방 단위) 추적 =====
+  var CHAT_LASTSEEN_MAP_KEY = 'ggj_office_chat_lastseen_map_v1';
+  function loadLastSeenMap(){
+    try{ var raw = JSON.parse(localStorage.getItem(CHAT_LASTSEEN_MAP_KEY)); return (raw && typeof raw==='object') ? raw : {}; }catch(e){ return {}; }
+  }
+  function saveLastSeenMap(map){ try{ localStorage.setItem(CHAT_LASTSEEN_MAP_KEY, JSON.stringify(map)); }catch(e){} }
+  function getRoomLastSeen(key){ return loadLastSeenMap()[key] || 0; }
+  function setRoomLastSeen(key, ts){ var map = loadLastSeenMap(); map[key] = ts; saveLastSeenMap(map); }
+  function getRoomLatestTs(key){
+    var maxTs = 0;
+    loadChat(key).forEach(function(m){ if(!m.mine && m.ts > maxTs) maxTs = m.ts; });
+    return maxTs;
+  }
+  function roomHasUnread(key){ return getRoomLatestTs(key) > getRoomLastSeen(key); }
+  function hasGroupUnread(){ return roomHasUnread(CHAT_GROUP_KEY); }
+  function hasOtherChatUnread(){
+    if(typeof teamRooms === 'undefined' || typeof messengerContacts === 'undefined') return false;
+    var i;
+    for(i=0;i<teamRooms.length;i++){ if(roomHasUnread(chatKeyFor(teamRooms[i].id))) return true; }
+    for(i=0;i<messengerContacts.length;i++){ if(roomHasUnread(chatKeyFor(messengerContacts[i].id))) return true; }
+    return false;
+  }
+  function updateHeaderAlerts(){
+    var g = byId('groupChatBtn'), c = byId('chatBtn'), ib = byId('inboxOpenBtn');
+    if(!g || !c || !ib) return;
+    g.classList.toggle('has-alert', hasGroupUnread());
+    c.classList.toggle('has-alert', hasOtherChatUnread());
+    var noteUnread = loadNotes(NOTES_INBOX_KEY).filter(function(n){ return !n.read; }).length > 0;
+    ib.classList.toggle('has-alert', noteUnread);
+  }
+
+  function openChatWindow(target){
+    currentChatTarget = target;
+    renderChatWindow();
+    renderQuickReplies();
+    var key = target ? chatKeyFor(target.id) : CHAT_GROUP_KEY;
+    setRoomLastSeen(key, Date.now());
+    updateMsgBadge();
+    chatListOverlay.classList.remove('show');
+    messengerOverlay.classList.remove('show');
+    chatWindowOverlay.classList.add('show');
+  }
+  byId('chatWindowCloseX').addEventListener('click', function(){ chatWindowOverlay.classList.remove('show'); });
+  chatWindowOverlay.addEventListener('click', function(e){ if(e.target===chatWindowOverlay) chatWindowOverlay.classList.remove('show'); });
+
+  var chatReplyLines = ['넵 확인했습니다!', '좋은 생각이네요', '저도 그렇게 생각해요', '오케이!', '조금 이따 이야기해요', '넵넵', '좋아요~', '확인했습니다', '넵 알겠습니다', '그러게요 ㅎㅎ'];
+  var personalityReplyLines = {
+    calm:       ['네, 알겠습니다', '차근차근 해볼게요', '확인했어요'],
+    meticulous: ['확인 후 다시 답 드릴게요', '체크해서 알려드릴게요', '넵, 정리해둘게요'],
+    warm:       ['넵! 좋아요~', '알겠어요 :)', '네넵 금방 갈게요'],
+    chatty:     ['오 좋아요!', '그럼요~ 바로 할게요', '넵넵 갑니다!'],
+    playful:    ['ㅋㅋ 넵', '오키오키~', '오 콜입니다'],
+    quiet:      ['네', '알겠습니다', '넵'],
+    intern:     ['네!! 알겠습니다', '확인했습니다!', '앗 네넵!']
+  };
+  // 사장님은 실무 논의엔 끼지 않고, 답할 땐 부하직원에게 정중하게 말하는 어투를 씀
+  var bossReplyLines = ['네, 확인해볼게요.', '수고 많아요.', '잘 부탁해요.', '좋은 생각이네요, 진행해봐요.', '고생 많습니다.', '알겠어요, 챙겨볼게요.'];
+  function replyLineFor(personality){
+    var pool = personalityReplyLines[personality];
+    var all = pool ? pool.concat(chatReplyLines) : chatReplyLines;
+    return all[Math.floor(Math.random()*all.length)];
+  }
+
+  function sendChatMessage(){
+    var input = byId('chatInput');
+    var text = input.value.trim();
+    if(!text) return;
+    var target = currentChatTarget;
+    var key = target ? chatKeyFor(target.id) : CHAT_GROUP_KEY;
+    pushChat(key, { from:'나', body:text, ts:Date.now(), mine:true });
+    input.value = '';
+    renderChatWindow();
+
+    if(target && target.isRoom){
+      var members = staff.filter(function(s){ return s.teamKey===target.teamKey && !isGoneForDay(s.id); });
+      var replier2 = members.length ? members[Math.floor(Math.random()*members.length)] : staff[Math.floor(Math.random()*staff.length)];
+      var pal2 = kindPalette[replier2.palKey] || kindPalette[replier2.kind] || kindPalette.cat;
+      setTimeout(function(){
+        var reply = replyLineFor(replier2.personality);
+        pushChat(key, { from:replier2.name, body:reply, ts:Date.now(), mine:false, avatar:pal2.base });
+        if(chatWindowOverlay.classList.contains('show') && currentChatTarget && currentChatTarget.id===target.id) renderChatWindow();
+        updateMsgBadge();
+      }, 1500 + Math.random()*2000);
+    } else if(target){
+      var staffObj = staffMap[target.id];
+      setTimeout(function(){
+        var reply = target.isBoss ? bossReplyLines[Math.floor(Math.random()*bossReplyLines.length)] : replyLineFor(staffObj ? staffObj.personality : null);
+        pushChat(key, { from:target.name, body:reply, ts:Date.now(), mine:false, avatar:target.avatar });
+        if(chatWindowOverlay.classList.contains('show') && currentChatTarget && currentChatTarget.id===target.id) renderChatWindow();
+        updateMsgBadge();
+      }, 1500 + Math.random()*2000);
+    } else {
+      // 전체채팅 답장은 실무진만 — 사장님은 실무 대화에 끼지 않음
+      var pool = messengerContacts.filter(function(c){ return !c.isBoss; });
+      var replier = pool[Math.floor(Math.random()*pool.length)];
+      var replierStaff = staffMap[replier.id];
+      setTimeout(function(){
+        var reply = replyLineFor(replierStaff ? replierStaff.personality : null);
+        pushChat(CHAT_GROUP_KEY, { from:replier.name, body:reply, ts:Date.now(), mine:false, avatar:replier.avatar });
+        if(chatWindowOverlay.classList.contains('show') && !currentChatTarget) renderChatWindow();
+        updateMsgBadge();
+      }, 1500 + Math.random()*2000);
+    }
+  }
+  byId('chatSendBtn').addEventListener('click', sendChatMessage);
+  byId('chatInput').addEventListener('keydown', function(e){ if(e.key==='Enter') sendChatMessage(); });
+
+  // ===== 오늘의 기록(회사 하루 로그) — 날짜별 저장, 최근 7일 보관 =====
+  var CHATLOG_KEY = 'ggj_office_chatlog_v1';
+  var chatLogToday = { date: dateKey(), entries: [] };
+  var chatLogHistory = [];
+  (function loadChatLog(){
+    try{
+      var raw = JSON.parse(localStorage.getItem(CHATLOG_KEY));
+      if(raw && raw.today){
+        chatLogHistory = raw.history || [];
+        if(raw.today.date === dateKey()){
+          chatLogToday = raw.today;
+        } else {
+          chatLogHistory.unshift(raw.today);
+          chatLogHistory = chatLogHistory.slice(0, 7);
+        }
+      }
+    }catch(e){}
+  })();
+  function saveChatLog(){
+    try{ localStorage.setItem(CHATLOG_KEY, JSON.stringify({ today:chatLogToday, history:chatLogHistory })); }catch(e){}
+  }
+  function logDayEvent(icon, text){
+    if(chatLogToday.date !== dateKey()){
+      chatLogHistory.unshift(chatLogToday);
+      chatLogHistory = chatLogHistory.slice(0, 7);
+      chatLogToday = { date: dateKey(), entries: [] };
+    }
+    chatLogToday.entries.push({ time: chatTimeLabel(Date.now()), icon:icon, text:text });
+    if(chatLogToday.entries.length > 60) chatLogToday.entries.shift();
+    saveChatLog();
+  }
+
+  var dayLogOverlay = byId('dayLogOverlay');
+  function renderDayLog(){
+    var wrap = byId('dayLogList');
+    wrap.innerHTML = '';
+    var entries = chatLogToday.entries;
+    if(!entries.length){
+      wrap.innerHTML = '<div class="projEmpty">아직 오늘의 기록이 없어요</div>';
+    } else {
+      entries.slice().reverse().forEach(function(e){
+        var row = document.createElement('div');
+        row.className = 'dayLogRow';
+        var t = document.createElement('span');
+        t.className = 'dayLogTime';
+        t.textContent = e.time;
+        var body = document.createElement('span');
+        body.textContent = e.icon + ' ' + e.text;
+        row.appendChild(t);
+        row.appendChild(body);
+        wrap.appendChild(row);
+      });
+    }
+  }
+  byId('dayLogBtn').addEventListener('click', function(){
+    renderDayLog();
+    messengerOverlay.classList.remove('show');
+    dayLogOverlay.classList.add('show');
+  });
+  byId('dayLogCloseX').addEventListener('click', function(){ dayLogOverlay.classList.remove('show'); });
+  dayLogOverlay.addEventListener('click', function(e){ if(e.target===dayLogOverlay) dayLogOverlay.classList.remove('show'); });
+
+  // ===== 시간대/성격별 잡담 데이터 =====
+  var ambientGeneric = {
+    arrive:    ['좋은 아침이에요!', '오늘도 화이팅', '지각할 뻔했다..', '오늘 날씨 어떤가요'],
+    work:      ['시안 확인 부탁드려요.', '이거 오늘까지 가능할까요?', '파일 올려뒀어요.', '회의 곧이죠?'],
+    lunch:     ['점심 뭐 드세요?', '같이 내려가실 분?', '오늘 메뉴 뭐지', '배고파요'],
+    afternoon: ['커피 마실 사람?', '졸리다..', '이거 생각보다 어렵네요.', '거의 다 됐어요.'],
+    leaving:   ['오늘은 여기까지!', '다들 먼저 들어가세요.', '이것만 마무리하고 갈게요.'],
+    overtime:  ['아직 계세요?', '저도 조금만 더 하고 갈게요.', '배고프다..']
+  };
+  var ambientPersonality = {
+    calm:       { work:['차근차근 진행할게요.'], afternoon:['잠깐 정리 좀 할게요.'] },
+    meticulous: { arrive:['오늘 일정 체크했어요.'], work:['일정표 다시 확인해주세요.','기한 한번 더 체크할게요.'], afternoon:['숫자 다시 맞춰볼게요.'] },
+    warm:       { lunch:['제가 간식 좀 사왔어요~'], afternoon:['다들 힘내세요 :)'] },
+    chatty:     { arrive:['다들 좋은 아침~!'], work:['이거 어때요 다들?'], lunch:['오늘 맛집 갈까요?'], afternoon:['커피 타임 어때요~'] },
+    playful:    { work:['오 이거 재밌는데요?'], afternoon:['오늘따라 시간 안 가네요 ㅋㅋ'], leaving:['먼저 튀어보겠습니다 ㅎㅎ'] },
+    quiet:      { arrive:['안녕하세요.'], work:['확인했습니다.'] },
+    intern:     { arrive:['저 도착했어요!'], work:['이거 이렇게 하는 거 맞을까요..?'], afternoon:['넵 알겠습니다!'], overtime:['저도 남아있을게요..!'] }
+  };
+  var officeEventPool = [
+    { icon:'🖨️', from:'프린터', text:'프린터 용지가 부족해요.' },
+    { icon:'🖨️', from:'프린터', text:'프린터에 또 오류가 났어요.' },
+    { icon:'☕', from:'탕비실', text:'탕비실 커피가 떨어졌어요.' },
+    { icon:'🍪', from:'탕비실', text:'새 간식이 도착했어요!' },
+    { icon:'📦', from:'택배', text:'택배가 도착했어요.' },
+    { icon:'📦', from:'창고', text:'새 샘플이 도착했어요.' },
+    { icon:'🌱', from:'화분', text:'화분에 새 잎이 났어요.' },
+    { icon:'📋', from:'창고', text:'창고에 물건이 입고됐어요.' },
+    { icon:'📋', from:'창고', text:'재고가 얼마 안 남았어요.' }
+  ];
+
+  function currentAmbientCategory(){
+    var now = new Date();
+    var h = now.getHours(), m = now.getMinutes();
+    if(overtimeMode) return 'overtime';
+    if(h === 12) return 'lunch';
+    if(h === 17 && m >= 40) return 'leaving';
+    if(h >= 15 && h < 18) return 'afternoon';
+    if(h >= 8 && h < 9) return 'arrive';
+    if(h >= 9 && h < 18) return 'work';
+    return null;
+  }
+  function pickAmbientLine(personality, cat){
+    var pool = (ambientPersonality[personality] && ambientPersonality[personality][cat]) || [];
+    var all = pool.concat(ambientGeneric[cat] || []);
+    return all.length ? all[Math.floor(Math.random()*all.length)] : null;
+  }
+
+  function isViewingChatKey(key){
+    if(!chatWindowOverlay.classList.contains('show')) return false;
+    var curKey = currentChatTarget ? chatKeyFor(currentChatTarget.id) : CHAT_GROUP_KEY;
+    return curKey === key;
+  }
+
+  var lastRoomLine = {};
+  function speakAmbient(s, cat){
+    var pal = kindPalette[s.palKey] || kindPalette[s.kind] || kindPalette.cat;
+    var line = pickAmbientLine(s.personality, cat);
+    if(!line) return;
+    var toGroup = s.teamKey === 'lead' || Math.random() < 0.3;
+    var key = toGroup ? CHAT_GROUP_KEY : chatKeyFor('team_'+s.teamKey);
+    if(lastRoomLine[key] === line) return; // 같은 방에서 바로 반복 방지
+    lastRoomLine[key] = line;
+    pushChat(key, { from:s.name, body:line, ts:Date.now(), mine:false, avatar:pal.base });
+    logDayEvent('💬', s.name+': '+line);
+    if(isViewingChatKey(key)) renderChatWindow();
+    updateMsgBadge();
+    showBubble(s, line.length > 14 ? line.slice(0,14)+'..' : line);
+  }
+
+  function speakOfficeEvent(){
+    var ev = officeEventPool[Math.floor(Math.random()*officeEventPool.length)];
+    if(lastRoomLine[CHAT_GROUP_KEY] === ev.text) return;
+    lastRoomLine[CHAT_GROUP_KEY] = ev.text;
+    pushChat(CHAT_GROUP_KEY, { system:true, icon:ev.icon, body:ev.text, ts:Date.now(), mine:false });
+    logDayEvent(ev.icon, ev.text);
+    if(isViewingChatKey(CHAT_GROUP_KEY)) renderChatWindow();
+    updateMsgBadge();
+  }
+
+  // ===== 생일/기념일 (아주 낮은 확률) =====
+  function maybeBirthdayEvent(){
+    if(Math.random() >= 1/260) return;
+    var celeb = staff[Math.floor(Math.random()*staff.length)];
+    var announcer = staff.filter(function(s){ return s.id!==celeb.id; });
+    var a1 = announcer[Math.floor(Math.random()*announcer.length)];
+    pushChat(CHAT_GROUP_KEY, { from:a1.name, body:celeb.name+'님 오늘 생일이래요!', ts:Date.now(), mine:false, avatar:(kindPalette[a1.palKey]||kindPalette.cat).base });
+    logDayEvent('🎂', celeb.name+'님 생일');
+    if(isViewingChatKey(CHAT_GROUP_KEY)) renderChatWindow();
+    updateMsgBadge();
+    setTimeout(function(){
+      var a2 = announcer[Math.floor(Math.random()*announcer.length)];
+      pushChat(CHAT_GROUP_KEY, { from:a2.name, body:'생일 축하해요!!', ts:Date.now(), mine:false, avatar:(kindPalette[a2.palKey]||kindPalette.cat).base });
+      if(isViewingChatKey(CHAT_GROUP_KEY)) renderChatWindow();
+      updateMsgBadge();
+    }, 1600);
+  }
+
+  // ===== 실수로 보낸 메시지 (아주 낮은 확률) =====
+  var mistakeLines = ['팀장님 오늘 완전..', '오늘 점심은..', '저기 그.. 이거..'];
+  function maybeMistakeEvent(){
+    if(Math.random() >= 1/160) return;
+    var present = staff.filter(function(s){ return charEl(s.id).classList.contains('present') && !isGoneForDay(s.id); });
+    if(!present.length) return;
+    var s = present[Math.floor(Math.random()*present.length)];
+    var pal = kindPalette[s.palKey] || kindPalette[s.kind] || kindPalette.cat;
+    var key = s.teamKey==='lead' ? CHAT_GROUP_KEY : chatKeyFor('team_'+s.teamKey);
+    var line = mistakeLines[Math.floor(Math.random()*mistakeLines.length)];
+    pushChat(key, { from:s.name, body:line, ts:Date.now(), mine:false, avatar:pal.base });
+    if(isViewingChatKey(key)) renderChatWindow();
+    updateMsgBadge();
+    setTimeout(function(){
+      pushChat(key, { from:s.name, body:'', ts:Date.now(), mine:false, avatar:pal.base, deleted:true });
+      if(isViewingChatKey(key)) renderChatWindow();
+      updateMsgBadge();
+    }, 1300);
+  }
+
+
+  // ===== 잡담 생성 인터벌 =====
+  setInterval(function(){
+    if(isNonWorkingDay()) return;
+    var cat = currentAmbientCategory();
+    if(!cat) return;
+
+    var eligible = staff.filter(function(s){
+      return charEl(s.id).classList.contains('present') && !isGoneForDay(s.id) && !isBusy(s.id);
+    });
+    if(!eligible.length) return;
+
+    if(Math.random() < 0.08){
+      speakOfficeEvent();
+      return;
+    }
+    if(Math.random() < 0.55){
+      var speaker = eligible[Math.floor(Math.random()*eligible.length)];
+      speakAmbient(speaker, cat);
+    }
+    maybeBirthdayEvent();
+    maybeMistakeEvent();
+  }, 42000);
+
+  // ===== 이어지는 대화(질문→답변→추가답변) 랜덤 채팅 시스템 =====
+  // 데이터 구조: { id, category, timeRange:[시작시(소수 가능), 끝시], lines:[...] }
+  // 발화자는 고정하지 않고, 매번 랜덤으로 뽑은 두 직원이 번갈아 말한다.
+  var scriptedConversations = [
+    { id:'c01', category:'출근',      timeRange:[9, 10],    lines:['오늘 다들 일찍 오셨네요?', '그러게요. 제가 제일 늦은 줄 알았는데.', '저도 방금 왔어요 ㅋㅋ'] },
+    { id:'c02', category:'날씨',      timeRange:[9, 10],    lines:['밖에 비 와요?', '네, 꽤 와요.', '우산 가져오길 잘했네요.'] },
+    { id:'c03', category:'점심메뉴',  timeRange:[12, 13.5], lines:['오늘 점심 뭐 드세요?', '아직 못 정했어요.', '저도요. 뭐 먹을까요?', '저는 아무거나 괜찮아요 ㅎㅎ'] },
+    { id:'c04', category:'커피',      timeRange:[10, 12],   lines:['커피 드실 분?', '저요.', '저도 부탁드려요!', '오케이 두 잔 접수.'] },
+    { id:'c05', category:'졸림',      timeRange:[13.5, 15.5], lines:['왜 이렇게 졸리죠...', '저도요.', '오늘 유난히 심하네요.', '점심 먹고 더 심해질 예정입니다.'] },
+    { id:'c06', category:'금요일',    timeRange:[10, 12],   lines:['오늘 금요일 맞죠?', '네.', '왠지 시간이 안 가네요.', '금요일은 원래 그래요.'] },
+    { id:'c07', category:'월요일',    timeRange:[9, 11],    lines:['월요일 너무 길어요.', '아직 오전이에요.', '그 말 하지 마세요...'] },
+    { id:'c08', category:'퇴근',      timeRange:[17, 18],   lines:['오늘 몇 시에 퇴근하세요?', '정시에 가려고요.', '부럽네요.', '같이 가시죠.'] },
+    { id:'c09', category:'간식',      timeRange:[15.5, 17], lines:['탕비실에 과자 새로 들어왔어요.', '진짜요?', '네. 근데 벌써 하나 없어졌어요.', '누군지 알 것 같네요.'] },
+    { id:'c10', category:'점심후',    timeRange:[13, 14],   lines:['점심 맛있게 드셨어요?', '네. 너무 많이 먹었어요.', '저도요.', '오후에 졸리겠네요.'] },
+    { id:'c11', category:'주말',      timeRange:[15.5, 17], lines:['주말에 뭐 하세요?', '아직 아무 계획 없어요.', '저도요.', '그럼 계획 없는 게 계획이네요.'] },
+    { id:'c12', category:'휴가',      timeRange:[15.5, 17], lines:['다음 주에 휴가 가시는 거 맞죠?', '네, 며칠 쉬려고요.', '부럽습니다.', '다녀와서 간식 사올게요.'] },
+    { id:'c13', category:'에어컨',    timeRange:[13.5, 15.5], lines:['혹시 춥지 않으세요?', '저는 괜찮아요.', '저만 추운가 봐요...', '담요 가져다드릴까요?'] },
+    { id:'c14', category:'더위',      timeRange:[13.5, 15.5], lines:['오늘 왜 이렇게 덥죠?', '밖에 나가봤는데 진짜 덥더라고요.', '퇴근할 때가 걱정이네요.'] },
+    { id:'c15', category:'엘리베이터', timeRange:[9, 10],   lines:['아까 엘리베이터 엄청 오래 기다렸어요.', '저도요.', '한참 기다렸는데 계단으로 갈 걸 그랬어요.'] },
+    { id:'c16', category:'택배',      timeRange:[10, 12],   lines:['혹시 제 택배 온 거 없나요?', '아까 하나 온 것 같아요.', '어디에 있어요?', '입구 쪽에 있을 거예요.'] },
+    { id:'c17', category:'충전기',    timeRange:[10, 12],   lines:['혹시 C타입 충전기 있으세요?', '네, 잠깐 빌려드릴게요.', '감사합니다. 금방 쓸게요.'] },
+    { id:'c18', category:'영화',      timeRange:[15.5, 17], lines:['주말에 영화 보러 갔어요.', '오 뭐 보셨어요?', '그냥 기대 안 하고 봤는데 생각보다 재밌더라고요.', '저도 한번 봐야겠네요.'] },
+    { id:'c19', category:'아침식사',  timeRange:[9, 10],    lines:['아침 드셨어요?', '아니요. 늦잠 잤어요.', '저도요.', '역시 아침은 포기하는 게...'] },
+    { id:'c20', category:'커피취향',  timeRange:[10, 12],   lines:['아메리카노 드세요?', '네, 거의 그것만 마셔요.', '저는 단 거 좋아해요.', '그래서 탕비실 과자가 빨리 없어지는군요.'] },
+    { id:'c21', category:'조용한사무실', timeRange:[10, 12], lines:['오늘 사무실 조용하네요.', '다들 일하고 계신가 봐요.', '이런 날도 좋네요.'] },
+    { id:'c22', category:'전화',      timeRange:[10, 12],   lines:['아까 전화하셨던 거 제가 못 받았어요.', '아 괜찮아요. 나중에 다시 말씀드릴게요.', '네!'] },
+    { id:'c23', category:'점심추천',  timeRange:[12, 13.5], lines:['근처에 맛있는 데 아세요?', '저번에 갔던 데 괜찮았어요.', '어디였죠?', '회사에서 조금만 내려가면 있어요.'] },
+    { id:'c24', category:'주말날씨',  timeRange:[15.5, 17], lines:['주말에 비 온대요.', '아 진짜요?', '네. 우산 챙겨야 할 것 같아요.', '그럼 집에 있어야겠네요.'] },
+    { id:'c25', category:'피곤함',    timeRange:[13.5, 15.5], lines:['오늘 좀 피곤해 보이시는데 괜찮으세요?', '괜찮아요. 어제 잠을 좀 설쳤어요.', '오늘은 일찍 들어가세요.'] },
+    { id:'c26', category:'휴식',      timeRange:[13.5, 15.5], lines:['잠깐 쉬었다 할까요?', '좋아요.', '커피 한잔하고 올게요.', '저도 같이 갈게요.'] },
+    { id:'c27', category:'맛집',      timeRange:[12, 13.5], lines:['혹시 근처에 맛집 아세요?', '몇 군데 있어요.', '추천 하나만 해주세요.', '국수 좋아하시면 거기 괜찮아요.'] },
+    { id:'c28', category:'메시지실수', timeRange:[10, 12],  lines:['아... 제가 잘못 보냈네요.', 'ㅋㅋ 괜찮아요.', '순간 식겁했어요.', '저도 예전에 비슷한 적 있어요.'] },
+    { id:'c29', category:'퇴근직전',  timeRange:[17, 18],   lines:['오늘 다들 정시에 가시나요?', '저는 정리 좀 하고 가려고요.', '저도요.', '그럼 조금 있다가 같이 내려가요.'] },
+    { id:'c30', category:'잡담',      timeRange:[13.5, 15.5], lines:['오늘따라 시간이 빨리 가네요.', '그러게요.', '벌써 오후네요.', '그 말 들으니까 갑자기 배고파졌어요.', 'ㅋㅋ 점심 먹은 지 얼마 안 됐는데요.'] },
+    { id:'c31', category:'야근',      timeRange:[18, 24],   lines:['아직 계세요?', '네, 조금만 더 하고 갈게요.', '고생하시네요.'] },
+    { id:'c32', category:'야근간식',  timeRange:[18, 24],   lines:['야근하니 배고프네요.', '저도요.', '뭐라도 시켜먹을까요?', '좋아요!'] }
+  ];
+
+  var usedConversationIds = {}; // 하루 동안 같은 대화가 다시 나오지 않도록
+  var scriptedConvoActive = false;
+
+  function pickEligibleConversation(h, m){
+    var hourFloat = h + m/60;
+    var candidates = scriptedConversations.filter(function(c){
+      return hourFloat >= c.timeRange[0] && hourFloat < c.timeRange[1] && !usedConversationIds[c.id];
+    });
+    if(!candidates.length) return null;
+    return candidates[Math.floor(Math.random()*candidates.length)];
+  }
+
+  function pickConversationPair(){
+    var pool = staff.filter(function(s){
+      return charEl(s.id).classList.contains('present') && !isGoneForDay(s.id) && !isBusy(s.id);
+    });
+    if(pool.length < 2) return null;
+    var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
+    return [shuffled[0], shuffled[1]];
+  }
+
+  function runScriptedConversation(){
+    if(scriptedConvoActive) return;
+    if(isNonWorkingDay()) return;
+    var now = new Date();
+    var convo = pickEligibleConversation(now.getHours(), now.getMinutes());
+    if(!convo) return;
+    var pair = pickConversationPair();
+    if(!pair) return;
+
+    usedConversationIds[convo.id] = true;
+    scriptedConvoActive = true;
+    markBusy(pair[0].id);
+    markBusy(pair[1].id);
+
+    convo.lines.forEach(function(line, i){
+      setTimeout(function(){
+        var speaker = pair[i % 2];
+        var pal = kindPalette[speaker.palKey] || kindPalette[speaker.kind] || kindPalette.cat;
+        pushChat(CHAT_GROUP_KEY, { from:speaker.name, body:line, ts:Date.now(), mine:false, avatar:pal.base });
+        logDayEvent('💬', speaker.name+': '+line);
+        if(isViewingChatKey(CHAT_GROUP_KEY)) renderChatWindow();
+        updateMsgBadge();
+        showBubble(speaker, line.length > 14 ? line.slice(0,14)+'..' : line);
+        if(i === convo.lines.length - 1){
+          clearBusy(pair[0].id);
+          clearBusy(pair[1].id);
+          scriptedConvoActive = false;
+        }
+      }, i * (1800 + Math.random()*1400)); // 대사 사이 1.8~3.2초 간격을 두고 하나씩 표시
+    });
+  }
+
+  function scheduleNextScriptedConversation(){
+    var delay = (3 + Math.random()*5) * 60000; // 3~8분 랜덤 간격
+    setTimeout(function(){
+      runScriptedConversation();
+      scheduleNextScriptedConversation();
+    }, delay);
+  }
+  scheduleNextScriptedConversation();
 
   // ===== 사운드 (소리 없음, UI/상태만) =====
   var isPlaying = false, isMuted = false, volume = 0.6;
@@ -3053,10 +3769,19 @@
       'officeDustV1',
       'ggj_office_notes_inbox_v1',
       'ggj_office_notes_sent_v1',
-      'ggj_office_lifetime_v1'
+      'ggj_office_lifetime_v1',
+      'ggj_office_chatlog_v1',
+      'ggj_office_chat_lastseen_map_v1'
     ];
     try{
       resetKeys.forEach(function(k){ localStorage.removeItem(k); });
+      localStorage.removeItem('ggj_office_groupchat_v1');
+      var toRemove = [];
+      for(var i=0;i<localStorage.length;i++){
+        var k2 = localStorage.key(i);
+        if(k2 && k2.indexOf('ggj_office_chat_v1_') === 0) toRemove.push(k2);
+      }
+      toRemove.forEach(function(k){ localStorage.removeItem(k); });
     }catch(e){}
     location.reload();
   });
