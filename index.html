@@ -128,6 +128,8 @@
   .msg-badge.has-count{ border:none; background:#e8935a; color:#fff; font-size:9px; font-weight:600; line-height:1; }
   .noteBoxBtn{ font-size:11px; color:#5c4a3a; border:1px solid #5c4a3a; border-radius:6px; padding:3px 7px; background:#fff; cursor:pointer; }
   .mail-head .headRight{ display:flex; gap:6px; align-items:center; }
+  .headLeft{ display:flex; align-items:center; gap:6px; }
+  .backBtn{ background:none; border:none; font-size:19px; line-height:1; cursor:pointer; color:#5c4a3a; padding:0 2px; }
   .rosterRow{ display:flex; align-items:center; gap:6px; padding:5px 2px; border-bottom:1px dashed #ddd8cc; }
   .rosterRow:last-child{ border-bottom:none; }
   .rosterDot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
@@ -955,7 +957,7 @@
 
 <div class="mail-overlay" id="dayLogOverlay">
   <div class="mail-window" style="max-width:320px;">
-    <div class="mail-head"><span id="dayLogTitle">오늘의 기록</span><button id="dayLogCloseX">×</button></div>
+    <div class="mail-head"><div class="headLeft"><button class="backBtn" id="dayLogBackBtn">‹</button><span id="dayLogTitle">오늘의 기록</span></div><button id="dayLogCloseX">×</button></div>
     <div class="mail-body">
       <div id="dayLogList" style="display:flex; flex-direction:column; gap:6px; max-height:56vh; overflow-y:auto;"></div>
     </div>
@@ -964,7 +966,7 @@
 
 <div class="mail-overlay" id="chatListOverlay">
   <div class="mail-window" style="max-width:300px;">
-    <div class="mail-head"><span>채팅</span><button id="chatListCloseX">×</button></div>
+    <div class="mail-head"><div class="headLeft"><button class="backBtn" id="chatListBackBtn">‹</button><span>채팅</span></div><button id="chatListCloseX">×</button></div>
     <div class="mail-body" style="padding-top:6px;">
       <div id="chatListBody" style="max-height:56vh; overflow-y:auto;"></div>
     </div>
@@ -973,7 +975,7 @@
 
 <div class="mail-overlay" id="chatWindowOverlay">
   <div class="mail-window" style="max-width:320px;">
-    <div class="mail-head"><span id="chatWindowTitle">전체채팅</span><button id="chatWindowCloseX">×</button></div>
+    <div class="mail-head"><div class="headLeft"><button class="backBtn" id="chatWindowBackBtn">‹</button><span id="chatWindowTitle">전체채팅</span></div><button id="chatWindowCloseX">×</button></div>
     <div class="mail-body">
       <div id="chatMessages"></div>
       <div id="chatQuickReplies" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
@@ -987,7 +989,7 @@
 
 <div class="mail-overlay" id="noteComposeOverlay">
   <div class="mail-window">
-    <div class="mail-head"><span>쪽지 작성</span><button id="noteComposeCloseX">×</button></div>
+    <div class="mail-head"><div class="headLeft"><button class="backBtn" id="noteComposeBackBtn">‹</button><span>쪽지 작성</span></div><button id="noteComposeCloseX">×</button></div>
     <div class="mail-body">
       <div class="mail-field"><label>받는사람</label><span id="noteToText" style="font-size:12.5px; color:#5c4a3a;"></span></div>
       <div class="mail-field"><label>보내는사람</label><input type="text" id="noteFrom" value="나"></div>
@@ -1000,7 +1002,7 @@
 
 <div class="mail-overlay" id="noteBoxOverlay">
   <div class="mail-window">
-    <div class="mail-head"><span id="noteBoxTitle">받은쪽지함</span><div class="headRight"><button class="noteBoxBtn" id="noteBoxClearBtn">비우기</button><button id="noteBoxCloseX">×</button></div></div>
+    <div class="mail-head"><div class="headLeft"><button class="backBtn" id="noteBoxBackBtn">‹</button><span id="noteBoxTitle">받은쪽지함</span></div><div class="headRight"><button class="noteBoxBtn" id="noteBoxClearBtn">비우기</button><button id="noteBoxCloseX">×</button></div></div>
     <div class="mail-body">
       <div id="noteBoxList" style="display:flex; flex-direction:column; gap:8px; max-height:320px; overflow-y:auto;"></div>
     </div>
@@ -3040,6 +3042,12 @@
     noteComposeOverlay.classList.add('show');
   }
   byId('noteComposeCloseX').addEventListener('click', function(){ noteComposeOverlay.classList.remove('show'); });
+  byId('noteComposeBackBtn').addEventListener('click', function(){
+    noteComposeOverlay.classList.remove('show');
+    renderRoster();
+    updateMsgBadge();
+    messengerOverlay.classList.add('show');
+  });
   noteComposeOverlay.addEventListener('click', function(e){ if(e.target===noteComposeOverlay) noteComposeOverlay.classList.remove('show'); });
 
   var noteReplyLines = ['넵 확인했습니다!', '네 알겠습니다', '좋은 생각이네요', '조금 이따 답할게요', '확인 중입니다', '오케이!'];
@@ -3110,6 +3118,12 @@
   byId('inboxOpenBtn').addEventListener('click', function(){ renderNoteBox('inbox'); });
   byId('sentOpenBtn').addEventListener('click', function(){ renderNoteBox('sent'); });
   byId('noteBoxCloseX').addEventListener('click', function(){ noteBoxOverlay.classList.remove('show'); });
+  byId('noteBoxBackBtn').addEventListener('click', function(){
+    noteBoxOverlay.classList.remove('show');
+    renderRoster();
+    updateMsgBadge();
+    messengerOverlay.classList.add('show');
+  });
   noteBoxOverlay.addEventListener('click', function(e){ if(e.target===noteBoxOverlay) noteBoxOverlay.classList.remove('show'); });
   byId('noteBoxClearBtn').addEventListener('click', function(){
     var key = currentNoteBoxType==='inbox' ? NOTES_INBOX_KEY : NOTES_SENT_KEY;
@@ -3163,7 +3177,7 @@
     row.appendChild(avatar);
     row.appendChild(name);
     row.appendChild(dot);
-    row.addEventListener('click', function(){ openChatWindow(target); });
+    row.addEventListener('click', function(){ openChatWindow(target, 'list'); });
     return row;
   }
 
@@ -3193,9 +3207,15 @@
     chatListOverlay.classList.add('show');
   });
   byId('chatListCloseX').addEventListener('click', function(){ chatListOverlay.classList.remove('show'); });
+  byId('chatListBackBtn').addEventListener('click', function(){
+    chatListOverlay.classList.remove('show');
+    renderRoster();
+    updateMsgBadge();
+    messengerOverlay.classList.add('show');
+  });
   chatListOverlay.addEventListener('click', function(e){ if(e.target===chatListOverlay) chatListOverlay.classList.remove('show'); });
 
-  byId('groupChatBtn').addEventListener('click', function(){ openChatWindow(null); });
+  byId('groupChatBtn').addEventListener('click', function(){ openChatWindow(null, 'messenger'); });
 
   function renderChatWindow(){
     var key = currentChatTarget ? chatKeyFor(currentChatTarget.id) : CHAT_GROUP_KEY;
@@ -3294,8 +3314,10 @@
     ib.classList.toggle('has-alert', noteUnread);
   }
 
-  function openChatWindow(target){
+  var chatWindowOpenedFrom = 'messenger'; // 'messenger' | 'list' — 뒤로가기 대상 판단용
+  function openChatWindow(target, from){
     currentChatTarget = target;
+    chatWindowOpenedFrom = from || 'messenger';
     renderChatWindow();
     renderQuickReplies();
     var key = target ? chatKeyFor(target.id) : CHAT_GROUP_KEY;
@@ -3307,6 +3329,17 @@
   }
   byId('chatWindowCloseX').addEventListener('click', function(){ chatWindowOverlay.classList.remove('show'); });
   chatWindowOverlay.addEventListener('click', function(e){ if(e.target===chatWindowOverlay) chatWindowOverlay.classList.remove('show'); });
+  byId('chatWindowBackBtn').addEventListener('click', function(){
+    chatWindowOverlay.classList.remove('show');
+    if(chatWindowOpenedFrom === 'list'){
+      renderChatList();
+      chatListOverlay.classList.add('show');
+    } else {
+      renderRoster();
+      updateMsgBadge();
+      messengerOverlay.classList.add('show');
+    }
+  });
 
   var chatReplyLines = ['넵 확인했습니다!', '좋은 생각이네요', '저도 그렇게 생각해요', '오케이!', '조금 이따 이야기해요', '넵넵', '좋아요~', '확인했습니다', '넵 알겠습니다', '그러게요 ㅎㅎ'];
   var personalityReplyLines = {
@@ -3430,6 +3463,12 @@
     dayLogOverlay.classList.add('show');
   });
   byId('dayLogCloseX').addEventListener('click', function(){ dayLogOverlay.classList.remove('show'); });
+  byId('dayLogBackBtn').addEventListener('click', function(){
+    dayLogOverlay.classList.remove('show');
+    renderRoster();
+    updateMsgBadge();
+    messengerOverlay.classList.add('show');
+  });
   dayLogOverlay.addEventListener('click', function(e){ if(e.target===dayLogOverlay) dayLogOverlay.classList.remove('show'); });
 
   // ===== 시간대/성격별 잡담 데이터 =====
