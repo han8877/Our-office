@@ -959,6 +959,13 @@
 <text id="label-break" x="715" y="658" font-size="13" font-weight="700">탕비실</text>
 </g>
 
+<rect id="roomLightOverlay" x="20" y="20" width="960" height="800" rx="16" fill="#1c1c2e" opacity="0" style="transition:opacity .5s ease; pointer-events:none;"/>
+<g id="lightSwitch" style="cursor:pointer;" transform="translate(956,34)">
+  <rect x="-11" y="-16" width="22" height="32" rx="7" fill="#e8e0cf" stroke="#5c4a3a" stroke-width="1.2"/>
+  <circle id="lightSwitchKnob" cx="0" cy="-8" r="6.5" fill="#e3b23c" stroke="#5c4a3a" stroke-width="1" style="transition:cy .25s ease, fill .25s ease;"/>
+</g>
+<text x="956" y="68" font-size="8.5" text-anchor="middle" fill="#8a8a86" stroke="none" style="pointer-events:none;">조명</text>
+
 <g id="floaters"></g>
 <g id="bubbleLayer"></g>
 </svg>
@@ -1941,6 +1948,57 @@
   var rainIcon = byId('windowRain');
   var moonIcon = byId('moonIcon');
   var overtimeMode = false;
+  var overtimeStaffIds = {};
+  var overtimeTimers = {};
+
+  // ===== 사무실 조명 스위치 (우측 상단) =====
+  var roomLightOverlay = byId('roomLightOverlay');
+  var lightSwitchEl = byId('lightSwitch');
+  var lightSwitchKnob = byId('lightSwitchKnob');
+  var lightOn = true;
+
+  function anyStaffPresent(){
+    return staff.some(function(s){ var el = charEl(s.id); return el && el.classList.contains('present'); });
+  }
+
+  function setLight(on){
+    lightOn = on;
+    roomLightOverlay.style.opacity = on ? 0 : 0.55;
+    lightSwitchKnob.setAttribute('cy', on ? -8 : 8);
+    lightSwitchKnob.setAttribute('fill', on ? '#e3b23c' : '#8a8a86');
+  }
+
+  lightSwitchEl.addEventListener('click', function(){
+    var now = new Date();
+    var h = now.getHours(), m = now.getMinutes();
+    var mins = h*60 + m;
+    var inWorkWindow = (mins >= 9*60 && mins <= 11*60+59) || (mins >= 13*60+5 && mins <= 18*60);
+
+    if(lightOn){
+      setLight(false);
+      if(inWorkWindow){
+        var lead = staffMap['kobujang'];
+        if(lead && charEl(lead.id) && charEl(lead.id).classList.contains('present')){
+          showBubble(lead, '누가 불껐어요?', '#fffdf8');
+          var leads = staff.filter(function(s){ return s.role==='팀장' && charEl(s.id) && charEl(s.id).classList.contains('present'); });
+          leads = leads.slice().sort(function(){ return Math.random()-0.5; }).slice(0,3);
+          var lines = ['어두워요','불 켜줘요','잘 안보여요'];
+          leads.forEach(function(s, i){
+            setTimeout(function(){ showBubble(s, lines[i], '#fffdf8'); }, 900*(i+1));
+          });
+        }
+      }
+    } else {
+      setLight(true);
+      if(h >= 21 && !anyStaffPresent()){
+        if(typeof pushChat === 'function' && typeof chatKeyFor === 'function'){
+          pushChat(chatKeyFor('boss'), { from:'사장님', body:'전기세가 많이 나온다네..', ts:Date.now(), mine:false, avatar:'#f0973f' });
+          if(typeof updateMsgBadge === 'function') updateMsgBadge();
+          toast('사장님에게서 메시지가 도착했습니다');
+        }
+      }
+    }
+  });
 
   function pad(n){ return n<10 ? '0'+n : ''+n; }
 
@@ -1994,7 +2052,7 @@
     var outIds = getOutAllDayIds();
     var working = (h>=9 && h<12) || (h>=13 && h<18);
     staff.forEach(function(s){
-      if(isBusy(s.id)) return; // 회의/탕비실/방문객 대응 중인 직원은 건드리지 않음
+      if(isBusy(s.id) || overtimeStaffIds[s.id]) return; // 회의/탕비실/방문객 대응 중이거나 야근 중인 직원은 건드리지 않음
       var shouldBePresent = !outIds[s.id] && !hasLeftEarlyByNow(s.id, h, m) && working;
       var isPresent = charEl(s.id).classList.contains('present');
       if(shouldBePresent && !isPresent) showInstant(s.id);
@@ -2381,9 +2439,28 @@
       var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
       var callCount = Math.floor(Math.random()*3) + 2;
       var called = shuffled.slice(0, callCount);
-      called.forEach(function(s, i){ setTimeout(function(){ walkIn(s); }, i*260); bumpOvertime(s.id); });
+      called.forEach(function(s, i){
+        setTimeout(function(){ walkIn(s); }, i*260);
+        bumpOvertime(s.id);
+        overtimeStaffIds[s.id] = true;
+        // 야근 인원은 10~15분(랜덤) 머무른 뒤 스스로 퇴근한다
+        var stayMs = (10 + Math.random()*5) * 60000;
+        overtimeTimers[s.id] = setTimeout(function(){
+          delete overtimeTimers[s.id];
+          delete overtimeStaffIds[s.id];
+          walkOut(s);
+          if(Object.keys(overtimeStaffIds).length === 0){
+            // 야근하던 마지막 인원까지 퇴근하면 조명 자동 소등 (사용자가 다시 켤 수는 있음)
+            if(typeof setLight === 'function' && lightOn) setLight(false);
+            toast('야근 인원이 모두 퇴근했습니다');
+          }
+        }, stayMs);
+      });
       toast('야근모드 시작 — ' + called.map(function(s){return s.name;}).join(', ') + '만 남아 야근합니다');
     } else {
+      // 사용자가 직접 야근모드를 끄면, 예약된 개별 퇴근 타이머는 모두 취소하고 현재 시각 기준으로 재정렬
+      Object.keys(overtimeTimers).forEach(function(id){ clearTimeout(overtimeTimers[id]); delete overtimeTimers[id]; });
+      overtimeStaffIds = {};
       toast('야근모드를 종료합니다');
       var now = new Date();
       applyPhaseForLoad(now.getHours(), now.getMinutes());
