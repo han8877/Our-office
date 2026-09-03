@@ -187,11 +187,11 @@
 <body>
 
 <div id="introScreen" class="show">
-  <svg class="introBoss" viewBox="-40 -80 80 98" xmlns="http://www.w3.org/2000/svg" role="img">
+  <svg class="introBoss" viewBox="-40 -90 80 108" xmlns="http://www.w3.org/2000/svg" role="img">
     <title>사장님 인사</title>
     <g stroke="none">
-      <path d="M -26 -73 H 26 A 8 8 0 0 1 34 -65 V -57 A 8 8 0 0 1 26 -49 H 6 L 0 -41 L -6 -49 H -26 A 8 8 0 0 1 -34 -57 V -65 A 8 8 0 0 1 -26 -73 Z" fill="#fffdf8" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/>
-      <text x="0" y="-58" font-size="9.5" text-anchor="middle" fill="#5c4a3a" stroke="none">오늘도 반가워요~</text>
+      <path d="M -26 -82 H 26 A 8 8 0 0 1 34 -74 V -66 A 8 8 0 0 1 26 -58 H 6 L 0 -50 L -6 -58 H -26 A 8 8 0 0 1 -34 -66 V -74 A 8 8 0 0 1 -26 -82 Z" fill="#fffdf8" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/>
+      <text x="0" y="-67" font-size="9.5" text-anchor="middle" fill="#5c4a3a" stroke="none">오늘도 반가워요~</text>
     </g>
     <g stroke="none">
       <ellipse cx="0" cy="9" rx="13" ry="2.6" fill="#3a2a1f" opacity="0.12"/>
@@ -345,9 +345,9 @@
 <line x1="337" y1="54" x2="339" y2="56" stroke-width="1"/>
 <line x1="351" y1="68" x2="353" y2="70" stroke-width="1"/>
 </g>
-<g id="cloudIcon" style="opacity:0; transition:opacity .5s ease;" fill="#c6d3d6" stroke="none">
+<g id="cloudIcon" style="opacity:0; transition:opacity .5s ease;" fill="#9fb0b5" stroke="none">
 <path d="M 296 70 A 4.6 4.6 0 0 1 296.4 60.9 A 4.4 4.4 0 0 1 304.2 58.4 A 4 4 0 0 1 310.4 62.6 A 4 4 0 0 1 310 70 Z"/>
-<path d="M 338 66.5 A 6.6 6.6 0 0 1 338.6 53.2 A 6.4 6.4 0 0 1 349.6 49.6 A 6 6 0 0 1 359 55.8 A 5.6 5.6 0 0 1 362.4 66.5 Z"/>
+<path d="M 338 76 A 6.6 6.6 0 0 1 338.6 62.7 A 6.4 6.4 0 0 1 349.6 59.1 A 6 6 0 0 1 359 65.3 A 5.6 5.6 0 0 1 362.4 76 Z"/>
 <path d="M 384 76 A 5.2 5.2 0 0 1 384.5 65.7 A 5 5 0 0 1 393.2 62.9 A 4.6 4.6 0 0 1 400.2 67.7 A 4.6 4.6 0 0 1 400 76 Z"/>
 </g>
 <g id="windowRain" style="opacity:0; transition:opacity .5s ease;">
@@ -367,16 +367,26 @@
 </g>
 
 <!-- 벽시계 -->
-<g transform="translate(25,10)">
-<circle cx="500" cy="95" r="43.5" stroke-width="3" stroke="#d4af37" fill="none"/>
-<circle cx="500" cy="95" r="42" stroke-width="1.5" fill="#fffdf8"/>
-<circle cx="500" cy="95" r="2" fill="#5c4a3a"/>
-<line id="hourHand" x1="500" y1="95" x2="500" y2="70" stroke-width="1.8"/>
-<line id="minHand" x1="500" y1="95" x2="500" y2="60" stroke-width="1.3"/>
-<text x="493" y="65" font-size="11" fill="#5c4a3a" stroke="none">12</text>
-<text x="530" y="99" font-size="11" fill="#5c4a3a" stroke="none">3</text>
-<text x="495" y="130" font-size="11" fill="#5c4a3a" stroke="none">6</text>
-<text x="463" y="99" font-size="11" fill="#5c4a3a" stroke="none">9</text>
+<g transform="translate(16.5,-31) translate(500,95) scale(0.8) translate(-500,-95)">
+<circle cx="500" cy="95" r="45" fill="#4a4038" stroke="none"/>
+<circle cx="500" cy="95" r="41" fill="#faf6ec" stroke="#c9a227" stroke-width="1.6"/>
+<circle cx="500" cy="95" r="35.5" fill="none" stroke="#e5dcc6" stroke-width="0.8"/>
+<g stroke="#5c4a3a" stroke-linecap="round">
+<line x1="500" y1="58" x2="500" y2="66" stroke-width="2.2"/>
+<line x1="537" y1="95" x2="529" y2="95" stroke-width="2.2"/>
+<line x1="500" y1="132" x2="500" y2="124" stroke-width="2.2"/>
+<line x1="463" y1="95" x2="471" y2="95" stroke-width="2.2"/>
+</g>
+<g stroke="#b9b2a6" stroke-width="1" stroke-linecap="round">
+<line x1="518.5" y1="62.9" x2="516.5" y2="66.4"/><line x1="532.1" y1="76.5" x2="528.6" y2="78.5"/>
+<line x1="532.1" y1="113.5" x2="528.6" y2="111.5"/><line x1="518.5" y1="127.1" x2="516.5" y2="123.6"/>
+<line x1="481.5" y1="127.1" x2="483.5" y2="123.6"/><line x1="467.9" y1="113.5" x2="471.4" y2="111.5"/>
+<line x1="467.9" y1="76.5" x2="471.4" y2="78.5"/><line x1="481.5" y1="62.9" x2="483.5" y2="66.4"/>
+</g>
+<line id="hourHand" x1="500" y1="95" x2="500" y2="74" stroke-width="3.2" stroke-linecap="round"/>
+<line id="minHand" x1="500" y1="95" x2="500" y2="64" stroke-width="2.2" stroke-linecap="round"/>
+<circle cx="500" cy="95" r="2.8" fill="#3a2a1f" stroke="none"/>
+<circle cx="500" cy="95" r="1.1" fill="#c9a227" stroke="none"/>
 </g>
 
 <!-- ===== 디자인실장실 (구 디자인부) ===== -->
@@ -421,21 +431,7 @@
 <rect x="945.9" y="341" width="1.5" height="8" rx="0.7" fill="#5c4a3a" stroke="none"/>
 </g>
 
-<g stroke-width="0.9">
-<g transform="translate(930,98)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
-<path d="M 0.0 0.0 Q -0.9 -5.8 -6.4 -7.7 Q -5.5 -1.9 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
-<line x1="0.0" y1="0.0" x2="-5.2" y2="-6.3" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
-<path d="M 0.0 0.0 Q 1.5 -8.5 -1.3 -13.2 Q -2.8 -4.7 0.0 0.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
-<line x1="0.0" y1="0.0" x2="-1.1" y2="-10.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
-<path d="M 0.0 0.0 Q 0.0 -9.3 0.0 -14.0 Q 0.0 -4.7 0.0 0.0 Z" fill="#a3d191" stroke-width="0.55"/>
-<line x1="0.0" y1="0.0" x2="0.0" y2="-11.5" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
-<path d="M 0.0 0.0 Q -1.5 -8.5 1.3 -13.2 Q 2.8 -4.7 0.0 0.0 Z" fill="#79ad61" stroke-width="0.55"/>
-<line x1="0.0" y1="0.0" x2="1.1" y2="-10.8" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
-<path d="M 0.0 0.0 Q 0.9 -5.8 6.4 -7.7 Q 5.5 -1.9 0.0 0.0 Z" fill="#8fbf6f" stroke-width="0.55"/>
-<line x1="0.0" y1="0.0" x2="5.2" y2="-6.3" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
-</g>
-<rect x="921.0" y="98.0" width="18.0" height="7" rx="2" fill="#c98a5e" stroke-width="0.8"/><rect x="921.0" y="98.0" width="18.0" height="2" rx="1" fill="#dba876" stroke="none"/><rect x="922.5" y="102.0" width="15.0" height="2" rx="1" fill="#a8703f" stroke="none" opacity="0.5"/>
-</g>
+
 
 <!-- 실장 책상은 deskLayer에서 JS로 생성 -->
 
@@ -832,27 +828,10 @@
 </g>
 
 <!-- 화분8: 와이어스탠드(복합기 사이) -->
-<g transform="translate(480,265)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
-<path d="M -1.6 0 C -6 -8 -6 -18 -3 -26 C -1 -18 -0.5 -8 -1.6 0 Z" fill="#79ad61" stroke-width="0.55"/>
-<path d="M -0.6 0 C -3 -9 -2.5 -20 0 -28 C 2 -19 1.8 -8 -0.6 0 Z" fill="#8fbf6f" stroke-width="0.55"/>
-<path d="M 0.6 0 C 3 -9 2.5 -20 0 -28 C -1.5 -19 -1.5 -8 0.6 0 Z" fill="#a3d191" stroke-width="0.55"/>
-<path d="M 1.6 0 C 6 -8 6 -18 3 -26 C 1 -18 0.5 -8 1.6 0 Z" fill="#79ad61" stroke-width="0.55"/>
-<path d="M 3 1 C 8 -5 10 -13 8 -19 C 5 -13 3 -6 3 1 Z" fill="#8fbf6f" stroke-width="0.55"/>
-<path d="M -3 1 C -8 -5 -10 -13 -8 -19 C -5 -13 -3 -6 -3 1 Z" fill="#a3d191" stroke-width="0.55"/>
-<rect x="-8.0" y="0.0" width="16.0" height="7" rx="2" fill="#c98a5e" stroke-width="0.8"/><rect x="-8.0" y="0.0" width="16.0" height="2" rx="1" fill="#dba876" stroke="none"/><rect x="-6.5" y="4.0" width="13.0" height="2" rx="1" fill="#a8703f" stroke="none" opacity="0.5"/>
-</g>
+
 
 <!-- 화분9: 아가베(노트팀 우측 하단) -->
-<g transform="translate(785,225)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
-<path d="M -1.0 1.5 Q -8.0 -1.2 -19.7 -13.8 Q -11.7 -12.6 1.0 -1.5 Z" fill="#5c9098" stroke-width="0.5"/>
-<path d="M -1.5 1.0 Q -7.8 -4.8 -16.1 -22.9 Q -8.3 -18.1 1.5 -1.0 Z" fill="#7ab0b8" stroke-width="0.5"/>
-<path d="M -1.7 0.5 Q -6.1 -8.2 -8.8 -30.8 Q -2.7 -22.5 1.7 -0.5 Z" fill="#4a7880" stroke-width="0.5"/>
-<path d="M -1.8 0.0 Q -3.6 -10.2 0.0 -34.0 Q 3.6 -23.8 1.8 0.0 Z" fill="#6aa0a8" stroke-width="0.5"/>
-<path d="M -1.7 -0.5 Q -0.8 -10.2 8.8 -30.8 Q 9.6 -20.5 1.7 0.5 Z" fill="#5c9098" stroke-width="0.5"/>
-<path d="M -1.5 -1.0 Q 1.9 -8.9 16.1 -22.9 Q 14.2 -14.0 1.5 1.0 Z" fill="#7ab0b8" stroke-width="0.5"/>
-<path d="M -1.0 -1.5 Q 3.8 -7.1 19.7 -13.8 Q 15.8 -6.7 1.0 1.5 Z" fill="#4a7880" stroke-width="0.5"/>
-<rect x="-9" y="0" width="18" height="8" rx="2" fill="#d9c9a8" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.4" rx="1.4" fill="#d9c9a8" stroke="none" opacity="0.6"/>
-</g>
+
 
 <!-- 화분10: 몬스테라(홍보팀-회의실 사이) -->
 <g transform="translate(545,465)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
@@ -1036,6 +1015,26 @@
 <rect x="360" y="230" width="280" height="122" rx="12" fill="#f9f5ea" stroke="none"/>
 <rect x="368" y="238" width="76" height="20" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
 <text x="378" y="252" font-size="12" font-weight="700" fill="#5c4a3a" stroke="none">다목적실</text>
+<g transform="translate(480,265)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M -1.6 0 C -6 -8 -6 -18 -3 -26 C -1 -18 -0.5 -8 -1.6 0 Z" fill="#79ad61" stroke-width="0.55"/>
+<path d="M -0.6 0 C -3 -9 -2.5 -20 0 -28 C 2 -19 1.8 -8 -0.6 0 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<path d="M 0.6 0 C 3 -9 2.5 -20 0 -28 C -1.5 -19 -1.5 -8 0.6 0 Z" fill="#a3d191" stroke-width="0.55"/>
+<path d="M 1.6 0 C 6 -8 6 -18 3 -26 C 1 -18 0.5 -8 1.6 0 Z" fill="#79ad61" stroke-width="0.55"/>
+<path d="M 3 1 C 8 -5 10 -13 8 -19 C 5 -13 3 -6 3 1 Z" fill="#8fbf6f" stroke-width="0.55"/>
+<path d="M -3 1 C -8 -5 -10 -13 -8 -19 C -5 -13 -3 -6 -3 1 Z" fill="#a3d191" stroke-width="0.55"/>
+<rect x="-8.0" y="0.0" width="16.0" height="7" rx="2" fill="#c98a5e" stroke-width="0.8"/><rect x="-8.0" y="0.0" width="16.0" height="2" rx="1" fill="#dba876" stroke="none"/><rect x="-6.5" y="4.0" width="13.0" height="2" rx="1" fill="#a8703f" stroke="none" opacity="0.5"/>
+</g>
+<g transform="translate(832,222)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<path d="M -1.0 1.5 Q -8.0 -1.2 -19.7 -13.8 Q -11.7 -12.6 1.0 -1.5 Z" fill="#5c9098" stroke-width="0.5"/>
+<path d="M -1.5 1.0 Q -7.8 -4.8 -16.1 -22.9 Q -8.3 -18.1 1.5 -1.0 Z" fill="#7ab0b8" stroke-width="0.5"/>
+<path d="M -1.7 0.5 Q -6.1 -8.2 -8.8 -30.8 Q -2.7 -22.5 1.7 -0.5 Z" fill="#4a7880" stroke-width="0.5"/>
+<path d="M -1.8 0.0 Q -3.6 -10.2 0.0 -34.0 Q 3.6 -23.8 1.8 0.0 Z" fill="#6aa0a8" stroke-width="0.5"/>
+<path d="M -1.7 -0.5 Q -0.8 -10.2 8.8 -30.8 Q 9.6 -20.5 1.7 0.5 Z" fill="#5c9098" stroke-width="0.5"/>
+<path d="M -1.5 -1.0 Q 1.9 -8.9 16.1 -22.9 Q 14.2 -14.0 1.5 1.0 Z" fill="#7ab0b8" stroke-width="0.5"/>
+<path d="M -1.0 -1.5 Q 3.8 -7.1 19.7 -13.8 Q 15.8 -6.7 1.0 1.5 Z" fill="#4a7880" stroke-width="0.5"/>
+<rect x="-9" y="0" width="18" height="8" rx="2" fill="#d9c9a8" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.4" rx="1.4" fill="#d9c9a8" stroke="none" opacity="0.6"/>
+</g>
+
 <g stroke="#5c4a3a" stroke-width="1.1">
 <rect x="598" y="272" width="9" height="54" rx="2" fill="#3a3a3a"/>
 <rect x="600" y="276" width="3" height="46" rx="1" fill="#8fa3ad" stroke="none"/>
@@ -1044,24 +1043,24 @@
 <rect x="615" y="324" width="14" height="5" rx="2" fill="#5c4a3a" stroke="none"/>
 </g>
 <g stroke="#5c4a3a" stroke-width="1.2">
-<circle cx="400" cy="302" r="9" fill="#b8a894"/>
-<line x1="396" y1="309" x2="395" y2="316" stroke-linecap="round"/>
-<line x1="404" y1="309" x2="405" y2="316" stroke-linecap="round"/>
-<circle cx="440" cy="302" r="9" fill="#b8a894"/>
-<line x1="436" y1="309" x2="435" y2="316" stroke-linecap="round"/>
-<line x1="444" y1="309" x2="445" y2="316" stroke-linecap="round"/>
-<circle cx="480" cy="302" r="9" fill="#b8a894"/>
-<line x1="476" y1="309" x2="475" y2="316" stroke-linecap="round"/>
-<line x1="484" y1="309" x2="485" y2="316" stroke-linecap="round"/>
-<circle cx="400" cy="332" r="9" fill="#b8a894"/>
-<line x1="396" y1="339" x2="395" y2="346" stroke-linecap="round"/>
-<line x1="404" y1="339" x2="405" y2="346" stroke-linecap="round"/>
-<circle cx="440" cy="332" r="9" fill="#b8a894"/>
-<line x1="436" y1="339" x2="435" y2="346" stroke-linecap="round"/>
-<line x1="444" y1="339" x2="445" y2="346" stroke-linecap="round"/>
-<circle cx="480" cy="332" r="9" fill="#b8a894"/>
-<line x1="476" y1="339" x2="475" y2="346" stroke-linecap="round"/>
-<line x1="484" y1="339" x2="485" y2="346" stroke-linecap="round"/>
+<circle cx="400" cy="299" r="9" fill="#b8a894"/>
+<line x1="396" y1="306" x2="395" y2="313" stroke-linecap="round"/>
+<line x1="404" y1="306" x2="405" y2="313" stroke-linecap="round"/>
+<circle cx="440" cy="299" r="9" fill="#b8a894"/>
+<line x1="436" y1="306" x2="435" y2="313" stroke-linecap="round"/>
+<line x1="444" y1="306" x2="445" y2="313" stroke-linecap="round"/>
+<circle cx="480" cy="299" r="9" fill="#b8a894"/>
+<line x1="476" y1="306" x2="475" y2="313" stroke-linecap="round"/>
+<line x1="484" y1="306" x2="485" y2="313" stroke-linecap="round"/>
+<circle cx="400" cy="329" r="9" fill="#b8a894"/>
+<line x1="396" y1="336" x2="395" y2="343" stroke-linecap="round"/>
+<line x1="404" y1="336" x2="405" y2="343" stroke-linecap="round"/>
+<circle cx="440" cy="329" r="9" fill="#b8a894"/>
+<line x1="436" y1="336" x2="435" y2="343" stroke-linecap="round"/>
+<line x1="444" y1="336" x2="445" y2="343" stroke-linecap="round"/>
+<circle cx="480" cy="329" r="9" fill="#b8a894"/>
+<line x1="476" y1="336" x2="475" y2="343" stroke-linecap="round"/>
+<line x1="484" y1="336" x2="485" y2="343" stroke-linecap="round"/>
 </g>
 
 <!-- ===== 아트코너 (다목적실 아래) ===== -->
@@ -1151,17 +1150,81 @@
 
 <!-- 우산꽂이 (비 올 때만 우산 3개) -->
 <g stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round">
-<g id="umbrellaSet" style="opacity:0; transition:opacity .5s ease;">
-<line x1="391" y1="182" x2="389" y2="160" stroke-width="1.4" stroke-linecap="round"/>
-<path d="M 383 161 a 6.5 6.5 0 0 1 13 -1 z" fill="#c0564f" stroke-width="0.9"/>
-<line x1="397" y1="182" x2="397" y2="157" stroke-width="1.4" stroke-linecap="round"/>
-<path d="M 391 158 a 6.5 6.5 0 0 1 13 -1 z" fill="#4f7fa8" stroke-width="0.9"/>
-<line x1="403" y1="182" x2="405" y2="162" stroke-width="1.4" stroke-linecap="round"/>
-<path d="M 399 163 a 6.5 6.5 0 0 1 13 -1 z" fill="#e3b23c" stroke-width="0.9"/>
-</g>
+<g id="umbrellaSet" style="opacity:0; transition:opacity .5s ease;"><line x1="391" y1="150" x2="391" y2="178" stroke="#8a8578" stroke-width="1" stroke-linecap="round"/><path d="M 388.4 153 Q 391 150.4 393.6 153 L 392.9 171 Q 391 173.4 389.1 171 Z" fill="#f2b8b5" stroke="#5c4a3a" stroke-width="0.75" stroke-linejoin="round"/><line x1="390.3" y1="154" x2="390.5" y2="171" stroke="#d99a97" stroke-width="0.5" opacity="0.65"/><line x1="391.9" y1="154" x2="391.7" y2="171" stroke="#d99a97" stroke-width="0.5" opacity="0.65"/><path d="M 389.1 161 Q 391 162.6 392.9 161" fill="none" stroke="#d99a97" stroke-width="0.6" opacity="0.7"/><line x1="391" y1="150" x2="391" y2="146" stroke="#8a8578" stroke-width="1.1" stroke-linecap="round"/><path d="M 391 178 q 0 3.4 -3 3.4 q -2.4 0 -2.4 -2.2" fill="none" stroke="#a08b6a" stroke-width="1.3" stroke-linecap="round"/><line x1="398" y1="147" x2="398" y2="175" stroke="#8a8578" stroke-width="1" stroke-linecap="round"/><path d="M 395.4 150 Q 398 147.4 400.6 150 L 399.9 168 Q 398 170.4 396.1 168 Z" fill="#b9d4e8" stroke="#5c4a3a" stroke-width="0.75" stroke-linejoin="round"/><line x1="397.3" y1="151" x2="397.5" y2="168" stroke="#94b5cf" stroke-width="0.5" opacity="0.65"/><line x1="398.9" y1="151" x2="398.7" y2="168" stroke="#94b5cf" stroke-width="0.5" opacity="0.65"/><path d="M 396.1 158 Q 398 159.6 399.9 158" fill="none" stroke="#94b5cf" stroke-width="0.6" opacity="0.7"/><line x1="398" y1="147" x2="398" y2="143" stroke="#8a8578" stroke-width="1.1" stroke-linecap="round"/><path d="M 398 175 q 0 3.4 -3 3.4 q -2.4 0 -2.4 -2.2" fill="none" stroke="#a08b6a" stroke-width="1.3" stroke-linecap="round"/><line x1="405" y1="152" x2="405" y2="180" stroke="#8a8578" stroke-width="1" stroke-linecap="round"/><path d="M 402.4 155 Q 405 152.4 407.6 155 L 406.9 173 Q 405 175.4 403.1 173 Z" fill="#f5dfa8" stroke="#5c4a3a" stroke-width="0.75" stroke-linejoin="round"/><line x1="404.3" y1="156" x2="404.5" y2="173" stroke="#d8bd7e" stroke-width="0.5" opacity="0.65"/><line x1="405.9" y1="156" x2="405.7" y2="173" stroke="#d8bd7e" stroke-width="0.5" opacity="0.65"/><path d="M 403.1 163 Q 405 164.6 406.9 163" fill="none" stroke="#d8bd7e" stroke-width="0.6" opacity="0.7"/><line x1="405" y1="152" x2="405" y2="148" stroke="#8a8578" stroke-width="1.1" stroke-linecap="round"/><path d="M 405 180 q 0 3.4 -3 3.4 q -2.4 0 -2.4 -2.2" fill="none" stroke="#a08b6a" stroke-width="1.3" stroke-linecap="round"/></g>
 <path d="M 387 178 L 409 178 L 407 204 L 389 204 Z" fill="#d5d0c4"/>
 <ellipse cx="398" cy="178" rx="11" ry="3.2" fill="#e4e0d6"/>
 <ellipse cx="398" cy="178" rx="8" ry="2" fill="#8a8578" stroke="none" opacity="0.45"/>
+</g>
+
+
+<!-- ===== 사물함 구역 (시계-실장실 사이) ===== -->
+<rect x="568" y="124" width="72" height="86" rx="10" fill="#f9f5ea" stroke="none"/>
+
+<!-- 트로피 3개 (사물함 위) -->
+<g stroke="#5c4a3a" stroke-width="0.8" stroke-linejoin="round">
+<g transform="translate(583,172)">
+<rect x="-4.4" y="5.4" width="8.8" height="3" rx="1" fill="#8a6640"/>
+<rect x="-2.6" y="1.4" width="5.2" height="4.4" rx="1" fill="#c9a227"/>
+<path d="M -3.9 -7 h 7.8 v 3.6 a 3.9 3.9 0 0 1 -7.8 0 z" fill="#e3c04a"/>
+<path d="M -3.9 -5.8 a 2.3 2.3 0 0 1 -2.3 2.3 a 2.3 2.3 0 0 0 2.3 -0.9" fill="none"/>
+<path d="M 3.9 -5.8 a 2.3 2.3 0 0 0 2.3 2.3 a 2.3 2.3 0 0 1 -2.3 -0.9" fill="none"/>
+</g>
+<g transform="translate(603,170)">
+<rect x="-5" y="6.2" width="10" height="3.4" rx="1" fill="#8a6640"/>
+<rect x="-2.9" y="1.6" width="5.8" height="5" rx="1" fill="#c9a227"/>
+<path d="M -4.5 -8.4 h 9 v 4.4 a 4.5 4.5 0 0 1 -9 0 z" fill="#e3c04a"/>
+<path d="M -4.5 -7 a 2.6 2.6 0 0 1 -2.6 2.6 a 2.6 2.6 0 0 0 2.6 -1" fill="none"/>
+<path d="M 4.5 -7 a 2.6 2.6 0 0 0 2.6 2.6 a 2.6 2.6 0 0 1 -2.6 -1" fill="none"/>
+</g>
+<g transform="translate(623,173)">
+<rect x="-4" y="4.8" width="8" height="2.8" rx="1" fill="#8a6640"/>
+<rect x="-2.4" y="1.2" width="4.8" height="3.8" rx="1" fill="#b9932a"/>
+<path d="M -3.5 -6.2 h 7 v 3.2 a 3.5 3.5 0 0 1 -7 0 z" fill="#d9b64a"/>
+<path d="M -3.5 -5.2 a 2 2 0 0 1 -2 2 a 2 2 0 0 0 2 -0.8" fill="none"/>
+<path d="M 3.5 -5.2 a 2 2 0 0 0 2 2 a 2 2 0 0 1 -2 -0.8" fill="none"/>
+</g>
+</g>
+
+<!-- 개인 사물함 (가로 4열 · 세로 2단) -->
+<g stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round">
+<rect x="574" y="182" width="60" height="24" rx="3" fill="#cdd4d6"/>
+<rect x="576" y="184" width="56" height="20" rx="2" fill="#dde3e5" stroke-width="0.7"/>
+<line x1="576" y1="194" x2="632" y2="194" stroke-width="0.9"/>
+<line x1="590" y1="184" x2="590" y2="204" stroke-width="0.9"/>
+<line x1="604" y1="184" x2="604" y2="204" stroke-width="0.9"/>
+<line x1="618" y1="184" x2="618" y2="204" stroke-width="0.9"/>
+<g fill="#b9c0c4" stroke="none">
+<rect x="579" y="187" width="6" height="1.8" rx="0.9"/><rect x="593" y="187" width="6" height="1.8" rx="0.9"/>
+<rect x="607" y="187" width="6" height="1.8" rx="0.9"/><rect x="621" y="187" width="6" height="1.8" rx="0.9"/>
+<rect x="579" y="197" width="6" height="1.8" rx="0.9"/><rect x="593" y="197" width="6" height="1.8" rx="0.9"/>
+<rect x="607" y="197" width="6" height="1.8" rx="0.9"/><rect x="621" y="197" width="6" height="1.8" rx="0.9"/>
+</g>
+<g fill="#8a9095" stroke="none">
+<rect x="586" y="190.6" width="2.4" height="1.3" rx="0.6"/><rect x="600" y="190.6" width="2.4" height="1.3" rx="0.6"/>
+<rect x="614" y="190.6" width="2.4" height="1.3" rx="0.6"/><rect x="628" y="190.6" width="2.4" height="1.3" rx="0.6"/>
+<rect x="586" y="200.6" width="2.4" height="1.3" rx="0.6"/><rect x="600" y="200.6" width="2.4" height="1.3" rx="0.6"/>
+<rect x="614" y="200.6" width="2.4" height="1.3" rx="0.6"/><rect x="628" y="200.6" width="2.4" height="1.3" rx="0.6"/>
+</g>
+</g>
+<rect x="572" y="128" width="52" height="16" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
+<text x="578" y="139" font-size="9.5" font-weight="700" fill="#5c4a3a" stroke="none">사물함</text>
+
+<!-- 풍경 액자 (산과 강) — 시계·실장실 사이 상단 빈 공간 -->
+<g stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round">
+<rect x="570" y="58" width="68" height="52" rx="2.5" fill="#8a6640"/>
+<rect x="574" y="62" width="60" height="44" rx="1.5" fill="#e8dfc9" stroke-width="0.7"/>
+<clipPath id="frameClip"><rect x="574" y="62" width="60" height="44" rx="1.5"/></clipPath>
+<g clip-path="url(#frameClip)" stroke="none">
+<rect x="574" y="62" width="60" height="44" fill="#cfe3ee"/>
+<circle cx="619" cy="74" r="5.5" fill="#f6dfa8"/>
+<path d="M 574 92 L 592 68 L 606 88 L 614 78 L 634 100 L 634 106 L 574 106 Z" fill="#8fa88c"/>
+<path d="M 574 92 L 592 68 L 601 81 L 585 92 Z" fill="#a8bda3"/>
+<path d="M 588 72.5 L 592 68 L 596.5 74 L 592 76 Z" fill="#f2f0e6"/>
+<path d="M 574 99 Q 592 94 606 100 Q 620 106 634 101 L 634 106 L 574 106 Z" fill="#8bb6cf"/>
+<path d="M 578 101.5 Q 592 98.5 604 102.5" fill="none" stroke="#e9f2f6" stroke-width="1" opacity="0.75"/>
+<path d="M 610 103 Q 620 100.5 630 103" fill="none" stroke="#e9f2f6" stroke-width="0.9" opacity="0.6"/>
+</g>
+<rect x="574" y="62" width="60" height="44" rx="1.5" fill="none" stroke="#5c4a3a" stroke-width="0.8"/>
 </g>
 
 <rect id="roomLightOverlay" x="20" y="20" width="960" height="800" rx="16" fill="#1c1c2e" opacity="0" style="transition:opacity .5s ease; pointer-events:none;"/>
@@ -1199,9 +1262,13 @@
 
 <div class="row between">
   <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <button class="btn" id="wanderBtn" aria-label="랜덤 이동">
+      <svg width="14" height="12" viewBox="0 0 14 12"><path d="M1 9.5 h3 l2.5 -7 h3" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 2.5 h3 l2.5 7 h3" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 0.8 L13 2.5 L10.6 4.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 7.8 L13 9.5 L10.6 11.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span id="wanderLabel">랜덤 이동</span>
+    </button>
     <button class="btn" id="meetingBtn" aria-label="회의">
       <svg width="14" height="12" viewBox="0 0 14 12"><circle cx="4.5" cy="4" r="2.2" stroke="#5c4a3a" stroke-width="1" fill="none"/><circle cx="10" cy="4.5" r="1.8" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M1 11 a3.6 3.6 0 0 1 7 0" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M8.6 11 a3 3 0 0 1 4.6 -2.5" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
-      회의
+      <span id="meetingLabel">회의</span>
     </button>
     <button class="btn" id="breakBtn" aria-label="탕비실">
       <svg width="14" height="12" viewBox="0 0 14 12"><path d="M1.5 3.5 h8 v4 a3 3 0 0 1 -3 3 h-2 a3 3 0 0 1 -3 -3 z" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M9.5 4.5 h1.6 a1.6 1.6 0 0 1 0 3.2 h-1.6" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M3.6 1.6 q0.8 -1 0 -1.4" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M6 1.6 q0.8 -1 0 -1.4" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
@@ -2274,6 +2341,157 @@
     toggleRoomLight();
   });
 
+
+  // ===== 랜덤 이동: 복도망을 따라 사무실 곳곳을 천천히 돌아다님 =====
+  var WANDER_CORRIDORS = [
+    {x1:344,y1:214,x2:356,y2:800},   // 노트/다목적실 사이 세로
+    {x1:472,y1:214,x2:486,y2:800},   // 다목적실/스티커 사이 세로
+    {x1:644,y1:60, x2:656,y2:690},   // 사물함·라운지 좌측 세로
+    {x1:802,y1:340,x2:816,y2:800},   // 스티커/창고 사이 세로
+    {x1:60, y1:214,x2:960,y2:228},   // 상단 가로
+    {x1:60, y1:444,x2:960,y2:458},   // 중단 가로
+    {x1:60, y1:632,x2:960,y2:646},   // 하단 가로
+    {x1:60, y1:214,x2:74, y2:800},   // 좌측 세로
+    {x1:700,y1:352,x2:960,y2:366},   // 라운지 아래 가로
+    {x1:702,y1:632,x2:716,y2:800}    // 회의실/탕비실 사이
+  ];
+  // 캐릭터가 잠시 머무는 지점들 (각 영역 안쪽)
+  var WANDER_SPOTS = [
+    {x:250,y:175,n:'응접 공간'}, {x:400,y:175,n:'응접 공간'},
+    {x:300,y:270,n:'노트 디자인팀'}, {x:420,y:300,n:'다목적실'},
+    {x:520,y:300,n:'다목적실'}, {x:604,y:150,n:'사물함'},
+    {x:760,y:320,n:'라운지'}, {x:700,y:200,n:'디자인실장실'},
+    {x:880,y:420,n:'재고창고'}, {x:880,y:530,n:'재고창고'},
+    {x:560,y:530,n:'스티커 디자인팀'}, {x:420,y:420,n:'아트코너'},
+    {x:200,y:520,n:'경영지원팀'}, {x:300,y:700,n:'홍보팀'},
+    {x:560,y:700,n:'회의실'}, {x:800,y:700,n:'탕비실'},
+    {x:900,y:700,n:'탕비실'}, {x:660,y:520,n:'스티커 디자인팀'}
+  ];
+
+  var W_STEP = 7;
+  function wInC(x,y){
+    for(var i=0;i<WANDER_CORRIDORS.length;i++){
+      var c=WANDER_CORRIDORS[i];
+      if(x>=c.x1&&x<=c.x2&&y>=c.y1&&y<=c.y2) return true;
+    }
+    return false;
+  }
+  function wSnap(v){ return Math.round(v/W_STEP)*W_STEP; }
+  function wNearest(x,y){
+    var b=null,bd=Infinity;
+    for(var i=0;i<WANDER_CORRIDORS.length;i++){
+      var c=WANDER_CORRIDORS[i];
+      var cx=Math.max(c.x1+3,Math.min(x,c.x2-3)), cy=Math.max(c.y1+3,Math.min(y,c.y2-3));
+      var d=(cx-x)*(cx-x)+(cy-y)*(cy-y);
+      if(d<bd){ bd=d; b={x:wSnap(cx),y:wSnap(cy)}; }
+    }
+    return b;
+  }
+  function wPath(s,g){
+    var sx=wSnap(s.x),sy=wSnap(s.y),gx=wSnap(g.x),gy=wSnap(g.y);
+    if(!wInC(sx,sy)) return null;
+    var q=[[sx,sy]],came={},seen={};
+    seen[sx+','+sy]=1;
+    var dirs=[[W_STEP,0],[-W_STEP,0],[0,W_STEP],[0,-W_STEP]],guard=0,found=false;
+    while(q.length && guard++<120000){
+      var c=q.shift();
+      if(Math.abs(c[0]-gx)<=W_STEP && Math.abs(c[1]-gy)<=W_STEP){ gx=c[0]; gy=c[1]; found=true; break; }
+      for(var d=0;d<4;d++){
+        var nx=c[0]+dirs[d][0], ny=c[1]+dirs[d][1], k=nx+','+ny;
+        if(seen[k]||!wInC(nx,ny)) continue;
+        seen[k]=1; came[k]=c; q.push([nx,ny]);
+      }
+    }
+    if(!found) return null;
+    var p=[],cur=[gx,gy];
+    while(cur){ p.unshift({x:cur[0],y:cur[1]}); cur=came[cur[0]+','+cur[1]]; }
+    // 직선 구간 압축
+    if(p.length<3) return p;
+    var o=[p[0]];
+    for(var i=1;i<p.length-1;i++){
+      var a=o[o.length-1],b2=p[i],c2=p[i+1];
+      if((b2.x-a.x)*(c2.y-b2.y)-(b2.y-a.y)*(c2.x-b2.x)!==0) o.push(b2);
+    }
+    o.push(p[p.length-1]);
+    return o;
+  }
+  function wRoute(from,to){
+    var e=wNearest(from.x,from.y), x=wNearest(to.x,to.y);
+    var mid=wPath(e,x);
+    var r=[{x:from.x,y:from.y},e];
+    if(mid) r=r.concat(mid);
+    r.push(x,{x:to.x,y:to.y});
+    var out=[r[0]];
+    for(var i=1;i<r.length;i++){
+      var p2=r[i],q2=out[out.length-1];
+      if(Math.abs(p2.x-q2.x)>2||Math.abs(p2.y-q2.y)>2) out.push(p2);
+    }
+    return out;
+  }
+
+  var wanderOn = false;
+  var wanderTimers = {};
+  var wanderAutoStop = null;
+  var wanderPos = {};
+  var WANDER_PPS = 46; // px/초 — 천천히
+
+  function wanderStep(s){
+    if(!wanderOn) return;
+    if(isBusy(s.id) || !charEl(s.id).classList.contains('present')){
+      wanderTimers[s.id] = setTimeout(function(){ wanderStep(s); }, 3000);
+      return;
+    }
+    var cur = wanderPos[s.id] || {x:s.x, y:s.y};
+    var goHome = Math.random() < 0.3;
+    var dest = goHome ? {x:s.x, y:s.y}
+                      : WANDER_SPOTS[Math.floor(Math.random()*WANDER_SPOTS.length)];
+    var r = wRoute(cur, dest);
+    var i = 0;
+    (function seg(){
+      if(!wanderOn) return;
+      if(i >= r.length-1){
+        wanderPos[s.id] = {x:dest.x, y:dest.y};
+        // 도착지에서 잠시 머무름
+        wanderTimers[s.id] = setTimeout(function(){ wanderStep(s); }, 4000 + Math.random()*7000);
+        return;
+      }
+      var a=r[i], b=r[i+1];
+      var dur = Math.hypot(b.x-a.x, b.y-a.y) / WANDER_PPS;
+      setPos(s.id, b.x, b.y, true, dur);
+      i++;
+      wanderTimers[s.id] = setTimeout(seg, dur*1000 + 120);
+    })();
+  }
+
+  var wanderBtn = byId('wanderBtn');
+  wanderBtn.addEventListener('click', function(){
+    wanderOn = !wanderOn;
+    wanderBtn.classList.toggle('active', wanderOn);
+    byId('wanderLabel').textContent = wanderOn ? '이동 중' : '랜덤 이동';
+    if(wanderOn){
+      toast('직원들이 사무실을 돌아다닙니다 (3분 후 자동 복귀)');
+      staff.forEach(function(s, idx){
+        wanderPos[s.id] = {x:s.x, y:s.y};
+        wanderTimers[s.id] = setTimeout(function(){ wanderStep(s); }, idx*700);
+      });
+      // 3분 뒤 자동 종료 + 전원 복귀
+      clearTimeout(wanderAutoStop);
+      wanderAutoStop = setTimeout(function(){
+        if(wanderOn) wanderBtn.click();
+      }, 180000);
+    } else {
+      clearTimeout(wanderAutoStop);
+      Object.keys(wanderTimers).forEach(function(id){ clearTimeout(wanderTimers[id]); delete wanderTimers[id]; });
+      toast('모두 자리로 돌아갑니다');
+      staff.forEach(function(s, idx){
+        setTimeout(function(){
+          if(!isBusy(s.id)) setPos(s.id, s.x, s.y, true, 1.6);
+          wanderPos[s.id] = {x:s.x, y:s.y};
+        }, idx*140);
+      });
+    }
+  });
+
   function pad(n){ return n<10 ? '0'+n : ''+n; }
 
   function updateClock(){
@@ -2764,7 +2982,7 @@
   meetingBtn.addEventListener('click', function(){
     if(meetingBtn.disabled) return;
     meetingBtn.disabled = true;
-    meetingBtn.textContent = '회의 중';
+    byId('meetingLabel').textContent = '회의 중';
 
     lifetime.meetings++;
     saveLifetime();
@@ -2797,7 +3015,7 @@
         clearBusy(s.id);
       });
       meetingBtn.disabled = false;
-      meetingBtn.textContent = '회의';
+      byId('meetingLabel').textContent = '회의';
       toast('회의가 끝났습니다');
       if(chosen.length && typeof pushChat === 'function'){
         var ender = chosen[0];
