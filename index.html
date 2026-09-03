@@ -1925,7 +1925,9 @@
   }
 
   // ---- 위치 이동 유틸: style.transform만 사용 (SVG attribute와 절대 섞지 않음) ----
+  var lastPos = {};
   function setPos(id, x, y, animate, dur){
+    lastPos[id] = { x:x, y:y };
     var el = charEl(id);
     if(animate){
       el.style.transition = 'transform '+(dur||1)+'s ease';
@@ -1957,13 +1959,12 @@
     if(typeof logDayEvent === 'function') logDayEvent('🐾', s.name+' 출근');
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
-        setPos(s.id, s.x, s.y, true, 1);
-        if(onArrive) setTimeout(onArrive, 1000);
+        travelTo(s, {x:s.x, y:s.y}, 62, onArrive);
       });
     });
   }
   function walkOut(s, onLeave){
-    setPos(s.id, ENTRANCE.x, ENTRANCE.y, true, 1);
+    travelTo(s, {x:ENTRANCE.x, y:ENTRANCE.y}, 62);
     if(typeof logDayEvent === 'function') logDayEvent('🚪', s.name+' 퇴근');
     setTimeout(function(){
       charEl(s.id).classList.remove('present');
@@ -2511,13 +2512,47 @@
       toast('모두 자리로 돌아갑니다');
       staff.forEach(function(s, idx){
         setTimeout(function(){
-          if(!isBusy(s.id)) setPos(s.id, s.x, s.y, true, 1.6);
+          if(!isBusy(s.id)) travelTo(s, {x:s.x, y:s.y}, 62);
           wanderPos[s.id] = {x:s.x, y:s.y};
-          setTimeout(function(){ lowerChar(s); }, 1700);
         }, idx*140);
       });
     }
   });
+
+
+  // ===== 공용: 복도 경로를 따라 천천히 이동 =====
+  var travelTimers = {};
+  function cancelTravel(id){
+    if(travelTimers[id]){ clearTimeout(travelTimers[id]); delete travelTimers[id]; }
+  }
+  function travelTo(s, dest, pps, onDone){
+    pps = pps || 62;
+    var id = s.id;
+    cancelTravel(id);
+    var from = lastPos[id] || { x:s.x, y:s.y };
+    var r = wRoute(from, dest);
+    if(!r || r.length < 2){
+      setPos(id, dest.x, dest.y, true, 1);
+      if(onDone) setTimeout(onDone, 1000);
+      return;
+    }
+    if(typeof raiseChar === 'function' && staffMap[id]) raiseChar(s);
+    var i = 0;
+    (function seg(){
+      if(i >= r.length-1){
+        delete travelTimers[id];
+        var home = staffMap[id];
+        if(home && Math.abs(dest.x-home.x)<2 && Math.abs(dest.y-home.y)<2 && typeof lowerChar === 'function') lowerChar(s);
+        if(onDone) onDone();
+        return;
+      }
+      var a = r[i], b = r[i+1];
+      var dur = Math.hypot(b.x-a.x, b.y-a.y) / pps;
+      setPos(id, b.x, b.y, true, dur);
+      i++;
+      travelTimers[id] = setTimeout(seg, dur*1000 + 70);
+    })();
+  }
 
   function pad(n){ return n<10 ? '0'+n : ''+n; }
 
@@ -3023,7 +3058,7 @@
       metSet[s.id] = true;
       inMeeting[s.id] = true;
       markBusy(s.id);
-      setPos(s.id, meetingSeats[i].x, meetingSeats[i].y, true, 0.9);
+      travelTo(s, meetingSeats[i], 62);
     });
     toast('회의를 시작합니다 — ' + chosen.map(function(s){return s.name;}).join(', '));
     if(chosen.length && typeof pushChat === 'function'){
@@ -3037,7 +3072,7 @@
 
     setTimeout(function(){
       chosen.forEach(function(s){
-        setPos(s.id, s.x, s.y, true, 0.9);
+        travelTo(s, {x:s.x, y:s.y}, 62);
         delete inMeeting[s.id];
         clearBusy(s.id);
       });
@@ -3061,7 +3096,7 @@
           }, 1400);
         }
       }
-    }, 10000);
+    }, 30000);
   });
 
   // ===== 탕비실: 사무실에 있고(출근 상태) 회의 중이 아닌 직원 중 랜덤 2명 =====
@@ -3094,7 +3129,7 @@
     var chosen = shuffled.slice(0,2);
     chosen.forEach(function(s, i){
       markBusy(s.id);
-      setPos(s.id, breakSeats[i].x, breakSeats[i].y, true, 0.9);
+      travelTo(s, breakSeats[i], 62);
     });
     toast(chosen.map(function(s){return s.name;}).join(', ')+'이(가) 탕비실로 향합니다');
 
@@ -3102,12 +3137,12 @@
       var pair = breakDialogues[Math.floor(Math.random()*breakDialogues.length)];
       showBubble(chosen[0], pair[0]);
       setTimeout(function(){ showBubble(chosen[1], pair[1]); }, 1300);
-    }, 1000);
+    }, 15000);
 
     setTimeout(function(){
-      chosen.forEach(function(s){ setPos(s.id, s.x, s.y, true, 0.9); clearBusy(s.id); });
+      chosen.forEach(function(s){ travelTo(s, {x:s.x, y:s.y}, 62); clearBusy(s.id); });
       breakBtn.disabled = false;
-    }, 6200);
+    }, 25000);
   });
 
   // ===== 누적 카운터 (택배/회의/탕비실 방문 이벤트 트리거용) =====
@@ -3296,23 +3331,23 @@
 
     setTimeout(function(){
       clearBubble(courierObj.id);
-      setPos(courierObj.id, VISITOR_WAREHOUSE.x, VISITOR_WAREHOUSE.y, true, 2.0);
+      travelTo(courierObj, VISITOR_WAREHOUSE, 110);
     }, 2200);
 
     setTimeout(function(){
       showBubble(courierObj, '안녕히 계세요.');
-    }, 4300);
+    }, 15200);
 
     setTimeout(function(){
       clearBubble(courierObj.id);
-      setPos(courierObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, true, 2.0);
-    }, 5400);
+      travelTo(courierObj, VISITOR_ENTRANCE, 110);
+    }, 16600);
 
     setTimeout(function(){
       charEl(courierObj.id).classList.remove('present');
       clearBusy(respondent.id);
       visitorEventActive = false;
-    }, 7600);
+    }, 30000);
   }
 
   // ---- 업체직원 방문 (누적 회의 12번마다) ----
@@ -3344,33 +3379,33 @@
       clearBubble(pr.id);
       clearBubble(vendorObj.id);
       clearBusy(pr.id);
-      setPos(vendorObj.id, VISITOR_VENDOR_TABLE.x, VISITOR_VENDOR_TABLE.y, true, 1.8);
-      setPos(lead.id, VISITOR_LEAD_TABLE.x, VISITOR_LEAD_TABLE.y, true, 1.8);
+      travelTo(vendorObj, VISITOR_VENDOR_TABLE, 110);
+      travelTo(lead, VISITOR_LEAD_TABLE, 62);
     }, 1900);
 
     setTimeout(function(){
       showBubble(lead, '다음 저희 사업은 바로..');
-    }, 3800);
+    }, 14500);
 
     setTimeout(function(){
       showBubble(vendorObj, '네, 알겠습니다!');
-    }, 4700);
+    }, 15600);
 
     setTimeout(function(){
       showBubble(lead, '좋아요. 조심히 가세요.');
-    }, 5600);
+    }, 16700);
 
     setTimeout(function(){
       showBubble(vendorObj, '그럼...');
-    }, 6500);
+    }, 17800);
 
     setTimeout(function(){
       clearBubble(vendorObj.id);
       clearBubble(lead.id);
-      setPos(lead.id, lead.x, lead.y, true, 0.9);
+      travelTo(lead, {x:lead.x, y:lead.y}, 62);
       clearBusy(lead.id);
-      setPos(vendorObj.id, VISITOR_NOTE_LEAD_DESK.x, VISITOR_NOTE_LEAD_DESK.y, true, 1.6);
-    }, 7300);
+      travelTo(vendorObj, VISITOR_NOTE_LEAD_DESK, 110);
+    }, 18900);
 
     // ---- 노트 디자인팀 팀장과의 대화 ----
     setTimeout(function(){
@@ -3379,17 +3414,17 @@
         markBusy(noteLead.id);
         showBubble(vendorObj, '그렇게 진행할까요?');
       }
-    }, 8900);
+    }, 26000);
 
     setTimeout(function(){
       if(noteLead && !isGoneForDay(noteLead.id)) showBubble(noteLead, '네. 좋아요.');
-    }, 9900);
+    }, 27100);
 
     setTimeout(function(){
       clearBubble(vendorObj.id);
       if(noteLead) clearBusy(noteLead.id);
-      setPos(vendorObj.id, VISITOR_STICKER_LEAD_DESK.x, VISITOR_STICKER_LEAD_DESK.y, true, 1.6);
-    }, 10900);
+      travelTo(vendorObj, VISITOR_STICKER_LEAD_DESK, 110);
+    }, 28200);
 
     // ---- 스티커 디자인팀 팀장과의 대화 ----
     setTimeout(function(){
@@ -3398,22 +3433,22 @@
         markBusy(stickerLead.id);
         showBubble(vendorObj, '그렇게 진행할까요?');
       }
-    }, 12500);
+    }, 37000);
 
     setTimeout(function(){
       if(stickerLead && !isGoneForDay(stickerLead.id)) showBubble(stickerLead, '좋죠좋죠~');
-    }, 13500);
+    }, 38100);
 
     setTimeout(function(){
       clearBubble(vendorObj.id);
       if(stickerLead) clearBusy(stickerLead.id);
-      setPos(vendorObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, true, 1.5);
-    }, 14500);
+      travelTo(vendorObj, VISITOR_ENTRANCE, 110);
+    }, 39200);
 
     setTimeout(function(){
       charEl(vendorObj.id).classList.remove('present');
       visitorEventActive = false;
-    }, 16000);
+    }, 49000);
   }
 
   // ---- 사장님 방문 (누적 탕비실 이용 20번마다, 10초) ----
@@ -3428,38 +3463,38 @@
     allPresentStaffSay('!!!');
 
     setTimeout(function(){
-      setPos(bossObj.id, VISITOR_BREAK.x, VISITOR_BREAK.y, true, 2.0);
+      travelTo(bossObj, VISITOR_BREAK, 110);
     }, 600);
 
     setTimeout(function(){
-      setPos(bossObj.id, VISITOR_WAREHOUSE.x, VISITOR_WAREHOUSE.y, true, 2.0);
-    }, 2700);
+      travelTo(bossObj, VISITOR_WAREHOUSE, 110);
+    }, 10500);
 
     setTimeout(function(){
-      setPos(bossObj.id, VISITOR_WINDOW.x, VISITOR_WINDOW.y, true, 1.8);
-    }, 4800);
+      travelTo(bossObj, VISITOR_WINDOW, 110);
+    }, 17500);
 
     setTimeout(function(){
       showBubble(bossObj, '탕비실 간식 충전 완료');
-    }, 6600);
+    }, 26500);
 
     setTimeout(function(){
       allPresentStaffSay('감사합니다!');
-    }, 7700);
+    }, 27600);
 
     setTimeout(function(){
       showBubble(bossObj, '힘내요!');
-    }, 8400);
+    }, 28400);
 
     setTimeout(function(){
       clearBubble(bossObj.id);
-      setPos(bossObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, true, 1.5);
-    }, 8800);
+      travelTo(bossObj, VISITOR_ENTRANCE, 110);
+    }, 29200);
 
     setTimeout(function(){
       charEl(bossObj.id).classList.remove('present');
       visitorEventActive = false;
-    }, 10300);
+    }, 39500);
   }
 
   // ===== 먼지: 10분마다 바닥에 하나씩 쌓이고, 청소 버튼으로 전부 제거 =====
