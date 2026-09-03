@@ -40,8 +40,13 @@
   .projStatus.pending{ background:#f0ece0; color:#8a8a86; }
   .projStatus.done{ background:#5c4a3a; color:#fff; }
   .projEmpty{ color:#8a8a86; font-size:12px; padding:10px 2px; }
-  @keyframes popFade{ 0%{ opacity:0; } 15%{ opacity:1; } 80%{ opacity:1; } 100%{ opacity:0; } }
-  .popBubble{ animation:popFade 2.2s ease forwards; }
+  .placeItem{ justify-content:center; height:38px; font-size:12.5px; }
+  .lockerCell{ border:1.3px solid #5c4a3a; border-radius:8px; background:#fffdf8; height:62px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; font-family:inherit; color:#5c4a3a; padding:0; }
+  .lockerCell:hover{ background:#f6efe0; }
+  .lockerCell .lkNum{ font-size:11px; color:#8a8a86; }
+  .lockerCell .lkIcon{ font-size:18px; line-height:1; }
+  @keyframes popFade{ 0%{ opacity:0; } 8%{ opacity:1; } 82%{ opacity:1; } 100%{ opacity:0; } }
+  .popBubble{ animation:popFade 4.2s ease forwards; }
 
   /* 사운드바: 재생/음소거/볼륨을 한 그룹으로 정렬 */
   #audioBar{ display:flex; align-items:center; gap:10px; background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; padding:0 10px; height:34px; box-sizing:border-box; }
@@ -131,60 +136,93 @@
   .headLeft{ display:flex; align-items:center; gap:6px; }
   .backBtn{ background:none; border:none; font-size:19px; line-height:1; cursor:pointer; color:#5c4a3a; padding:0 2px; }
   /* ===== 메신저 접속자 목록: 메신저 앱 스타일 ===== */
-  .rosterRow{ display:flex; align-items:center; gap:9px; padding:9px 10px; border-bottom:none;
-              border-radius:12px; margin-bottom:3px; transition:background .15s ease; }
-  .rosterRow:hover{ background:#f4efe3; }
-  .rosterRow:last-child{ margin-bottom:0; }
-  .rosterAvatar{ width:38px; height:38px; border-radius:13px; flex-shrink:0;
-                 border:1px solid rgba(92,74,58,0.25); box-sizing:border-box;
-                 box-shadow:0 1px 2px rgba(92,74,58,0.12); position:relative; }
+  .rosterRow{ display:flex; align-items:center; gap:10px; padding:10px 10px; border-bottom:0.5px solid #eef3f7;
+              border-radius:0; margin-bottom:0; transition:background .15s ease; }
+  .rosterRow:hover{ background:#f4f8fb; }
+  .rosterRow:last-child{ border-bottom:none; }
+  .rosterAvatar{ width:38px; height:38px; border-radius:50%; flex-shrink:0;
+                 box-sizing:border-box; position:relative; overflow:hidden; }
   .rosterDot{ width:10px; height:10px; border-radius:50%; flex-shrink:0;
-              border:2px solid #fffdf8; box-sizing:content-box; margin-left:-19px;
+              border:2px solid #ffffff; box-sizing:content-box; margin-left:-19px;
               margin-top:26px; position:relative; z-index:2; }
   .rosterMeta{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
-  .rosterName{ font-size:12.5px; font-weight:600; color:#5c4a3a; width:auto; flex-shrink:1;
+  .rosterName{ font-size:13px; font-weight:500; color:#22333f; width:auto; flex-shrink:1;
                overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .rosterStatus{ flex:none; font-size:10.5px; color:#a09a90;
+  .rosterStatus{ flex:none; font-size:11.5px; color:#8fa6b6;
                  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .rosterNoteBtn{ font-size:10px; color:#8a7a66; background:#f4efe3; border:none;
+  .rosterNoteBtn{ font-size:10.5px; color:#1B7FB8; background:#E6F1FB; border:none;
                   border-radius:14px; padding:6px 11px; cursor:pointer; white-space:nowrap;
-                  flex-shrink:0; font-weight:500; transition:background .15s ease; }
-  .rosterNoteBtn:hover{ background:#e8dfcd; }
+                  flex-shrink:0; font-weight:500; transition:background .15s ease; font-family:inherit; }
+  .rosterNoteBtn:hover{ background:#d3e6f7; }
   #rosterList{ padding:2px; }
   #messengerOverlay .mail-window{ max-width:330px; }
-  #messengerOverlay .mail-body{ max-height:56vh; overflow-y:auto; padding:6px 6px 8px; }
+  #messengerOverlay .mail-body{ max-height:56vh; overflow-y:auto; padding:6px 6px 8px; background:#fff; }
+  #messengerOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
+  #messengerOverlay .mail-head button{ color:#fff; }
+  #messengerOverlay .mail-head #messengerCloseX{ color:#cfe6f5; }
+  #messengerOverlay .mail-head .noteBoxBtn{ border-color:#8fc4e4; color:#fff; background:rgba(255,255,255,0.14); }
+  #messengerOverlay .mail-head .noteBoxBtn:hover{ background:rgba(255,255,255,0.26); }
+  #messengerOverlay .mail-head #dayLogBtn{ padding:4px 7px; font-size:12px; line-height:1.1; }
+  #chatListOverlay .mail-head, #chatWindowOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
+  #chatListOverlay .mail-head button, #chatWindowOverlay .mail-head button{ color:#fff; }
+  #chatListOverlay .mail-head #chatListCloseX, #chatWindowOverlay .mail-head #chatWindowCloseX{ color:#cfe6f5; }
+  #chatListOverlay .mail-body, #chatWindowOverlay .mail-body{ background:#fff; }
   #messengerOverlay .mail-head{ padding:8px 10px; font-size:12.5px; }
   .headRight{ gap:4px; }
   .noteBoxBtn{ font-size:10.5px; padding:4px 8px; }
   .mail-head .noteBoxBtn{ background:#fff; border:1px solid #5c4a3a; color:#5c4a3a; font-size:10.5px; padding:4px 8px; border-radius:6px; cursor:pointer; position:relative; }
   .mail-head .noteBoxBtn.has-alert::after{ content:''; position:absolute; top:-3px; right:-3px; width:7px; height:7px; border-radius:50%; background:#e8935a; border:1px solid #fffdf8; }
-  .noteItem{ border:1px solid #ddd8cc; border-radius:8px; padding:8px; font-size:12px; color:#5c4a3a; }
-  .noteItem .noteMeta{ font-size:10.5px; color:#8a8a86; margin-bottom:4px; }
+  #dayLogOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
+  #dayLogOverlay .mail-head button{ color:#fff; }
+  #dayLogOverlay .mail-head #dayLogCloseX{ color:#cfe6f5; }
+  #dayLogOverlay .mail-body{ background:#F4F8FB; }
+  #dayLogOverlay .dayLogRow{ color:#22333f; border-bottom:0.5px solid #e3ecf3; background:#fff; border-radius:8px; padding:7px 9px; }
+  .noteItem{ border:0.5px solid #e3ecf3; border-radius:10px; padding:10px 11px; font-size:12.5px; color:#22333f; background:#fff; line-height:1.5; }
+  .noteItem .noteMeta{ font-size:10.5px; color:#8fa6b6; margin-bottom:4px; }
+  #noteBoxOverlay .mail-head, #noteComposeOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
+  #noteBoxOverlay .mail-head button, #noteComposeOverlay .mail-head button{ color:#fff; }
+  #noteBoxOverlay .mail-head #noteBoxCloseX, #noteComposeOverlay .mail-head #noteComposeCloseX{ color:#cfe6f5; }
+  #noteBoxOverlay .mail-head .noteBoxBtn{ border-color:#8fc4e4; color:#fff; background:rgba(255,255,255,0.14); }
+  #noteBoxOverlay .mail-head .noteBoxBtn:hover{ background:rgba(255,255,255,0.26); }
+  #noteBoxOverlay .mail-body{ background:#F4F8FB; }
+  #noteComposeOverlay .mail-body{ background:#fff; }
+  #noteComposeOverlay .mail-field label{ color:#7f97a8; }
+  #noteComposeOverlay #noteToText{ color:#22333f; }
+  #noteComposeOverlay input, #noteComposeOverlay textarea{ background:#F1F5F9; border:0.5px solid #e3ecf3; border-radius:8px; color:#22333f; }
+  #noteComposeOverlay input::placeholder, #noteComposeOverlay textarea::placeholder{ color:#a8bcc9; }
+  #noteComposeOverlay .mail-send{ background:#1B7FB8; border-color:#1B7FB8; color:#fff; }
 
-  .chatListRow{ display:flex; align-items:center; gap:8px; padding:7px 2px; border-bottom:1px dashed #ddd8cc; cursor:pointer; }
+  .chatListRow{ display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:0.5px solid #eef3f7; cursor:pointer; }
   .chatListRow:last-child{ border-bottom:none; }
-  .chatListRow:active{ background:#f7f4ee; }
-  .chatListAvatar{ width:22px; height:22px; border-radius:50%; flex-shrink:0; border:1px solid #5c4a3a; box-sizing:border-box; }
-  .chatListName{ font-size:12px; color:#5c4a3a; flex:1; }
-  .chatListDot{ width:8px; height:8px; border-radius:50%; background:#e8935a; flex-shrink:0; opacity:0; }
+  .chatListRow:active{ background:#f4f8fb; }
+  .chatListAvatar{ width:38px; height:38px; border-radius:50%; flex-shrink:0; box-sizing:border-box; }
+  .chatListMid{ flex:1; min-width:0; }
+  .chatListName{ font-size:13px; color:#22333f; font-weight:500; }
+  .chatListPreview{ font-size:11.5px; color:#8fa6b6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+  .chatListRight{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+  .chatListTime{ font-size:10px; color:#a8bcc9; }
+  .chatListDot{ background:#1B7FB8; color:#fff; font-size:10px; min-width:17px; height:17px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 5px; box-sizing:border-box; opacity:0; }
   .chatListDot.show{ opacity:1; }
-  .chatListSectionHeader{ font-size:11px; color:#8a8a86; font-weight:600; padding:8px 2px 4px; }
+  .chatListSectionHeader{ font-size:11px; color:#8fa6b6; font-weight:500; padding:9px 4px 4px; }
   .chatListSectionHeader:first-child{ padding-top:2px; }
-  #chatMessages{ display:flex; flex-direction:column; max-height:320px; overflow-y:auto; padding:2px; }
-  .chatMsgRow{ display:flex; gap:6px; margin-bottom:10px; align-items:flex-start; }
+  #chatMessages{ display:flex; flex-direction:column; max-height:320px; overflow-y:auto; padding:12px 10px; background:#F4F8FB; border-radius:10px; }
+  .chatMsgRow{ display:flex; gap:8px; margin-bottom:12px; align-items:flex-start; }
   .chatMsgRow.mine{ flex-direction:row-reverse; }
-  .chatAvatar{ width:20px; height:20px; border-radius:50%; border:1px solid #5c4a3a; flex-shrink:0; box-sizing:border-box; margin-top:14px; }
+  .chatAvatar{ width:30px; height:30px; border-radius:50%; flex-shrink:0; box-sizing:border-box; margin-top:14px; }
   .chatBubbleWrap{ display:flex; flex-direction:column; max-width:72%; }
   .chatMsgRow.mine .chatBubbleWrap{ align-items:flex-end; }
-  .chatSenderName{ font-size:10px; color:#8a8a86; margin-bottom:2px; }
-  .chatBubble{ background:#fff; border:1px solid #ddd8cc; border-radius:10px; padding:6px 10px; font-size:12.5px; color:#5c4a3a; word-break:break-word; }
-  .chatMsgRow.mine .chatBubble{ background:#5c4a3a; color:#fff; border-color:#5c4a3a; }
-  .chatTime{ font-size:9px; color:#b4b2a9; margin-top:2px; }
-  #chatInputRow{ display:flex; gap:6px; }
-  #chatInputRow input{ flex:1; }
-  .chatBubble.deleted{ color:#b4b2a9; font-style:italic; border-style:dashed; background:transparent; }
-  .chatSystemMsg{ text-align:center; font-size:11px; color:#8a8a86; margin:8px 0; }
-  .quickReplyChip{ font-size:10.5px; color:#5c4a3a; background:#fff; border:1px solid #5c4a3a; border-radius:12px; padding:4px 9px; cursor:pointer; }
+  .chatSenderName{ font-size:10.5px; color:#7f97a8; margin-bottom:3px; }
+  .chatBubble{ background:#fff; border:0.5px solid #e3ecf3; border-radius:4px 14px 14px 14px; padding:8px 11px; font-size:12.5px; color:#22333f; line-height:1.5; word-break:break-word; }
+  .chatMsgRow.mine .chatBubble{ background:#1B7FB8; color:#fff; border-color:#1B7FB8; border-radius:14px 4px 14px 14px; }
+  .chatTime{ font-size:9.5px; color:#b8c8d3; margin-top:3px; }
+  .chatDateChip{ align-self:center; background:#dae6ee; color:#5c7688; font-size:10px; padding:3px 10px; border-radius:10px; margin-bottom:12px; }
+  #chatInputRow{ display:flex; gap:7px; align-items:center; margin-top:8px; }
+  #chatInputRow input{ flex:1; background:#F1F5F9; border:0.5px solid #e3ecf3; border-radius:18px; padding:8px 13px; font-size:12px; color:#22333f; font-family:inherit; box-sizing:border-box; }
+  #chatInputRow input::placeholder{ color:#a8bcc9; }
+  #chatSendBtn{ width:33px; height:33px; min-width:33px; padding:0; border-radius:50%; background:#1B7FB8; border:none; color:#fff; font-size:15px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .chatBubble.deleted{ color:#a8bcc9; font-style:italic; border-style:dashed; background:#fff; }
+  .chatSystemMsg{ text-align:center; font-size:11px; color:#8fa6b6; margin:8px 0; }
+  .quickReplyChip{ font-size:10.5px; color:#1B7FB8; background:#E6F1FB; border:none; border-radius:12px; padding:5px 10px; cursor:pointer; font-family:inherit; }
   .dayLogRow{ display:flex; gap:8px; font-size:11.5px; color:#5c4a3a; padding:4px 2px; border-bottom:1px dashed #ddd8cc; }
   .dayLogRow:last-child{ border-bottom:none; }
   .dayLogTime{ color:#8a8a86; flex-shrink:0; width:34px; }
@@ -1294,6 +1332,10 @@
       <svg width="14" height="12" viewBox="0 0 14 12"><path d="M1.5 3.5 h8 v4 a3 3 0 0 1 -3 3 h-2 a3 3 0 0 1 -3 -3 z" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M9.5 4.5 h1.6 a1.6 1.6 0 0 1 0 3.2 h-1.6" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M3.6 1.6 q0.8 -1 0 -1.4" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M6 1.6 q0.8 -1 0 -1.4" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
       탕비실
     </button>
+    <button class="btn" id="placeBtn" aria-label="장소 이용">
+      <svg width="14" height="13" viewBox="0 0 14 13"><path d="M1 5.5 L7 1 L13 5.5 V12 H1 Z" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linejoin="round"/><rect x="5" y="7.5" width="4" height="4.5" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
+      장소 이용
+    </button>
     <button class="btn" id="cleanBtn" aria-label="청소">
       <svg width="13" height="13" viewBox="0 0 13 13"><path d="M8.6 1 L11.8 4.2" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M7.6 2 L10.8 5.2 L5.6 10.4 h-3.2 v-3.2 z" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M4 7.4 L5.4 8.8" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
       청소
@@ -1340,13 +1382,38 @@
       <div class="headRight" style="justify-content:flex-end; flex-wrap:wrap;">
         <button class="noteBoxBtn" id="groupChatBtn">전체채팅</button>
         <button class="noteBoxBtn" id="chatBtn">채팅</button>
-        <button class="noteBoxBtn" id="dayLogBtn">오늘의 기록</button>
         <button class="noteBoxBtn" id="inboxOpenBtn">받은쪽지함</button>
         <button class="noteBoxBtn" id="sentOpenBtn">보낸쪽지함</button>
+        <button class="noteBoxBtn" id="dayLogBtn" aria-label="오늘의 기록" title="오늘의 기록">🕐</button>
       </div>
     </div>
     <div class="mail-body" style="padding-top:6px;">
       <div id="rosterList"></div>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="placeOverlay">
+  <div class="mail-window" style="max-width:300px;">
+    <div class="mail-head"><div class="headLeft"><span>장소 이용</span></div><button id="placeCloseX">×</button></div>
+    <div class="mail-body">
+      <div id="placeMenu" style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <button class="btn placeItem" data-place="locker">🗄️ 사물함</button>
+        <button class="btn placeItem" data-place="lounge">🛋️ 라운지</button>
+        <button class="btn placeItem" data-place="multi">🎛️ 다목적실</button>
+        <button class="btn placeItem" data-place="guest">☕ 응접 공간</button>
+        <button class="btn placeItem" data-place="art">🗿 아트코너</button>
+        <button class="btn placeItem" data-place="stock">📦 재고창고</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="lockerOverlay">
+  <div class="mail-window" style="max-width:320px;">
+    <div class="mail-head"><div class="headLeft"><button class="backBtn" id="lockerBackBtn">‹</button><span>사물함</span></div><button id="lockerCloseX">×</button></div>
+    <div class="mail-body">
+      <div id="lockerGrid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;"></div>
     </div>
   </div>
 </div>
@@ -1377,7 +1444,7 @@
       <div id="chatQuickReplies" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
       <div id="chatInputRow">
         <input type="text" id="chatInput" placeholder="메시지를 입력하세요" maxlength="150">
-        <button class="btn" id="chatSendBtn">전송</button>
+        <button class="btn" id="chatSendBtn" aria-label="전송">↑</button>
       </div>
     </div>
   </div>
@@ -1935,7 +2002,7 @@
       '<text x="0" y="-58" font-size="11" text-anchor="middle" fill="#5c4a3a" stroke="none">'+text+'</text>';
     holder.appendChild(g);
     clearTimeout(holder._tm);
-    holder._tm = setTimeout(function(){ holder.innerHTML=''; }, 2400);
+    holder._tm = setTimeout(function(){ holder.innerHTML=''; }, 4400);
   }
 
   // ---- 위치 이동 유틸: style.transform만 사용 (SVG attribute와 절대 섞지 않음) ----
@@ -2534,6 +2601,161 @@
   });
 
 
+  // ===== 방치 시 스트레칭: 3분 30초간 조작이 없으면 2명이 30초간 자유롭게 돌아다님 =====
+  var IDLE_DELAY = 210000;   // 3분 30초
+  var STRETCH_MS = 30000;    // 30초간 돌아다님
+  var idleTimer = null;
+  var stretchIds = {};
+  var stretchTimers = {};
+  var stretchLines = ['아이고 허리야', '가끔 움직여줘야해'];
+
+  function clearStretchTimers(id){
+    (stretchTimers[id] || []).forEach(clearTimeout);
+    delete stretchTimers[id];
+  }
+  function pushStretchTimer(id, tm){
+    if(!stretchTimers[id]) stretchTimers[id] = [];
+    stretchTimers[id].push(tm);
+  }
+
+  function stretchStep(s, endAt){
+    if(!stretchIds[s.id]) return;
+    if(Date.now() >= endAt){ endStretchFor(s); return; }
+    var dest = WANDER_SPOTS[Math.floor(Math.random()*WANDER_SPOTS.length)];
+    raiseChar(s);
+    travelTo(s, dest, WANDER_PPS, function(){
+      if(!stretchIds[s.id]) return;
+      showBubble(s, stretchLines[Math.floor(Math.random()*stretchLines.length)]);
+      pushStretchTimer(s.id, setTimeout(function(){ stretchStep(s, endAt); }, 1800 + Math.random()*1500));
+    });
+  }
+
+  function endStretchFor(s){
+    if(!stretchIds[s.id]) return;
+    delete stretchIds[s.id];
+    clearStretchTimers(s.id);
+    travelTo(s, {x:s.x, y:s.y}, WANDER_PPS, function(){
+      lowerChar(s);
+      if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y};
+      clearBusy(s.id);
+    });
+  }
+
+  function startIdleStretch(){
+    if(wanderOn) { scheduleIdleStretch(); return; }   // 이미 전체가 돌아다니는 중이면 건너뜀
+    var pool = staff.filter(function(s){
+      return charEl(s.id) && charEl(s.id).classList.contains('present') && !isBusy(s.id) && !errandActive[s.id];
+    });
+    if(pool.length < 1){ scheduleIdleStretch(); return; }
+    var picked = pool.slice().sort(function(){ return Math.random()-0.5; }).slice(0,2);
+    var endAt = Date.now() + STRETCH_MS;
+    picked.forEach(function(s, i){
+      stretchIds[s.id] = true;
+      markBusy(s.id);
+      pushStretchTimer(s.id, setTimeout(function(){ stretchStep(s, endAt); }, i*900));
+    });
+    // 30초가 지나면 아직 돌아다니는 인원을 자리로 복귀시킨다
+    setTimeout(function(){
+      picked.forEach(function(s){ endStretchFor(s); });
+      scheduleIdleStretch();
+    }, STRETCH_MS + 200);
+  }
+
+  function scheduleIdleStretch(){
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(startIdleStretch, IDLE_DELAY);
+  }
+
+  // ===== 자리 비우는 짧은 심부름: 종류마다 방치 조건이 다르다 =====
+  // idleAfter — 이 시간만큼 조작이 없으면 해당 심부름이 발동한다
+  var ERRANDS = [
+    { key:'water',   idleAfter:  45000, spot:{x:348,y:275}, stay:3200, label:'정수기',
+      lines:['물 좀 마시고 올게요', '목말라..', '커피 대신 물 한 잔'] },
+    { key:'print',   idleAfter:  80000, spot:{x:455,y:545}, stay:3800, label:'복합기',
+      lines:['출력물 가지러 왔어요', '어 왜 안 나왔지', '종이 걸렸나?'] },
+    { key:'drawer',  idleAfter: 120000, spot:{x:604,y:150}, stay:3500, label:'사물함',
+      lines:['이거 어디 뒀더라', '찾았다!', '여분 좀 챙겨가야지'] },
+    { key:'window',  idleAfter: 165000, spot:{x:345,y:160}, stay:4200, label:'창가',
+      lines:['잠깐 바람 좀 쐬야지', '밖에 날씨 좋네', '눈이 좀 침침하네'] },
+    { key:'plant',   idleAfter: 260000, spot:{x:420,y:420}, stay:3600, label:'화분',
+      lines:['물 줘야겠다', '잎이 새로 났네?', '얘 잘 자라네'] }
+  ];
+  var MAX_ERRAND_AT_ONCE = 2;
+  var errandTimers = {};
+  var errandActive = {};
+
+  function activeErrandCount(){ return Object.keys(errandActive).length; }
+
+  function runErrand(er){
+    // 자리에 있는 직원이 없으면 자연히 아무 일도 일어나지 않으므로 시간 조건은 두지 않는다
+    if(wanderOn || activeErrandCount() >= MAX_ERRAND_AT_ONCE) return;
+
+    var pool = staff.filter(function(s){
+      if(!charEl(s.id) || !charEl(s.id).classList.contains('present')) return false;
+      if(isBusy(s.id) || stretchIds[s.id] || errandActive[s.id]) return false;
+      if(overtimeMode) return !!overtimeStaffIds[s.id];
+      return true;
+    });
+    if(!pool.length) return;
+
+    var s = pool[Math.floor(Math.random()*pool.length)];
+    errandActive[s.id] = true;
+    markBusy(s.id);
+    raiseChar(s);
+
+    travelTo(s, er.spot, 62, function(){
+      // 도착한 뒤에 말한다
+      setTimeout(function(){
+        showBubble(s, er.lines[Math.floor(Math.random()*er.lines.length)]);
+      }, 500);
+      setTimeout(function(){
+        travelTo(s, {x:s.x, y:s.y}, 62, function(){
+          lowerChar(s);
+          if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y};
+        });
+        clearBusy(s.id);
+        delete errandActive[s.id];
+      }, er.stay);
+    });
+  }
+
+  function scheduleErrand(er){
+    clearTimeout(errandTimers[er.key]);
+    errandTimers[er.key] = setTimeout(function(){
+      runErrand(er);
+      // 한 번 발동한 뒤에도 계속 방치 중이면 다시 반복한다
+      scheduleErrand(er);
+    }, er.idleAfter);
+  }
+  function scheduleAllErrands(){ ERRANDS.forEach(scheduleErrand); }
+  function cancelErrandsInProgress(){
+    Object.keys(errandActive).forEach(function(id){
+      var s = staffMap[id];
+      if(!s) { delete errandActive[id]; return; }
+      travelTo(s, {x:s.x, y:s.y}, 62, function(){
+        lowerChar(s);
+        if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y};
+      });
+      clearBusy(s.id);
+      delete errandActive[id];
+    });
+  }
+
+  // 사용자가 조작하면 스트레칭 대기 시간을 처음부터 다시 센다
+  ['click','keydown','pointerdown','touchstart'].forEach(function(evt){
+    document.addEventListener(evt, function(){
+      Object.keys(stretchIds).forEach(function(id){
+        if(staffMap[id]) endStretchFor(staffMap[id]);
+      });
+      scheduleIdleStretch();
+      cancelErrandsInProgress();
+      scheduleAllErrands();
+    }, true);
+  });
+  scheduleIdleStretch();
+  scheduleAllErrands();
+
+
   // ===== 공용: 복도 경로를 따라 천천히 이동 =====
   var travelTimers = {};
   function cancelTravel(id){
@@ -2858,9 +3080,17 @@
       dailyHistory = dailyHistory.slice(0,7);
       dailyLog = { date: today, orders:0, completions:0 };
       saveDailyLog();
+      // 날짜가 바뀌면 화면의 '오늘 주문량'도 함께 0으로 되돌린다
+      orderCount = 0;
+      prodProgress = 0;
+      if(prodText) prodText.textContent = orderCount;
+      if(prodFill) prodFill.style.width = '0%';
     }
   }
   ensureDailyLogFresh();
+  // 새로고침해도 같은 날이면 오늘 주문량을 이어서 표시한다
+  orderCount = dailyLog.orders || 0;
+  if(prodText) prodText.textContent = orderCount;
   setInterval(ensureDailyLogFresh, 60000);
 
   function formatRemain(ms){
@@ -3060,13 +3290,25 @@
     meetingBtn.disabled = true;
     byId('meetingLabel').textContent = '회의 중';
 
+    var poolMt = staff.filter(function(s){
+      if(isGoneForDay(s.id) || isBusy(s.id)) return false;
+      // 야근모드일 때는 야근으로 남은 인원만 회의에 참여한다
+      if(overtimeMode) return !!overtimeStaffIds[s.id];
+      return true;
+    });
+    var shuffled = poolMt.slice().sort(function(){ return Math.random()-0.5; });
+    var chosen = shuffled.slice(0,6);
+
+    if(!chosen.length){
+      meetingBtn.disabled = false;
+      byId('meetingLabel').textContent = '회의';
+      toast(overtimeMode ? '야근 중인 직원이 없어 회의를 열 수 없습니다' : '회의에 참여할 직원이 없습니다');
+      return;
+    }
+
     lifetime.meetings++;
     saveLifetime();
     maybeTriggerVendorVisit();
-
-    var poolMt = staff.filter(function(s){ return !isGoneForDay(s.id) && !isBusy(s.id); });
-    var shuffled = poolMt.slice().sort(function(){ return Math.random()-0.5; });
-    var chosen = shuffled.slice(0,6);
     chosen.forEach(function(s, i){
       charEl(s.id).classList.add('present');
       metSet[s.id] = true;
@@ -3612,6 +3854,218 @@
   renderDust(tickDust());
   setInterval(tickDust, 60*1000);
 
+  // ===== 라운지: 3인용 소파에 랜덤 3명이 앉아 잡담 (30초) =====
+  var loungeSeats = [ {x:778,y:322}, {x:815,y:322}, {x:851,y:322} ];
+  var loungeBusy = false;
+  // 세 명이 주고받는 보편적인 힐링 잡담
+  var loungeDialogues = [
+    ['여기 좋다.', '그러게요', '앉으니까 살겠네요'],
+    ['힐링돼요', '저도요', '푹 쉬는 느낌'],
+    ['편안해요', '계속 있고 싶다', '그냥 눕고 싶어요'],
+    ['평온..', '평안..', '조용하니 좋네요'],
+    ['업무 스트레스가..', '없어지죠?', '싹 풀려요'],
+    ['음~~좋다', '완전요', '이게 진짜 쉬는 거지'],
+    ['어깨가 좀 풀렸어요', '저도 한결 낫네요', '가끔 이래야 해요'],
+    ['잠깐 앉으니 다르네', '그렇죠?', '10분이 소중해요'],
+    ['이따 또 오고 싶다', '같이 와요', '자리 맡아둘게요'],
+    ['괜히 기분이 좋아요', '햇살 때문인가', '그런 날이죠']
+  ];
+
+  function startLoungeEvent(){
+    if(loungeBusy){ toast('이미 라운지에 직원들이 있어요'); return; }
+
+    var pool = staff.filter(function(s){
+      if(!charEl(s.id) || !charEl(s.id).classList.contains('present')) return false;
+      if(isBusy(s.id)) return false;
+      // 야근모드일 때는 야근으로 남은 인원만 라운지에 간다
+      if(overtimeMode) return !!overtimeStaffIds[s.id];
+      return true;
+    });
+
+    if(pool.length < 3){
+      toast(overtimeMode ? '야근 중인 인원이 3명보다 적어 라운지를 이용할 수 없어요' : '지금 라운지에 갈 수 있는 직원이 부족해요');
+      return;
+    }
+
+    loungeBusy = true;
+    var chosen = pool.slice().sort(function(){ return Math.random()-0.5; }).slice(0,3);
+    toast(chosen.map(function(s){ return s.name; }).join(', ') + '이(가) 라운지로 향합니다');
+    if(typeof logDayEvent === 'function') logDayEvent('🛋️', '라운지 휴식');
+
+    var lines = loungeDialogues[Math.floor(Math.random()*loungeDialogues.length)];
+    // 세 명이 모두 소파에 앉은 뒤에 대화를 시작한다
+    var seated = 0;
+    chosen.forEach(function(s, i){
+      markBusy(s.id);
+      raiseChar(s);
+      travelTo(s, loungeSeats[i], 62, function(){
+        seated++;
+        if(seated < chosen.length) return;
+
+        lines.forEach(function(line, j){
+          setTimeout(function(){
+            if(chosen[j]) showBubble(chosen[j], line);
+          }, 700 + j*2200);
+        });
+
+        setTimeout(function(){
+          chosen.forEach(function(m){
+            travelTo(m, {x:m.x, y:m.y}, 62, function(){
+              lowerChar(m);
+              if(wanderPos) wanderPos[m.id] = {x:m.x, y:m.y};
+            });
+            clearBusy(m.id);
+          });
+          loungeBusy = false;
+        }, 700 + lines.length*2200 + 2500);
+      });
+    });
+  }
+
+  // ===== 아트코너: 랜덤 1명이 조각품 아래에서 영감을 받는다 =====
+  var ART_SPOT = { x:441, y:437 };
+  var artBusy = false;
+
+  function startArtEvent(){
+    if(artBusy){ toast('이미 아트코너에 직원이 있어요'); return; }
+
+    var pool = staff.filter(function(s){
+      if(!charEl(s.id) || !charEl(s.id).classList.contains('present')) return false;
+      if(isBusy(s.id)) return false;
+      if(overtimeMode) return !!overtimeStaffIds[s.id];
+      return true;
+    });
+    if(!pool.length){
+      toast(overtimeMode ? '야근 중인 직원이 없어 아트코너를 이용할 수 없어요' : '지금 아트코너에 갈 수 있는 직원이 없어요');
+      return;
+    }
+
+    artBusy = true;
+    var s = pool[Math.floor(Math.random()*pool.length)];
+    markBusy(s.id);
+    raiseChar(s);
+    toast(s.name + '이(가) 아트코너로 향합니다');
+    if(typeof logDayEvent === 'function') logDayEvent('🗿', '아트코너 방문');
+
+    // 조각품 앞에 도착한 뒤에 말하도록 도착 콜백에서 띄운다
+    travelTo(s, ART_SPOT, 62, function(){
+      setTimeout(function(){ showBubble(s, '영감이 떠오른다!!!'); }, 600);
+      setTimeout(function(){
+        travelTo(s, {x:s.x, y:s.y}, 62, function(){
+          lowerChar(s);
+          if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y};
+        });
+        clearBusy(s.id);
+        artBusy = false;
+      }, 5200);
+    });
+  }
+
+  // ===== 재고창고: 인턴들만 테이블 왼쪽에 나란히 서서 재고를 확인한다 =====
+  var STOCK_SPOTS = [ {x:880,y:500}, {x:903,y:500} ];
+  var stockBusy = false;
+  var stockLines = ['재고 수량 확인!', '휴, 빨리 끝났다'];
+
+  function startStockEvent(){
+    if(stockBusy){ toast('이미 재고창고에 인턴들이 있어요'); return; }
+
+    var pool = staff.filter(function(s){
+      if(s.role !== '인턴') return false;
+      if(!charEl(s.id) || !charEl(s.id).classList.contains('present')) return false;
+      if(isBusy(s.id)) return false;
+      if(overtimeMode) return !!overtimeStaffIds[s.id];
+      return true;
+    });
+    if(!pool.length){
+      toast(overtimeMode ? '야근 중인 인턴이 없어 재고 확인을 할 수 없어요' : '지금 재고창고에 갈 수 있는 인턴이 없어요');
+      return;
+    }
+
+    stockBusy = true;
+    var chosen = pool.slice(0, STOCK_SPOTS.length);
+    toast(chosen.map(function(s){ return s.name; }).join(', ') + '이(가) 재고 확인을 하러 갑니다');
+    if(typeof logDayEvent === 'function') logDayEvent('📦', '재고 확인');
+
+    // 전원이 자리를 잡은 뒤에 대화를 시작한다
+    var arrived = 0;
+    chosen.forEach(function(s, i){
+      markBusy(s.id);
+      raiseChar(s);
+      travelTo(s, STOCK_SPOTS[i], 62, function(){
+        arrived++;
+        if(arrived < chosen.length) return;
+
+        stockLines.forEach(function(line, j){
+          setTimeout(function(){
+            // 인턴이 한 명뿐이면 두 대사를 혼자 이어서 말한다
+            var speaker = chosen[j] || chosen[0];
+            showBubble(speaker, line);
+          }, 700 + j*2600);
+        });
+
+        setTimeout(function(){
+          chosen.forEach(function(m){
+            travelTo(m, {x:m.x, y:m.y}, 62, function(){
+              lowerChar(m);
+              if(wanderPos) wanderPos[m.id] = {x:m.x, y:m.y};
+            });
+            clearBusy(m.id);
+          });
+          stockBusy = false;
+        }, 700 + stockLines.length*2600 + 1800);
+      });
+    });
+  }
+
+  // ===== 장소 이용: 사물함 / 라운지 / 다목적실 / 응접 공간 =====
+  var placeOverlay = byId('placeOverlay');
+  var lockerOverlay = byId('lockerOverlay');
+
+  byId('placeBtn').addEventListener('click', function(){ placeOverlay.classList.add('show'); });
+  byId('placeCloseX').addEventListener('click', function(){ placeOverlay.classList.remove('show'); });
+  placeOverlay.addEventListener('click', function(e){ if(e.target === placeOverlay) placeOverlay.classList.remove('show'); });
+
+  function renderLockers(){
+    var grid = byId('lockerGrid');
+    grid.innerHTML = '';
+    for(var i=1; i<=8; i++){
+      var cell = document.createElement('button');
+      cell.className = 'lockerCell';
+      cell.setAttribute('data-locker', i);
+      cell.innerHTML = '<span class="lkIcon">🗄️</span><span class="lkNum">' + i + '번</span>';
+      grid.appendChild(cell);
+    }
+  }
+
+  placeOverlay.querySelectorAll('.placeItem').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var place = btn.getAttribute('data-place');
+      if(place === 'locker'){
+        placeOverlay.classList.remove('show');
+        renderLockers();
+        lockerOverlay.classList.add('show');
+      } else if(place === 'lounge'){
+        placeOverlay.classList.remove('show');
+        startLoungeEvent();
+      } else if(place === 'art'){
+        placeOverlay.classList.remove('show');
+        startArtEvent();
+      } else if(place === 'stock'){
+        placeOverlay.classList.remove('show');
+        startStockEvent();
+      } else {
+        toast('준비 중인 공간입니다');
+      }
+    });
+  });
+
+  byId('lockerCloseX').addEventListener('click', function(){ lockerOverlay.classList.remove('show'); });
+  byId('lockerBackBtn').addEventListener('click', function(){
+    lockerOverlay.classList.remove('show');
+    placeOverlay.classList.add('show');
+  });
+  lockerOverlay.addEventListener('click', function(e){ if(e.target === lockerOverlay) lockerOverlay.classList.remove('show'); });
+
   var cleanBtn = byId('cleanBtn');
   cleanBtn.addEventListener('click', function(){
     var state = loadDustState();
@@ -3716,11 +4170,11 @@
 
       var dot = document.createElement('span');
       dot.className = 'rosterDot';
-      dot.style.background = st.online ? '#6b9e6b' : '#b4b2a9';
+      dot.style.background = st.online ? '#5BA84F' : '#c2d2dc';
 
       var avatar = document.createElement('div');
       avatar.className = 'rosterAvatar';
-      avatar.style.background = c.avatar;
+      avatar.innerHTML = avatarSVG(false);
 
       var name = document.createElement('span');
       name.className = 'rosterName';
@@ -3919,20 +4373,72 @@
     return { id:'team_'+tk, name:teamRoomLabels[tk], isRoom:true, teamKey:tk, avatar:'#c9c2b0' };
   });
 
+  // 프로필: 회색 원 + 사람 실루엣 (그룹방은 사람 여럿 아이콘)
+  function avatarSVG(isRoom){
+    if(isRoom){
+      return '<svg viewBox="0 0 38 38" width="100%" height="100%"><circle cx="19" cy="19" r="19" fill="#E6F1FB"/>' +
+        '<circle cx="14" cy="15" r="4.4" fill="none" stroke="#1B7FB8" stroke-width="1.7"/>' +
+        '<circle cx="25" cy="16" r="3.4" fill="none" stroke="#1B7FB8" stroke-width="1.5"/>' +
+        '<path d="M6 29.5 C 7 24.5 10.5 22.4 14 22.4 C 17.5 22.4 21 24.5 22 29.5" fill="none" stroke="#1B7FB8" stroke-width="1.7" stroke-linecap="round"/>' +
+        '<path d="M23 29.5 C 23.8 25.6 26 23.6 28.4 23.6 C 30.8 23.6 33 25.6 33.8 29.5" fill="none" stroke="#1B7FB8" stroke-width="1.5" stroke-linecap="round"/></svg>';
+    }
+    return '<svg viewBox="0 0 38 38" width="100%" height="100%"><circle cx="19" cy="19" r="19" fill="#DFE6EB"/>' +
+      '<circle cx="19" cy="15" r="5.6" fill="none" stroke="#9FB1BF" stroke-width="1.8"/>' +
+      '<path d="M9.5 30.5 C 10.5 24.5 15 22.2 19 22.2 C 23 22.2 27.5 24.5 28.5 30.5" fill="none" stroke="#9FB1BF" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  }
+
+  // 목록에 보여줄 마지막 메시지 미리보기와 시각
+  function chatPreviewOf(key){
+    var arr = loadChat(key);
+    for(var i = arr.length - 1; i >= 0; i--){
+      var m = arr[i];
+      if(m.deleted) return { text:'(메시지가 삭제되었습니다)', ts:m.ts };
+      if(m.system) return { text:m.body, ts:m.ts };
+      return { text:(m.mine ? '나: ' : '') + m.body, ts:m.ts };
+    }
+    return { text:'대화를 시작해보세요', ts:0 };
+  }
+  function unreadCountOf(key){
+    var seen = getRoomLastSeen(key), n = 0;
+    loadChat(key).forEach(function(m){ if(!m.mine && !m.system && m.ts > seen) n++; });
+    return n;
+  }
+
   function buildChatListRow(target, key){
     var row = document.createElement('div');
     row.className = 'chatListRow';
+
     var avatar = document.createElement('div');
     avatar.className = 'chatListAvatar';
-    avatar.style.background = target.avatar;
-    var name = document.createElement('span');
+    avatar.innerHTML = avatarSVG(!!target.isRoom);
+
+    var mid = document.createElement('div');
+    mid.className = 'chatListMid';
+    var name = document.createElement('div');
     name.className = 'chatListName';
     name.textContent = target.name;
+    var prev = chatPreviewOf(key);
+    var preview = document.createElement('div');
+    preview.className = 'chatListPreview';
+    preview.textContent = prev.text;
+    mid.appendChild(name);
+    mid.appendChild(preview);
+
+    var right = document.createElement('div');
+    right.className = 'chatListRight';
+    var time = document.createElement('div');
+    time.className = 'chatListTime';
+    time.textContent = prev.ts ? chatTimeLabel(prev.ts) : '';
+    var n = unreadCountOf(key);
     var dot = document.createElement('span');
-    dot.className = 'chatListDot' + (roomHasUnread(key) ? ' show' : '');
+    dot.className = 'chatListDot' + (n > 0 ? ' show' : '');
+    dot.textContent = n > 99 ? '99+' : (n || '');
+    right.appendChild(time);
+    right.appendChild(dot);
+
     row.appendChild(avatar);
-    row.appendChild(name);
-    row.appendChild(dot);
+    row.appendChild(mid);
+    row.appendChild(right);
     row.addEventListener('click', function(){ openChatWindow(target, 'list'); });
     return row;
   }
@@ -3982,7 +4488,18 @@
     if(arr.length === 0){
       wrap.innerHTML = '<div class="projEmpty">대화를 시작해보세요</div>';
     } else {
-      arr.forEach(function(m){
+      var lastDay = '';
+      arr.forEach(function(m, idx){
+        var day = new Date(m.ts).toDateString();
+        if(day !== lastDay){
+          lastDay = day;
+          var chip = document.createElement('div');
+          chip.className = 'chatDateChip';
+          var d = new Date(m.ts), td = new Date();
+          chip.textContent = (d.toDateString() === td.toDateString())
+            ? '오늘' : (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+          wrap.appendChild(chip);
+        }
         if(m.system){
           var sysRow = document.createElement('div');
           sysRow.className = 'chatSystemMsg';
@@ -3995,7 +4512,7 @@
         if(!m.mine){
           var av = document.createElement('div');
           av.className = 'chatAvatar';
-          av.style.background = m.avatar || '#b9b2a6';
+          av.innerHTML = avatarSVG(false);
           row.appendChild(av);
         }
         var bwrap = document.createElement('div');
@@ -4012,7 +4529,9 @@
         bwrap.appendChild(bubble);
         var time = document.createElement('div');
         time.className = 'chatTime';
-        time.textContent = chatTimeLabel(m.ts);
+        // 내가 보낸 메시지는 뒤에 상대 답이 있으면 '읽음'으로 표시
+        var seenByOther = m.mine && arr.slice(idx+1).some(function(n){ return !n.mine && !n.system; });
+        time.textContent = (seenByOther ? '읽음 · ' : '') + chatTimeLabel(m.ts);
         bwrap.appendChild(time);
         row.appendChild(bwrap);
         wrap.appendChild(row);
@@ -4152,22 +4671,112 @@
     staff: ['음 글쎄요 ㅎㅎ', '왜 궁금하세요?', '저도 잘 모르겠어요 ㅋㅋ', '좋은 질문이네요!'],
     boss:  ['글쎄요, 한번 살펴볼게요.', '좋은 질문이네요.']
   };
+  // ===== 무드 감지: 문장 분위기를 읽어 반응 결정 =====
+  var moodCategories = [
+    { mood:'apology', test: /죄송|미안|사과|잘못했|실수했/,
+      staff: ['괜찮아요~', '그럴 수도 있죠!', '아니에요, 신경 쓰지 마세요', '저도 자주 그래요 ㅎㅎ'],
+      boss:  ['괜찮습니다.', '그럴 수 있어요, 다음에 잘하면 돼요.'] },
+    { mood:'urging', test: /아직|언제까지|빨리|서둘|늦어|왜 안|아직도/,
+      staff: ['아 지금 바로 볼게요!', '조금만 기다려주세요 ㅠㅠ', '거의 다 됐어요!', '앗 확인하겠습니다'],
+      boss:  ['확인해보고 알려줄게요.', '조금만 기다려봅시다.'] },
+    { mood:'praise', test: /고마워|감사|수고했|잘했|최고|대단|멋지|훌륭/,
+      staff: ['별말씀을요 ㅎㅎ', '저도 감사해요!', '헤헤 감사합니다', '아니에요~ 다 같이 한 건데요'],
+      boss:  ['별말씀을요.', '늘 애써줘서 고마워요.'] },
+    { mood:'negative', test: /싫|힘들|피곤|지쳐|짜증|화나|우울|못하겠|어렵/,
+      staff: ['에구 ㅠㅠ 고생 많으세요', '조금만 더 힘내요!', '저도 그래요.. 같이 힘내요', '잠깐 쉬었다 해요'],
+      boss:  ['고생 많아요, 무리하지 말아요.', '너무 무리하진 마세요.'] },
+    { mood:'positive', test: /좋[아다]|재밌|신난|기분\s?좋|행복|만족|성공|해냈/,
+      staff: ['오 좋네요!', '저도 기분 좋아지는데요 ㅎㅎ', '완전 공감이요!', '좋습니다~'],
+      boss:  ['좋은 소식이네요.', '다행입니다.'] },
+    { mood:'agree', test: /맞아|그러게|동의|그렇죠|인정|ㅇㅈ/,
+      staff: ['그쵸 그쵸', '역시 통하네요 ㅎㅎ', '저도 같은 생각이에요', '맞아요 맞아요'],
+      boss:  ['같은 생각입니다.', '동의합니다.'] },
+    { mood:'greeting', test: /안녕|하이|왔어|굿모닝|출근했/,
+      staff: ['어서오세요~', '오셨네요!', '안녕하세요 :)', '좋은 아침이에요~'],
+      boss:  ['어서와요.', '오늘도 좋은 하루예요.', '반갑습니다.'] },
+    { mood:'farewell', test: /퇴근|안녕히|바이|수고하세요|들어가|가볼게/,
+      staff: ['수고하셨어요!', '내일 봬요~', '조심히 들어가세요', '오늘도 고생했어요'],
+      boss:  ['수고 많았어요.', '내일 봅시다.', '조심히 들어가요.'] }
+  ];
+
+  // 성격별 말투 색: 무드 답변 뒤에 가끔 덧붙는다
+  var personalityFlavor = {
+    meticulous: ['한번 더 확인해둘게요.', '기록해두겠습니다.', '정리해서 공유드릴게요.'],
+    warm:       ['오늘도 힘내세요 :)', '언제든 말씀 주세요~', '제가 도울 일 있으면 말해주세요'],
+    chatty:     ['근데 그거 아세요?', '아 맞다, 그래서 말인데요~', '다들 어떻게 생각해요?'],
+    playful:    ['ㅋㅋㅋ', '오 이거 재밌는데요?', '헤헤'],
+    quiet:      ['넵.', '알겠습니다.'],
+    intern:     ['제가 배워야 할 게 많네요!', '넵 열심히 하겠습니다!', '아 그렇군요..!']
+  };
+
+  // 시간대 반영: 점심 전후, 퇴근 무렵, 야근 등
+  var timeOfDayLines = {
+    lunch:    { staff:['슬슬 점심시간이네요~', '오늘 점심 뭐 드세요?', '배고파요.. 밥 먹으러 가요!', '점심 뭐 먹을지가 제일 어려워요 ㅋㅋ'],
+                boss:['식사들 챙겨 드세요.', '점심 맛있게 드세요.'] },
+    leaving:  { staff:['이제 곧 퇴근이네요!', '오늘 하루도 끝나가요~', '퇴근 준비 슬슬 해야겠어요', '오늘 정시 퇴근 가능할까요 ㅎㅎ'],
+                boss:['오늘도 수고 많았어요.', '정리하고 들어가요.'] },
+    overtime: { staff:['오늘 야근이네요.. ㅠㅠ', '조금만 더 하면 끝나요!', '야근 각인가요', '커피 한 잔 더 마셔야겠어요'],
+                boss:['늦게까지 고생이 많아요.', '무리하지 말고 정리해요.'] },
+    arrive:   { staff:['이제 막 출근했어요~', '좋은 아침이에요!', '오늘 하루도 시작이네요'],
+                boss:['좋은 아침입니다.'] },
+    afternoon:{ staff:['오후엔 좀 나른하네요~', '커피 한 잔 하실래요?', '오늘따라 시간이 안 가요 ㅋㅋ'],
+                boss:['오후도 힘내봅시다.'] },
+    work:     { staff:['지금 작업 중이에요!', '집중해서 해볼게요', '오늘 안에 마무리해볼게요'],
+                boss:['잘 진행해봐요.'] }
+  };
+
   function pickContextualReply(text, opts){
     opts = opts || {};
     var isBoss = !!opts.isBoss;
-    for(var i=0; i<replyCategories.length; i++){
-      var cat = replyCategories[i];
-      if(cat.test.test(text)){
-        var pool = isBoss ? cat.boss : cat.staff;
-        return pool[Math.floor(Math.random()*pool.length)];
+    var pick = function(arr){ return arr[Math.floor(Math.random()*arr.length)]; };
+
+    // 1) 무드 감지 우선
+    for(var i=0; i<moodCategories.length; i++){
+      var mc = moodCategories[i];
+      if(mc.test.test(text)){
+        var base = pick(isBoss ? mc.boss : mc.staff);
+        // 성격 말투를 가끔(35%) 덧붙여 같은 무드라도 사람마다 다르게 들리게 한다
+        var fl = !isBoss && personalityFlavor[opts.personality];
+        if(fl && Math.random() < 0.35) base += ' ' + pick(fl);
+        return base;
       }
     }
-    if(questionTest.test(text)){
-      var qpool = isBoss ? questionReplies.boss : questionReplies.staff;
-      return qpool[Math.floor(Math.random()*qpool.length)];
+
+    // 2) 주제 키워드
+    for(var j=0; j<replyCategories.length; j++){
+      var cat = replyCategories[j];
+      if(cat.test.test(text)) return pick(isBoss ? cat.boss : cat.staff);
     }
-    // 매칭되는 키워드가 없으면 기존 방식(성격별/기본 랜덤 답변)으로 대체
-    return isBoss ? bossReplyLines[Math.floor(Math.random()*bossReplyLines.length)] : replyLineFor(opts.personality);
+
+    // 3) 질문
+    if(questionTest.test(text)) return pick(isBoss ? questionReplies.boss : questionReplies.staff);
+
+    // 4) 매칭이 없으면 시간대를 반영한 잡담으로 (점심·퇴근·야근 등)
+    var tod = currentAmbientCategory();
+    if(tod && timeOfDayLines[tod] && Math.random() < 0.55){
+      var tpool = isBoss ? timeOfDayLines[tod].boss : timeOfDayLines[tod].staff;
+      if(tpool && tpool.length) return pick(tpool);
+    }
+
+    return isBoss ? pick(bossReplyLines) : replyLineFor(opts.personality);
+  }
+
+  // 전체채팅에서 "고부장 이것 좀" 처럼 이름·직책을 부르면 그 사람이 답한다
+  function findMentionedContact(text){
+    var head = text.slice(0, 14);
+    var byName = messengerContacts.slice().sort(function(a,b){ return b.name.length - a.name.length; });
+    for(var i=0; i<byName.length; i++){
+      if(head.indexOf(byName[i].name) !== -1) return byName[i];
+    }
+    var byRole = staff.slice().sort(function(a,b){ return (b.role||'').length - (a.role||'').length; });
+    for(var j=0; j<byRole.length; j++){
+      var r = byRole[j].role;
+      if(r && head.indexOf(r) !== -1){
+        var hit = messengerContacts.find(function(c){ return c.id === byRole[j].id; });
+        if(hit) return hit;
+      }
+    }
+    return null;
   }
 
   function sendChatMessage(){
@@ -4182,7 +4791,10 @@
 
     if(target && target.isRoom){
       var members = staff.filter(function(s){ return s.teamKey===target.teamKey && !isGoneForDay(s.id); });
-      var replier2 = members.length ? members[Math.floor(Math.random()*members.length)] : staff[Math.floor(Math.random()*staff.length)];
+      // 팀방에서도 이름을 부르면 그 팀원이 답한다
+      var mentionedRoom = findMentionedContact(text);
+      var mentionedInTeam = mentionedRoom && members.find(function(s){ return s.id === mentionedRoom.id; });
+      var replier2 = mentionedInTeam || (members.length ? members[Math.floor(Math.random()*members.length)] : staff[Math.floor(Math.random()*staff.length)]);
       var pal2 = kindPalette[replier2.palKey] || kindPalette[replier2.kind] || kindPalette.cat;
       setTimeout(function(){
         var reply = pickContextualReply(text, { personality: replier2.personality });
@@ -4201,7 +4813,9 @@
     } else {
       // 전체채팅 답장은 실무진만 — 사장님은 실무 대화에 끼지 않음
       var pool = messengerContacts.filter(function(c){ return !c.isBoss; });
-      var replier = pool[Math.floor(Math.random()*pool.length)];
+      // 이름이나 직책을 부르면 그 사람이, 아니면 기존처럼 랜덤으로 답한다
+      var mentioned = findMentionedContact(text);
+      var replier = (mentioned && !mentioned.isBoss) ? mentioned : pool[Math.floor(Math.random()*pool.length)];
       var replierStaff = staffMap[replier.id];
       setTimeout(function(){
         var reply = pickContextualReply(text, { personality: replierStaff ? replierStaff.personality : null });
