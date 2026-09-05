@@ -2150,6 +2150,39 @@
     toast._tm = setTimeout(function(){ t.classList.remove('show'); }, 1800);
   }
 
+  // 말풍선 폭: 글자 폭이 종류마다 달라(한글 11px, 숫자·영문 8px) 글자 수로는 못 맞춘다.
+  // 숨은 노드에 같은 폰트로 그려 실제 렌더 폭을 재고, 그 값으로 몸통을 맞춘다.
+  var BUBBLE_FONT = 11;
+  var BUBBLE_PAD = 22;    // 텍스트 좌우 여백
+  var BUBBLE_MAX_W = 190; // 말풍선이 이보다 넓어지면 두 줄로 나눔
+  var BUBBLE_LINE_H = 14;
+  var measureBubbleText = (function(){
+    var probe = null;
+    return function(str){
+      if(!probe){
+        probe = document.createElementNS('http://www.w3.org/2000/svg','text');
+        probe.setAttribute('font-size', BUBBLE_FONT);
+        probe.setAttribute('text-anchor','middle');
+        probe.setAttribute('visibility','hidden');
+        bubbleLayer.appendChild(probe);
+      }
+      probe.textContent = str;
+      return probe.getComputedTextLength();
+    };
+  })();
+  // 가운데에 가장 가까운 공백에서 자르고, 공백이 없으면 글자 수 절반에서 자른다
+  function splitBubbleText(text){
+    var mid = text.length / 2, at = -1, best = Infinity;
+    for(var i = 1; i < text.length - 1; i++){
+      if(text.charAt(i) !== ' ') continue;
+      var diff = Math.abs(i - mid);
+      if(diff < best){ best = diff; at = i; }
+    }
+    if(at > 0) return [text.slice(0, at), text.slice(at + 1)];
+    var cut = Math.ceil(text.length / 2);
+    return [text.slice(0, cut), text.slice(cut)];
+  }
+
   function showBubble(s, text, bgColor){
     var charEl2 = charEl(s.id);
     if(!charEl2) return;
@@ -2163,12 +2196,29 @@
     holder.innerHTML = '';
     var g = document.createElementNS('http://www.w3.org/2000/svg','g');
     g.setAttribute('class','popBubble');
-    var w = Math.max(40, text.length * 7 + 16);
     var fill = bgColor || '#fffdf8';
+    var lines = [text];
+    if(measureBubbleText(text) + BUBBLE_PAD > BUBBLE_MAX_W) lines = splitBubbleText(text);
+    var tw = 0;
+    for(var li = 0; li < lines.length; li++) tw = Math.max(tw, measureBubbleText(lines[li]));
+    var w = Math.max(40, tw + BUBBLE_PAD);
+    // 몸통 + 꼬리를 하나의 path로 그린다 (따로 그리면 맞닿는 면에 선이 남음)
+    // 아래변과 꼬리는 고정하고, 줄이 늘면 위로만 커진다
+    var bx = w/2, r = 8;
+    var bot = -50, top = bot - (26 + (lines.length - 1) * BUBBLE_LINE_H);
+    var d = 'M '+(-bx+r)+' '+top +
+            ' H '+(bx-r) + ' A '+r+' '+r+' 0 0 1 '+bx+' '+(top+r) +
+            ' V '+(bot-r) + ' A '+r+' '+r+' 0 0 1 '+(bx-r)+' '+bot +
+            ' H 6 L 0 -42 L -6 '+bot +
+            ' H '+(-bx+r) + ' A '+r+' '+r+' 0 0 1 '+(-bx)+' '+(bot-r) +
+            ' V '+(top+r) + ' A '+r+' '+r+' 0 0 1 '+(-bx+r)+' '+top+' Z';
+    var texts = '';
+    for(var lj = 0; lj < lines.length; lj++){
+      var by = -58 - (lines.length - 1 - lj) * BUBBLE_LINE_H;
+      texts += '<text x="0" y="'+by+'" font-size="'+BUBBLE_FONT+'" text-anchor="middle" fill="#5c4a3a" stroke="none">'+lines[lj]+'</text>';
+    }
     g.innerHTML =
-      '<rect x="'+(-w/2)+'" y="-76" width="'+w+'" height="26" rx="8" fill="'+fill+'" stroke="#5c4a3a" stroke-width="1"/>' +
-      '<polygon points="-6,-50 6,-50 0,-42" fill="'+fill+'" stroke="#5c4a3a" stroke-width="1"/>' +
-      '<text x="0" y="-58" font-size="11" text-anchor="middle" fill="#5c4a3a" stroke="none">'+text+'</text>';
+      '<path d="'+d+'" fill="'+fill+'" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/>' + texts;
     holder.appendChild(g);
     clearTimeout(holder._tm);
     holder._tm = setTimeout(function(){ holder.innerHTML=''; }, 4400);
@@ -2694,10 +2744,17 @@
     clearTimeout(holder._tm);
     var text = R_LINES[Math.floor(Math.random()*R_LINES.length)];
     var w = text.length * 11 + 16;
+    // 몸통 + 꼬리를 하나의 path로 그린다 (따로 그리면 맞닿는 면에 선이 남음)
+    var bx = w/2, r = 6;
+    var d = 'M '+(-bx+r)+' -17' +
+            ' H '+(bx-r) + ' A '+r+' '+r+' 0 0 1 '+bx+' '+(-17+r) +
+            ' V '+(4-r) + ' A '+r+' '+r+' 0 0 1 '+(bx-r)+' 4' +
+            ' H 4 L 0 9 L -4 4' +
+            ' H '+(-bx+r) + ' A '+r+' '+r+' 0 0 1 '+(-bx)+' '+(4-r) +
+            ' V '+(-17+r) + ' A '+r+' '+r+' 0 0 1 '+(-bx+r)+' -17 Z';
     holder.innerHTML =
       '<g class="popBubble" transform="translate(0,-34)">' +
-      '<rect x="'+(-w/2)+'" y="-17" width="'+w+'" height="21" rx="6" fill="#ffffff" stroke="#5c4a3a" stroke-width="0.9"/>' +
-      '<path d="M -4 4 L 0 9 L 4 4 Z" fill="#ffffff" stroke="#5c4a3a" stroke-width="0.9" stroke-linejoin="round"/>' +
+      '<path d="'+d+'" fill="#ffffff" stroke="#5c4a3a" stroke-width="0.9" stroke-linejoin="round"/>' +
       '<text x="0" y="-2" text-anchor="middle" font-size="11" fill="#3a4a3f" stroke="none">'+text+'</text>' +
       '</g>';
     holder._tm = setTimeout(function(){ holder.innerHTML = ''; }, 4400);
@@ -4071,17 +4128,23 @@
     try{ localStorage.setItem(DUST_KEY, JSON.stringify(state)); }catch(e){}
   }
   function dustMarkup(style){
+    // stroke="none"으로 부모 <g>의 갈색 테두리 상속을 끊고, 투명도는 그룹에만 준다.
+    // (도형마다 opacity를 주면 겹치는 부분이 진해져서 한 덩어리로 안 보임)
     if(style === 0){
       // 먼지 뭉치 (동글동글)
-      return '<ellipse cx="0" cy="0" rx="7" ry="3" fill="#c9c2b0" opacity="0.5"/>' +
-             '<circle cx="-3.5" cy="-1.8" r="1.9" fill="#d9d3c2" opacity="0.65"/>' +
-             '<circle cx="2.8" cy="-2.2" r="1.5" fill="#d9d3c2" opacity="0.65"/>' +
-             '<circle cx="0" cy="0" r="2.3" fill="#cfc8b6" opacity="0.7"/>' +
-             '<circle cx="4.8" cy="-0.3" r="1.2" fill="#d9d3c2" opacity="0.6"/>';
+      return '<g stroke="none" opacity="0.6">' +
+             '<ellipse cx="0" cy="0" rx="7" ry="3" fill="#c9c2b0"/>' +
+             '<circle cx="-3.5" cy="-1.8" r="1.9" fill="#d9d3c2"/>' +
+             '<circle cx="2.8" cy="-2.2" r="1.5" fill="#d9d3c2"/>' +
+             '<circle cx="0" cy="0" r="2.3" fill="#cfc8b6"/>' +
+             '<circle cx="4.8" cy="-0.3" r="1.2" fill="#d9d3c2"/>' +
+             '</g>';
     }
     // 먼지 얼룩 (바닥 자국)
-    return '<ellipse cx="0" cy="1" rx="9" ry="3.6" fill="#c2bba8" opacity="0.3"/>' +
-           '<ellipse cx="0" cy="1" rx="5.4" ry="2.1" fill="#b3ab97" opacity="0.26"/>';
+    return '<g stroke="none" opacity="0.3">' +
+           '<ellipse cx="0" cy="1" rx="9" ry="3.6" fill="#c2bba8"/>' +
+           '<ellipse cx="0" cy="1" rx="5.4" ry="2.1" fill="#b3ab97"/>' +
+           '</g>';
   }
   function renderDust(state){
     dustLayer.innerHTML = state.items.map(function(d){
