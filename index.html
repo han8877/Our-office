@@ -19,6 +19,14 @@
   #officeSvg{ display:block; width:100%; height:auto; }
   .office-char{ transition:opacity .9s ease; opacity:0; }
   .office-char.present{ opacity:1; }
+  /* 입구 자동문: 두 짝이 좌우로 갈라지며 열린다 */
+  #doorLeafLeft, #doorLeafRight{ transition:transform .5s cubic-bezier(.4,0,.2,1); }
+  #doorLeafLeft.open{ transform:translateX(-28px); }
+  #doorLeafRight.open{ transform:translateX(28px); }
+  #doorSensorLamp{ transition:fill .25s ease; }
+  @media (prefers-reduced-motion: reduce){
+    #doorLeafLeft, #doorLeafRight{ transition:none; }
+  }
   .bubble{ }
   .floater{ font-size:12px; fill:#5c4a3a; animation:floatUp 1.3s ease-out forwards; }
   @keyframes floatUp{ 0%{ transform:translateY(0); opacity:1; } 100%{ transform:translateY(-26px); opacity:0; } }
@@ -630,12 +638,39 @@
 <!-- 스티커디자인팀 책상 4개는 deskLayer에서 JS로 생성 -->
 
 <!-- 입구 -->
-<rect x="50" y="650" width="55" height="100" rx="8" stroke-width="1.3" fill="#e8dcc8"/>
-<rect x="58" y="660" width="39" height="38" rx="3" fill="none" stroke="#5c4a3a" stroke-width="0.7" opacity="0.5"/>
-<rect x="58" y="704" width="39" height="38" rx="3" fill="none" stroke="#5c4a3a" stroke-width="0.7" opacity="0.5"/>
+<!-- 비상구 표시 -->
+<g id="exitSign">
+  <rect x="66" y="626" width="23" height="11" rx="1.5" fill="#3f9b6d" stroke="#5c4a3a" stroke-width="0.6"/>
+  <g stroke="#fdfdf7" stroke-width="0.8" stroke-linecap="round" fill="none">
+    <circle cx="71" cy="628.8" r="1.05" fill="#fdfdf7" stroke="none"/>
+    <path d="M71.3 630.2 L72.4 632.2"/>
+    <path d="M72.4 632.2 L71 633.4 L71 635"/>
+    <path d="M72.4 632.2 L73.9 633.2 L74.2 635"/>
+    <path d="M71.7 631 L70 631.7"/>
+  </g>
+  <path d="M77 631.5 h3.4 M79 629.9 l1.7 1.6 l-1.7 1.6" fill="none" stroke="#fdfdf7" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="83" y="628.5" width="4" height="6" rx="0.5" fill="none" stroke="#fdfdf7" stroke-width="0.7"/>
+</g>
+<!-- 자동문 센서 -->
+<rect x="63" y="640" width="29" height="6.5" rx="2.5" fill="#f3ece0" stroke-width="0.9"/>
+<circle id="doorSensorLamp" cx="87" cy="643.2" r="1.6" fill="#c9c2b4" stroke="none"/>
+<!-- 자동문 -->
+<clipPath id="entranceDoorClip"><rect x="50" y="650" width="55" height="100" rx="8"/></clipPath>
+<rect x="50" y="650" width="55" height="100" rx="8" stroke-width="1.3" fill="#d5c8b1"/>
+<g clip-path="url(#entranceDoorClip)">
+  <g id="doorLeafLeft">
+    <rect x="51" y="651" width="26.5" height="98" fill="#e8dcc8" stroke="#5c4a3a" stroke-width="1"/>
+    <rect x="56" y="658" width="16.5" height="84" rx="3" fill="#dbe9ef" stroke="#5c4a3a" stroke-width="0.7" opacity="0.85"/>
+    <rect x="73" y="651" width="4.5" height="98" fill="#c9a179" stroke="none"/>
+  </g>
+  <g id="doorLeafRight">
+    <rect x="77.5" y="651" width="26.5" height="98" fill="#e8dcc8" stroke="#5c4a3a" stroke-width="1"/>
+    <rect x="82.5" y="658" width="16.5" height="84" rx="3" fill="#dbe9ef" stroke="#5c4a3a" stroke-width="0.7" opacity="0.85"/>
+    <rect x="77.5" y="651" width="4.5" height="98" fill="#c9a179" stroke="none"/>
+  </g>
+</g>
+<rect x="50" y="650" width="55" height="100" rx="8" stroke-width="1.3" fill="none"/>
 <line x1="50" y1="650" x2="105" y2="650" stroke-width="0.9"/>
-<rect x="94" y="690" width="4" height="11" rx="2" fill="#c9a179" stroke-width="0.7"/>
-<circle cx="96" cy="695" r="1.3" fill="#5c4a3a" stroke="none"/>
 <rect x="46" y="752" width="63" height="6" rx="2.5" fill="#d88f5a" stroke-width="0.8"/>
 <line x1="52" y1="755" x2="103" y2="755" stroke-width="0.35" opacity="0.4"/>
 <text x="55" y="770" font-size="10" fill="#5c4a3a" stroke="none">입구</text>
@@ -1413,7 +1448,7 @@
 <rect x="-5.6" y="-14" width="4.2" height="7.4" rx="2.1" fill="#1d2f6b"/>
 <rect x="1.4" y="-14" width="4.2" height="7.4" rx="2.1" fill="#1d2f6b"/>
 <path d="M -4.2 -4.6 Q 0 -1.6 4.2 -4.6" fill="none" stroke="#1d2f6b" stroke-width="1.2" stroke-linecap="round"/>
-<path d="M -12.5 -19.5 C -9.5 -22 -3 -22.6 1 -22.6" fill="none" stroke="#eef6ef" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
+<path d="M -10.5 -17.8 C -8.5 -20.2 -3.5 -20.6 0.5 -20.6" fill="none" stroke="#eef6ef" stroke-width="1.5" stroke-linecap="round" opacity="0.9"/>
 <circle cx="0" cy="6" r="1.7" fill="#7fd4ea" stroke="#5c4a3a" stroke-width="0.5"/>
 </g>
 </g>
@@ -2190,6 +2225,39 @@
 
   var staffMap = {};
   staff.forEach(function(s){ staffMap[s.id] = s; });
+
+  // ===== 입구 자동문: 캐릭터가 입구 근처에 있으면 열린다 =====
+  var doorIsOpen = false;
+  function setEntranceDoor(open){
+    if(open === doorIsOpen) return;
+    var top = byId('doorLeafLeft'), bot = byId('doorLeafRight'), lamp = byId('doorSensorLamp');
+    if(!top || !bot) return;
+    doorIsOpen = open;
+    if(open){ top.classList.add('open'); bot.classList.add('open'); }
+    else { top.classList.remove('open'); bot.classList.remove('open'); }
+    if(lamp) lamp.setAttribute('fill', open ? '#7bc47f' : '#c9c2b4');
+  }
+  // 애니메이션 중에도 실제 위치를 읽기 위해 계산된 transform 행렬에서 좌표를 뽑는다
+  function currentXY(el){
+    var t = window.getComputedStyle(el).transform;
+    if(!t || t === 'none') return null;
+    var m = t.match(/^matrix\(([^)]+)\)$/);
+    if(m){ var p = m[1].split(','); return { x:parseFloat(p[4]), y:parseFloat(p[5]) }; }
+    var m3 = t.match(/^matrix3d\(([^)]+)\)$/);
+    if(m3){ var q = m3[1].split(','); return { x:parseFloat(q[12]), y:parseFloat(q[13]) }; }
+    return null;
+  }
+  function watchEntranceDoor(){
+    var nodes = document.querySelectorAll('.office-char.present');
+    var near = false;
+    for(var i=0; i<nodes.length; i++){
+      var p = currentXY(nodes[i]);
+      if(!p) continue;
+      if(Math.abs(p.x - 78) < 62 && Math.abs(p.y - 700) < 68){ near = true; break; }
+    }
+    setEntranceDoor(near);
+  }
+  setInterval(watchEntranceDoor, 250);
 
   // ===== 날짜 유틸 / 공휴일 / 랜덤 연차 =====
   function pad2(n){ return n<10 ? '0'+n : ''+n; }
@@ -3525,6 +3593,7 @@
 
     var poolMt = staff.filter(function(s){
       if(isGoneForDay(s.id) || isBusy(s.id)) return false;
+      if(!charEl(s.id) || !charEl(s.id).classList.contains('present')) return false;
       // 야근모드일 때는 야근으로 남은 인원만 회의에 참여한다
       if(overtimeMode) return !!overtimeStaffIds[s.id];
       return true;
@@ -4155,6 +4224,137 @@
     });
   }
 
+  // ===== 응접 공간: 업체직원 방문 접대 =====
+  var RECEPTION_SOFA_LEFT  = { x:225, y:196 };  // 업체직원 자리
+  var RECEPTION_SOFA_RIGHT = { x:265, y:196 };  // 홍보팀장 자리
+  var RECEPTION_COOLER     = { x:348, y:214 };  // 정수기 앞
+  var receptionBusy = false;
+
+  // 손에 든 물잔 표시 (캐릭터 그룹에 붙였다 떼는 작은 소품)
+  function setHeldGlasses(id, count){
+    var el = charEl(id);
+    if(!el) return;
+    var old = el.querySelector('.heldGlasses');
+    if(old) old.remove();
+    if(!count) return;
+    var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','heldGlasses');
+    var svg = '';
+    for(var i=0; i<count; i++){
+      var gx = (count === 1) ? 11 : (i === 0 ? -12 : 12);
+      svg += '<g transform="translate('+gx+',-6)">'
+           + '<rect x="-2.6" y="-5" width="5.2" height="7.5" rx="1" fill="#dff0f5" stroke="#5c4a3a" stroke-width="0.6"/>'
+           + '<rect x="-2" y="-2.6" width="4" height="4.6" rx="0.6" fill="#8fc9dd" stroke="none"/>'
+           + '</g>';
+    }
+    g.innerHTML = svg;
+    el.appendChild(g);
+  }
+
+  function startReceptionEvent(){
+    if(receptionBusy){ toast('이미 응접 공간에 손님이 계세요'); return; }
+    if(visitorEventActive){ toast('다른 방문객 응대가 진행 중이에요'); return; }
+
+    var pr = staffMap['yoohongbo'];   // 홍보팀장
+    if(!pr || isGoneForDay(pr.id) || isBusy(pr.id) || !charEl(pr.id) || !charEl(pr.id).classList.contains('present')){
+      toast('홍보팀장이 자리에 없어 손님을 맞을 수 없어요');
+      return;
+    }
+    if(overtimeMode && !overtimeStaffIds[pr.id]){
+      toast('홍보팀장이 야근 중이 아니라 손님을 맞을 수 없어요');
+      return;
+    }
+
+    receptionBusy = true;
+    visitorEventActive = true;
+    var guest = { id: visitorDefs.vendor.id };
+
+    ensureStaffOnStage(pr.id);
+    markBusy(pr.id);
+    raiseChar(pr);
+
+    if(typeof logDayEvent === 'function') logDayEvent('🤝', '업체직원 응접');
+
+    // 1) 입구 등장
+    setPos(guest.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(guest.id).classList.add('present');
+    var t = 900;
+    setTimeout(function(){ showBubble(guest, '오늘 일정이 있어요'); }, t);
+
+    // 2) 홍보팀장이 맞이한다
+    t += 3400;
+    setTimeout(function(){ showBubble(pr, '따라오세요'); }, t);
+
+    // 3) 함께 응접실로 — 손님은 소파 왼쪽, 팀장은 정수기로
+    t += 3200;
+    setTimeout(function(){
+      clearBubble(guest.id);
+      clearBubble(pr.id);
+      travelTo(guest, RECEPTION_SOFA_LEFT, 44);
+      travelTo(pr, RECEPTION_COOLER, 46);
+    }, t);
+
+    // 4) 정수기 앞에서 물 두 잔을 든다
+    t += 11000;
+    setTimeout(function(){ setHeldGlasses(pr.id, 2); }, t);
+
+    // 5) 물을 들고 소파 오른쪽으로
+    t += 1800;
+    setTimeout(function(){ travelTo(pr, RECEPTION_SOFA_RIGHT, 40); }, t);
+
+    // 6) 한 잔을 손님에게 건넨다
+    t += 5200;
+    setTimeout(function(){
+      setHeldGlasses(pr.id, 1);
+      setHeldGlasses(guest.id, 1);
+    }, t);
+
+    // 7) 대화 — 천천히 주고받는다
+    t += 2600;
+    setTimeout(function(){ showBubble(guest, '홍보는 이렇게..'); }, t);
+    t += 4200;
+    setTimeout(function(){ showBubble(pr, '좋은 아이디어예요!'); }, t);
+    t += 4200;
+    setTimeout(function(){ showBubble(guest, '다들 잘 지내시죠?'); }, t);
+    t += 4200;
+    setTimeout(function(){ showBubble(pr, '그럼요. 고마워요'); }, t);
+    t += 4200;
+    setTimeout(function(){ showBubble(guest, '그럼 전 이만..'); }, t);
+    t += 4200;
+    setTimeout(function(){ showBubble(pr, '배웅할게요'); }, t);
+
+    // 8) 잔을 내려놓고 함께 입구로 (속도를 달리해 나란히 걷지 않게)
+    t += 3600;
+    setTimeout(function(){
+      clearBubble(guest.id);
+      clearBubble(pr.id);
+      setHeldGlasses(pr.id, 0);
+      setHeldGlasses(guest.id, 0);
+      travelTo(guest, VISITOR_ENTRANCE, 40);
+      setTimeout(function(){
+        travelTo(pr, { x:VISITOR_ENTRANCE.x + 34, y:VISITOR_ENTRANCE.y }, 34);
+      }, 900);
+    }, t);
+
+    // 9) 문 앞 인사 후 퇴장
+    t += 16000;
+    setTimeout(function(){ showBubble(guest, '가보겠습니다'); }, t);
+
+    t += 3400;
+    setTimeout(function(){
+      clearBubble(guest.id);
+      charEl(guest.id).classList.remove('present');
+      setPos(guest.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+      travelTo(pr, { x:pr.x, y:pr.y }, 46, function(){
+        lowerChar(pr);
+        if(wanderPos) wanderPos[pr.id] = { x:pr.x, y:pr.y };
+      });
+      clearBusy(pr.id);
+      receptionBusy = false;
+      visitorEventActive = false;
+    }, t);
+  }
+
   // ===== 아트코너: 랜덤 1명이 조각품 아래에서 영감을 받는다 =====
   var ART_SPOT = { x:441, y:437 };
   var artBusy = false;
@@ -4286,6 +4486,9 @@
       } else if(place === 'stock'){
         placeOverlay.classList.remove('show');
         startStockEvent();
+      } else if(place === 'guest'){
+        placeOverlay.classList.remove('show');
+        startReceptionEvent();
       } else {
         toast('준비 중인 공간입니다');
       }
