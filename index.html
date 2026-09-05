@@ -4719,7 +4719,7 @@
 
     setTimeout(function(){
       var s2 = staffMap[target.id];
-      var reply = pickContextualReply(body, { isBoss: target.isBoss, personality: s2 ? s2.personality : null });
+      var reply = pickContextualReply(body, { isBoss: target.isBoss, personality: s2 ? s2.personality : null, key: 'note:'+target.id });
       pushNote(NOTES_INBOX_KEY, { id:'n'+(Date.now()+1), from:target.name, body:reply, ts:Date.now(), read:false });
       updateMsgBadge();
       toast(target.name+'에게서 쪽지가 도착했습니다');
@@ -5086,71 +5086,113 @@
   };
   // 사장님은 실무 논의엔 끼지 않고, 답할 땐 부하직원에게 정중하게 말하는 어투를 씀
   var bossReplyLines = ['네, 확인해볼게요.', '수고 많아요.', '잘 부탁해요.', '좋은 생각이네요, 진행해봐요.', '고생 많습니다.', '알겠어요, 챙겨볼게요.'];
-  function replyLineFor(personality){
+  function replyPoolFor(personality){
     var pool = personalityReplyLines[personality];
-    var all = pool ? pool.concat(chatReplyLines) : chatReplyLines;
-    return all[Math.floor(Math.random()*all.length)];
+    return pool ? pool.concat(chatReplyLines) : chatReplyLines;
   }
 
-  // ===== 문맥(키워드) 기반 답장: 사용자가 보낸 문장 내용에 따라 다르게 반응 =====
+  // ===== 문맥 기반 답장 =====
+  // kind — social: 그 말 자체가 용건(인사/사과/감사 등), topic: 화제, affect: 감정 색
+  // flip — 부정어가 붙었을 때 대신 쓸 카테고리
   var replyCategories = [
-    { test: /안녕|하이|왔어|굿모닝|출근했/,
+    { mood:'greeting', kind:'social', test: /안녕|하이|굿모닝|출근했|오셨|(^|\s)왔어/,
       staff: ['어서오세요~', '오셨네요!', '안녕하세요 :)', '좋은 아침이에요~'],
       boss:  ['어서와요.', '오늘도 좋은 하루예요.', '반갑습니다.'] },
-    { test: /퇴근|안녕히|바이|수고하세요|들어가|가볼게/,
+    { mood:'farewell', kind:'social', test: /퇴근|안녕히|바이|수고하세요|들어가|가볼게/,
       staff: ['수고하셨어요!', '내일 봬요~', '조심히 들어가세요', '오늘도 고생했어요'],
       boss:  ['수고 많았어요.', '내일 봅시다.', '조심히 들어가요.'] },
-    { test: /커피|탕비실|쉬자|휴식|간식/,
-      staff: ['좋아요, 잠깐 쉬어요!', '탕비실에서 만나요 ㅎㅎ', '커피 콜!', '저도 당 떨어졌어요'],
-      boss:  ['다들 잠깐 쉬었다 해요.', '적당히 쉬어가면서 해요.'] },
-    { test: /힘들|피곤|바쁘|야근|지쳐/,
-      staff: ['오늘 좀 빡세긴 하죠 ㅠㅠ', '조금만 더 힘내요!', '고생 많으세요', '저도 좀 지치네요'],
-      boss:  ['고생 많아요, 무리하지 말아요.', '너무 무리하진 마세요.'] },
-    { test: /프로젝트|업무|작업|디자인|마감|기획|보고서/,
-      staff: ['그거 저도 확인해볼게요', '진행상황 공유할게요', '오늘 안에 마무리해볼게요', '체크해서 말씀드릴게요'],
-      boss:  ['잘 진행되고 있는지 챙겨볼게요.', '좋습니다, 계속 진행해봐요.'] },
-    { test: /고마워|감사|수고했|잘했어|최고/,
-      staff: ['별말씀을요 ㅎㅎ', '저도 감사해요!', '헤헤 감사합니다', '아니에요~'],
-      boss:  ['별말씀을요.', '늘 애써줘서 고마워요.'] },
-    { test: /밥|점심|먹었|배고파|저녁/,
-      staff: ['저도 배고파요 ㅋㅋ', '점심 뭐 드실 거예요?', '아직이요! 뭐 맛있는 거 없나', '먹었어요~ 든든하네요'],
-      boss:  ['식사들 챙겨 드세요.', '점심 맛있게 드셨어요?'] },
-    { test: /날씨|비\s|맑|흐려|눈/,
-      staff: ['오늘 날씨 어때요?', '창밖 보니 그러네요', '날씨 좋으면 기분도 좋죠'],
-      boss:  ['날씨가 그렇군요.'] }
-  ];
-  var questionTest = /[?？]|왜|언제|어디|몇\s?시|어떻게|뭐(해|야|예요|임)?\s*$/;
-  var questionReplies = {
-    staff: ['음 글쎄요 ㅎㅎ', '왜 궁금하세요?', '저도 잘 모르겠어요 ㅋㅋ', '좋은 질문이네요!'],
-    boss:  ['글쎄요, 한번 살펴볼게요.', '좋은 질문이네요.']
-  };
-  // ===== 무드 감지: 문장 분위기를 읽어 반응 결정 =====
-  var moodCategories = [
-    { mood:'apology', test: /죄송|미안|사과|잘못했|실수했/,
+    { mood:'apology', kind:'social', test: /죄송|미안|사과|잘못했|실수했/,
       staff: ['괜찮아요~', '그럴 수도 있죠!', '아니에요, 신경 쓰지 마세요', '저도 자주 그래요 ㅎㅎ'],
       boss:  ['괜찮습니다.', '그럴 수 있어요, 다음에 잘하면 돼요.'] },
-    { mood:'urging', test: /아직|언제까지|빨리|서둘|늦어|왜 안|아직도/,
-      staff: ['아 지금 바로 볼게요!', '조금만 기다려주세요 ㅠㅠ', '거의 다 됐어요!', '앗 확인하겠습니다'],
-      boss:  ['확인해보고 알려줄게요.', '조금만 기다려봅시다.'] },
-    { mood:'praise', test: /고마워|감사|수고했|잘했|최고|대단|멋지|훌륭/,
+    { mood:'praise', kind:'social', test: /고마워|감사|수고했|잘했|최고|대단|멋지|훌륭/,
       staff: ['별말씀을요 ㅎㅎ', '저도 감사해요!', '헤헤 감사합니다', '아니에요~ 다 같이 한 건데요'],
       boss:  ['별말씀을요.', '늘 애써줘서 고마워요.'] },
-    { mood:'negative', test: /싫|힘들|피곤|지쳐|짜증|화나|우울|못하겠|어렵/,
-      staff: ['에구 ㅠㅠ 고생 많으세요', '조금만 더 힘내요!', '저도 그래요.. 같이 힘내요', '잠깐 쉬었다 해요'],
-      boss:  ['고생 많아요, 무리하지 말아요.', '너무 무리하진 마세요.'] },
-    { mood:'positive', test: /좋[아다]|재밌|신난|기분\s?좋|행복|만족|성공|해냈/,
-      staff: ['오 좋네요!', '저도 기분 좋아지는데요 ㅎㅎ', '완전 공감이요!', '좋습니다~'],
-      boss:  ['좋은 소식이네요.', '다행입니다.'] },
-    { mood:'agree', test: /맞아|그러게|동의|그렇죠|인정|ㅇㅈ/,
+    { mood:'urging', kind:'social', test: /아직|언제까지|빨리|서둘|늦어|왜 안|아직도/,
+      staff: ['아 지금 바로 볼게요!', '조금만 기다려주세요 ㅠㅠ', '거의 다 됐어요!', '앗 확인하겠습니다'],
+      boss:  ['확인해보고 알려줄게요.', '조금만 기다려봅시다.'] },
+    { mood:'agree', kind:'social', test: /맞아|맞네|그러게|동의|그렇죠|인정|ㅇㅈ/,
       staff: ['그쵸 그쵸', '역시 통하네요 ㅎㅎ', '저도 같은 생각이에요', '맞아요 맞아요'],
       boss:  ['같은 생각입니다.', '동의합니다.'] },
-    { mood:'greeting', test: /안녕|하이|왔어|굿모닝|출근했/,
-      staff: ['어서오세요~', '오셨네요!', '안녕하세요 :)', '좋은 아침이에요~'],
-      boss:  ['어서와요.', '오늘도 좋은 하루예요.', '반갑습니다.'] },
-    { mood:'farewell', test: /퇴근|안녕히|바이|수고하세요|들어가|가볼게/,
-      staff: ['수고하셨어요!', '내일 봬요~', '조심히 들어가세요', '오늘도 고생했어요'],
-      boss:  ['수고 많았어요.', '내일 봅시다.', '조심히 들어가요.'] }
+    // ---- 화제 ----
+    { mood:'coffee', kind:'topic', test: /커피|탕비실|쉬자|휴식|간식|차 한잔|음료/,
+      staff: ['좋아요, 잠깐 쉬어요!', '탕비실에서 만나요 ㅎㅎ', '커피 콜!', '저도 당 떨어졌어요'],
+      boss:  ['다들 잠깐 쉬었다 해요.', '적당히 쉬어가면서 해요.'] },
+    { mood:'work', kind:'topic', test: /프로젝트|업무|작업|디자인|마감|기획|보고서|시안|샘플|납품/,
+      staff: ['그거 저도 확인해볼게요', '진행상황 공유할게요', '오늘 안에 마무리해볼게요', '체크해서 말씀드릴게요'],
+      boss:  ['잘 진행되고 있는지 챙겨볼게요.', '좋습니다, 계속 진행해봐요.'] },
+    { mood:'meal', kind:'topic', test: /밥|점심|먹었|배고파|저녁|메뉴|식사/,
+      staff: ['저도 배고파요 ㅋㅋ', '점심 뭐 드실 거예요?', '아직이요! 뭐 맛있는 거 없나', '먹었어요~ 든든하네요'],
+      boss:  ['식사들 챙겨 드세요.', '점심 맛있게 드셨어요?'] },
+    { mood:'weather', kind:'topic', test: /날씨|비\s|비가|맑|흐려|흐린|눈이|더워|추워/,
+      staff: ['오늘 날씨 어때요?', '창밖 보니 그러네요', '날씨 좋으면 기분도 좋죠'],
+      boss:  ['날씨가 그렇군요.'] },
+    // ---- 감정 색 ----
+    { mood:'negative', kind:'affect', flip:'positive', test: /싫|힘들|힘드|힘든|피곤|지쳐|지치|짜증|화나|우울|못하겠|어렵|어려워|바쁘|바빠|야근/,
+      staff: ['에구 ㅠㅠ 고생 많으세요', '조금만 더 힘내요!', '저도 그래요.. 같이 힘내요', '잠깐 쉬었다 해요'],
+      strong:['헉 많이 힘드신가봐요 ㅠㅠ', '괜찮으세요? 잠깐 쉬셔야 할 것 같은데요', '아이고.. 오늘 진짜 고생이 많으시네요'],
+      boss:  ['고생 많아요, 무리하지 말아요.', '너무 무리하진 마세요.'],
+      strongBoss:['많이 힘든가 보네요. 오늘은 일찍 들어가요.', '무리하지 말고 좀 쉬어요.'] },
+    { mood:'positive', kind:'affect', flip:'negative', test: /좋[아다네은]|재밌|재미있|신난|기분\s?좋|행복|만족|성공|해냈|괜찮|잘\s?나왔|잘\s?됐|잘됐|맘에 들|마음에 들/,
+      staff: ['오 좋네요!', '저도 기분 좋아지는데요 ㅎㅎ', '완전 공감이요!', '좋습니다~'],
+      strong:['우와 진짜요? 완전 좋네요!', '오오 축하드려요!!', '와 저까지 기분 좋아지는데요 ㅎㅎ'],
+      boss:  ['좋은 소식이네요.', '다행입니다.'],
+      strongBoss:['정말 좋은 소식이네요. 축하합니다.', '아주 잘됐습니다.'] }
   ];
+  function categoryByMood(mood){
+    for(var i=0; i<replyCategories.length; i++){
+      if(replyCategories[i].mood === mood) return replyCategories[i];
+    }
+    return null;
+  }
+  // 화제가 이겼는데 감정 신호도 함께 잡혔을 때 앞에 붙이는 짧은 감탄사
+  var moodOpeners = {
+    negative: ['에구,', '아이고,', '저런,'],
+    positive: ['오,', '좋네요,', '오 그래요?']
+  };
+
+  // "안 힘들어요", "별로 안 좋아요", "어렵지 않아요" 처럼 감정 방향이 뒤집히는 경우
+  // '안녕'이 걸리지 않도록 '안/못' 뒤에는 반드시 공백을 요구한다
+  var NEGATION_TEST = /(^|\s)(안|못)\s+|지\s?않|진\s?않|하나도|별로|전혀|아니(요|에요|야|다|었)/;
+  // 감정의 세기 — 붙으면 감정이 화제를 이긴다
+  var INTENSITY_TEST = /너무|진짜|완전|엄청|정말|ㅠㅠ|ㅜㅜ|!!|ㅋㅋㅋ/;
+
+  // ===== 화행(話行) 감지: 문장 끝맺음으로 무엇을 하려는 말인지 읽는다 =====
+  // 내용 키워드는 끝이 없지만 한국어 어미는 수가 정해져 있어 훨씬 넓게 덮인다
+  var speechActs = [
+    { act:'propose', test: /할까요|할까\?|합시다|하자|할래요|갈까|먹을까|어때요\?/ },
+    { act:'request', test: /주세요|줄래|주실|부탁|해줘|해 줘|해주시|가능할까|좀\s/ },
+    { act:'report',  test: /했어요|했습니다|끝냈|완료|보냈|올렸|됐어요|됐습니다|했음|마쳤|나왔어요|나왔습니다/ },
+    { act:'promise', test: /할게|하겠|볼게|드릴게|처리할/ },
+    { act:'question',test: /[?？]|까요|나요|는지|왜|언제|어디|몇\s?시|어떻게|누가|무슨|뭐(예요|야|임|죠|해)/ },
+    { act:'remark',  test: /네요|군요|구나|더라|던데|겠다|잖아|더군/ }
+  ];
+  function detectAct(text){
+    for(var i=0; i<speechActs.length; i++){
+      if(speechActs[i].test.test(text)) return speechActs[i].act;
+    }
+    return null;
+  }
+  // 화행이 특정 카테고리 점수를 밀어준다
+  var ACT_BOOST = {
+    request: { urging:1.5, work:0.6 },
+    report:  { work:0.8 },
+    propose: { coffee:0.6, meal:0.6 }
+  };
+  // 카테고리가 하나도 안 걸렸을 때, 화행만으로 답한다 (등록할 키워드 0개)
+  var actReplies = {
+    request:  { staff:['넵 바로 해볼게요!', '알겠습니다, 처리할게요', '그거 제가 맡을게요', '넵 확인해서 알려드릴게요'],
+                boss: ['알겠어요, 챙겨볼게요.', '그렇게 해봅시다.'] },
+    question: { staff:['음 글쎄요 ㅎㅎ', '왜 궁금하세요?', '저도 잘 모르겠어요 ㅋㅋ', '좋은 질문이네요!'],
+                boss: ['글쎄요, 한번 살펴볼게요.', '좋은 질문이네요.'] },
+    promise:  { staff:['넵 믿고 있을게요~', '부탁드려요!', '좋아요, 기다릴게요'],
+                boss: ['그럼 부탁해요.', '잘 부탁합니다.'] },
+    report:   { staff:['오 벌써요? 빠르네요', '확인했습니다!', '수고하셨어요~', '넵 잘 받았어요'],
+                boss: ['수고했어요.', '확인해볼게요.'] },
+    propose:  { staff:['좋아요 콜!', '그럴까요?', '저도 좋습니다~', '오 괜찮은데요?'],
+                boss: ['그럽시다.', '좋은 생각이네요.'] },
+    remark:   { staff:['그러게요 ㅎㅎ', '그렇네요', '저도 그렇게 느꼈어요', '음.. 그러네요'],
+                boss: ['그렇군요.', '그러게 말이에요.'] }
+  };
 
   // 성격별 말투 색: 무드 답변 뒤에 가끔 덧붙는다
   var personalityFlavor = {
@@ -5178,40 +5220,171 @@
                 boss:['잘 진행해봐요.'] }
   };
 
+  // ===== 짧은 후속 발화: "응", "왜?", "ㅋㅋ" 처럼 그 자체로는 정보가 없는 말 =====
+  // 직전에 무슨 이야기를 하고 있었는지 기억해뒀다가 그 맥락으로 이어 답한다
+  var SHORT_FOLLOWUP = /^(응+|어+|넹|넵+|네+|ㅇㅇ+|ㄴㄴ|ㅋ+|ㅎ+|ㅠ+|그래|그치|그쵸|왜|헐|오+|음+|아+|그래서|진짜|정말|맞아|ㅇㅋ|오케이|ok)(요)?[\s?!.~ㅋㅎ]*$/i;
+  var chatContext = {};   // 채팅방 key -> { mood, ts }
+  var CONTEXT_TTL = 5 * 60 * 1000;
+  var followupLines = {
+    negative: ['그쵸 ㅠㅠ', '그러니까요..', '오늘만 버텨봐요', '커피라도 한 잔 하실래요?'],
+    positive: ['그쵸 그쵸 ㅎㅎ', '저도요~', '오늘 좀 잘 풀리네요'],
+    work:     ['그거 오늘 안에 될 것 같아요', '진행되면 바로 알려드릴게요', '자료는 정리해두고 있어요'],
+    coffee:   ['가실 때 불러주세요~', '저는 아메리카노요 ㅎㅎ', '지금 갈까요?'],
+    meal:     ['오늘은 뭐 드실 거예요?', '저는 아무거나 좋아요 ㅋㅋ', '근처에 새로 생긴 데 있대요'],
+    weather:  ['내일은 좀 낫다던데요', '이런 날은 나가기 싫어요 ㅎㅎ'],
+    greeting: ['오늘 하루도 잘 부탁드려요~', '커피 한 잔 하고 시작할까요?'],
+    farewell: ['넵 조심히 들어가세요~', '내일 봬요!'],
+    praise:   ['에이 ㅎㅎ', '앞으로도 잘해볼게요'],
+    apology:  ['진짜 괜찮아요~', '신경 쓰지 마세요'],
+    urging:   ['거의 다 됐어요!', '금방 보내드릴게요'],
+    agree:    ['그쵸 ㅎㅎ', '역시 통하네요']
+  };
+  var followupGeneric = { staff:['ㅋㅋ 네', '그쵸~', '음 그러게요', '넵넵'], boss:['그렇군요.', '네.'] };
+
+  // ===== 명사 되받기: 아무 카테고리에도 안 걸렸을 때 상대 문장의 낱말을 받아친다 =====
+  // 등록할 키워드가 0개인데도 알아들은 것처럼 들린다
+  var ECHO_STOPWORDS = ['그리고','하지만','그래서','그런데','근데','저기','혹시','약간','조금','제가','우리','저희','오늘','내일','어제','지금','아까','이거','그거','저거','뭔가','정말','진짜','너무','완전'];
+  var ECHO_PARTICLES = ['이랑','에서','으로','부터','까지','한테','에게','보다','에','은','는','이','가','을','를','로','도','만','과','와','랑','의','께'];
+  var echoTemplates = ['%s 말씀이시죠?', '아 %s이요? 저도 궁금했어요', '%s 얘기 나오니까 생각났는데요~', '%s 쪽은 제가 한번 볼게요'];
+  function nounEcho(text){
+    var tokens = text.trim().split(/\s+/).filter(function(t){ return /^[가-힣]+$/.test(t); });
+    var best = null;
+    tokens.forEach(function(t){
+      var w = t;
+      for(var i=0; i<ECHO_PARTICLES.length; i++){
+        var pt = ECHO_PARTICLES[i];
+        if(w.length - pt.length >= 2 && w.slice(-pt.length) === pt){ w = w.slice(0, -pt.length); break; }
+      }
+      if(w.length < 2 || w.length > 5) return;
+      if(ECHO_STOPWORDS.indexOf(w) !== -1) return;
+      if(!best || w.length > best.length) best = w;
+    });
+    if(!best) return null;
+    var tpl = echoTemplates[Math.floor(Math.random()*echoTemplates.length)];
+    return tpl.replace('%s', best);
+  }
+
+  // 채팅방별로 최근에 쓴 답을 기억해 같은 말이 연달아 나오지 않게 한다
+  var recentReplies = {};
+  function rememberReply(key, line){
+    if(!key || !line) return;
+    var seen = recentReplies[key] || [];
+    seen.push(line);
+    while(seen.length > 3) seen.shift();
+    recentReplies[key] = seen;
+  }
+
+  // 정규식이 몇 군데 걸렸는지 센다 (여러 번 걸릴수록 그 카테고리가 확실해진다)
+  function countHits(re, text){
+    if(!re._g) re._g = new RegExp(re.source, 'g');
+    var g = re._g;
+    g.lastIndex = 0;
+    var n = 0, m;
+    while((m = g.exec(text)) !== null){
+      n++;
+      if(m.index === g.lastIndex) g.lastIndex++;
+      if(n >= 5) break;
+    }
+    return n;
+  }
+
+  var KIND_WEIGHT = { social:3.0, topic:2.0, affect:1.2 };
+  var SCORE_THRESHOLD = 1.0;
+
   function pickContextualReply(text, opts){
     opts = opts || {};
     var isBoss = !!opts.isBoss;
+    var key = opts.key || null;
     var pick = function(arr){ return arr[Math.floor(Math.random()*arr.length)]; };
+    // 최근 3개에 없는 후보를 우선 고르고, 전부 겹치면 그냥 아무거나
+    var pickFresh = function(arr){
+      if(!arr || !arr.length) return null;
+      var seen = (key && recentReplies[key]) || [];
+      var fresh = arr.filter(function(v){ return seen.indexOf(v) === -1; });
+      return pick(fresh.length ? fresh : arr);
+    };
+    // base(원본 후보)만 기억해두고, 앞뒤 장식은 그 뒤에 붙인다.
+    // mood를 함께 넘기면 다음 턴의 짧은 대꾸를 위해 맥락으로 저장된다.
+    var finish = function(base, allowFlavor, opener, mood){
+      if(!base) return base;
+      rememberReply(key, base);
+      if(key) chatContext[key] = { mood: mood || null, ts: Date.now() };
+      var line = opener ? (opener + ' ' + base) : base;
+      var fl = allowFlavor && !isBoss && personalityFlavor[opts.personality];
+      if(fl && Math.random() < 0.3) line += ' ' + pick(fl);
+      return line;
+    };
 
-    // 1) 무드 감지 우선
-    for(var i=0; i<moodCategories.length; i++){
-      var mc = moodCategories[i];
-      if(mc.test.test(text)){
-        var base = pick(isBoss ? mc.boss : mc.staff);
-        // 성격 말투를 가끔(35%) 덧붙여 같은 무드라도 사람마다 다르게 들리게 한다
-        var fl = !isBoss && personalityFlavor[opts.personality];
-        if(fl && Math.random() < 0.35) base += ' ' + pick(fl);
-        return base;
+    var trimmed = (text || '').trim();
+
+    // 0) "응", "왜?", "ㅋㅋ" 같은 짧은 대꾸는 직전 화제를 이어서 답한다
+    var ctx = key ? chatContext[key] : null;
+    if(trimmed.length <= 6 && SHORT_FOLLOWUP.test(trimmed) && ctx && (Date.now() - ctx.ts) < CONTEXT_TTL){
+      var fpool = (!isBoss && ctx.mood && followupLines[ctx.mood])
+                  || (isBoss ? followupGeneric.boss : followupGeneric.staff);
+      return finish(pickFresh(fpool), false, null, ctx.mood);
+    }
+
+    var negated = NEGATION_TEST.test(text);
+    var intense = INTENSITY_TEST.test(text);
+    var act = detectAct(text);
+    var boosts = (act && ACT_BOOST[act]) || null;
+
+    // 1) 모든 카테고리에 점수를 매기고 최고점을 고른다 (배열 순서에 좌우되지 않음)
+    var best = null, bestScore = 0;
+    var bestAffect = null, bestAffectScore = 0;
+    for(var i=0; i<replyCategories.length; i++){
+      var mc = replyCategories[i];
+      var hits = countHits(mc.test, text);
+      if(!hits) continue;
+      var cat = mc;
+      if(negated && mc.flip){
+        var alt = categoryByMood(mc.flip);
+        if(alt) cat = alt;
       }
+      var sc = KIND_WEIGHT[mc.kind] * (1 + 0.25 * (hits - 1));
+      if(mc.kind === 'affect' && intense) sc *= 2;      // 강한 감정은 화제를 이긴다
+      if(boosts && boosts[cat.mood]) sc += boosts[cat.mood];
+      if(mc.kind === 'affect' && sc > bestAffectScore){ bestAffectScore = sc; bestAffect = cat; }
+      if(sc > bestScore){ bestScore = sc; best = cat; }
     }
 
-    // 2) 주제 키워드
-    for(var j=0; j<replyCategories.length; j++){
-      var cat = replyCategories[j];
-      if(cat.test.test(text)) return pick(isBoss ? cat.boss : cat.staff);
+    if(best && bestScore >= SCORE_THRESHOLD){
+      // 감정이 강하게 실린 말에는 더 크게 반응한다
+      var pool = isBoss ? best.boss : best.staff;
+      if(intense && best.kind === 'affect'){
+        var strongPool = isBoss ? best.strongBoss : best.strong;
+        if(strongPool && strongPool.length) pool = strongPool;
+      }
+      // 화제가 이겼는데 감정도 함께 읽혔다면 짧은 감탄사를 앞에 붙인다
+      var opener = null;
+      if(best.kind === 'topic' && bestAffect && bestAffect !== best
+         && moodOpeners[bestAffect.mood] && Math.random() < 0.7){
+        opener = pick(moodOpeners[bestAffect.mood]);
+      }
+      return finish(pickFresh(pool), true, opener, best.mood);
     }
 
-    // 3) 질문
-    if(questionTest.test(text)) return pick(isBoss ? questionReplies.boss : questionReplies.staff);
+    // 2) 키워드가 하나도 안 걸리면 화행만으로 답한다
+    if(act && actReplies[act]){
+      var apool = isBoss ? actReplies[act].boss : actReplies[act].staff;
+      if(apool && apool.length) return finish(pickFresh(apool), false, null, ctx && ctx.mood);
+    }
 
-    // 4) 매칭이 없으면 시간대를 반영한 잡담으로 (점심·퇴근·야근 등)
+    // 3) 그래도 없으면 상대 문장의 낱말을 되받아 물어본다
+    if(!isBoss && trimmed.length >= 5 && Math.random() < 0.5){
+      var echo = nounEcho(trimmed);
+      if(echo) return finish(echo, false, null, ctx && ctx.mood);
+    }
+
+    // 4) 시간대를 반영한 잡담으로 (점심·퇴근·야근 등)
     var tod = currentAmbientCategory();
     if(tod && timeOfDayLines[tod] && Math.random() < 0.55){
       var tpool = isBoss ? timeOfDayLines[tod].boss : timeOfDayLines[tod].staff;
-      if(tpool && tpool.length) return pick(tpool);
+      if(tpool && tpool.length) return finish(pickFresh(tpool), false, null, ctx && ctx.mood);
     }
 
-    return isBoss ? pick(bossReplyLines) : replyLineFor(opts.personality);
+    return finish(pickFresh(isBoss ? bossReplyLines : replyPoolFor(opts.personality)), false, null, ctx && ctx.mood);
   }
 
   // 전체채팅에서 "고부장 이것 좀" 처럼 이름·직책을 부르면 그 사람이 답한다
@@ -5250,7 +5423,7 @@
       var replier2 = mentionedInTeam || (members.length ? members[Math.floor(Math.random()*members.length)] : staff[Math.floor(Math.random()*staff.length)]);
       var pal2 = kindPalette[replier2.palKey] || kindPalette[replier2.kind] || kindPalette.cat;
       setTimeout(function(){
-        var reply = pickContextualReply(text, { personality: replier2.personality });
+        var reply = pickContextualReply(text, { personality: replier2.personality, key: key });
         pushChat(key, { from:replier2.name, body:reply, ts:Date.now(), mine:false, avatar:pal2.base });
         if(chatWindowOverlay.classList.contains('show') && currentChatTarget && currentChatTarget.id===target.id) renderChatWindow();
         updateMsgBadge();
@@ -5260,7 +5433,7 @@
       setTimeout(function(){
         // 사장님은 정해진 다섯 질문에 정해진 답을 한다
         var reply = (target.isBoss && bossScriptedAnswer(text))
-          || pickContextualReply(text, { isBoss: target.isBoss, personality: staffObj ? staffObj.personality : null });
+          || pickContextualReply(text, { isBoss: target.isBoss, personality: staffObj ? staffObj.personality : null, key: key });
         pushChat(key, { from:target.name, body:reply, ts:Date.now(), mine:false, avatar:target.avatar });
         if(chatWindowOverlay.classList.contains('show') && currentChatTarget && currentChatTarget.id===target.id) renderChatWindow();
         updateMsgBadge();
@@ -5273,7 +5446,7 @@
       var replier = (mentioned && !mentioned.isBoss) ? mentioned : pool[Math.floor(Math.random()*pool.length)];
       var replierStaff = staffMap[replier.id];
       setTimeout(function(){
-        var reply = pickContextualReply(text, { personality: replierStaff ? replierStaff.personality : null });
+        var reply = pickContextualReply(text, { personality: replierStaff ? replierStaff.personality : null, key: CHAT_GROUP_KEY });
         pushChat(CHAT_GROUP_KEY, { from:replier.name, body:reply, ts:Date.now(), mine:false, avatar:replier.avatar });
         if(chatWindowOverlay.classList.contains('show') && !currentChatTarget) renderChatWindow();
         updateMsgBadge();
