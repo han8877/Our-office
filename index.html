@@ -3146,6 +3146,12 @@
     devicePowerOn = !devicePowerOn;
     applyDevicePower();
     toast(devicePowerOn ? '기기 전원을 켰습니다' : '기기 전원을 껐습니다');
+    // 껐다 다시 켠 것을 한 번으로 센다
+    if(devicePowerOn){
+      lifetime.devToggles++;
+      saveLifetime();
+      maybeTriggerFixerVisit();
+    }
   });
   byId('hvacToggle').addEventListener('click', function(e){
     e.stopPropagation();
@@ -4302,12 +4308,16 @@
 
   // ===== 누적 카운터 (택배/회의/탕비실 방문 이벤트 트리거용) =====
   var LIFETIME_KEY = 'ggj_office_lifetime_v1';
-  var lifetime = { orders:0, meetings:0, breaks:0 };
+  // devToggles/arts/cleans는 수리기사·연주자·경비 방문 조건에 쓰인다
+  var lifetime = { orders:0, meetings:0, breaks:0, devToggles:0, arts:0, cleans:0 };
   try{
     var savedLife = localStorage.getItem(LIFETIME_KEY);
     if(savedLife){
       var parsedLife = JSON.parse(savedLife);
-      if(parsedLife) lifetime = { orders:parsedLife.orders||0, meetings:parsedLife.meetings||0, breaks:parsedLife.breaks||0 };
+      if(parsedLife) lifetime = {
+        orders:parsedLife.orders||0, meetings:parsedLife.meetings||0, breaks:parsedLife.breaks||0,
+        devToggles:parsedLife.devToggles||0, arts:parsedLife.arts||0, cleans:parsedLife.cleans||0
+      };
     }
   }catch(e){}
   function saveLifetime(){ try{ localStorage.setItem(LIFETIME_KEY, JSON.stringify(lifetime)); }catch(e){} }
@@ -4430,10 +4440,130 @@
     '</g>' + visitorNamePlate('업체 직원');
   }
 
+  // 방문객 공통 얼굴(눈·볼터치·코·입). 직원과 같은 이목구비를 쓴다
+  function visitorFace(){
+    return '<ellipse cx="-7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.6" stroke="none"/>'
+         + '<ellipse cx="7.5" cy="-27" rx="2.3" ry="1.6" fill="'+BLUSH+'" opacity="0.6" stroke="none"/>'
+         + '<circle cx="-4.7" cy="-31.4" r="2.0" fill="'+DARK+'" stroke="none"/><circle cx="4.7" cy="-31.4" r="2.0" fill="'+DARK+'" stroke="none"/>'
+         + '<circle cx="-4.0" cy="-32.2" r="0.7" fill="#fff" stroke="none"/><circle cx="5.4" cy="-32.2" r="0.7" fill="#fff" stroke="none"/>'
+         + '<ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="'+DARK+'" stroke="none"/>'
+         + '<path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.8" stroke-linecap="round"/>'
+         + '<path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.8" stroke-linecap="round"/>';
+  }
+  var VSIL = ' stroke="'+OUTLINE_COLOR+'" stroke-width="1" stroke-linejoin="round"';
+
+  // ---- 수리기사: 사슴, 회색 작업복과 야구모자, 네이비 공구박스 ----
+  function buildVisitorFixer(){
+    var fur = '#c49a6c', furL = '#e3c49b', suit = '#9aa0a6', suitD = '#83898f', cap = '#7e858c';
+    return '<g stroke="none">' +
+      '<ellipse cx="0" cy="9" rx="13" ry="2.6" fill="'+DARK+'" opacity="0.12"/>' +
+      '<ellipse cx="-4.5" cy="5.6" rx="3.0" ry="3.2" fill="'+LEG_COLOR+'"'+VSIL+'/><ellipse cx="4.5" cy="5.6" rx="3.0" ry="3.2" fill="'+LEG_COLOR+'"'+VSIL+'/>' +
+      '<ellipse cx="-4.8" cy="8.4" rx="3.6" ry="2.0" fill="'+SHOE_COLOR+'"'+VSIL+'/><ellipse cx="4.8" cy="8.4" rx="3.6" ry="2.0" fill="'+SHOE_COLOR+'"'+VSIL+'/>' +
+      // 뿔 — 모자 위로 확실히 솟게 (모자보다 먼저 그려 뒤에서 자라난 것처럼)
+      '<path d="M -7.5 -44 C -9 -50 -10.5 -54 -12 -56.5 M -8.9 -48.6 L -12.6 -50.4 M -10.2 -52.4 L -13.4 -54"'+
+        ' fill="none" stroke="#8a6a4f" stroke-width="1.5" stroke-linecap="round"/>' +
+      '<path d="M 7.5 -44 C 9 -50 10.5 -54 12 -56.5 M 8.9 -48.6 L 12.6 -50.4 M 10.2 -52.4 L 13.4 -54"'+
+        ' fill="none" stroke="#8a6a4f" stroke-width="1.5" stroke-linecap="round"/>' +
+      // 귀
+      '<ellipse cx="-11.5" cy="-36" rx="3.6" ry="2.4" fill="'+fur+'" transform="rotate(-22 -11.5 -36)"'+VSIL+'/>' +
+      '<ellipse cx="11.5" cy="-36" rx="3.6" ry="2.4" fill="'+fur+'" transform="rotate(22 11.5 -36)"'+VSIL+'/>' +
+      // 작업복 팔·몸통
+      '<path d="M -9.6 -16.4 C -13.4 -15 -13.8 -9 -12.6 -5.2 C -11.9 -2.8 -9.2 -3 -9 -5.6 Z" fill="'+suit+'"'+VSIL+'/>' +
+      '<path d="M 9.6 -16.4 C 13.4 -15 13.8 -9 12.6 -5.2 C 11.9 -2.8 9.2 -3 9 -5.6 Z" fill="'+suit+'"'+VSIL+'/>' +
+      '<circle cx="-11.5" cy="-4.2" r="2.4" fill="'+furL+'"'+VSIL+'/><circle cx="11.5" cy="-4.2" r="2.4" fill="'+furL+'"'+VSIL+'/>' +
+      '<path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="'+suit+'"'+VSIL+'/>' +
+      // 작업복 지퍼선과 가슴 주머니
+      '<path d="M 0 -20 L 0 4" fill="none" stroke="'+suitD+'" stroke-width="1"/>' +
+      '<rect x="-7.5" y="-14" width="5" height="4" rx="0.8" fill="'+suitD+'" stroke="none"/>' +
+      '<rect x="2.5" y="-14" width="5" height="4" rx="0.8" fill="'+suitD+'" stroke="none"/>' +
+      // 얼굴
+      '<circle cx="0" cy="-31" r="12.6" fill="'+fur+'"'+VSIL+'/>' +
+      visitorFace() +
+      // 회색 야구모자
+      '<path d="M -11.6 -36.5 C -11.6 -44.5 -6 -49 0 -49 C 6 -49 11.6 -44.5 11.6 -36.5 C 11.6 -35.4 -11.6 -35.4 -11.6 -36.5 Z" fill="'+cap+'"'+VSIL+'/>' +
+      '<ellipse cx="4.5" cy="-36" rx="7.5" ry="2.4" fill="'+suitD+'"'+VSIL+'/>' +
+      '<circle cx="0" cy="-48.4" r="1.2" fill="'+suitD+'" stroke="none"/>' +
+      // 네이비 공구박스 (오른손)
+      '<rect x="12.5" y="-4" width="13" height="9" rx="1.6" fill="#2f4157"'+VSIL+'/>' +
+      '<rect x="12.5" y="-1.4" width="13" height="1.6" fill="#243449" stroke="none"/>' +
+      '<path d="M 16.5 -4 C 16.5 -7.4 21.5 -7.4 21.5 -4" fill="none" stroke="#243449" stroke-width="1.2"/>' +
+    '</g>' + visitorNamePlate('수리기사');
+  }
+
+  // ---- 연주자 조: 낙타, 검은 양복과 나비넥타이 ----
+  function buildVisitorPlayer(){
+    var fur = '#d9b98a', furL = '#eddcc0', suit = '#2b2b33', suitL = '#3a3a45';
+    return '<g stroke="none">' +
+      '<ellipse cx="0" cy="9" rx="13" ry="2.6" fill="'+DARK+'" opacity="0.12"/>' +
+      '<ellipse cx="-4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+DARK+'"'+VSIL+'/><ellipse cx="4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+DARK+'"'+VSIL+'/>' +
+      // 낙타 혹 — 양복 어깨 위로 넓게 솟아 목 양옆으로 보인다
+      '<path d="M -13 -17.5 C -11.5 -31 11.5 -31 13 -17.5 Z" fill="'+fur+'"'+VSIL+'/>' +
+      // 긴 목
+      '<path d="M -4.8 -33 L -3.4 -17 L 3.4 -17 L 4.8 -33 Z" fill="'+fur+'"'+VSIL+'/>' +
+      // 양복 팔·몸통
+      '<path d="M -9.6 -16.4 C -13.4 -15 -13.8 -9 -12.6 -5.2 C -11.9 -2.8 -9.2 -3 -9 -5.6 Z" fill="'+suit+'"'+VSIL+'/>' +
+      '<path d="M 9.6 -16.4 C 13.4 -15 13.8 -9 12.6 -5.2 C 11.9 -2.8 9.2 -3 9 -5.6 Z" fill="'+suit+'"'+VSIL+'/>' +
+      '<circle cx="-11.5" cy="-4.2" r="2.4" fill="'+furL+'"'+VSIL+'/><circle cx="11.5" cy="-4.2" r="2.4" fill="'+furL+'"'+VSIL+'/>' +
+      '<path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="'+suit+'"'+VSIL+'/>' +
+      // 셔츠와 라펠
+      '<path d="M -1.8 -19.4 L -3.6 -6 L 0 -3 L 3.6 -6 L 1.8 -19.4 Z" fill="#fdfaf3" stroke="none"/>' +
+      '<path d="M -1.2 -19.6 L -7.6 -15.4 L -3.4 -4.6 L -0.6 -9.4 Z" fill="'+suitL+'" stroke="none"/>' +
+      '<path d="M 1.2 -19.6 L 7.6 -15.4 L 3.4 -4.6 L 0.6 -9.4 Z" fill="'+suitL+'" stroke="none"/>' +
+      // 나비넥타이
+      '<path d="M -4.6 -19.4 L -0.9 -17.6 L -0.9 -14.4 L -4.6 -12.8 Z" fill="#8f2f3a"'+VSIL+'/>' +
+      '<path d="M 4.6 -19.4 L 0.9 -17.6 L 0.9 -14.4 L 4.6 -12.8 Z" fill="#8f2f3a"'+VSIL+'/>' +
+      '<rect x="-1.1" y="-17.8" width="2.2" height="4.2" rx="0.7" fill="#6f242d" stroke="none"/>' +
+      // 낙타 귀 (작고 둥글게 머리 위쪽에)
+      '<ellipse cx="-9.6" cy="-45" rx="2.6" ry="2.0" fill="'+fur+'" transform="rotate(-24 -9.6 -45)"'+VSIL+'/>' +
+      '<ellipse cx="9.6" cy="-45" rx="2.6" ry="2.0" fill="'+fur+'" transform="rotate(24 9.6 -45)"'+VSIL+'/>' +
+      // 얼굴 — 위아래로 길고 주둥이가 아래로 크게 빠진다
+      '<ellipse cx="0" cy="-38.5" rx="9.6" ry="13.5" fill="'+fur+'"'+VSIL+'/>' +
+      '<ellipse cx="0" cy="-29" rx="6.6" ry="7.2" fill="'+furL+'"'+VSIL+'/>' +
+      '<g transform="translate(0,-6)">' + visitorFace() + '</g>' +
+    '</g>' + visitorNamePlate('연주자 조');
+  }
+
+  // ---- 경비: 원숭이, 남색 제복과 제복모 ----
+  function buildVisitorGuard(){
+    var fur = '#a9765a', furL = '#e0bd9c', uni = '#2f3d5c', uniD = '#233049', gold = '#d8b45c';
+    return '<g stroke="none">' +
+      '<ellipse cx="0" cy="9" rx="13" ry="2.6" fill="'+DARK+'" opacity="0.12"/>' +
+      '<ellipse cx="-4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+DARK+'"'+VSIL+'/><ellipse cx="4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+DARK+'"'+VSIL+'/>' +
+      // 원숭이 귀 (옆으로 큼직하게)
+      '<circle cx="-14.6" cy="-30.6" r="4.8" fill="'+fur+'"'+VSIL+'/><circle cx="14.6" cy="-30.6" r="4.8" fill="'+fur+'"'+VSIL+'/>' +
+      '<circle cx="-15.4" cy="-30.6" r="2.4" fill="'+furL+'" stroke="none"/><circle cx="15.4" cy="-30.6" r="2.4" fill="'+furL+'" stroke="none"/>' +
+      // 제복 팔·몸통
+      '<path d="M -9.6 -16.4 C -13.4 -15 -13.8 -9 -12.6 -5.2 C -11.9 -2.8 -9.2 -3 -9 -5.6 Z" fill="'+uni+'"'+VSIL+'/>' +
+      '<path d="M 9.6 -16.4 C 13.4 -15 13.8 -9 12.6 -5.2 C 11.9 -2.8 9.2 -3 9 -5.6 Z" fill="'+uni+'"'+VSIL+'/>' +
+      '<circle cx="-11.5" cy="-4.2" r="2.4" fill="'+furL+'"'+VSIL+'/><circle cx="11.5" cy="-4.2" r="2.4" fill="'+furL+'"'+VSIL+'/>' +
+      '<path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="'+uni+'"'+VSIL+'/>' +
+      // 견장·단추·배지·허리띠
+      '<rect x="-9.4" y="-19" width="5" height="2.4" rx="0.8" fill="'+gold+'" stroke="none"/>' +
+      '<rect x="4.4" y="-19" width="5" height="2.4" rx="0.8" fill="'+gold+'" stroke="none"/>' +
+      '<path d="M 0 -20 L 0 2" fill="none" stroke="'+uniD+'" stroke-width="1"/>' +
+      '<circle cx="0" cy="-12" r="0.8" fill="'+gold+'" stroke="none"/><circle cx="0" cy="-6" r="0.8" fill="'+gold+'" stroke="none"/>' +
+      '<path d="M -7.4 -15.4 L -4.2 -15.4 L -4.2 -11.6 L -5.8 -10.2 L -7.4 -11.6 Z" fill="'+gold+'" stroke="none"/>' +
+      '<rect x="-9" y="-1.6" width="18" height="3" fill="'+uniD+'" stroke="none"/>' +
+      '<rect x="-2" y="-1.9" width="4" height="3.6" rx="0.7" fill="'+gold+'" stroke="none"/>' +
+      // 얼굴
+      '<circle cx="0" cy="-31" r="12.6" fill="'+fur+'"'+VSIL+'/>' +
+      '<ellipse cx="0" cy="-26.4" rx="7" ry="5.2" fill="'+furL+'" stroke="none"/>' +
+      visitorFace() +
+      // 제복모
+      '<path d="M -11.8 -38.6 C -11.8 -45.6 -6 -48.6 0 -48.6 C 6 -48.6 11.8 -45.6 11.8 -38.6 Z" fill="'+uni+'"'+VSIL+'/>' +
+      '<rect x="-12.2" y="-39.4" width="24.4" height="3.2" rx="1" fill="'+uniD+'"'+VSIL+'/>' +
+      '<ellipse cx="0" cy="-35.6" rx="12.4" ry="2.2" fill="'+uniD+'"'+VSIL+'/>' +
+      '<path d="M -2.6 -45.6 L 2.6 -45.6 L 1.6 -41.4 L -1.6 -41.4 Z" fill="'+gold+'" stroke="none"/>' +
+    '</g>' + visitorNamePlate('경비');
+  }
+
   var visitorDefs = {
     boss:    { id:'visitorBoss',    build:buildVisitorBoss },
     courier: { id:'visitorCourier', build:buildVisitorCourier },
-    vendor:  { id:'visitorVendor',  build:buildVisitorVendor }
+    vendor:  { id:'visitorVendor',  build:buildVisitorVendor },
+    fixer:   { id:'visitorFixer',   build:buildVisitorFixer },
+    player:  { id:'visitorPlayer',  build:buildVisitorPlayer },
+    guard:   { id:'visitorGuard',   build:buildVisitorGuard }
   };
   Object.keys(visitorDefs).forEach(function(key){
     var v = visitorDefs[key];
@@ -4656,6 +4786,219 @@
       charEl(bossObj.id).classList.remove('present');
       visitorEventActive = false;
     }, 39500);
+  }
+
+  // ---- 수리기사 방문 (기기 전원을 껐다 켠 누적 7번마다) ----
+  // 입구에서 가까운 순으로 공기청정기·복합기를 돌고, 마지막에 정수기를 본다
+  var FIXER_STOPS = [
+    { p:{x:137, y:768}, label:'공기청정기' },
+    { p:{x:445, y:552}, label:'복합기' },
+    { p:{x:64,  y:300}, label:'공기청정기' },
+    { p:{x:763, y:580}, label:'복합기' },
+    { p:{x:900, y:412}, label:'공기청정기' }
+  ];
+  var FIXER_COOLER = { x:348, y:214 };
+
+  function maybeTriggerFixerVisit(){
+    if(visitorEventActive) return;
+    if(lifetime.devToggles <= 0 || lifetime.devToggles % 7 !== 0) return;
+    visitorEventActive = true;
+
+    var obj = { id:visitorDefs.fixer.id };
+    setPos(obj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(obj.id).classList.add('present');
+    showBubble(obj, '기기 수리왔습니다');
+    if(typeof logDayEvent === 'function') logDayEvent('🔧', '수리기사 방문 — 기기 점검');
+
+    // 도착한 뒤에 다음 기기로 넘어간다. 고정 타이머로 밀면 이동이 긴 구간에서
+    // 다음 travelTo가 앞의 이동을 취소해 "점검 완료"를 건너뛴다
+    var idx = 0;
+    function nextStop(){
+      if(idx >= FIXER_STOPS.length){ goCooler(); return; }
+      var stop = FIXER_STOPS[idx++];
+      clearBubble(obj.id);
+      travelTo(obj, stop.p, 105, function(){
+        showBubble(obj, '점검 완료');
+        setTimeout(nextStop, 2800);
+      });
+    }
+    function goCooler(){
+      clearBubble(obj.id);
+      travelTo(obj, FIXER_COOLER, 105, function(){
+        showBubble(obj, '고장안났는데 왜 깜빡였지?');
+        setTimeout(function(){
+          clearBubble(obj.id);
+          travelTo(obj, VISITOR_ENTRANCE, 105, function(){
+            charEl(obj.id).classList.remove('present');
+            visitorEventActive = false;
+          });
+        }, 3200);
+      });
+    }
+    setTimeout(nextStop, 1600);
+  }
+
+  // ---- 연주자 조 방문 (아트코너 누적 8번마다) ----
+  // 경영지원팀이 마중 나와 라운지에서 행사 이야기를 하고, 아트코너를 보여준 뒤 배웅한다
+  var PLAYER_GREET = { x:150, y:700 };   // 입구 앞 복도
+  var PLAYER_ART_SPOTS = [ {x:405,y:437}, {x:441,y:437}, {x:477,y:437} ];
+  var PLAYER_TALK = [
+    ['p', '초대해 주셔서 감사합니다'],
+    ['a', '저희가 감사하죠. 사내 행사라 규모는 작아요'],
+    ['b', '그래도 직원들이 많이 기대하고 있어요'],
+    ['p', '어떤 곡이 좋을까요?'],
+    ['a', '편안한 걸로 부탁드려요'],
+    ['b', '점심시간 즈음이라 너무 무겁지 않게요'],
+    ['p', '그럼 잔잔한 곡으로 준비하겠습니다'],
+    ['a', '좋네요. 장소는 아트코너 쪽으로 생각하고 있어요'],
+    ['b', '한번 보시겠어요?']
+  ];
+
+  function maybeTriggerPlayerVisit(){
+    if(visitorEventActive) return;
+    if(lifetime.arts <= 0 || lifetime.arts % 8 !== 0) return;
+
+    // 경영지원팀에서 자리에 있고 한가한 두 명
+    var biz = staff.filter(function(s){
+      return s.teamKey === 'biz' && charEl(s.id)
+          && charEl(s.id).classList.contains('present') && !isBusy(s.id);
+    });
+    if(biz.length < 2) return;
+    visitorEventActive = true;
+
+    var pair = biz.slice(0, 2);
+    var a = pair[0], b = pair[1];
+    var obj = { id:visitorDefs.player.id };
+    var cast = { p:obj, a:a, b:b };
+
+    pair.forEach(function(s){ markBusy(s.id); raiseChar(s); });
+    setPos(obj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(obj.id).classList.add('present');
+    showBubble(obj, '행사 논의하러 왔습니다');
+    if(typeof logDayEvent === 'function'){
+      logDayEvent('🎻', '연주자 조 방문 — ' + a.name + '·' + b.name + '와 행사 논의');
+    }
+
+    function clearAll(){ clearBubble(obj.id); clearBubble(a.id); clearBubble(b.id); }
+
+    // 1) 경영지원팀이 입구로 마중 — 둘 다 닿으면 안내한다
+    var greeted = 0;
+    function onGreet(){
+      greeted++;
+      if(greeted < 2) return;
+      showBubble(a, '라운지로 가시죠');
+      setTimeout(toLounge, 2200);
+    }
+    setTimeout(function(){
+      travelTo(a, PLAYER_GREET, 62, onGreet);
+      travelTo(b, {x:PLAYER_GREET.x+34, y:PLAYER_GREET.y}, 62, onGreet);
+    }, 1800);
+
+    // 2) 셋이 라운지로. 전원이 앉은 뒤에 대화를 시작한다
+    var seated = 0;
+    function onSeated(){
+      seated++;
+      if(seated < 3) return;
+      runTalk();
+    }
+    function toLounge(){
+      clearAll();
+      travelTo(obj, loungeSeats[0], 95, onSeated);
+      travelTo(a, loungeSeats[1], 62, onSeated);
+      travelTo(b, loungeSeats[2], 62, onSeated);
+    }
+
+    // 3) 라운지 대화 — 세 사람이 돌아가며 세 바퀴
+    var STEP = 2500;
+    function runTalk(){
+      PLAYER_TALK.forEach(function(line, i){
+        setTimeout(function(){
+          clearAll();
+          showBubble(cast[line[0]], line[1]);
+        }, 900 + i*STEP);
+      });
+      setTimeout(toArt, 900 + PLAYER_TALK.length*STEP + 600);
+    }
+
+    // 4) 아트코너로 이동. 전원 도착 후 마무리 인사
+    var arrivedArt = 0;
+    function onArt(){
+      arrivedArt++;
+      if(arrivedArt < 3) return;
+      runClosing();
+    }
+    function toArt(){
+      clearAll();
+      travelTo(obj, PLAYER_ART_SPOTS[0], 95, onArt);
+      travelTo(a, PLAYER_ART_SPOTS[1], 62, onArt);
+      travelTo(b, PLAYER_ART_SPOTS[2], 62, onArt);
+    }
+
+    // 5) 마무리 인사 → 배웅
+    function runClosing(){
+      setTimeout(function(){ showBubble(a, '직원 복지 행사니까'); }, 700);
+      setTimeout(function(){ clearAll(); showBubble(a, '잘 부탁드립니다'); }, 3100);
+      setTimeout(function(){ clearAll(); showBubble(obj, '당연히요. 행사날 봬요'); }, 5500);
+      setTimeout(function(){
+        clearAll();
+        travelTo(obj, VISITOR_ENTRANCE, 95, function(){
+          charEl(obj.id).classList.remove('present');
+          visitorEventActive = false;
+        });
+        pair.forEach(function(s){
+          travelTo(s, {x:s.x, y:s.y}, 62, function(){
+            lowerChar(s);
+            if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y};
+          });
+          clearBusy(s.id);
+        });
+      }, 8100);
+    }
+  }
+
+  // ---- 경비 방문 (청소 누적 15번마다) ----
+  // 팀 자리 사이를 지나지 않도록 복도에 인접한 지점만 찍는다 (경로는 wRoute가 복도로 잡는다)
+  var GUARD_ROUTE = [
+    { p:{x:250, y:196}, label:'응접 공간' },
+    { p:{x:760, y:322}, label:'라운지' },
+    { p:{x:800, y:755}, label:'탕비실' },
+    { p:{x:560, y:730}, label:'회의실' }
+  ];
+
+  function maybeTriggerGuardVisit(){
+    if(visitorEventActive) return;
+    if(lifetime.cleans <= 0 || lifetime.cleans % 15 !== 0) return;
+    visitorEventActive = true;
+
+    var obj = { id:visitorDefs.guard.id };
+    setPos(obj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(obj.id).classList.add('present');
+    showBubble(obj, '시설 좀 점검할게요');
+    if(typeof logDayEvent === 'function') logDayEvent('🛡️', '경비 방문 — 시설 점검');
+
+    // 수리기사와 같은 이유로, 한 곳에 닿은 뒤 다음 곳으로 넘어간다
+    var gi = 0;
+    function guardNext(){
+      if(gi >= GUARD_ROUTE.length){ guardFinish(); return; }
+      var stop = GUARD_ROUTE[gi++];
+      travelTo(obj, stop.p, 100, function(){
+        setTimeout(guardNext, 1600);
+      });
+    }
+    function guardFinish(){
+      travelTo(obj, VISITOR_ENTRANCE, 100, function(){
+        showBubble(obj, '이상 없습니다');
+        setTimeout(function(){
+          clearBubble(obj.id);
+          charEl(obj.id).classList.remove('present');
+          visitorEventActive = false;
+        }, 3200);
+      });
+    }
+    setTimeout(function(){
+      clearBubble(obj.id);
+      guardNext();
+    }, 1900);
   }
 
   // ===== 먼지: 10분마다 바닥에 하나씩 쌓이고, 청소 버튼으로 전부 제거 =====
@@ -4989,7 +5332,10 @@
     raiseChar(s);
     toast(s.name + '이(가) 아트코너로 향합니다');
     if(typeof logDayEvent === 'function') logDayEvent('🗿', '아트코너 방문');
-    setMoodAll(chosen, 'happy');
+    setMood(s.id, 'happy');
+    lifetime.arts++;
+    saveLifetime();
+    maybeTriggerPlayerVisit();
 
     // 조각품 앞에 도착한 뒤에 말하도록 도착 콜백에서 띄운다
     travelTo(s, ART_SPOT, 62, function(){
@@ -5489,6 +5835,9 @@
     }
     var pieces = dustLayer.querySelectorAll('.dustPiece');
     if(typeof logDayEvent === 'function') logDayEvent('🧹', '사무실을 청소했습니다 (먼지 '+state.items.length+'곳)');
+    lifetime.cleans++;
+    saveLifetime();
+    maybeTriggerGuardVisit();
     pieces.forEach(function(p){ p.style.opacity = '0'; });
     setTimeout(function(){
       state.items = [];
