@@ -305,6 +305,86 @@
   #introScreen h1{ font-size:20px; color:#5c4a3a; margin:4px 0 26px; }
   #introScreen .enterBtn{ font-size:15px; padding:13px 30px; height:auto; }
   #introScreen .introCopyright{ position:absolute; left:0; right:0; bottom:20px; font-size:10.5px; color:#8a8a86; line-height:1.6; }
+
+  /* ===== 3단 레이아웃: 왼쪽 세로바 / 사무실 / 오른쪽 로그 ===== */
+  #appShell{ width:100%; max-width:1094px; display:flex; align-items:flex-start; gap:10px; }
+  #mainCol{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; }
+  #sideBar{ flex:0 0 74px; width:74px; position:sticky; top:14px; background:#fffdf8;
+            border:1.3px solid #5c4a3a; border-radius:10px; padding:7px 0;
+            display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .sideBtn{ width:62px; padding:6px 2px 5px; border:1px solid transparent; border-radius:8px;
+            background:none; color:#5c4a3a; font-family:inherit; font-size:9.5px; line-height:1.25;
+            cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+            position:relative; text-align:center; }
+  .sideBtn:hover{ background:#f6efe0; }
+  .sideBtn:active{ transform:scale(0.96); }
+  .sideBtn.active{ background:#5c4a3a; color:#fff; }
+  .sideBtn.active svg [stroke]{ stroke:#fff; }
+  .sideBtn:disabled{ opacity:.4; cursor:not-allowed; }
+  .sideBtn svg{ flex:0 0 auto; }
+  .sideSep{ width:44px; height:1px; background:#e6e0d2; margin:3px 0; flex:0 0 auto; }
+  #sideScrim{ display:none; position:fixed; inset:0; background:rgba(58,50,40,.3); z-index:25; }
+  #sideScrim.show{ display:block; }
+  #sideToggle{ display:none; }
+
+  /* 오른쪽 가장자리 접이식 로그 */
+  #logTab{ position:fixed; right:0; top:50%; transform:translateY(-50%); z-index:22;
+           background:#fffdf8; border:1.3px solid #5c4a3a; border-right:none;
+           border-radius:9px 0 0 9px; padding:13px 5px 13px 4px; cursor:pointer;
+           display:flex; flex-direction:column; align-items:center; gap:7px;
+           box-shadow:-2px 0 8px rgba(92,74,58,.07); font-family:inherit; color:#5c4a3a; }
+  #logTab:active{ transform:translateY(-50%) scale(0.97); }
+  #logTab .vtxt{ writing-mode:vertical-rl; font-size:11px; letter-spacing:2px; }
+  #logTabBadge{ min-width:16px; height:16px; border-radius:9px; background:#c8553d; color:#fff;
+                font-size:9px; font-weight:700; display:none; align-items:center;
+                justify-content:center; padding:0 4px; box-sizing:border-box; }
+  #logTabBadge.show{ display:flex; }
+  #logPanel{ position:fixed; top:0; right:0; bottom:0; width:302px; z-index:24;
+             background:#fffdf8; border-left:1.4px solid #5c4a3a;
+             box-shadow:-8px 0 20px rgba(92,74,58,.13);
+             transform:translateX(100%); transition:transform .32s cubic-bezier(.4,0,.2,1);
+             display:flex; flex-direction:column; }
+  #logPanel.open{ transform:translateX(0); }
+  #logHead{ display:flex; align-items:center; justify-content:space-between; flex:0 0 auto;
+            padding:13px 14px 10px; border-bottom:1px solid #e6e0d2; }
+  #logHead h2{ font-size:13.5px; margin:0; }
+  #logCloseX{ background:none; border:none; font-size:19px; line-height:1; color:#8a8a86;
+              cursor:pointer; padding:0 2px; font-family:inherit; }
+  #logBody{ flex:1; overflow-y:auto; padding:6px 12px 22px; }
+  .logRow{ display:flex; gap:8px; padding:7px 2px; border-bottom:1px dashed #ece6d8; }
+  .logRow:last-child{ border-bottom:none; }
+  .logRowTime{ font-size:10px; color:#b3ab97; flex:0 0 32px; padding-top:2px; }
+  .logRowText{ font-size:11.5px; line-height:1.55; word-break:break-word; }
+  .logDaySep{ display:flex; align-items:center; gap:7px; font-size:10px; color:#b3ab97;
+              padding:13px 0 5px; }
+  .logDaySep::before, .logDaySep::after{ content:''; flex:1; height:1px; background:#ece6d8; }
+  .logEmpty{ color:#8a8a86; font-size:12px; padding:16px 2px; text-align:center; line-height:1.7; }
+
+  @media (prefers-reduced-motion: reduce){
+    #logPanel{ transition:none; }
+  }
+
+  /* 좁은 화면: 세로바는 서랍으로, 로그는 전체화면으로 */
+  @media (max-width:1100px){
+    #appShell{ max-width:1000px; gap:0; }
+    #sideBar{ position:fixed; top:0; left:0; bottom:0; z-index:26; width:158px; flex-basis:158px;
+              border-radius:0; border-top:none; border-bottom:none; border-left:none;
+              transform:translateX(-100%); transition:transform .28s cubic-bezier(.4,0,.2,1);
+              align-items:stretch; padding:12px 0; overflow-y:auto; gap:0; }
+    #sideBar.open{ transform:translateX(0); }
+    .sideBtn{ width:auto; flex-direction:row; justify-content:flex-start; gap:10px;
+              padding:10px 15px; font-size:12.5px; border-radius:0; text-align:left; }
+    .sideBtn.active{ background:#f3ead6; color:#5c4a3a; }
+    .sideBtn.active svg [stroke]{ stroke:#5c4a3a; }
+    .sideSep{ width:auto; margin:4px 15px; }
+    #sideToggle{ display:inline-flex; }
+    #logPanel{ width:100%; border-left:none; }
+    #logTab{ padding:10px 4px; }
+    #logTab .vtxt{ font-size:10px; letter-spacing:1px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #sideBar{ transition:none; }
+  }
 </style>
 </head>
 <body>
@@ -364,26 +444,72 @@
   </div>
 </div>
 
+<div id="appShell">
+
+<nav id="sideBar" aria-label="사무실 메뉴">
+  <button class="sideBtn" id="wanderBtn" aria-label="랜덤 이동">
+    <svg width="14" height="12" viewBox="0 0 14 12"><path d="M1 9.5 h3 l2.5 -7 h3" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 2.5 h3 l2.5 7 h3" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 0.8 L13 2.5 L10.6 4.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 7.8 L13 9.5 L10.6 11.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span id="wanderLabel">랜덤 이동</span>
+  </button>
+  <button class="sideBtn" id="meetingBtn" aria-label="회의">
+    <svg width="14" height="12" viewBox="0 0 14 12"><circle cx="4.5" cy="4" r="2.2" stroke="#5c4a3a" stroke-width="1" fill="none"/><circle cx="10" cy="4.5" r="1.8" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M1 11 a3.6 3.6 0 0 1 7 0" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M8.6 11 a3 3 0 0 1 4.6 -2.5" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
+    <span id="meetingLabel">회의</span>
+  </button>
+  <button class="sideBtn" id="breakBtn" aria-label="탕비실">
+    <svg width="14" height="12" viewBox="0 0 14 12"><path d="M1.5 3.5 h8 v4 a3 3 0 0 1 -3 3 h-2 a3 3 0 0 1 -3 -3 z" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M9.5 4.5 h1.6 a1.6 1.6 0 0 1 0 3.2 h-1.6" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M3.6 1.6 q0.8 -1 0 -1.4" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M6 1.6 q0.8 -1 0 -1.4" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
+    <span>탕비실</span>
+  </button>
+  <button class="sideBtn" id="placeBtn" aria-label="장소 이용">
+    <svg width="14" height="13" viewBox="0 0 14 13"><path d="M1 5.5 L7 1 L13 5.5 V12 H1 Z" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linejoin="round"/><rect x="5" y="7.5" width="4" height="4.5" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
+    <span>장소 이용</span>
+  </button>
+  <button class="sideBtn" id="cleanBtn" aria-label="청소">
+    <svg width="13" height="13" viewBox="0 0 13 13"><path d="M8.6 1 L11.8 4.2" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M7.6 2 L10.8 5.2 L5.6 10.4 h-3.2 v-3.2 z" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M4 7.4 L5.4 8.8" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
+    <span>청소</span>
+  </button>
+  <i class="sideSep"></i>
+  <button class="sideBtn" id="mailOpenBtn" aria-label="메일 보내기">
+    <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="11" rx="1.5" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M1 1 L8 7 L15 1" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
+    <span>메일</span>
+  </button>
+  <button class="sideBtn" id="messengerBtn" aria-label="메신저">
+    <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="9" rx="2" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M4 9.5 L4 11.5 L6.5 9.5" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
+    <span>메신저 <span id="msgBadge" class="msg-badge"></span></span>
+  </button>
+  <i class="sideSep"></i>
+  <button class="sideBtn" id="dexBtn" aria-label="주요 프로젝트">
+    <svg width="14" height="12" viewBox="0 0 14 12"><path d="M0.5 2.5 a1.5 1.5 0 0 1 1.5 -1.5 h3 l1.5 1.5 h5.5 a1.5 1.5 0 0 1 1.5 1.5 v6 a1.5 1.5 0 0 1 -1.5 1.5 h-10 a1.5 1.5 0 0 1 -1.5 -1.5 z" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
+    <span>프로젝트</span>
+  </button>
+  <button class="sideBtn" id="overtimeBtn" aria-label="야근모드">
+    <svg width="13" height="13" viewBox="0 0 13 13"><path d="M10 7.6 a5 5 0 1 1 -4.6 -6 a4 4 0 0 0 4.6 6 z" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
+    <span id="overtimeLabel">야근모드</span>
+  </button>
+  <i class="sideSep"></i>
+  <button class="sideBtn" id="settingsBtn" aria-label="설정">
+    <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6.5" cy="6.5" r="2.2" stroke="#5c4a3a" stroke-width="1" fill="none"/><circle cx="6.5" cy="6.5" r="5" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-dasharray="1.6 1.7"/></svg>
+    <span>설정</span>
+  </button>
+  <button class="sideBtn" id="helpBtn" aria-label="도움말">
+    <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6.5" cy="6.5" r="5.4" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M4.9 4.9 a1.7 1.7 0 1 1 1.9 2 v1" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round"/><circle cx="6.6" cy="9.6" r="0.7" fill="#5c4a3a"/></svg>
+    <span>도움말</span>
+  </button>
+  <button class="sideBtn" id="previewBtn" aria-label="점검용">
+    <svg width="13" height="13" viewBox="0 0 13 13"><path d="M0.9 6.5 q5.6 -4.4 11.2 0 q-5.6 4.4 -11.2 0 z" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linejoin="round"/><circle cx="6.5" cy="6.5" r="1.7" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
+    <span>점검용</span>
+  </button>
+</nav>
+<div id="sideScrim"></div>
+
+<div id="mainCol">
+
 <h1 id="companyName">우리의 사무실</h1>
 
-<div class="row between">
+<div class="row">
+  <button class="btn" id="sideToggle" aria-label="메뉴 열기">☰ 메뉴</button>
   <div class="stat">현재 시간 <b id="clockText">09:00</b></div>
   <div class="stat">오늘 주문량 <b id="prodText">0</b>개</div>
   <div class="stat">연속 접속 <b id="streakText">1</b>일째</div>
-  <button class="btn" id="dexBtn" aria-label="주요 프로젝트">
-    <svg width="14" height="12" viewBox="0 0 14 12"><path d="M0.5 2.5 a1.5 1.5 0 0 1 1.5 -1.5 h3 l1.5 1.5 h5.5 a1.5 1.5 0 0 1 1.5 1.5 v6 a1.5 1.5 0 0 1 -1.5 1.5 h-10 a1.5 1.5 0 0 1 -1.5 -1.5 z" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
-    주요 프로젝트
-  </button>
-  <button class="btn" id="overtimeBtn" aria-label="야근모드">
-    <svg width="13" height="13" viewBox="0 0 13 13"><path d="M10 7.6 a5 5 0 1 1 -4.6 -6 a4 4 0 0 0 4.6 6 z" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
-    야근모드
-  </button>
-  <button class="btn" id="previewBtn">점검용</button>
-  <button class="btn" id="settingsBtn" aria-label="설정">
-    <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6.5" cy="6.5" r="2.2" stroke="#5c4a3a" stroke-width="1" fill="none"/><circle cx="6.5" cy="6.5" r="5" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-dasharray="1.6 1.7"/></svg>
-    설정
-  </button>
-  <button class="btn" id="helpBtn">도움말</button>
 </div>
 
 <div class="row">
@@ -1487,45 +1613,26 @@
 </svg>
 </div>
 
-<div class="row between">
-  <div style="display:flex; gap:8px; flex-wrap:wrap;">
-    <button class="btn" id="wanderBtn" aria-label="랜덤 이동">
-      <svg width="14" height="12" viewBox="0 0 14 12"><path d="M1 9.5 h3 l2.5 -7 h3" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 2.5 h3 l2.5 7 h3" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 0.8 L13 2.5 L10.6 4.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 7.8 L13 9.5 L10.6 11.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span id="wanderLabel">랜덤 이동</span>
-    </button>
-    <button class="btn" id="meetingBtn" aria-label="회의">
-      <svg width="14" height="12" viewBox="0 0 14 12"><circle cx="4.5" cy="4" r="2.2" stroke="#5c4a3a" stroke-width="1" fill="none"/><circle cx="10" cy="4.5" r="1.8" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M1 11 a3.6 3.6 0 0 1 7 0" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M8.6 11 a3 3 0 0 1 4.6 -2.5" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
-      <span id="meetingLabel">회의</span>
-    </button>
-    <button class="btn" id="breakBtn" aria-label="탕비실">
-      <svg width="14" height="12" viewBox="0 0 14 12"><path d="M1.5 3.5 h8 v4 a3 3 0 0 1 -3 3 h-2 a3 3 0 0 1 -3 -3 z" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M9.5 4.5 h1.6 a1.6 1.6 0 0 1 0 3.2 h-1.6" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M3.6 1.6 q0.8 -1 0 -1.4" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M6 1.6 q0.8 -1 0 -1.4" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
-      탕비실
-    </button>
-    <button class="btn" id="placeBtn" aria-label="장소 이용">
-      <svg width="14" height="13" viewBox="0 0 14 13"><path d="M1 5.5 L7 1 L13 5.5 V12 H1 Z" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linejoin="round"/><rect x="5" y="7.5" width="4" height="4.5" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
-      장소 이용
-    </button>
-    <button class="btn" id="cleanBtn" aria-label="청소">
-      <svg width="13" height="13" viewBox="0 0 13 13"><path d="M8.6 1 L11.8 4.2" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M7.6 2 L10.8 5.2 L5.6 10.4 h-3.2 v-3.2 z" stroke="#5c4a3a" stroke-width="1" fill="none"/><path d="M4 7.4 L5.4 8.8" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
-      청소
-    </button>
-    <button class="btn" id="mailOpenBtn" aria-label="메일 보내기">
-      <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="11" rx="1.5" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M1 1 L8 7 L15 1" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
-      메일 보내기
-    </button>
-    <button class="btn" id="messengerBtn" aria-label="메신저">
-      <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="9" rx="2" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M4 9.5 L4 11.5 L6.5 9.5" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
-      메신저
-      <span id="msgBadge" class="msg-badge"></span>
-    </button>
-  </div>
-</div>
-
 <div class="row">
   <div id="prodBarWrap">
     <div id="prodBarTrack"><div id="prodBarFill"></div></div>
   </div>
 </div>
+
+</div><!-- /#mainCol -->
+</div><!-- /#appShell -->
+
+<button id="logTab" aria-label="사무실 일지 열기">
+  <span id="logTabBadge"></span>
+  <span class="vtxt">사무실 일지</span>
+</button>
+<aside id="logPanel" aria-label="사무실 일지">
+  <div id="logHead">
+    <h2>사무실 일지</h2>
+    <button id="logCloseX" aria-label="닫기">×</button>
+  </div>
+  <div id="logBody"></div>
+</aside>
 
 <div class="mail-overlay" id="mailOverlay">
   <div class="mail-window">
@@ -1759,9 +1866,10 @@
     </table>
 
     <h3>4. 재미있는 기능은 어떤 것이 있나요?</h3>
-    <p>7개 버튼을 이용하며 사무실의 운영자가 될 수 있어요.</p>
+    <p>왼쪽 메뉴의 버튼들을 이용하며 사무실의 운영자가 될 수 있어요. (화면이 좁으면 <code>☰ 메뉴</code>를 누르면 열립니다)</p>
     <table>
       <tr><th>버튼</th><th>내용</th></tr>
+      <tr><td>사무실 일지</td><td>화면 오른쪽 가장자리 탭. 출근·회의·방문객·청소 등 그동안 일어난 일이 시간순으로 쌓입니다. 자리를 비운 사이 생긴 소식은 탭에 빨간 숫자로 표시돼요 (지난 7일치 보관)</td></tr>
       <tr><td>설정</td><td>제작자 소개, 이름 변경 (회사명, 직원 이름 변경 가능)</td></tr>
       <tr><td>주요 프로젝트</td><td>사업 등록·관리 (5번 설명 참고)</td></tr>
       <tr><td>야근모드</td><td>전원 퇴근 후 랜덤 2~4명만 남아 야근 시작</td></tr>
@@ -2252,20 +2360,21 @@
     staff.forEach(function(s){ present ? showInstant(s.id) : hideInstant(s.id); });
   }
 
-  function walkIn(s, onArrive){
+  // silent: 점심·퇴근처럼 여럿이 한꺼번에 움직일 때. 개별 줄 대신 부르는 쪽에서 한 줄로 요약한다
+  function walkIn(s, onArrive, silent){
     setPos(s.id, ENTRANCE.x, ENTRANCE.y, false);
     charEl(s.id).classList.add('present');
     metSet[s.id] = true;
-    if(typeof logDayEvent === 'function') logDayEvent('🐾', s.name+' 출근');
+    if(!silent && typeof logDayEvent === 'function') logDayEvent('🐾', s.name+' 출근');
     requestAnimationFrame(function(){
       requestAnimationFrame(function(){
         travelTo(s, {x:s.x, y:s.y}, 62, onArrive);
       });
     });
   }
-  function walkOut(s, onLeave){
+  function walkOut(s, onLeave, silent){
     travelTo(s, {x:ENTRANCE.x, y:ENTRANCE.y}, 62);
-    if(typeof logDayEvent === 'function') logDayEvent('🚪', s.name+' 퇴근');
+    if(!silent && typeof logDayEvent === 'function') logDayEvent('🚪', s.name+' 퇴근');
     setTimeout(function(){
       charEl(s.id).classList.remove('present');
       setPos(s.id, s.x, s.y, false);
@@ -2450,6 +2559,10 @@
     if(leave) notes.push(leave.name+'님은 오늘 연차예요');
     if(trip) notes.push(trip.name+'님은 오늘 출장이에요');
     toast('직원들이 하나둘 출근하기 시작합니다' + (notes.length ? ' (' + notes.join(', ') + ')' : ''));
+    if(typeof logDayEvent === 'function'){
+      if(leave) logDayEvent('🌴', leave.name+' 연차');
+      if(trip) logDayEvent('✈️', trip.name+' 출장');
+    }
   }
 
   // 9시 정각에는 예약이 늦었더라도 무조건 전원 출근 상태로 보정 (연차/출장자는 제외)
@@ -2467,9 +2580,10 @@
     var lead = staffMap['kobujang'];
     if(!isGoneForDay(lead.id)) showBubble(lead, '점심시간입니다.');
     toast('점심시간입니다');
+    if(typeof logDayEvent === 'function') logDayEvent('🍚', '점심시간 — 사무실이 텅 비었습니다');
     setTimeout(function(){
       staff.forEach(function(s, i){
-        setTimeout(function(){ walkOut(s); }, i*180);
+        setTimeout(function(){ walkOut(s, null, true); }, i*180);
       });
     }, 1300);
   }
@@ -2491,18 +2605,21 @@
         if(!charEl(s.id).classList.contains('present')){
           walkIn(s, function(){
             if(s.id === firstBackId) showBubble(s, '아~배부르다');
-          });
+          }, true);
         }
       }, entry.offsetMs);
     });
     toast('점심시간이 끝났습니다');
+    if(typeof logDayEvent === 'function') logDayEvent('🍚', '점심 복귀 — '+eligible.length+'명이 자리로 돌아왔습니다');
   }
 
   function eveningLeave(){
     if(isNonWorkingDay()) return;
     toast('퇴근 시간입니다. 오늘도 수고하셨습니다');
+    var leaving = staff.filter(function(s){ return charEl(s.id).classList.contains('present'); }).length;
+    if(typeof logDayEvent === 'function') logDayEvent('🌙', '퇴근 시간 — '+leaving+'명이 퇴근했습니다');
     staff.forEach(function(s, i){
-      setTimeout(function(){ walkOut(s); }, i*180);
+      setTimeout(function(){ walkOut(s, null, true); }, i*180);
     });
   }
 
@@ -2514,7 +2631,8 @@
     }
     showBubble(s, '먼저 조퇴할게요.');
     toast(s.name+'님이 조퇴합니다');
-    setTimeout(function(){ walkOut(s); }, 1000);
+    if(typeof logDayEvent === 'function') logDayEvent('🏃', s.name+' 조퇴');
+    setTimeout(function(){ walkOut(s, null, true); }, 1000);
   }
 
   function applyPhaseForLoad(h, m){
@@ -3556,6 +3674,7 @@
       saveDailyLog();
       justCompleted.forEach(function(p){
         toast("'"+p.name+"' 사업이 완료되었습니다!");
+        if(typeof logDayEvent === 'function') logDayEvent('🎉', "'"+p.name+"' 사업 완료");
         celebrateAll();
       });
     }
@@ -3587,7 +3706,7 @@
   overtimeBtn.addEventListener('click', function(){
     overtimeMode = !overtimeMode;
     overtimeBtn.classList.toggle('active', overtimeMode);
-    overtimeBtn.textContent = overtimeMode ? '야근모드 ON' : '야근모드';
+    byId('overtimeLabel').textContent = overtimeMode ? '야근 ON' : '야근모드';
     // 야근모드를 켜면 어스름 단계를 풀고 평소 밝기로 되돌린다
     if(typeof applyLightLevel === 'function') applyLightLevel();
 
@@ -3597,8 +3716,9 @@
       var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
       var callCount = Math.floor(Math.random()*3) + 2;
       var called = shuffled.slice(0, callCount);
+      if(typeof logDayEvent === 'function') logDayEvent('🌃', '야근 — '+called.map(function(s){return s.name;}).join('·')+'가 남았습니다');
       called.forEach(function(s, i){
-        setTimeout(function(){ walkIn(s); }, i*260);
+        setTimeout(function(){ walkIn(s, null, true); }, i*260);
         bumpOvertime(s.id);
         overtimeStaffIds[s.id] = true;
         // 야근 인원은 10~15분(랜덤) 머무른 뒤 스스로 퇴근한다
@@ -3606,7 +3726,7 @@
         overtimeTimers[s.id] = setTimeout(function(){
           delete overtimeTimers[s.id];
           delete overtimeStaffIds[s.id];
-          walkOut(s);
+          walkOut(s, null, true);
           if(Object.keys(overtimeStaffIds).length === 0){
             // 마지막 야근 인원이 퇴근하면 완전 소등 대신 '어스름' 단계로 내려간다
             if(typeof applyLightLevel === 'function') applyLightLevel();
@@ -3747,6 +3867,7 @@
       travelTo(s, breakSeats[i], 62);
     });
     toast(chosen.map(function(s){return s.name;}).join(', ')+'이(가) 탕비실로 향합니다');
+    if(typeof logDayEvent === 'function') logDayEvent('☕', chosen.map(function(s){return s.name;}).join('·')+' 탕비실에서 쉬는 중');
 
     setTimeout(function(){
       var pair = breakDialogues[Math.floor(Math.random()*breakDialogues.length)];
@@ -3939,6 +4060,7 @@
     setPos(courierObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
     charEl(courierObj.id).classList.add('present');
     showBubble(courierObj, '택배 왔습니다. 어디다 놓을까요?');
+    if(typeof logDayEvent === 'function') logDayEvent('📮', '택배 도착 — '+respondent.name+'가 재고창고로 안내했습니다');
 
     setTimeout(function(){
       showBubble(respondent, '앗! 재고창고에 놔주세요.');
@@ -3985,6 +4107,7 @@
     setPos(vendorObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
     charEl(vendorObj.id).classList.add('present');
     showBubble(vendorObj, '저..회의때문에..');
+    if(typeof logDayEvent === 'function') logDayEvent('🤝', '업체직원 방문 — '+lead.name+'과 회의');
 
     setTimeout(function(){
       showBubble(pr, '아! 실장님 방으로 가시면 돼요.');
@@ -4076,6 +4199,7 @@
     setPos(bossObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
     charEl(bossObj.id).classList.add('present');
     allPresentStaffSay('!!!');
+    if(typeof logDayEvent === 'function') logDayEvent('👑', '사장님 방문 — 탕비실 간식이 채워졌습니다');
 
     setTimeout(function(){
       travelTo(bossObj, VISITOR_BREAK, 110);
@@ -4573,6 +4697,7 @@
       return;
     }
     var pieces = dustLayer.querySelectorAll('.dustPiece');
+    if(typeof logDayEvent === 'function') logDayEvent('🧹', '사무실을 청소했습니다 (먼지 '+state.items.length+'곳)');
     pieces.forEach(function(p){ p.style.opacity = '0'; });
     setTimeout(function(){
       state.items = [];
@@ -5546,10 +5671,119 @@
       chatLogHistory = chatLogHistory.slice(0, 7);
       chatLogToday = { date: dateKey(), entries: [] };
     }
-    chatLogToday.entries.push({ time: chatTimeLabel(Date.now()), icon:icon, text:text });
-    if(chatLogToday.entries.length > 60) chatLogToday.entries.shift();
+    chatLogToday.entries.push({ time: chatTimeLabel(Date.now()), icon:icon, text:text, ts: Date.now() });
+    if(chatLogToday.entries.length > 200) chatLogToday.entries.shift();
     saveChatLog();
+    if(typeof onDayLogAppended === 'function') onDayLogAppended();
   }
+
+  // ===== 오른쪽 접이식 사무실 일지 =====
+  // 기록 자체는 위 logDayEvent가 쌓는다. 여기서는 보여주기만 한다.
+  var LOGSEEN_KEY = 'ggj_office_logseen_v1';
+  var logPanel = byId('logPanel');
+  var logTab = byId('logTab');
+  var logTabBadge = byId('logTabBadge');
+  var logSeenTs = 0;
+  try{ logSeenTs = parseInt(localStorage.getItem(LOGSEEN_KEY), 10) || 0; }catch(e){}
+
+  function logDayLabel(key){
+    var today = dateKey();
+    if(key === today) return '오늘';
+    var d = new Date(key + 'T00:00:00');
+    var yst = new Date(); yst.setDate(yst.getDate() - 1);
+    if(key === dateKey(yst)) return '어제';
+    if(isNaN(d.getTime())) return key;
+    return (d.getMonth()+1) + '월 ' + d.getDate() + '일';
+  }
+  // 오늘 것을 맨 위에, 그 아래로 지난 날짜를 최신순으로
+  function logAllDays(){
+    var days = [{ date: chatLogToday.date, entries: chatLogToday.entries }];
+    (chatLogHistory || []).forEach(function(h){
+      if(h && h.entries && h.entries.length) days.push(h);
+    });
+    return days;
+  }
+  function unreadLogCount(){
+    var n = 0;
+    chatLogToday.entries.forEach(function(e){ if(e.ts && e.ts > logSeenTs) n++; });
+    return n;
+  }
+  function updateLogBadge(){
+    var n = unreadLogCount();
+    logTabBadge.textContent = n > 99 ? '99+' : String(n);
+    logTabBadge.classList.toggle('show', n > 0);
+  }
+  function renderLogPanel(){
+    var body = byId('logBody');
+    body.innerHTML = '';
+    var any = false;
+    logAllDays().forEach(function(day){
+      if(!day.entries || !day.entries.length) return;
+      any = true;
+      var sep = document.createElement('div');
+      sep.className = 'logDaySep';
+      sep.appendChild(document.createTextNode(logDayLabel(day.date)));
+      body.appendChild(sep);
+      day.entries.slice().reverse().forEach(function(e){
+        var row = document.createElement('div');
+        row.className = 'logRow';
+        var t = document.createElement('span');
+        t.className = 'logRowTime';
+        t.textContent = e.time;
+        var txt = document.createElement('span');
+        txt.className = 'logRowText';
+        txt.textContent = e.icon + ' ' + e.text;
+        row.appendChild(t);
+        row.appendChild(txt);
+        body.appendChild(row);
+      });
+    });
+    if(!any){
+      body.innerHTML = '<div class="logEmpty">아직 기록이 없어요.<br>직원들이 움직이면 여기에 쌓입니다.</div>';
+    }
+  }
+  function openLogPanel(){
+    renderLogPanel();
+    logPanel.classList.add('open');
+    logSeenTs = Date.now();
+    try{ localStorage.setItem(LOGSEEN_KEY, String(logSeenTs)); }catch(e){}
+    updateLogBadge();
+  }
+  function closeLogPanel(){ logPanel.classList.remove('open'); }
+  logTab.addEventListener('click', function(){
+    logPanel.classList.contains('open') ? closeLogPanel() : openLogPanel();
+  });
+  byId('logCloseX').addEventListener('click', closeLogPanel);
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && logPanel.classList.contains('open')) closeLogPanel();
+  });
+  // 새 기록이 들어오면 배지를 올리고, 열려 있으면 바로 반영한다
+  function onDayLogAppended(){
+    if(logPanel.classList.contains('open')){
+      renderLogPanel();
+      logSeenTs = Date.now();
+      try{ localStorage.setItem(LOGSEEN_KEY, String(logSeenTs)); }catch(e){}
+    }
+    updateLogBadge();
+  }
+  updateLogBadge();
+
+  // ===== 좁은 화면: 세로바를 서랍으로 =====
+  var sideBar = byId('sideBar');
+  var sideScrim = byId('sideScrim');
+  function closeSideBar(){
+    sideBar.classList.remove('open');
+    sideScrim.classList.remove('show');
+  }
+  byId('sideToggle').addEventListener('click', function(){
+    sideBar.classList.add('open');
+    sideScrim.classList.add('show');
+  });
+  sideScrim.addEventListener('click', closeSideBar);
+  // 서랍에서 항목을 고르면 닫는다 (넓은 화면에서는 서랍이 아니라 무해)
+  sideBar.addEventListener('click', function(e){
+    if(e.target.closest('.sideBtn')) closeSideBar();
+  });
 
   var dayLogOverlay = byId('dayLogOverlay');
   function renderDayLog(){
