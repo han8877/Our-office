@@ -306,6 +306,83 @@
   #introScreen .enterBtn{ font-size:15px; padding:13px 30px; height:auto; }
   #introScreen .introCopyright{ position:absolute; left:0; right:0; bottom:20px; font-size:10.5px; color:#8a8a86; line-height:1.6; }
 
+  /* ===== 배경: 서울 도시 풍경 (시간대별 하늘) ===== */
+  /* 기본값은 낮. 시각에 따라 body[data-sky]가 바뀌면서 아래 팔레트로 갈아탄다 */
+  :root{
+    --sky-top:#7fb8dd; --sky-mid:#b6dcef; --sky-bot:#e2f1f7;
+    --mtn-far:#a9bcc2; --mtn-near:#8fa6ac; --bldg:#b3c3ca; --bldg2:#c3d0d6;
+    --palace:#a98f7e; --palace-roof:#8a6f66;
+    --river:#a6cde1; --river2:#8fbdd4;
+    --win-op:0; --star-op:0; --sun-op:1; --moon-op:0; --haze:#ffffff; --haze-op:0.30;
+  }
+  body[data-sky="dawn"]{
+    --sky-top:#3a4470; --sky-mid:#8b7fa8; --sky-bot:#e9a98c;
+    --mtn-far:#4a5273; --mtn-near:#3a405c; --bldg:#454b66; --bldg2:#525872;
+    --palace:#4e4459; --palace-roof:#3d3648;
+    --river:#4c5678; --river2:#3e4867;
+    --win-op:0.75; --star-op:0.35; --sun-op:0; --moon-op:0.5; --haze:#f0b58f; --haze-op:0.22;
+  }
+  body[data-sky="morning"]{
+    --sky-top:#8fbfe0; --sky-mid:#cfe4f1; --sky-bot:#f8e6d6;
+    --mtn-far:#a8b7bb; --mtn-near:#8fa2a6; --bldg:#b4c1c7; --bldg2:#c6d1d6;
+    --palace:#ad9382; --palace-roof:#8e746a;
+    --river:#aed0e2; --river2:#95bcd2;
+    --win-op:0; --star-op:0; --sun-op:1; --moon-op:0; --haze:#ffe6cc; --haze-op:0.32;
+  }
+  body[data-sky="day"]{
+    --sky-top:#7fb8dd; --sky-mid:#b6dcef; --sky-bot:#e2f1f7;
+    --mtn-far:#a9bcc2; --mtn-near:#8fa6ac; --bldg:#b3c3ca; --bldg2:#c3d0d6;
+    --palace:#a98f7e; --palace-roof:#8a6f66;
+    --river:#a6cde1; --river2:#8fbdd4;
+    --win-op:0; --star-op:0; --sun-op:1; --moon-op:0; --haze:#ffffff; --haze-op:0.30;
+  }
+  body[data-sky="sunset"]{
+    --sky-top:#7b93b8; --sky-mid:#f0b184; --sky-bot:#f2c9a0;
+    --mtn-far:#8a7080; --mtn-near:#6e5768; --bldg:#9c7b78; --bldg2:#b08d85;
+    --palace:#9c7566; --palace-roof:#7d5a52;
+    --river:#e0a684; --river2:#c98a70;
+    --win-op:0.35; --star-op:0; --sun-op:1; --moon-op:0; --haze:#ffcf9e; --haze-op:0.34;
+  }
+  body[data-sky="dusk"]{
+    --sky-top:#2f3a63; --sky-mid:#5c5480; --sky-bot:#9c6f8e;
+    --mtn-far:#3b3c5c; --mtn-near:#2e2f4a; --bldg:#3a3852; --bldg2:#474463;
+    --palace:#4a3f4e; --palace-roof:#3a313f;
+    --river:#3c3f68; --river2:#323454;
+    --win-op:0.9; --star-op:0.5; --sun-op:0; --moon-op:1; --haze:#8f7aa0; --haze-op:0.20;
+  }
+  body[data-sky="night"]{
+    --sky-top:#141d33; --sky-mid:#22304d; --sky-bot:#33415f;
+    --mtn-far:#1a2138; --mtn-near:#121728; --bldg:#1b2338; --bldg2:#252e46;
+    --palace:#2b2536; --palace-roof:#1f1a29;
+    --river:#18213c; --river2:#131a30;
+    --win-op:1; --star-op:1; --sun-op:0; --moon-op:1; --haze:#3b4a6e; --haze-op:0.18;
+  }
+  /* 원경답게 채도를 조금 낮춰 사무실이 계속 주인공으로 보이게 한다 */
+  #cityBg{ position:fixed; inset:0; z-index:-1; pointer-events:none; filter:saturate(0.88); }
+  #cityBg svg{ width:100%; height:100%; display:block; }
+  #cityBg .skyStop1{ stop-color:var(--sky-top); }
+  #cityBg .skyStop2{ stop-color:var(--sky-mid); }
+  #cityBg .skyStop3{ stop-color:var(--sky-bot); }
+  #cityBg .mtnFar{ fill:var(--mtn-far); }
+  #cityBg .mtnNear{ fill:var(--mtn-near); }
+  #cityBg .bldg{ fill:var(--bldg); }
+  #cityBg .bldg2{ fill:var(--bldg2); }
+  #cityBg .palace{ fill:var(--palace); }
+  #cityBg .palaceRoof{ fill:var(--palace-roof); }
+  #cityBg .river{ fill:var(--river); }
+  #cityBg .river2{ fill:var(--river2); }
+  #cityBg .winLight{ fill:#ffd98a; opacity:var(--win-op); }
+  #cityBg .star{ fill:#fff; opacity:var(--star-op); }
+  #cityBg #bgSun{ opacity:var(--sun-op); }
+  #cityBg #bgMoon{ opacity:var(--moon-op); }
+  #cityBg .haze{ fill:var(--haze); opacity:var(--haze-op); }
+  /* 색 전환은 천천히 — 시간대가 넘어갈 때 툭 끊기지 않게 */
+  #cityBg *{ transition:fill .9s ease, opacity .9s ease, stop-color .9s ease; }
+  @media (prefers-reduced-motion: reduce){ #cityBg *{ transition:none; } }
+  /* 배경 위에 떠 있도록 사무실 카드에 그림자 */
+  #stage{ box-shadow:0 6px 22px rgba(40,50,70,.16); }
+  #sideBar{ box-shadow:0 4px 16px rgba(40,50,70,.13); }
+
   /* ===== 3단 레이아웃: 왼쪽 세로바 / 사무실 / 오른쪽 로그 ===== */
   #appShell{ width:100%; max-width:1094px; display:flex; align-items:flex-start; gap:10px; }
   #mainCol{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; }
@@ -450,6 +527,159 @@
     <div>© 2026 우리의 사무실. All rights reserved.</div>
     <div>Made by Han JH</div>
   </div>
+</div>
+
+<!-- 배경: 서울 풍경. 사무실 카드 양옆으로 드러난다 -->
+<div id="cityBg" aria-hidden="true">
+<svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bgSkyGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop class="skyStop1" offset="0%"/>
+    <stop class="skyStop2" offset="52%"/>
+    <stop class="skyStop3" offset="100%"/>
+  </linearGradient>
+  <linearGradient id="bgRiverGrad" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--river)"/>
+    <stop offset="100%" stop-color="var(--river2)"/>
+  </linearGradient>
+</defs>
+
+<rect x="0" y="0" width="1600" height="900" fill="url(#bgSkyGrad)"/>
+
+<!-- 별 (밤에만 보인다) -->
+<g class="star">
+  <circle cx="120" cy="90" r="2"/><circle cx="260" cy="150" r="1.5"/><circle cx="410" cy="70" r="1.8"/>
+  <circle cx="540" cy="180" r="1.4"/><circle cx="700" cy="110" r="2"/><circle cx="860" cy="60" r="1.6"/>
+  <circle cx="1010" cy="160" r="1.8"/><circle cx="1150" cy="95" r="1.4"/><circle cx="1290" cy="190" r="2"/>
+  <circle cx="1420" cy="120" r="1.6"/><circle cx="1530" cy="220" r="1.5"/><circle cx="330" cy="250" r="1.3"/>
+  <circle cx="640" cy="300" r="1.2"/><circle cx="960" cy="270" r="1.4"/><circle cx="1360" cy="330" r="1.3"/>
+  <circle cx="200" cy="380" r="1.2"/><circle cx="1480" cy="420" r="1.2"/>
+</g>
+
+<!-- 해 / 달: 시각에 따라 JS가 위치를 옮긴다 -->
+<g id="bgSun"><circle id="bgSunCore" cx="800" cy="200" r="42" fill="#ffe0a3"/>
+  <circle cx="800" cy="200" r="66" fill="#ffe0a3" opacity="0.22" id="bgSunGlow"/></g>
+<g id="bgMoon"><circle id="bgMoonCore" cx="400" cy="200" r="34" fill="#f4f1e4"/>
+  <circle id="bgMoonBite" cx="386" cy="188" r="28" fill="var(--sky-top)"/></g>
+
+<!-- 원경 산줄기 (북한산·인왕산 능선) -->
+<path class="mtnFar" d="M 0 640 L 90 520 L 170 566 L 250 470 L 340 560 L 430 500 L 520 585 L 600 530
+  L 690 600 L 780 545 L 880 610 L 980 560 L 1070 615 L 1160 570 L 1250 620 L 1340 575 L 1430 625
+  L 1520 590 L 1600 630 L 1600 700 L 0 700 Z"/>
+
+<!-- 남산 + N서울타워 (오른쪽 띠) -->
+<g>
+  <path class="mtnNear" d="M 1210 700 L 1310 545 L 1360 510 L 1412 548 L 1500 700 Z"/>
+  <rect class="bldg" x="1355" y="392" width="10" height="120"/>
+  <path class="bldg2" d="M 1345 396 L 1375 396 L 1369 372 L 1351 372 Z"/>
+  <ellipse class="bldg2" cx="1360" cy="366" rx="19" ry="8"/>
+  <rect class="bldg2" x="1352" y="348" width="16" height="19" rx="2"/>
+  <rect class="bldg" x="1358.5" y="316" width="3" height="34"/>
+  <circle class="winLight" cx="1360" cy="366" r="2.6"/>
+  <circle class="winLight" cx="1352" cy="367" r="1.8"/>
+  <circle class="winLight" cx="1368" cy="367" r="1.8"/>
+</g>
+
+<!-- 도심 빌딩 스카이라인 -->
+<g>
+  <rect class="bldg" x="70" y="560" width="54" height="140"/>
+  <rect class="bldg2" x="132" y="596" width="42" height="104"/>
+  <rect class="bldg" x="182" y="540" width="38" height="160"/>
+  <rect class="bldg2" x="470" y="580" width="60" height="120"/>
+  <rect class="bldg" x="540" y="546" width="44" height="154"/>
+  <rect class="bldg2" x="592" y="600" width="52" height="100"/>
+  <path class="bldg" d="M 700 700 L 700 520 L 730 496 L 760 520 L 760 700 Z"/>
+  <rect class="bldg2" x="772" y="574" width="48" height="126"/>
+  <rect class="bldg" x="830" y="604" width="40" height="96"/>
+  <rect class="bldg2" x="1030" y="566" width="46" height="134"/>
+  <rect class="bldg" x="1086" y="602" width="54" height="98"/>
+  <rect class="bldg2" x="1150" y="578" width="38" height="122"/>
+  <!-- 롯데월드타워 -->
+  <path class="bldg" d="M 1508 700 L 1516 420 L 1530 372 L 1544 420 L 1552 700 Z"/>
+  <rect class="bldg2" x="1470" y="596" width="32" height="104"/>
+  <!-- 63빌딩 -->
+  <path class="bldg2" d="M 262 700 L 268 512 L 300 500 L 306 700 Z"/>
+</g>
+<!-- 건물 창문 불빛 -->
+<g class="winLight">
+  <rect x="80" y="580" width="6" height="9"/><rect x="94" y="580" width="6" height="9"/>
+  <rect x="80" y="600" width="6" height="9"/><rect x="108" y="600" width="6" height="9"/>
+  <rect x="80" y="620" width="6" height="9"/><rect x="94" y="640" width="6" height="9"/>
+  <rect x="190" y="560" width="6" height="9"/><rect x="204" y="560" width="6" height="9"/>
+  <rect x="190" y="586" width="6" height="9"/><rect x="204" y="612" width="6" height="9"/>
+  <rect x="276" y="530" width="6" height="9"/><rect x="290" y="556" width="6" height="9"/>
+  <rect x="276" y="590" width="6" height="9"/><rect x="290" y="630" width="6" height="9"/>
+  <rect x="480" y="600" width="6" height="9"/><rect x="500" y="600" width="6" height="9"/>
+  <rect x="480" y="626" width="6" height="9"/><rect x="512" y="648" width="6" height="9"/>
+  <rect x="550" y="566" width="6" height="9"/><rect x="566" y="592" width="6" height="9"/>
+  <rect x="550" y="620" width="6" height="9"/><rect x="566" y="654" width="6" height="9"/>
+  <rect x="712" y="540" width="6" height="9"/><rect x="734" y="566" width="6" height="9"/>
+  <rect x="712" y="596" width="6" height="9"/><rect x="740" y="630" width="6" height="9"/>
+  <rect x="784" y="594" width="6" height="9"/><rect x="802" y="620" width="6" height="9"/>
+  <rect x="784" y="648" width="6" height="9"/>
+  <rect x="1040" y="586" width="6" height="9"/><rect x="1058" y="612" width="6" height="9"/>
+  <rect x="1040" y="640" width="6" height="9"/><rect x="1058" y="666" width="6" height="9"/>
+  <rect x="1096" y="622" width="6" height="9"/><rect x="1116" y="648" width="6" height="9"/>
+  <rect x="1160" y="598" width="6" height="9"/><rect x="1174" y="630" width="6" height="9"/>
+  <rect x="1522" y="470" width="5" height="8"/><rect x="1534" y="510" width="5" height="8"/>
+  <rect x="1522" y="556" width="5" height="8"/><rect x="1534" y="606" width="5" height="8"/>
+  <rect x="1480" y="616" width="6" height="9"/><rect x="1490" y="648" width="6" height="9"/>
+</g>
+
+<!-- 경복궁 (왼쪽 띠): 광화문과 근정전 지붕. 원경이라 바닥선을 맞춰 축소한다 -->
+<g transform="translate(103.5,315) scale(0.55)">
+  <rect class="palace" x="150" y="656" width="152" height="44"/>
+  <path class="palaceRoof" d="M 138 656 L 170 630 L 282 630 L 314 656 Z"/>
+  <rect class="palace" x="176" y="668" width="22" height="32" rx="10"/>
+  <rect class="palace" x="215" y="668" width="22" height="32" rx="10"/>
+  <rect class="palace" x="254" y="668" width="22" height="32" rx="10"/>
+  <!-- 뒤편 근정전 -->
+  <path class="palaceRoof" d="M 186 630 L 214 606 L 250 606 L 278 630 Z"/>
+  <path class="palaceRoof" d="M 200 606 L 222 588 L 242 588 L 264 606 Z"/>
+  <!-- 담장 -->
+  <rect class="palace" x="60" y="674" width="86" height="26"/>
+  <rect class="palace" x="306" y="674" width="96" height="26"/>
+</g>
+
+<!-- 한강 -->
+<rect class="river" x="0" y="700" width="1600" height="200" fill="url(#bgRiverGrad)"/>
+<!-- 물비늘 -->
+<g class="river2" opacity="0.55">
+  <rect x="60" y="742" width="90" height="3" rx="1.5"/><rect x="200" y="768" width="120" height="3" rx="1.5"/>
+  <rect x="380" y="736" width="80" height="3" rx="1.5"/><rect x="520" y="790" width="140" height="3" rx="1.5"/>
+  <rect x="700" y="754" width="100" height="3" rx="1.5"/><rect x="880" y="800" width="120" height="3" rx="1.5"/>
+  <rect x="1060" y="744" width="90" height="3" rx="1.5"/><rect x="1220" y="782" width="130" height="3" rx="1.5"/>
+  <rect x="1400" y="750" width="100" height="3" rx="1.5"/><rect x="150" y="828" width="110" height="3" rx="1.5"/>
+  <rect x="620" y="846" width="90" height="3" rx="1.5"/><rect x="1120" y="838" width="120" height="3" rx="1.5"/>
+</g>
+<!-- 한강다리: 화면을 가로질러 양옆 어디서든 보인다 -->
+<g>
+  <rect class="bldg" x="0" y="726" width="1600" height="9"/>
+  <g class="bldg2">
+    <rect x="70" y="735" width="13" height="46"/><rect x="250" y="735" width="13" height="46"/>
+    <rect x="430" y="735" width="13" height="46"/><rect x="610" y="735" width="13" height="46"/>
+    <rect x="790" y="735" width="13" height="46"/><rect x="970" y="735" width="13" height="46"/>
+    <rect x="1150" y="735" width="13" height="46"/><rect x="1330" y="735" width="13" height="46"/>
+    <rect x="1510" y="735" width="13" height="46"/>
+  </g>
+  <!-- 아치 -->
+  <g fill="none" stroke="var(--bldg2)" stroke-width="7">
+    <path d="M 70 726 Q 160 676 250 726"/><path d="M 250 726 Q 340 676 430 726"/>
+    <path d="M 430 726 Q 520 676 610 726"/><path d="M 610 726 Q 700 676 790 726"/>
+    <path d="M 790 726 Q 880 676 970 726"/><path d="M 970 726 Q 1060 676 1150 726"/>
+    <path d="M 1150 726 Q 1240 676 1330 726"/><path d="M 1330 726 Q 1420 676 1510 726"/>
+  </g>
+  <!-- 가로등 -->
+  <g class="winLight">
+    <circle cx="160" cy="716" r="3.4"/><circle cx="340" cy="716" r="3.4"/><circle cx="520" cy="716" r="3.4"/>
+    <circle cx="700" cy="716" r="3.4"/><circle cx="880" cy="716" r="3.4"/><circle cx="1060" cy="716" r="3.4"/>
+    <circle cx="1240" cy="716" r="3.4"/><circle cx="1420" cy="716" r="3.4"/>
+  </g>
+</g>
+
+<!-- 지평선 안개: 도시와 하늘을 부드럽게 잇는다 -->
+<rect class="haze" x="0" y="612" width="1600" height="96"/>
+</svg>
 </div>
 
 <div id="appShell">
@@ -3271,6 +3501,38 @@
 
   function pad(n){ return n<10 ? '0'+n : ''+n; }
 
+  // ===== 배경 서울 풍경: 시각에 맞춰 하늘 단계와 해·달 위치를 바꾼다 =====
+  function skyPhaseFor(h){
+    if(h < 4)  return 'night';
+    if(h < 6)  return 'dawn';
+    if(h < 9)  return 'morning';
+    if(h < 16) return 'day';
+    if(h < 19) return 'sunset';
+    if(h < 22) return 'dusk';
+    return 'night';
+  }
+  var bgSunCore = byId('bgSunCore'), bgSunGlow = byId('bgSunGlow');
+  var bgMoonCore = byId('bgMoonCore'), bgMoonBite = byId('bgMoonBite');
+  var lastSkyMinute = -1;
+  function updateCitySky(h, m){
+    // 시계는 1초마다 돌지만 하늘은 분 단위로만 바뀐다
+    if(m === lastSkyMinute) return;
+    lastSkyMinute = m;
+    document.body.setAttribute('data-sky', skyPhaseFor(h));
+    var hf = h + m/60;
+    // 해는 06시에 왼쪽에서 떠 19시에 오른쪽으로 진다
+    var st = Math.min(1, Math.max(0, (hf - 6) / 13));
+    var sx = 180 + st * 1240, sy = 470 - Math.sin(st * Math.PI) * 350;
+    if(bgSunCore){ bgSunCore.setAttribute('cx', sx.toFixed(0)); bgSunCore.setAttribute('cy', sy.toFixed(0)); }
+    if(bgSunGlow){ bgSunGlow.setAttribute('cx', sx.toFixed(0)); bgSunGlow.setAttribute('cy', sy.toFixed(0)); }
+    // 달은 19시부터 06시까지 같은 호를 그린다
+    var mt = ((hf - 19 + 24) % 24) / 11;
+    mt = Math.min(1, Math.max(0, mt));
+    var mx = 180 + mt * 1240, my = 440 - Math.sin(mt * Math.PI) * 330;
+    if(bgMoonCore){ bgMoonCore.setAttribute('cx', mx.toFixed(0)); bgMoonCore.setAttribute('cy', my.toFixed(0)); }
+    if(bgMoonBite){ bgMoonBite.setAttribute('cx', (mx-14).toFixed(0)); bgMoonBite.setAttribute('cy', (my-12).toFixed(0)); }
+  }
+
   function updateClock(){
     var now = new Date();
     var h = now.getHours(), m = now.getMinutes();
@@ -3282,6 +3544,7 @@
     minHand.setAttribute('transform','rotate('+minAngle+' 500 95)');
 
     lunchSign.style.opacity = (h===12) ? 1 : 0;
+    updateCitySky(h, m);
 
     var isNight = (h>=19 || h<7);
     windowOverlay.style.opacity = (isNight || overtimeMode) ? 0.55 : 0;
