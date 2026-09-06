@@ -66,7 +66,8 @@
              font-family:inherit; font-size:12.5px; padding:9px 11px; cursor:pointer; text-align:left; }
   .lkChoice:hover{ background:#f6efe0; }
   .lkChoice:active{ transform:scale(0.985); }
-  #lkOwnerList{ display:grid; grid-template-columns:1fr 1fr; gap:6px; max-height:46vh; overflow-y:auto; }
+  /* 습관 한 줄이 들어가면서 2열로는 폭이 부족해 한 줄에 한 명씩 */
+  #lkOwnerList{ display:flex; flex-direction:column; gap:5px; max-height:52vh; overflow-y:auto; }
   .lkOwner{ border:1.2px solid #ddd8cc; border-radius:7px; background:#fff; color:#5c4a3a;
             font-family:inherit; padding:7px 8px; cursor:pointer; text-align:left;
             display:flex; align-items:center; gap:7px; }
@@ -5341,30 +5342,34 @@
     resolveLockerFind(choice, null);
   });
 
-  // 소속·직무·성격을 한 줄로 요약한다. 물건 주인을 짐작하는 단서가 된다
+  // 주인을 짐작할 단서. 직급·팀은 물건과 무관해 도움이 안 되고, 성격만으로는
+  // 15명이 7종을 나눠 갖게 되어 겹친다. 그래서 성격에 그 사람만의 습관을 붙인다.
   var PERSONA_LABEL = {
     calm:'차분함', warm:'다정함', chatty:'수다쟁이', playful:'장난기',
     quiet:'조용함', meticulous:'꼼꼼함', intern:'새내기'
   };
-  var ROLE_SHORT = {
-    '디자인실장':'실장', '인사담당자':'인사', '회계담당자':'회계', '기획담당':'기획'
+  var STAFF_HABIT = {
+    kobujang:  '자기 물건에 이름을 붙여둔다',
+    nabujang:  '문구류 정리에 집착한다',
+    choiinsa:  '손으로 쓰고 만드는 걸 좋아한다',
+    parkhoegye:'뭐든 분류하고 색인을 단다',
+    kimnote:   '색과 견본에 관심이 많다',
+    leenote:   '쓰던 물건을 끝까지 쓴다',
+    jungnote:  '자리에서 차를 즐긴다',
+    hannote:   '늘 뭔가 놓고 다닌다',
+    jungsti:   '사진 찍는 걸 좋아한다',
+    hansti:    '책상에 자투리가 쌓인다',
+    yoosti:    '작은 소품을 달고 다닌다',
+    chosti:    '주머니에 군것질거리가 있다',
+    yoohongbo: '전시를 자주 보러 다닌다',
+    seohongbo: '손 트는 걸 신경 쓴다',
+    minhongbo: '물건을 자주 잃어버린다'
   };
-  function teamShort(key){
-    return (settings.teams[key] || '')
-      .replace(' 디자인팀','').replace('디자인팀','')
-      .replace('디자인실장실','실장실').replace(/팀$/,'');
-  }
   function staffTagline(s){
-    var parts = [];
-    var team = teamShort(s.teamKey);
-    var role = ROLE_SHORT[s.role] || s.role;
-    if(team) parts.push(team);
-    // 실장실의 '실장'처럼 소속에 이미 드러나는 직무는 겹쳐 쓰지 않는다
-    if(role && team.indexOf(role) === -1) parts.push(role);
-    var persona = PERSONA_LABEL[s.personality];
-    // 인턴은 직무가 곧 설명이라 '새내기'를 덧붙이지 않는다
-    if(persona && !(s.personality === 'intern' && role === '인턴')) parts.push(persona);
-    return parts.join(' · ');
+    var persona = PERSONA_LABEL[s.personality] || '';
+    var habit = STAFF_HABIT[s.id] || '';
+    if(persona && habit) return persona + ' · ' + habit;
+    return persona || habit;
   }
 
   function renderOwnerPicker(){
