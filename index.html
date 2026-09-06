@@ -53,6 +53,24 @@
   .lockerCell:hover{ background:#f6efe0; }
   .lockerCell .lkNum{ font-size:11px; color:#8a8a86; }
   .lockerCell .lkIcon{ font-size:18px; line-height:1; }
+  /* 캐릭터: 눈 깜빡임과 잔잔한 호흡 (주기는 캐릭터마다 JS가 어긋나게 준다) */
+  @keyframes charBlink{
+    0%, 94%, 100% { transform:scaleY(1); }
+    96.5%         { transform:scaleY(0.1); }
+  }
+  .charEyes{
+    transform-box:fill-box; transform-origin:center;
+    animation:charBlink 5.6s ease-in-out infinite;
+  }
+  @keyframes charBreathe{
+    0%, 100% { transform:translateY(0); }
+    50%      { transform:translateY(-0.45px); }
+  }
+  .charBody{ animation:charBreathe 3.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){
+    .charEyes, .charBody{ animation:none; }
+  }
+
   /* R-도우미: 제자리에서 아주 살짝 위아래로 부유 */
   @keyframes rHelperFloat{
     0%   { transform: translateY(0); }
@@ -2425,6 +2443,65 @@
     // stroke="none": 캐릭터 그룹의 외곽선이 무늬 속 도형까지 물려 내려오면 안 된다
     return '<defs><pattern stroke="none" id="'+pid+'" width="6" height="6" patternUnits="userSpaceOnUse"'+transform+'>'+body+'</pattern></defs>';
   }
+  // ---- 표정: 눈과 입만 갈아끼운다. 코와 볼터치는 고정 ----
+  var MOODS = ['normal','happy','tired','surprised','focused'];
+  function faceMarkup(kind, mood){
+    if(MOODS.indexOf(mood) === -1) mood = 'normal';
+    var eyes = '', mouth = '';
+
+    if(kind === 'frog'){
+      // 개구리는 눈이 머리 위로 솟아 있어 좌표가 다르다. 흰자는 그대로 두고 눈동자만 바꾼다
+      var pr = (mood==='surprised') ? 1.9 : (mood==='focused') ? 1.1 : 1.4;
+      var py = (mood==='tired') ? -41.1 : -42;
+      eyes += '<circle cx="-7" cy="'+py+'" r="'+pr+'" fill="'+DARK+'" stroke="none"/><circle cx="7" cy="'+py+'" r="'+pr+'" fill="'+DARK+'" stroke="none"/>';
+      if(mood !== 'tired'){
+        eyes += '<circle cx="-6.5" cy="'+(py-0.6)+'" r="0.5" fill="#fff" stroke="none"/><circle cx="7.5" cy="'+(py-0.6)+'" r="0.5" fill="#fff" stroke="none"/>';
+      }
+      var fd = { normal:'M -6 -27 Q 0 -25 6 -27', happy:'M -6.5 -27.8 Q 0 -22.4 6.5 -27.8',
+                 tired:'M -5 -25.6 Q 0 -27.6 5 -25.6', surprised:'M -3.2 -26.6 Q 0 -22.8 3.2 -26.6',
+                 focused:'M -5.5 -26.2 L 5.5 -26.2' }[mood];
+      mouth = '<path d="'+fd+'" fill="none" stroke="'+DARK+'" stroke-width="0.9" stroke-linecap="round"/>';
+      return '<g class="charEyes">'+eyes+'</g>'+mouth;
+    }
+
+    if(mood === 'happy'){
+      // 위로 볼록한 호 = 웃는 눈
+      eyes += '<path d="M -6.8 -30.7 Q -4.7 -33.9 -2.6 -30.7" fill="none" stroke="'+DARK+'" stroke-width="1.5" stroke-linecap="round"/>';
+      eyes += '<path d="M 2.6 -30.7 Q 4.7 -33.9 6.8 -30.7" fill="none" stroke="'+DARK+'" stroke-width="1.5" stroke-linecap="round"/>';
+    } else if(mood === 'tired'){
+      // 아래로 볼록한 호 = 반쯤 감긴 눈
+      eyes += '<path d="M -6.8 -32 Q -4.7 -29.4 -2.6 -32" fill="none" stroke="'+DARK+'" stroke-width="1.5" stroke-linecap="round"/>';
+      eyes += '<path d="M 2.6 -32 Q 4.7 -29.4 6.8 -32" fill="none" stroke="'+DARK+'" stroke-width="1.5" stroke-linecap="round"/>';
+    } else if(mood === 'surprised'){
+      eyes += '<circle cx="-4.7" cy="-31.5" r="2.7" fill="'+DARK+'" stroke="none"/><circle cx="4.7" cy="-31.5" r="2.7" fill="'+DARK+'" stroke="none"/>';
+      eyes += '<circle cx="-3.8" cy="-32.5" r="0.95" fill="#fff" stroke="none"/><circle cx="5.6" cy="-32.5" r="0.95" fill="#fff" stroke="none"/>';
+    } else if(mood === 'focused'){
+      // 가로로 눌린 눈 = 집중한 표정
+      eyes += '<ellipse cx="-4.7" cy="-31.4" rx="2.1" ry="1.35" fill="'+DARK+'" stroke="none"/><ellipse cx="4.7" cy="-31.4" rx="2.1" ry="1.35" fill="'+DARK+'" stroke="none"/>';
+      eyes += '<circle cx="-4.1" cy="-31.9" r="0.55" fill="#fff" stroke="none"/><circle cx="5.3" cy="-31.9" r="0.55" fill="#fff" stroke="none"/>';
+    } else {
+      eyes += '<circle cx="-4.7" cy="-31.4" r="2.0" fill="'+DARK+'" stroke="none"/><circle cx="4.7" cy="-31.4" r="2.0" fill="'+DARK+'" stroke="none"/>';
+      eyes += '<circle cx="-4.0" cy="-32.2" r="0.7" fill="#fff" stroke="none"/><circle cx="5.4" cy="-32.2" r="0.7" fill="#fff" stroke="none"/>';
+    }
+
+    if(mood === 'happy'){
+      mouth = '<path d="M -2.9 -25.5 Q 0 -22.3 2.9 -25.5" fill="none" stroke="'+DARK+'" stroke-width="0.9" stroke-linecap="round"/>';
+    } else if(mood === 'tired'){
+      mouth = '<path d="M -2.4 -23.9 Q 0 -25.7 2.4 -23.9" fill="none" stroke="'+DARK+'" stroke-width="0.85" stroke-linecap="round"/>';
+    } else if(mood === 'surprised'){
+      mouth = '<ellipse cx="0" cy="-24.1" rx="1.35" ry="1.75" fill="'+DARK+'" stroke="none"/>';
+    } else if(mood === 'focused'){
+      mouth = '<path d="M -2.4 -24.6 L 2.4 -24.6" fill="none" stroke="'+DARK+'" stroke-width="0.85" stroke-linecap="round"/>';
+    } else {
+      mouth = '<path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.8" stroke-linecap="round"/>'
+            + '<path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.8" stroke-linecap="round"/>';
+    }
+    // 코는 표정과 무관하게 유지
+    return '<g class="charEyes">'+eyes+'</g>'
+         + '<ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="'+DARK+'" stroke="none"/>'
+         + mouth;
+  }
+
   function buildPixelChar(kind, uid, s){
     var palKey = (s && s.palKey) || kind;
     var pal = kindPalette[palKey] || kindPalette.cat;
@@ -2433,7 +2510,7 @@
     var patternDefs = (s && s.pattern) ? shirtPatternDefs(uid, shirt, s.pattern) : null;
     var shirtFill = patternDefs ? 'url(#pat-'+uid+')' : shirt;
 
-    var svg = '<g stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'" stroke-linejoin="round">';
+    var svg = '<g class="charBody" stroke="'+OUTLINE_COLOR+'" stroke-width="'+OUTLINE_W+'" stroke-linejoin="round">';
     if(patternDefs) svg += patternDefs;
 
     // 다리 + 신발
@@ -2458,22 +2535,14 @@
       svg += '<circle cx="0" cy="-33" r="10.5" fill="'+pal.base+'"/>';
       svg += '<circle cx="-7" cy="-42" r="4.2" fill="'+pal.base+'"/><circle cx="7" cy="-42" r="4.2" fill="'+pal.base+'"/>';
       svg += '<circle cx="-7" cy="-42" r="2.3" fill="#fff" stroke="none"/><circle cx="7" cy="-42" r="2.3" fill="#fff" stroke="none"/>';
-      svg += '<circle cx="-7" cy="-42" r="1.4" fill="'+DARK+'" stroke="none"/><circle cx="7" cy="-42" r="1.4" fill="'+DARK+'" stroke="none"/>';
-      svg += '<circle cx="-6.5" cy="-42.6" r="0.5" fill="#fff" stroke="none"/><circle cx="7.5" cy="-42.6" r="0.5" fill="#fff" stroke="none"/>';
-      svg += '<path d="M -6 -27 Q 0 -25 6 -27" fill="none" stroke="'+DARK+'" stroke-width="0.9" stroke-linecap="round"/>';
     } else {
       // 머리
       svg += '<circle cx="0" cy="-31" r="12.6" fill="'+pal.base+'"/>';
       // 볼터치
       svg += '<ellipse cx="-8.0" cy="-27.2" rx="2.5" ry="1.7" fill="'+BLUSH+'" opacity="0.7" stroke="none"/><ellipse cx="8.0" cy="-27.2" rx="2.5" ry="1.7" fill="'+BLUSH+'" opacity="0.7" stroke="none"/>';
-      // 눈 (+ 하이라이트)
-      svg += '<circle cx="-4.7" cy="-31.4" r="2.0" fill="'+DARK+'" stroke="none"/><circle cx="4.7" cy="-31.4" r="2.0" fill="'+DARK+'" stroke="none"/>';
-      svg += '<circle cx="-4.0" cy="-32.2" r="0.7" fill="#fff" stroke="none"/><circle cx="5.4" cy="-32.2" r="0.7" fill="#fff" stroke="none"/>';
-      // 코+입
-      svg += '<ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="'+DARK+'" stroke="none"/>';
-      svg += '<path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.8" stroke-linecap="round"/>';
-      svg += '<path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="'+DARK+'" stroke-width="0.8" stroke-linecap="round"/>';
     }
+    // 눈·입은 표정에 따라 통째로 갈아끼우므로 별도 그룹에 둔다
+    svg += '<g class="charFace">' + faceMarkup(kind, 'normal') + '</g>';
 
     acc.forEach(function(a){ if(a!=='necklace') svg += accessoryMarkup(a); });
 
@@ -2489,11 +2558,37 @@
     g.setAttribute('data-name', s.name);
     g.style.transform = 'translate('+s.x+'px,'+s.y+'px)';
     g.innerHTML = buildPixelChar(s.kind, s.id, s);
+    // 깜빡임·호흡 주기를 사람마다 어긋나게 해서 다 같이 움직이지 않게 한다
+    var eyes = g.querySelector('.charEyes');
+    if(eyes) eyes.style.animationDelay = (Math.random()*5.5).toFixed(2)+'s';
+    var body = g.querySelector('.charBody');
+    if(body) body.style.animationDelay = (Math.random()*3).toFixed(2)+'s';
     charLayer.appendChild(g);
   });
 
   function byId(id){ return document.getElementById(id); }
   function charEl(id){ return byId('char-'+id); }
+
+  // ---- 표정 바꾸기. ms를 주면 그 시간 뒤 기본 표정으로 되돌아온다 ----
+  var moodTimers = {};
+  function setMood(id, mood, ms){
+    var el = charEl(id);
+    if(!el) return;
+    var s = staffMap[id];
+    if(!s) return;
+    var face = el.querySelector('.charFace');
+    if(!face) return;
+    face.innerHTML = faceMarkup(s.kind, mood);
+    var eyes = face.querySelector('.charEyes');
+    if(eyes) eyes.style.animationDelay = (Math.random()*5.5).toFixed(2)+'s';
+    clearTimeout(moodTimers[id]);
+    if(ms){
+      moodTimers[id] = setTimeout(function(){ setMood(id, 'normal'); }, ms);
+    }
+  }
+  function setMoodAll(ids, mood, ms){
+    (ids||[]).forEach(function(x){ setMood(x.id || x, mood, ms); });
+  }
 
   function toast(msg){
     var t = byId('toast');
@@ -3996,7 +4091,7 @@
       var called = shuffled.slice(0, callCount);
       if(typeof logDayEvent === 'function') logDayEvent('🌃', '야근 — '+called.map(function(s){return s.name;}).join('·')+'가 남았습니다');
       called.forEach(function(s, i){
-        setTimeout(function(){ walkIn(s, null, true); }, i*260);
+        setTimeout(function(){ walkIn(s, null, true); setMood(s.id, 'tired'); }, i*260);
         bumpOvertime(s.id);
         overtimeStaffIds[s.id] = true;
         // 야근 인원은 10~15분(랜덤) 머무른 뒤 스스로 퇴근한다
@@ -4004,6 +4099,7 @@
         overtimeTimers[s.id] = setTimeout(function(){
           delete overtimeTimers[s.id];
           delete overtimeStaffIds[s.id];
+          setMood(s.id, 'normal');
           walkOut(s, null, true);
           if(Object.keys(overtimeStaffIds).length === 0){
             // 마지막 야근 인원이 퇴근하면 완전 소등 대신 '어스름' 단계로 내려간다
@@ -4016,6 +4112,7 @@
     } else {
       // 사용자가 직접 야근모드를 끄면, 예약된 개별 퇴근 타이머는 모두 취소하고 현재 시각 기준으로 재정렬
       Object.keys(overtimeTimers).forEach(function(id){ clearTimeout(overtimeTimers[id]); delete overtimeTimers[id]; });
+      Object.keys(overtimeStaffIds).forEach(function(id){ setMood(id, 'normal'); });
       overtimeStaffIds = {};
       toast('야근모드를 종료합니다');
       var now = new Date();
@@ -4038,7 +4135,11 @@
   var inMeeting = {}; // 현재 회의 중인 직원 id 추적
   var busyStaff = {}; // 회의/탕비실/방문객 이벤트 등 다른 동작 중인 직원(중복 참여 방지)
   function markBusy(id){ busyStaff[id] = true; }
-  function clearBusy(id){ delete busyStaff[id]; }
+  // 이벤트가 끝나면 표정도 기본으로 되돌린다 (호출 지점마다 챙기지 않아도 되게)
+  function clearBusy(id){
+    delete busyStaff[id];
+    if(typeof setMood === 'function') setMood(id, 'normal');
+  }
   function isBusy(id){ return !!busyStaff[id]; }
 
   meetingBtn.addEventListener('click', function(){
@@ -4073,6 +4174,7 @@
       markBusy(s.id);
       travelTo(s, meetingSeats[i], 62);
     });
+    setMoodAll(chosen, 'focused');
     toast('회의를 시작합니다 — ' + chosen.map(function(s){return s.name;}).join(', '));
     if(chosen.length && typeof pushChat === 'function'){
       var starter = chosen[0];
@@ -4089,6 +4191,7 @@
         delete inMeeting[s.id];
         clearBusy(s.id);
       });
+      setMoodAll(chosen, 'normal');
       meetingBtn.disabled = false;
       byId('meetingLabel').textContent = '회의';
       toast('회의가 끝났습니다');
@@ -4146,6 +4249,7 @@
     });
     toast(chosen.map(function(s){return s.name;}).join(', ')+'이(가) 탕비실로 향합니다');
     if(typeof logDayEvent === 'function') logDayEvent('☕', chosen.map(function(s){return s.name;}).join('·')+' 탕비실에서 쉬는 중');
+    setMoodAll(chosen, 'happy');
 
     setTimeout(function(){
       var pair = breakDialogues[Math.floor(Math.random()*breakDialogues.length)];
@@ -4306,11 +4410,12 @@
 
   var visitorEventActive = false;
 
-  function allPresentStaffSay(text){
+  function allPresentStaffSay(text, mood){
     var present = staff.filter(function(s){ return charEl(s.id).classList.contains('present'); });
     present.forEach(function(s, i){
       setTimeout(function(){ showBubble(s, text); }, i*60);
     });
+    if(mood) setMoodAll(present, mood, 3600);
   }
 
   function ensureStaffOnStage(id){
@@ -4478,7 +4583,7 @@
     var bossObj = { id:visitorDefs.boss.id };
     setPos(bossObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
     charEl(bossObj.id).classList.add('present');
-    allPresentStaffSay('!!!');
+    allPresentStaffSay('!!!', 'surprised');
     if(typeof logDayEvent === 'function') logDayEvent('👑', '사장님 방문 — 탕비실 간식이 채워졌습니다');
 
     setTimeout(function(){
@@ -4498,7 +4603,7 @@
     }, 26500);
 
     setTimeout(function(){
-      allPresentStaffSay('감사합니다!');
+      allPresentStaffSay('감사합니다!', 'happy');
     }, 27600);
 
     setTimeout(function(){
@@ -4660,6 +4765,7 @@
     var chosen = pool.slice().sort(function(){ return Math.random()-0.5; }).slice(0,3);
     toast(chosen.map(function(s){ return s.name; }).join(', ') + '이(가) 라운지로 향합니다');
     if(typeof logDayEvent === 'function') logDayEvent('🛋️', '라운지 휴식');
+    setMoodAll(chosen, 'happy');
 
     var lines = loungeDialogues[Math.floor(Math.random()*loungeDialogues.length)];
     // 세 명이 모두 소파에 앉은 뒤에 대화를 시작한다
@@ -4846,6 +4952,7 @@
     raiseChar(s);
     toast(s.name + '이(가) 아트코너로 향합니다');
     if(typeof logDayEvent === 'function') logDayEvent('🗿', '아트코너 방문');
+    setMoodAll(chosen, 'happy');
 
     // 조각품 앞에 도착한 뒤에 말하도록 도착 콜백에서 띄운다
     travelTo(s, ART_SPOT, 62, function(){
@@ -4885,6 +4992,7 @@
     var chosen = pool.slice(0, STOCK_SPOTS.length);
     toast(chosen.map(function(s){ return s.name; }).join(', ') + '이(가) 재고 확인을 하러 갑니다');
     if(typeof logDayEvent === 'function') logDayEvent('📦', '재고 확인');
+    setMoodAll(chosen, 'focused');
 
     // 전원이 자리를 잡은 뒤에 대화를 시작한다
     var arrived = 0;
@@ -4967,6 +5075,7 @@
         raiseChar(s);
         travelTo(s, multiSeats[i], 62, onArrive);
       });
+      setMoodAll(chosen, 'focused');
     }, 1900);
 
     function runLesson(){
