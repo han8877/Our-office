@@ -5393,13 +5393,14 @@
     resolveLockerFind('owner', b.getAttribute('data-owner'));
   });
 
-  // 보고하면 조금 뒤 사장님이 쪽지로 답한다. 별 내용은 없다
+  // 보고하면 조금 뒤 사장님이 쪽지로 답한다. 별 내용은 없지만 말투는 정중하게
+  // (메신저 쪽 사장님 대사와 결을 맞춘다)
   var BOSS_REPORT_REPLIES = [
-    '이걸 왜 나한테 보고하는겐가?',
-    '보고 잘 받았네. 근데 난 모르는 물건이네',
-    '보고 받았고, 좋은 하루 보내길 바라네',
-    '음, 알겠네. 알아서 잘 처리해두게',
-    '그런 게 사물함에 있었나? 수고했네'
+    '보고 감사합니다. 저도 처음 보는 물건이네요.',
+    '잘 알겠습니다. 신경 써 주셔서 고마워요.',
+    '확인했습니다. 오늘도 좋은 하루 보내세요.',
+    '전해 주셔서 감사합니다. 제가 한번 알아볼게요.',
+    '세심하게 챙겨 주셨네요. 덕분에 마음이 놓입니다.'
   ];
   function sendBossReportReply(item){
     var line = BOSS_REPORT_REPLIES[Math.floor(Math.random()*BOSS_REPORT_REPLIES.length)];
