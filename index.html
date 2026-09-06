@@ -4643,6 +4643,107 @@
     });
   }
 
+  // ===== 다목적실: 사장님이 직원 3명을 모아 교육을 한다 =====
+  var MULTI_BOSS_SPOT = { x:575, y:300 };   // 스크린 왼쪽 옆
+  // 앞줄 의자 3개. 캐릭터 발이 좌석에 걸치도록 의자 중심보다 살짝 위에 세운다
+  var multiSeats = [ {x:400,y:292}, {x:440,y:292}, {x:480,y:292} ];
+  var multiBusy = false;
+
+  function startMultiEvent(){
+    if(multiBusy){ toast('이미 다목적실에서 교육이 진행 중이에요'); return; }
+    if(visitorEventActive){ toast('지금은 다른 손님이 와 있어요'); return; }
+
+    var pool = staff.filter(function(s){
+      if(!charEl(s.id) || !charEl(s.id).classList.contains('present')) return false;
+      if(isBusy(s.id)) return false;
+      if(overtimeMode) return !!overtimeStaffIds[s.id];
+      return true;
+    });
+    if(pool.length < 3){
+      toast(overtimeMode ? '야근 중인 인원이 3명보다 적어 교육을 열 수 없어요' : '지금 교육에 참석할 수 있는 직원이 부족해요');
+      return;
+    }
+
+    multiBusy = true;
+    visitorEventActive = true;
+    var chosen = pool.slice().sort(function(){ return Math.random()-0.5; }).slice(0,3);
+    var bossObj = { id:visitorDefs.boss.id };
+
+    toast('사장님이 직원 교육을 시작합니다');
+    if(typeof logDayEvent === 'function'){
+      logDayEvent('🎓', '직원 교육 — ' + chosen.map(function(s){ return s.name; }).join('·') + ' 참석');
+    }
+
+    setPos(bossObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(bossObj.id).classList.add('present');
+    showBubble(bossObj, '직원 교육시간입니다.');
+
+    // 사장님과 직원 셋이 모두 자리에 닿은 뒤에 교육을 시작한다
+    var arrived = 0;
+    function onArrive(){
+      arrived++;
+      if(arrived >= 4) runLesson();
+    }
+
+    setTimeout(function(){
+      clearBubble(bossObj.id);
+      travelTo(bossObj, MULTI_BOSS_SPOT, 110, onArrive);
+      chosen.forEach(function(s, i){
+        markBusy(s.id);
+        raiseChar(s);
+        travelTo(s, multiSeats[i], 62, onArrive);
+      });
+    }, 1900);
+
+    function runLesson(){
+      var STEP = 2400;
+      var t = 700;
+      function bossSay(line){
+        var at = t;
+        setTimeout(function(){ showBubble(bossObj, line); }, at);
+        t += STEP;
+      }
+      function classSay(line){
+        var at = t;
+        setTimeout(function(){
+          chosen.forEach(function(s, i){
+            setTimeout(function(){ showBubble(s, line); }, i*90);
+          });
+        }, at);
+        t += STEP;
+      }
+
+      bossSay('오늘 교육은 회사의 역사입니다');
+      classSay('재밌겠다');
+      bossSay('때는 바야흐로..');
+      bossSay('..그렇게 설립했고...');
+      bossSay('..오늘에 이르렀어요');
+      bossSay('교육을 마칩니다');
+      classSay('감사합니다');
+      bossSay('고생했어요');
+
+      // 직원은 제자리로, 사장님은 입구로 나간 뒤 사라진다
+      setTimeout(function(){
+        clearBubble(bossObj.id);
+        chosen.forEach(function(s){
+          clearBubble(s.id);
+          travelTo(s, {x:s.x, y:s.y}, 62, function(){
+            lowerChar(s);
+            if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y};
+          });
+          clearBusy(s.id);
+        });
+        travelTo(bossObj, VISITOR_ENTRANCE, 110);
+      }, t);
+
+      setTimeout(function(){
+        charEl(bossObj.id).classList.remove('present');
+        multiBusy = false;
+        visitorEventActive = false;
+      }, t + 9000);
+    }
+  }
+
   // ===== 장소 이용: 사물함 / 라운지 / 다목적실 / 응접 공간 =====
   var placeOverlay = byId('placeOverlay');
   var lockerOverlay = byId('lockerOverlay');
@@ -4682,6 +4783,9 @@
       } else if(place === 'guest'){
         placeOverlay.classList.remove('show');
         startReceptionEvent();
+      } else if(place === 'multi'){
+        placeOverlay.classList.remove('show');
+        startMultiEvent();
       } else {
         toast('준비 중인 공간입니다');
       }
