@@ -341,13 +341,46 @@
   .dayLogRow:last-child{ border-bottom:none; }
   .dayLogTime{ color:#8a8a86; flex-shrink:0; width:34px; }
 
-  /* ===== 접속(인트로) 화면 ===== */
-  #introScreen{ position:fixed; inset:0; background:#F7F4EE; display:none; flex-direction:column; align-items:center; justify-content:center; z-index:50; padding:24px 16px; box-sizing:border-box; text-align:center; }
-  #introScreen.show{ display:flex; }
-  #introScreen .introBoss{ width:190px; height:auto; margin-bottom:2px; }
-  #introScreen h1{ font-size:20px; color:#5c4a3a; margin:4px 0 26px; }
-  #introScreen .enterBtn{ font-size:15px; padding:13px 30px; height:auto; }
-  #introScreen .introCopyright{ position:absolute; left:0; right:0; bottom:20px; font-size:10.5px; color:#8a8a86; line-height:1.6; }
+  /* ===== 접속(인트로) 화면: 회사 건물 앞 =====
+     390x800 무대를 그려두고 화면 높이에 맞춰 통째로 배율만 바꾼다.
+     그래야 계단·사장님 발·간판이 어느 화면에서든 어긋나지 않는다. */
+  #introScreen{ position:fixed; inset:0; display:none; z-index:50; overflow:hidden; }
+  #introScreen.show{ display:block; }
+  /* 인트로가 떠 있는 동안에는 도시 배경만 남기고 게임 화면을 가린다
+     (레이아웃은 그대로 두어 들어갈 때 화면이 튀지 않게 visibility를 쓴다) */
+  body.introOn{ overflow:hidden; }
+  body.introOn > *:not(#introScreen):not(#cityBg){ visibility:hidden; }
+  #introStage{ position:absolute; left:50%; top:50%; width:390px; height:800px; z-index:2;
+               transform:translate(-50%,-50%) scale(var(--introScale,1)); transform-origin:50% 50%; }
+  #introFacade{ position:absolute; left:0; bottom:0; width:390px; height:620px; }
+  /* 인도는 화면 폭 전체로 깔아야 건물이 땅에 놓인 것처럼 보인다.
+     윗변이 파사드의 지면선(무대 y=580)과 맞도록 top은 JS가 잡아준다. */
+  #introGround{ position:absolute; left:0; right:0; bottom:0; z-index:1;
+        background:var(--pave); border-top:1.3px solid #5c4a3a;
+        background-image:repeating-linear-gradient(to bottom,
+          transparent 0, transparent calc(52px * var(--introScale, 1)),
+          var(--pave2) calc(52px * var(--introScale, 1)),
+          var(--pave2) calc(52px * var(--introScale, 1) + 1px)); }
+  .introLayer{ position:absolute; left:0; right:0; text-align:center; }
+  #introStage .introSign{ bottom:416px; }
+  #introStage .introSign span{ display:inline-block; background:var(--stone3); border:1.5px solid #5c4a3a;
+        border-radius:4px; padding:5px 20px; font-size:18px; font-weight:700; color:#5c4a3a;
+        letter-spacing:3px; box-shadow:0 1.5px 0 rgba(92,74,58,.2); }
+  #introStage .introBossWrap{ bottom:208px; }
+  #introStage .introBoss{ width:140px; height:auto; display:block; margin:0 auto; }
+  #introStage .introSum{ bottom:138px; }
+  .introSumCard{ display:inline-flex; background:rgba(255,253,248,.96); border:1.2px solid #5c4a3a;
+        border-radius:10px; overflow:hidden; box-shadow:0 2px 0 rgba(92,74,58,.14); }
+  .introSumCard .col{ padding:6px 15px 7px; }
+  .introSumCard .col + .col{ border-left:1px solid #ddd4c4; }
+  .introSumCard .k{ font-size:9.5px; color:#8a7f70; }
+  .introSumCard .v{ font-size:14px; font-weight:700; color:#5c4a3a; margin-top:1px; }
+  .introFirst{ display:inline-block; background:rgba(255,253,248,.96); border:1.2px solid #5c4a3a;
+        border-radius:10px; padding:8px 18px; font-size:12px; color:#5c4a3a; }
+  #introStage .introBtnRow{ bottom:66px; }
+  #introScreen .enterBtn{ font-size:15px; padding:12px 34px; height:auto; background:#fffdf8;
+        border-width:1.6px; font-weight:600; box-shadow:0 3px 0 rgba(92,74,58,.22); }
+  #introStage .introCopyright{ bottom:14px; font-size:9.5px; color:#7d7466; line-height:1.6; }
 
   /* ===== 배경: 서울 도시 풍경 (시간대별 하늘) ===== */
   /* 기본값은 낮. 시각에 따라 body[data-sky]가 바뀌면서 아래 팔레트로 갈아탄다 */
@@ -400,6 +433,45 @@
     --river:#18213c; --river2:#131a30;
     --win-op:1; --star-op:1; --sun-op:0; --moon-op:1; --haze:#3b4a6e; --haze-op:0.18;
   }
+  /* 인트로 건물의 석재·창 조명 톤. 하늘이 어두워지면 벽과 인도도 같이 어두워지고
+     창·문 유리·벽등에는 불이 들어온다. */
+  :root{
+    --fw:#cfe0e8; --fg:#e8f1f4; --lampBody:#4f5a63;
+    --stone:#fffdf8; --stone2:#f2ead8; --stone3:#f7f1e2; --stone4:#e2d7c2;
+    --pave:#ddd6c8; --pave2:#c9c1b1; --roof:#8d99a3;
+  }
+  body[data-sky="dawn"]{
+    --fw:#ffdca0; --fg:#fdf0d8; --lampBody:#3d4650;
+    --stone:#e6e0d9; --stone2:#d9d0c2; --stone3:#dfd8c9; --stone4:#cabfae;
+    --pave:#bfb9ad; --pave2:#aba497; --roof:#6c7783;
+  }
+  body[data-sky="morning"]{
+    --fw:#cfe0e8; --fg:#e8f1f4; --lampBody:#4f5a63;
+    --stone:#fffdf8; --stone2:#f2ead8; --stone3:#f7f1e2; --stone4:#e2d7c2;
+    --pave:#ddd6c8; --pave2:#c9c1b1; --roof:#8d99a3;
+  }
+  body[data-sky="day"]{
+    --fw:#cfe0e8; --fg:#e8f1f4; --lampBody:#4f5a63;
+    --stone:#fffdf8; --stone2:#f2ead8; --stone3:#f7f1e2; --stone4:#e2d7c2;
+    --pave:#ddd6c8; --pave2:#c9c1b1; --roof:#8d99a3;
+  }
+  body[data-sky="sunset"]{
+    --fw:#ffdca0; --fg:#fdf0d8; --lampBody:#4a4750;
+    --stone:#f8ebdd; --stone2:#ecdec9; --stone3:#f1e4cf; --stone4:#dacbb5;
+    --pave:#d4c9b9; --pave2:#beb3a1; --roof:#87818d;
+  }
+  body[data-sky="dusk"]{
+    --fw:#ffd98a; --fg:#fdeecf; --lampBody:#343c46;
+    --stone:#d6d1cc; --stone2:#c8c0b4; --stone3:#cfc7ba; --stone4:#b9b0a0;
+    --pave:#afaa9f; --pave2:#9a9488; --roof:#5c6672;
+  }
+  body[data-sky="night"]{
+    --fw:#ffd98a; --fg:#fdeecf; --lampBody:#313943;
+    --stone:#d3cec9; --stone2:#c5bdb1; --stone3:#ccc4b7; --stone4:#b6ad9d;
+    --pave:#aca79c; --pave2:#979185; --roof:#59636f;
+  }
+  #introFacade *{ transition:fill .9s ease, stroke .9s ease; }
+  @media (prefers-reduced-motion: reduce){ #introFacade *{ transition:none; } }
   /* 원경답게 채도를 조금 낮춰 사무실이 계속 주인공으로 보이게 한다 */
   #cityBg{ position:fixed; inset:0; z-index:-1; pointer-events:none; filter:saturate(0.88); }
   #cityBg svg{ width:100%; height:100%; display:block; }
@@ -515,14 +587,198 @@
   }
 </style>
 </head>
-<body>
+<body class="introOn">
 
 <div id="introScreen" class="show">
+<div id="introGround" aria-hidden="true"></div>
+<div id="introStage">
+<svg id="introFacade" viewBox="0 0 390 620" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<!-- 인도는 화면 전체 폭이 필요해 #introGround가 따로 그린다 -->
+<g stroke="#5c4a3a" stroke-width="1.5" stroke-linejoin="round">
+<path d="M 40 32 L 60 3 L 330 3 L 350 32 Z" fill="var(--roof)"/>
+<line x1="60" y1="3" x2="330" y2="3" stroke-width="1.2"/></g>
+<g stroke="#5c4a3a" stroke-width="0.7" opacity="0.35">
+<line x1="70" y1="6" x2="64" y2="31"/>
+<line x1="96" y1="6" x2="90" y2="31"/>
+<line x1="122" y1="6" x2="116" y2="31"/>
+<line x1="148" y1="6" x2="142" y2="31"/>
+<line x1="174" y1="6" x2="168" y2="31"/>
+<line x1="200" y1="6" x2="194" y2="31"/>
+<line x1="226" y1="6" x2="220" y2="31"/>
+<line x1="252" y1="6" x2="246" y2="31"/>
+<line x1="278" y1="6" x2="272" y2="31"/>
+<line x1="304" y1="6" x2="298" y2="31"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="1.2" stroke-linejoin="round">
+<path d="M 117 32 L 117 18 A 12 12 0 0 1 141 18 L 141 32 Z" fill="var(--stone)"/>
+<path d="M 121.5 32 L 121.5 20 A 7.5 7.5 0 0 1 136.5 20 L 136.5 32 Z" fill="var(--fw)"/>
+<path d="M 249 32 L 249 18 A 12 12 0 0 1 273 18 L 273 32 Z" fill="var(--stone)"/>
+<path d="M 253.5 32 L 253.5 20 A 7.5 7.5 0 0 1 268.5 20 L 268.5 32 Z" fill="var(--fw)"/>
+</g>
+<rect x="28" y="30" width="334" height="370" fill="var(--stone)" stroke="#5c4a3a" stroke-width="1.6"/>
+<rect x="18" y="30" width="354" height="9" rx="2.5" fill="var(--stone2)" stroke="#5c4a3a" stroke-width="1.4"/>
+<rect x="25" y="39" width="340" height="11" fill="var(--stone3)" stroke="#5c4a3a" stroke-width="1.2"/>
+<g fill="var(--stone4)">
+<rect x="33" y="41" width="7" height="7" rx="1"/>
+<rect x="48" y="41" width="7" height="7" rx="1"/>
+<rect x="63" y="41" width="7" height="7" rx="1"/>
+<rect x="78" y="41" width="7" height="7" rx="1"/>
+<rect x="93" y="41" width="7" height="7" rx="1"/>
+<rect x="108" y="41" width="7" height="7" rx="1"/>
+<rect x="123" y="41" width="7" height="7" rx="1"/>
+<rect x="138" y="41" width="7" height="7" rx="1"/>
+<rect x="153" y="41" width="7" height="7" rx="1"/>
+<rect x="168" y="41" width="7" height="7" rx="1"/>
+<rect x="183" y="41" width="7" height="7" rx="1"/>
+<rect x="198" y="41" width="7" height="7" rx="1"/>
+<rect x="213" y="41" width="7" height="7" rx="1"/>
+<rect x="228" y="41" width="7" height="7" rx="1"/>
+<rect x="243" y="41" width="7" height="7" rx="1"/>
+<rect x="258" y="41" width="7" height="7" rx="1"/>
+<rect x="273" y="41" width="7" height="7" rx="1"/>
+<rect x="288" y="41" width="7" height="7" rx="1"/>
+<rect x="303" y="41" width="7" height="7" rx="1"/>
+<rect x="318" y="41" width="7" height="7" rx="1"/>
+<rect x="333" y="41" width="7" height="7" rx="1"/>
+<rect x="348" y="41" width="7" height="7" rx="1"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="1.3" stroke-linejoin="round">
+<path d="M 73 128 L 73 86 A 31 26 0 0 1 135 86 L 135 128 Z" fill="var(--stone3)"/>
+<path d="M 81 124 L 81 88 A 23 19 0 0 1 127 88 L 127 124 Z" fill="var(--fw)"/>
+<path d="M 98.5 58 L 109.5 58 L 108.5 70 L 99.5 70 Z" fill="var(--stone2)"/>
+<rect x="68" y="128" width="72" height="6" rx="2" fill="var(--stone2)"/>
+</g>
+<line x1="91" y1="90" x2="91" y2="124" stroke="#5c4a3a" stroke-width="0.8" opacity="0.5"/>
+<line x1="117" y1="90" x2="117" y2="124" stroke="#5c4a3a" stroke-width="0.8" opacity="0.5"/>
+<g stroke="#5c4a3a" stroke-width="1.1" stroke-linecap="round">
+<line x1="74" y1="136" x2="134" y2="136"/>
+<line x1="74" y1="150" x2="134" y2="150"/>
+<line x1="74" y1="136" x2="74" y2="150"/>
+<line x1="84" y1="136" x2="84" y2="150"/>
+<line x1="94" y1="136" x2="94" y2="150"/>
+<line x1="104" y1="136" x2="104" y2="150"/>
+<line x1="114" y1="136" x2="114" y2="150"/>
+<line x1="124" y1="136" x2="124" y2="150"/>
+<line x1="134" y1="136" x2="134" y2="150"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="1.3" stroke-linejoin="round">
+<path d="M 164 128 L 164 86 A 31 26 0 0 1 226 86 L 226 128 Z" fill="var(--stone3)"/>
+<path d="M 172 124 L 172 88 A 23 19 0 0 1 218 88 L 218 124 Z" fill="var(--fw)"/>
+<path d="M 189.5 58 L 200.5 58 L 199.5 70 L 190.5 70 Z" fill="var(--stone2)"/>
+<rect x="159" y="128" width="72" height="6" rx="2" fill="var(--stone2)"/>
+</g>
+<line x1="182" y1="90" x2="182" y2="124" stroke="#5c4a3a" stroke-width="0.8" opacity="0.5"/>
+<line x1="208" y1="90" x2="208" y2="124" stroke="#5c4a3a" stroke-width="0.8" opacity="0.5"/>
+<g stroke="#5c4a3a" stroke-width="1.1" stroke-linecap="round">
+<line x1="165" y1="136" x2="225" y2="136"/>
+<line x1="165" y1="150" x2="225" y2="150"/>
+<line x1="165" y1="136" x2="165" y2="150"/>
+<line x1="175" y1="136" x2="175" y2="150"/>
+<line x1="185" y1="136" x2="185" y2="150"/>
+<line x1="195" y1="136" x2="195" y2="150"/>
+<line x1="205" y1="136" x2="205" y2="150"/>
+<line x1="215" y1="136" x2="215" y2="150"/>
+<line x1="225" y1="136" x2="225" y2="150"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="1.3" stroke-linejoin="round">
+<path d="M 255 128 L 255 86 A 31 26 0 0 1 317 86 L 317 128 Z" fill="var(--stone3)"/>
+<path d="M 263 124 L 263 88 A 23 19 0 0 1 309 88 L 309 124 Z" fill="var(--fw)"/>
+<path d="M 280.5 58 L 291.5 58 L 290.5 70 L 281.5 70 Z" fill="var(--stone2)"/>
+<rect x="250" y="128" width="72" height="6" rx="2" fill="var(--stone2)"/>
+</g>
+<line x1="273" y1="90" x2="273" y2="124" stroke="#5c4a3a" stroke-width="0.8" opacity="0.5"/>
+<line x1="299" y1="90" x2="299" y2="124" stroke="#5c4a3a" stroke-width="0.8" opacity="0.5"/>
+<g stroke="#5c4a3a" stroke-width="1.1" stroke-linecap="round">
+<line x1="256" y1="136" x2="316" y2="136"/>
+<line x1="256" y1="150" x2="316" y2="150"/>
+<line x1="256" y1="136" x2="256" y2="150"/>
+<line x1="266" y1="136" x2="266" y2="150"/>
+<line x1="276" y1="136" x2="276" y2="150"/>
+<line x1="286" y1="136" x2="286" y2="150"/>
+<line x1="296" y1="136" x2="296" y2="150"/>
+<line x1="306" y1="136" x2="306" y2="150"/>
+<line x1="316" y1="136" x2="316" y2="150"/>
+</g>
+<rect x="28" y="156" width="334" height="7" fill="var(--stone2)" stroke="#5c4a3a" stroke-width="1.1"/>
+<rect x="28" y="163" width="334" height="48" fill="var(--stone3)" stroke="#5c4a3a" stroke-width="1"/>
+<rect x="28" y="211" width="334" height="7" fill="var(--stone2)" stroke="#5c4a3a" stroke-width="1.1"/>
+<g stroke="var(--stone4)" stroke-width="1.6">
+<line x1="34" y1="240" x2="112" y2="240"/><line x1="278" y1="240" x2="356" y2="240"/>
+<line x1="34" y1="264" x2="112" y2="264"/><line x1="278" y1="264" x2="356" y2="264"/>
+<line x1="34" y1="288" x2="112" y2="288"/><line x1="278" y1="288" x2="356" y2="288"/>
+<line x1="34" y1="312" x2="112" y2="312"/><line x1="278" y1="312" x2="356" y2="312"/>
+<line x1="34" y1="336" x2="112" y2="336"/><line x1="278" y1="336" x2="356" y2="336"/>
+<line x1="34" y1="360" x2="112" y2="360"/><line x1="278" y1="360" x2="356" y2="360"/>
+<line x1="34" y1="384" x2="112" y2="384"/><line x1="278" y1="384" x2="356" y2="384"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="1.3" stroke-linejoin="round">
+<rect x="34" y="230" width="24" height="158" fill="var(--stone3)"/>
+<rect x="31" y="222" width="30" height="9" rx="2" fill="var(--stone2)"/>
+<rect x="31" y="388" width="30" height="10" rx="2" fill="var(--stone2)"/>
+<rect x="332" y="230" width="24" height="158" fill="var(--stone3)"/>
+<rect x="329" y="222" width="30" height="9" rx="2" fill="var(--stone2)"/>
+<rect x="329" y="388" width="30" height="10" rx="2" fill="var(--stone2)"/>
+</g>
+<g stroke="var(--stone4)" stroke-width="1">
+<line x1="41" y1="236" x2="41" y2="384"/>
+<line x1="46" y1="236" x2="46" y2="384"/>
+<line x1="51" y1="236" x2="51" y2="384"/>
+<line x1="339" y1="236" x2="339" y2="384"/>
+<line x1="344" y1="236" x2="344" y2="384"/>
+<line x1="349" y1="236" x2="349" y2="384"/>
+</g>
+<path d="M 110 400 L 110 296 A 85 66 0 0 1 280 296 L 280 400 Z" fill="var(--stone2)" stroke="#5c4a3a" stroke-width="1.5" stroke-linejoin="round"/>
+<path d="M 120 400 L 120 298 A 75 58 0 0 1 270 298 L 270 400 Z" fill="var(--fg)" stroke="#5c4a3a" stroke-width="1.4" stroke-linejoin="round"/>
+<line x1="120" y1="298" x2="270" y2="298" stroke="#5c4a3a" stroke-width="1.3" opacity="0.7"/>
+<g fill="none" stroke="#5c4a3a" stroke-width="1" opacity="0.4">
+<path d="M 133 298 A 62 47 0 0 1 257 298"/>
+<path d="M 152 298 A 43 32 0 0 1 238 298"/>
+<path d="M 171 298 A 24 18 0 0 1 219 298"/>
+</g>
+<line x1="195" y1="298" x2="195" y2="400" stroke="#5c4a3a" stroke-width="1.4"/>
+<g fill="#fff" opacity="0.42">
+<path d="M 130 396 L 158 306 L 168 306 L 140 396 Z"/><path d="M 205 396 L 233 306 L 242 306 L 214 396 Z"/>
+</g>
+<path d="M 187 236 L 203 236 L 200 254 L 190 254 Z" fill="var(--stone2)" stroke="#5c4a3a" stroke-width="1.3" stroke-linejoin="round"/>
+<g stroke="#5c4a3a" stroke-width="1.2" stroke-linejoin="round">
+<path d="M 68 252 L 84 252" stroke-width="1.4" fill="none"/>
+<path d="M 68 252 C 77 252 84 255 84 262" fill="none" stroke-width="1.1"/>
+<circle cx="84" cy="255" r="1.8" fill="var(--stone2)"/>
+<path d="M 76.5 278 L 79 261 L 89 261 L 91.5 278 Z" fill="var(--fw)"/>
+<path d="M 75.5 261 L 92.5 261 L 89.5 256 L 78.5 256 Z" fill="var(--lampBody)"/>
+<rect x="75.5" y="278" width="17" height="3.2" rx="1.1" fill="var(--lampBody)"/>
+<circle cx="84" cy="284.5" r="1.5" fill="var(--lampBody)"/>
+<line x1="84" y1="261" x2="84" y2="278" stroke-width="0.7" opacity="0.45"/>
+<path d="M 322 252 L 306 252" stroke-width="1.4" fill="none"/>
+<path d="M 322 252 C 313 252 306 255 306 262" fill="none" stroke-width="1.1"/>
+<circle cx="306" cy="255" r="1.8" fill="var(--stone2)"/>
+<path d="M 298.5 278 L 301 261 L 311 261 L 313.5 278 Z" fill="var(--fw)"/>
+<path d="M 297.5 261 L 314.5 261 L 311.5 256 L 300.5 256 Z" fill="var(--lampBody)"/>
+<rect x="297.5" y="278" width="17" height="3.2" rx="1.1" fill="var(--lampBody)"/>
+<circle cx="306" cy="284.5" r="1.5" fill="var(--lampBody)"/>
+<line x1="306" y1="261" x2="306" y2="278" stroke-width="0.7" opacity="0.45"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="1.3" stroke-linejoin="round">
+<rect x="104" y="396" width="182" height="9" rx="2" fill="var(--stone2)"/>
+<rect x="95" y="405" width="200" height="9" rx="2" fill="var(--stone3)"/>
+<rect x="86" y="414" width="218" height="10" rx="2" fill="var(--stone4)"/>
+</g>
+<g stroke="#5c4a3a" stroke-width="1.2" stroke-linejoin="round">
+<path d="M 38 400 L 66 400 L 62 428 L 42 428 Z" fill="#dda679"/>
+<path d="M 52 400 C 42 390 40 375 42 366 C 49 374 51 386 52 396 Z" fill="#7fa86a"/>
+<path d="M 52 400 C 62 390 64 375 62 366 C 55 374 53 386 52 396 Z" fill="#93bd7c"/>
+<path d="M 308 400 L 336 400 L 332 428 L 312 428 Z" fill="#dda679"/>
+<path d="M 322 400 C 312 390 310 375 312 366 C 319 374 321 386 322 396 Z" fill="#7fa86a"/>
+<path d="M 322 400 C 332 390 334 375 332 366 C 325 374 323 386 322 396 Z" fill="#93bd7c"/>
+</g>
+</svg>
+  <div class="introLayer introSign"><span>우리의 사무실</span></div>
+  <div class="introLayer introBossWrap">
   <svg class="introBoss" viewBox="-40 -90 80 108" xmlns="http://www.w3.org/2000/svg" role="img">
     <title>사장님 인사</title>
     <g stroke="none">
       <path d="M -26 -82 H 26 A 8 8 0 0 1 34 -74 V -66 A 8 8 0 0 1 26 -58 H 6 L 0 -50 L -6 -58 H -26 A 8 8 0 0 1 -34 -66 V -74 A 8 8 0 0 1 -26 -82 Z" fill="#fffdf8" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/>
-      <text x="0" y="-67" font-size="7.1" text-anchor="middle" fill="#5c4a3a" stroke="none">오늘도 반가워요~</text>
+      <text id="introBossMsg" x="0" y="-67" font-size="7.1" text-anchor="middle" fill="#5c4a3a" stroke="none">오늘도 반가워요~</text>
     </g>
     <g stroke="none">
       <ellipse cx="0" cy="9" rx="13" ry="2.6" fill="#3a2a1f" opacity="0.12"/>
@@ -564,12 +820,14 @@
       </g>
     </g>
   </svg>
-  <h1>우리의 사무실</h1>
-  <button class="btn enterBtn" id="enterOfficeBtn">출근하기</button>
-  <div class="introCopyright">
+  </div>
+  <div class="introLayer introSum" id="introSum"></div>
+  <div class="introLayer introBtnRow"><button class="btn enterBtn" id="enterOfficeBtn">출근하기</button></div>
+  <div class="introLayer introCopyright">
     <div>© 2026 우리의 사무실. All rights reserved.</div>
     <div>Made by Han JH</div>
   </div>
+</div>
 </div>
 
 <!-- 배경: 서울 풍경. 사무실 카드 양옆으로 드러난다 -->
@@ -7488,9 +7746,71 @@
     reader.readAsText(file);
   });
 
-  // ===== 접속(인트로) 화면: 출근하기 버튼 =====
+  // ===== 접속(인트로) 화면: 회사 건물 앞 =====
+  // 시간대마다 사장님 인사가 달라진다 (하늘 단계와 같은 기준을 쓴다)
+  var INTRO_GREETING = {
+    dawn:    '이 시간에 오셨군요',
+    morning: '좋은 아침입니다',
+    day:     '오늘도 반가워요',
+    sunset:  '오늘 고생하셨어요',
+    dusk:    '늦게까지 계시네요',
+    night:   '야근이신가요?'
+  };
+
+  // 어제 기록을 요약해 버튼 위에 붙인다. 첫 방문이면 요약 대신 한 줄만 보여준다.
+  function introSummaryHTML(){
+    var y = new Date(); y.setDate(y.getDate() - 1);
+    var ykey = dateKey(y);
+    var yLog = null;
+    for(var i = 0; i < dailyHistory.length; i++){
+      if(dailyHistory[i] && dailyHistory[i].date === ykey){ yLog = dailyHistory[i]; break; }
+    }
+    var VISITOR_ICONS = { '👑':1, '🤝':1, '📮':1, '🔧':1, '🎻':1, '🛡️':1 };
+    var visitors = 0;
+    for(var j = 0; j < chatLogHistory.length; j++){
+      var day = chatLogHistory[j];
+      if(!day || day.date !== ykey) continue;
+      (day.entries || []).forEach(function(e){ if(VISITOR_ICONS[e.icon]) visitors++; });
+      break;
+    }
+    var days = streakInfo.streak || 1;
+    if(!yLog && !visitors) return '<span class="introFirst">오늘이 첫 출근입니다</span>';
+    return '<span class="introSumCard">'
+      + '<span class="col"><span class="k">어제 주문</span><div class="v">' + ((yLog && yLog.orders) || 0) + '건</div></span>'
+      + '<span class="col"><span class="k">방문객</span><div class="v">' + visitors + '명</div></span>'
+      + '<span class="col"><span class="k">근속</span><div class="v">' + days + '일</div></span>'
+      + '</span>';
+  }
+
+  // 무대는 390x800 고정 크기로 그려두고 화면 높이에 맞춰 배율만 바꾼다
+  function fitIntroStage(){
+    var screen = byId('introScreen'), ground = byId('introGround');
+    if(!screen) return;
+    var vh = window.innerHeight;
+    var s = Math.min(1.3, Math.max(0.6, vh / 800));
+    screen.style.setProperty('--introScale', s.toFixed(3));
+    // 무대는 세로 중앙 정렬이므로 지면선은 화면 중앙에서 180*배율 아래에 온다
+    if(ground) ground.style.top = (vh / 2 + 180 * s).toFixed(1) + 'px';
+  }
+
+  (function initIntro(){
+    var now = new Date();
+    // 인트로가 첫 프레임부터 제 시간대 색을 쓰도록 하늘 단계를 미리 박아둔다
+    if(!document.body.getAttribute('data-sky')){
+      document.body.setAttribute('data-sky', skyPhaseFor(now.getHours()));
+    }
+    var msg = byId('introBossMsg');
+    if(msg) msg.textContent = INTRO_GREETING[skyPhaseFor(now.getHours())] || '오늘도 반가워요';
+    var sum = byId('introSum');
+    if(sum) sum.innerHTML = introSummaryHTML();
+    fitIntroStage();
+    window.addEventListener('resize', fitIntroStage);
+  })();
+
   byId('enterOfficeBtn').addEventListener('click', function(){
     byId('introScreen').classList.remove('show');
+    document.body.classList.remove('introOn');
+    window.removeEventListener('resize', fitIntroStage);
   });
 
   // 저장된 이름이 있었다면 화면에도 반영
