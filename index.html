@@ -4698,18 +4698,25 @@
     function runLesson(){
       var STEP = 2400;
       var t = 700;
+      // 말풍선은 4.4초 남아 있어 다음 대사와 겹친다. 말할 때마다 앞의 것을 지운다
+      function clearRoom(){
+        clearBubble(bossObj.id);
+        chosen.forEach(function(s){ clearBubble(s.id); });
+      }
       function bossSay(line){
         var at = t;
-        setTimeout(function(){ showBubble(bossObj, line); }, at);
+        setTimeout(function(){ clearRoom(); showBubble(bossObj, line); }, at);
         t += STEP;
       }
+      // 셋이 동시에 말하면 말풍선이 겹치므로, 대사마다 한 명만 대표로 답한다
+      var lastSpeaker = -1;
       function classSay(line){
+        var pick = Math.floor(Math.random()*chosen.length);
+        if(chosen.length > 1 && pick === lastSpeaker) pick = (pick + 1) % chosen.length;
+        lastSpeaker = pick;
+        var speaker = chosen[pick];
         var at = t;
-        setTimeout(function(){
-          chosen.forEach(function(s, i){
-            setTimeout(function(){ showBubble(s, line); }, i*90);
-          });
-        }, at);
+        setTimeout(function(){ clearRoom(); showBubble(speaker, line); }, at);
         t += STEP;
       }
 
