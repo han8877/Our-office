@@ -49,10 +49,31 @@
   .projStatus.done{ background:#5c4a3a; color:#fff; }
   .projEmpty{ color:#8a8a86; font-size:12px; padding:10px 2px; }
   .placeItem{ justify-content:center; height:38px; font-size:12.5px; }
-  .lockerCell{ border:1.3px solid #5c4a3a; border-radius:8px; background:#fffdf8; height:62px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; font-family:inherit; color:#5c4a3a; padding:0; }
+  .lockerCell{ border:1.3px solid #5c4a3a; border-radius:8px; background:#fffdf8; height:62px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; font-family:inherit; color:#5c4a3a; padding:0; transition:transform .15s ease, box-shadow .15s ease; }
   .lockerCell:hover{ background:#f6efe0; }
   .lockerCell .lkNum{ font-size:11px; color:#8a8a86; }
   .lockerCell .lkIcon{ font-size:18px; line-height:1; }
+  /* 물건이 든 칸은 문이 아주 살짝 떠 있다 — 눈여겨보면 보이는 정도 */
+  .lockerCell.hasItem{ transform:translateY(-2px); box-shadow:0 2px 0 #ddd8cc; }
+  /* 사물함: 발견한 물건과 주인 고르기 화면 */
+  #lockerFoundBox, #lockerOwnerBox{ display:none; }
+  #lockerFoundBox.show, #lockerOwnerBox.show{ display:block; }
+  .lkFoundIcon{ font-size:44px; text-align:center; line-height:1.1; margin:6px 0 4px; }
+  .lkFoundName{ font-size:13.5px; font-weight:700; text-align:center; color:#5c4a3a; margin-bottom:5px; }
+  .lkFoundNote{ font-size:12px; color:#8a8a86; text-align:center; line-height:1.6; margin-bottom:12px; }
+  #lkChoices{ display:flex; flex-direction:column; gap:6px; }
+  .lkChoice{ border:1.3px solid #5c4a3a; border-radius:8px; background:#fff; color:#5c4a3a;
+             font-family:inherit; font-size:12.5px; padding:9px 11px; cursor:pointer; text-align:left; }
+  .lkChoice:hover{ background:#f6efe0; }
+  .lkChoice:active{ transform:scale(0.985); }
+  #lkOwnerList{ display:grid; grid-template-columns:1fr 1fr; gap:6px; max-height:46vh; overflow-y:auto; }
+  .lkOwner{ border:1.2px solid #ddd8cc; border-radius:7px; background:#fff; color:#5c4a3a;
+            font-family:inherit; font-size:12px; padding:7px 5px; cursor:pointer;
+            display:flex; align-items:center; gap:6px; }
+  .lkOwner:hover{ border-color:#5c4a3a; background:#f6efe0; }
+  .lkOwner .dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+  .lkOwner .tm{ font-size:10px; color:#a89e8c; margin-left:auto; }
+  #lockerTally{ font-size:11px; color:#a89e8c; text-align:center; margin-top:12px; }
   /* 캐릭터: 눈 깜빡임과 잔잔한 호흡 (주기는 캐릭터마다 JS가 어긋나게 준다) */
   @keyframes charBlink{
     0%, 94%, 100% { transform:scaleY(1); }
@@ -1941,9 +1962,20 @@
 
 <div class="mail-overlay" id="lockerOverlay">
   <div class="mail-window" style="max-width:320px;">
-    <div class="mail-head"><div class="headLeft"><button class="backBtn" id="lockerBackBtn">‹</button><span>사물함</span></div><button id="lockerCloseX">×</button></div>
+    <div class="mail-head"><div class="headLeft"><button class="backBtn" id="lockerBackBtn">‹</button><span id="lockerTitle">사물함</span></div><button id="lockerCloseX">×</button></div>
     <div class="mail-body">
       <div id="lockerGrid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px;"></div>
+      <div id="lockerFoundBox">
+        <div class="lkFoundIcon" id="lkFoundIcon"></div>
+        <div class="lkFoundName" id="lkFoundName"></div>
+        <div class="lkFoundNote" id="lkFoundNote"></div>
+        <div id="lkChoices"></div>
+      </div>
+      <div id="lockerOwnerBox">
+        <div class="lkFoundNote" style="margin-bottom:8px;">누구의 물건일까요?</div>
+        <div id="lkOwnerList"></div>
+      </div>
+      <div id="lockerTally"></div>
     </div>
   </div>
 </div>
@@ -2124,6 +2156,7 @@
     <table>
       <tr><th>버튼</th><th>내용</th></tr>
       <tr><td>사무실 일지</td><td>화면 오른쪽 가장자리 탭. 출근·회의·방문객·청소 등 그동안 일어난 일이 시간순으로 쌓입니다. 자리를 비운 사이 생긴 소식은 탭에 빨간 숫자로 표시돼요 (지난 7일치 보관)</td></tr>
+      <tr><td>장소 이용 → 사물함</td><td>하늘빛이 바뀔 때마다(하루 6번) 8칸 중 한 칸에 누군가의 물건이 놓입니다. 물건이 든 칸은 문이 아주 살짝 떠 있어요. 열어보면 <code>주인을 찾아준다 / 분실물함에 맡긴다 / 그냥 둔다</code> 중에 고를 수 있고, 주인을 맞히면 그 직원이 고마워합니다 (틀려도 다시 고를 수 있어요). 주인을 알 수 없는 물건은 사장님께 보고하게 됩니다</td></tr>
       <tr><td>설정</td><td>제작자 소개, 이름 변경 (회사명, 직원 이름 변경 가능)</td></tr>
       <tr><td>주요 프로젝트</td><td>사업 등록·관리 (5번 설명 참고)</td></tr>
       <tr><td>야근모드</td><td>전원 퇴근 후 랜덤 2~4명만 남아 야근 시작</td></tr>
@@ -5142,14 +5175,78 @@
   byId('placeCloseX').addEventListener('click', function(){ placeOverlay.classList.remove('show'); });
   placeOverlay.addEventListener('click', function(e){ if(e.target === placeOverlay) placeOverlay.classList.remove('show'); });
 
+  // ===== 사물함 분실물 =====
+  // 하늘 단계가 바뀔 때마다(하루 6번) 8칸 중 한 칸에만 물건이 놓인다.
+  // 어느 칸에 무엇이 있는지는 '날짜+시간대' 시드로 정해서, 접속하지 않아도 일관되게 흐른다.
+  // owner가 없는 물건은 주인을 찾을 수 없어 다른 선택지가 뜬다.
+  var LOCKER_ITEMS = [
+    { icon:'📒', name:'색인 스티커가 잔뜩 붙은 다이어리', owner:'parkhoegye' },
+    { icon:'🖊️', name:'심이 다 닳은 제도 샤프',        owner:'leenote' },
+    { icon:'☕', name:'이름 스티커가 붙은 텀블러',      owner:'kobujang' },
+    { icon:'🧦', name:'짝 없는 수면양말 한 짝',         owner:'hannote' },
+    { icon:'📎', name:'색깔별로 나뉜 클립통',           owner:'nabujang' },
+    { icon:'🎧', name:'한쪽만 남은 무선 이어폰',        owner:'minhongbo' },
+    { icon:'🍬', name:'반쯤 먹은 사탕 봉지',            owner:'chosti' },
+    { icon:'📐', name:'스티커 자투리가 붙은 삼각자',    owner:'hansti' },
+    { icon:'💌', name:'봉해진 채 접힌 편지',            owner:'choiinsa' },
+    { icon:'🧴', name:'반쯤 쓴 핸드크림',               owner:'seohongbo' },
+    { icon:'📷', name:'필름이 든 일회용 카메라',        owner:'jungsti' },
+    { icon:'🧸', name:'작은 인형 키링',                 owner:'yoosti' },
+    { icon:'📕', name:'포스트잇이 삐죽 나온 색상 견본집', owner:'kimnote' },
+    { icon:'🍵', name:'티백 다섯 개가 든 봉투',         owner:'jungnote' },
+    { icon:'🎫', name:'지난 전시 티켓 두 장',           owner:'yoohongbo' },
+    { icon:'🔋', name:'다 쓴 보조배터리',               owner:'leenote' },
+    { icon:'🥄', name:'나무 티스푼',                    owner:'jungnote' },
+    { icon:'📏', name:'눈금이 지워진 30cm 자',          owner:'hansti' },
+    { icon:'🧤', name:'목장갑 한 켤레',                 owner:'hannote' },
+    { icon:'🪥', name:'포장도 안 뜯은 새 칫솔',         owner:'kobujang' },
+    { icon:'🧷', name:'옷핀이 잔뜩 꽂힌 쿠션',          owner:'choiinsa' },
+    { icon:'✒️', name:'뚜껑이 사라진 만년필',           owner:'nabujang' },
+    // 주인을 알 수 없는 것들
+    { icon:'🔑', name:'라벨이 없는 낯선 열쇠',          owner:null },
+    { icon:'💊', name:'이름이 지워진 알약 통',          owner:null },
+    { icon:'📼', name:"'2019 회식'이라 적힌 테이프",    owner:null }
+  ];
+
+  var LOCKER_KEY = 'ggj_office_locker_v1';
+  function loadLockerState(){
+    try{
+      var raw = JSON.parse(localStorage.getItem(LOCKER_KEY));
+      if(raw && typeof raw === 'object'){
+        return { handled: raw.handled || {}, found: raw.found||0, returned: raw.returned||0 };
+      }
+    }catch(e){}
+    return { handled:{}, found:0, returned:0 };
+  }
+  function saveLockerState(st){
+    try{ localStorage.setItem(LOCKER_KEY, JSON.stringify(st)); }catch(e){}
+  }
+  // 지금 시간대의 열쇠. 하늘 단계와 같은 구간을 쓴다
+  function lockerSlotKey(){
+    var h = new Date().getHours();
+    return dateKey() + '-' + (typeof skyPhaseFor === 'function' ? skyPhaseFor(h) : String(h));
+  }
+  function currentLockerFind(){
+    var key = lockerSlotKey();
+    var slot = seedHash(key + '-lockerslot') % 8;          // 0~7
+    var item = LOCKER_ITEMS[seedHash(key + '-lockeritem') % LOCKER_ITEMS.length];
+    return { key:key, slot:slot, item:item };
+  }
+
+  var lockerView = 'grid';   // grid | item | owner
   function renderLockers(){
     var grid = byId('lockerGrid');
+    var st = loadLockerState();
+    var find = currentLockerFind();
+    var done = !!st.handled[find.key];
     grid.innerHTML = '';
-    for(var i=1; i<=8; i++){
+    for(var i=0; i<8; i++){
       var cell = document.createElement('button');
       cell.className = 'lockerCell';
+      // 처리하지 않은 물건이 든 칸은 문이 아주 살짝 떠 있다 (눈썰미로 찾는 재미)
+      if(!done && i === find.slot) cell.className += ' hasItem';
       cell.setAttribute('data-locker', i);
-      cell.innerHTML = '<span class="lkIcon">🗄️</span><span class="lkNum">' + i + '번</span>';
+      cell.innerHTML = '<span class="lkIcon">🗄️</span><span class="lkNum">' + (i+1) + '번</span>';
       grid.appendChild(cell);
     }
   }
@@ -5159,8 +5256,7 @@
       var place = btn.getAttribute('data-place');
       if(place === 'locker'){
         placeOverlay.classList.remove('show');
-        renderLockers();
-        lockerOverlay.classList.add('show');
+        openLocker();
       } else if(place === 'lounge'){
         placeOverlay.classList.remove('show');
         startLoungeEvent();
@@ -5182,8 +5278,144 @@
     });
   });
 
+  // ---- 사물함 화면 전환 ----
+  function lockerShow(view){
+    lockerView = view;
+    byId('lockerGrid').style.display = (view === 'grid') ? 'grid' : 'none';
+    byId('lockerFoundBox').classList.toggle('show', view === 'item');
+    byId('lockerOwnerBox').classList.toggle('show', view === 'owner');
+    byId('lockerTitle').textContent = (view === 'grid') ? '사물함'
+                                    : (view === 'item') ? '분실물 발견' : '주인 찾기';
+    var st = loadLockerState();
+    byId('lockerTally').textContent = (view === 'grid' && (st.found || st.returned))
+      ? ('발견 ' + st.found + '개 · 주인에게 돌려준 것 ' + st.returned + '개') : '';
+  }
+  function openLocker(){
+    renderLockers();
+    lockerShow('grid');
+    lockerOverlay.classList.add('show');
+  }
+
+  var lockerPending = null;   // 지금 보고 있는 발견물
+
+  byId('lockerGrid').addEventListener('click', function(e){
+    var cell = e.target.closest('.lockerCell');
+    if(!cell) return;
+    var idx = parseInt(cell.getAttribute('data-locker'), 10);
+    var st = loadLockerState();
+    var find = currentLockerFind();
+    if(st.handled[find.key] || idx !== find.slot){
+      toast((idx+1) + '번 사물함은 비어 있어요');
+      return;
+    }
+    lockerPending = find;
+    byId('lkFoundIcon').textContent = find.item.icon;
+    byId('lkFoundName').textContent = find.item.name;
+    byId('lkFoundNote').textContent = find.item.owner
+      ? (idx+1) + '번 사물함에 놓여 있었습니다. 어떻게 할까요?'
+      : (idx+1) + '번 사물함에 놓여 있었습니다. 누구 것인지 짐작이 가지 않습니다.';
+
+    var choices = find.item.owner
+      ? [['owner','주인을 찾아준다'], ['lost','분실물함에 맡긴다'], ['leave','그냥 둔다']]
+      : [['report','사장님께 보고한다'], ['lost','분실물함에 맡긴다'], ['leave','그냥 둔다']];
+    var box = byId('lkChoices');
+    box.innerHTML = '';
+    choices.forEach(function(c){
+      var b = document.createElement('button');
+      b.className = 'lkChoice';
+      b.setAttribute('data-choice', c[0]);
+      b.textContent = c[1];
+      box.appendChild(b);
+    });
+    lockerShow('item');
+  });
+
+  byId('lkChoices').addEventListener('click', function(e){
+    var b = e.target.closest('.lkChoice');
+    if(!b || !lockerPending) return;
+    var choice = b.getAttribute('data-choice');
+    if(choice === 'owner'){ renderOwnerPicker(); lockerShow('owner'); return; }
+    resolveLockerFind(choice, null);
+  });
+
+  function renderOwnerPicker(){
+    var list = byId('lkOwnerList');
+    list.innerHTML = '';
+    staff.forEach(function(s){
+      var pal = kindPalette[s.palKey] || kindPalette[s.kind] || kindPalette.cat;
+      var b = document.createElement('button');
+      b.className = 'lkOwner';
+      b.setAttribute('data-owner', s.id);
+      b.innerHTML = '<i class="dot" style="background:'+pal.base+'"></i>'
+                  + '<span>'+s.name+'</span>'
+                  + '<span class="tm">'+(settings.teams[s.teamKey]||'').replace(' 디자인팀','').replace('디자인실장실','실장실')+'</span>';
+      list.appendChild(b);
+    });
+  }
+
+  byId('lkOwnerList').addEventListener('click', function(e){
+    var b = e.target.closest('.lkOwner');
+    if(!b || !lockerPending) return;
+    resolveLockerFind('owner', b.getAttribute('data-owner'));
+  });
+
+  // ---- 선택 결과 처리 ----
+  function resolveLockerFind(choice, pickedId){
+    var find = lockerPending;
+    if(!find) return;
+    var st = loadLockerState();
+    var item = find.item;
+
+    if(choice === 'owner'){
+      var correct = (pickedId === item.owner);
+      var picked = staffMap[pickedId];
+      var owner = staffMap[item.owner];
+      if(correct){
+        st.found++; st.returned++;
+        st.handled[find.key] = 'returned';
+        saveLockerState(st);
+        toast(owner.name + '님이 고마워합니다');
+        if(typeof logDayEvent === 'function'){
+          logDayEvent('🎁', item.icon + ' ' + item.name + ' — ' + owner.name + '에게 돌려줬습니다');
+        }
+        // 자리에 있으면 직접 기뻐한다
+        if(charEl(owner.id) && charEl(owner.id).classList.contains('present')){
+          setMood(owner.id, 'happy', 4200);
+          showBubble(owner, '어! 제 거예요. 감사합니다');
+        }
+        lockerOverlay.classList.remove('show');
+      } else {
+        // 틀리면 기회를 잃지 않는다. 다시 고를 수 있게 둔다
+        toast((picked ? picked.name : '그 직원') + '님: 제 것이 아닌데요?');
+        if(picked && charEl(picked.id) && charEl(picked.id).classList.contains('present')){
+          setMood(picked.id, 'surprised', 2600);
+          showBubble(picked, '제 것이 아닌데요?');
+        }
+      }
+      return;
+    }
+
+    st.found++;
+    st.handled[find.key] = choice;
+    saveLockerState(st);
+    if(choice === 'lost'){
+      toast('분실물함에 맡겼습니다');
+      if(typeof logDayEvent === 'function') logDayEvent('📥', item.icon + ' ' + item.name + ' — 분실물함에 맡겼습니다');
+    } else if(choice === 'report'){
+      toast('사장님께 보고했습니다');
+      if(typeof logDayEvent === 'function') logDayEvent('📞', item.icon + ' ' + item.name + ' — 사장님께 보고했습니다');
+    } else {
+      toast('그냥 두었습니다');
+      if(typeof logDayEvent === 'function') logDayEvent('🗄️', item.icon + ' ' + item.name + ' — 발견했지만 그냥 두었습니다');
+    }
+    lockerOverlay.classList.remove('show');
+  }
+
   byId('lockerCloseX').addEventListener('click', function(){ lockerOverlay.classList.remove('show'); });
   byId('lockerBackBtn').addEventListener('click', function(){
+    // 물건·주인 화면에서는 한 단계만 뒤로
+    if(lockerView === 'owner'){ lockerShow('item'); return; }
+    if(lockerView === 'item'){ lockerShow('grid'); return; }
     lockerOverlay.classList.remove('show');
     placeOverlay.classList.add('show');
   });
