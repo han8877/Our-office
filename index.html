@@ -3136,9 +3136,9 @@
     <p>같은 기능을 여러 번 사용하면 손님이 찾아옵니다. 방문 기록은 사무실 일지에도 남아요.</p>
     <table>
       <tr><th>손님</th><th>찾아오는 조건</th><th>내용</th></tr>
-      <tr><td>사장님</td><td>탕비실 20번</td><td>탕비실 간식을 채워줍니다</td></tr>
+      <tr><td>사장님</td><td>탕비실 10번</td><td>탕비실 간식을 채워줍니다</td></tr>
       <tr><td>택배기사</td><td>주문 50개</td><td>재고창고로 택배를 옮깁니다</td></tr>
-      <tr><td>업체직원</td><td>회의 12번</td><td>홍보팀장과 응접 공간에서 회의합니다</td></tr>
+      <tr><td>업체직원</td><td>회의 6번</td><td>홍보팀장과 응접 공간에서 회의합니다</td></tr>
       <tr><td>수리기사</td><td>기기 전원 7번</td><td>복합기·공기청정기·정수기를 차례로 점검합니다</td></tr>
       <tr><td>연주자 조</td><td>아트코너 5번</td><td>경영지원팀과 라운지에서 행사를 논의합니다</td></tr>
       <tr><td>경비</td><td>청소 5번</td><td>사무실을 한 바퀴 돌며 시설을 점검합니다</td></tr>
@@ -5579,7 +5579,7 @@
     if(holder){ clearTimeout(holder._tm); holder.innerHTML = ''; }
   }
 
-  // ---- 택배기사 방문 (누적 주문 100개마다, 8초) ----
+  // ---- 택배기사 방문 (누적 주문 50개마다, 8초) ----
   function maybeTriggerCourierVisit(){
     if(visitorEventActive) return;
     if(lifetime.orders <= 0 || lifetime.orders % 50 !== 0) return;
@@ -5624,10 +5624,10 @@
     }, 30000);
   }
 
-  // ---- 업체직원 방문 (누적 회의 12번마다) ----
+  // ---- 업체직원 방문 (누적 회의 6번마다) ----
   function maybeTriggerVendorVisit(){
     if(visitorEventActive) return;
-    if(lifetime.meetings <= 0 || lifetime.meetings % 12 !== 0) return;
+    if(lifetime.meetings <= 0 || lifetime.meetings % 6 !== 0) return;
     visitorEventActive = true;
 
     var vendorObj = { id:visitorDefs.vendor.id };
@@ -5726,10 +5726,10 @@
     }, 49000);
   }
 
-  // ---- 사장님 방문 (누적 탕비실 이용 20번마다, 10초) ----
+  // ---- 사장님 방문 (누적 탕비실 이용 10번마다, 10초) ----
   function maybeTriggerBossVisit(){
     if(visitorEventActive) return;
-    if(lifetime.breaks <= 0 || lifetime.breaks % 20 !== 0) return;
+    if(lifetime.breaks <= 0 || lifetime.breaks % 10 !== 0) return;
     visitorEventActive = true;
 
     var bossObj = { id:visitorDefs.boss.id };
