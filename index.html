@@ -3168,7 +3168,7 @@
       <tr><td>18:00</td><td>모두 퇴근</td></tr>
     </table>
     <p>언제 접속해도 그 시각에 맞는 출퇴근 상태로 시작하며, 근무 중 직원들은 랜덤으로 작동되는 혼잣말을 합니다.</p>
-    <p>주말과 공휴일에는 정상 근무가 없고, 대신 <b>당직 직원 한 명과 경비</b>가 출근합니다. 당직자는 아트코너·라운지·재고창고·탕비실을 돌아보고 화분에 물도 주고 어항에 밥도 줍니다. 경비는 복도를 순찰하다가 한 바퀴 끝마다 어항에 밥을 주고 가요. 당직자는 날짜마다 정해져서 같은 날 다시 들어와도 같은 사람이에요.</p>
+    <p>주말과 공휴일에는 정상 근무가 없고, 대신 <b>당직 직원 한 명과 경비</b>가 평일과 같은 08:30~09:00 사이에 출근해 18:00에 퇴근합니다. 당직자는 아트코너·라운지·재고창고·탕비실을 돌아보고 화분에 물도 주고 어항에 밥도 줍니다. 경비는 복도를 순찰하다가 한 바퀴 끝마다 어항에 밥을 주고 가요. 당직자는 날짜마다 정해져서 같은 날 다시 들어와도 같은 사람이에요.</p>
     <p>매일 랜덤으로 연차 한 명, 출장 한 명, 조퇴 한 명이 생깁니다. 누가 자리를 비웠는지는 명패를 눌러 확인할 수 있어요.</p>
     <p>창밖 날씨는 대체적으로 화창한데 가끔 비가 옵니다. 사무실 양옆 서울 풍경의 하늘은 새벽·아침·낮·노을·저녁·밤 여섯 단계로 바뀌고, 해와 달이 하늘을 가로질러 움직입니다. 저녁(야근모드)부터 창밖만 어두워집니다.</p>
     <p>직원들의 표정도 상황에 따라 바뀝니다. 회의 중에는 집중한 얼굴, 탕비실에서는 웃는 얼굴이 돼요.</p>
@@ -6174,7 +6174,12 @@
     });
   }
 
-  function startWeekendDuty(){
+  // 당직도 평일과 같은 08:30~09:00 사이에 출근하고 18:00에 퇴근한다.
+  // 출근 시각은 날짜 시드로 고정돼 같은 날 다시 접속해도 같다.
+  function dutyArriveMinute(){ return 8*60 + 30 + (seedHash(dateKey()+'-dutyin') % 30); }
+  var DUTY_LEAVE_MIN = 18*60;
+
+  function startWeekendDuty(walkedIn){
     if(dutyActive) return;
     dutyStaff = staff[seedHash(dateKey()+'-dutystaff') % staff.length];
     dutyActive = true;
@@ -6183,9 +6188,13 @@
 
     // 기지개·심부름 같은 자동 동작에 끌려가지 않도록 잡아둔다
     markBusy(dutyStaff.id);
-    walkIn(dutyStaff, function(){
-      dutyTimer = setTimeout(dutyGo, 2200);
-    }, true);
+    if(walkedIn){
+      walkIn(dutyStaff, function(){ dutyTimer = setTimeout(dutyGo, 2200); }, true);
+    } else {
+      // 출근 시각이 지난 뒤에 접속한 경우엔 이미 자리에 있는 상태로 시작한다
+      showInstant(dutyStaff.id);
+      dutyTimer = setTimeout(dutyGo, 900);
+    }
 
     var g = dutyGuardObj();
     setPos(g.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
@@ -6202,31 +6211,55 @@
     }
   }
 
-  function stopWeekendDuty(){
+  function stopWeekendDuty(graceful){
     if(!dutyActive) return;
     dutyActive = false;
     clearTimeout(dutyTimer); clearTimeout(dutyGuardTimer);
-    if(dutyStaff){
-      cancelTravel(dutyStaff.id);
-      clearBubble(dutyStaff.id);
-      setPos(dutyStaff.id, dutyStaff.x, dutyStaff.y, false);
-      lowerChar(dutyStaff);
-      clearBusy(dutyStaff.id);
-      if(wanderPos) wanderPos[dutyStaff.id] = { x:dutyStaff.x, y:dutyStaff.y };
-      dutyStaff = null;
-    }
-    var gid = visitorDefs.guard.id;
-    cancelTravel(gid);
-    clearBubble(gid);
-    if(charEl(gid)) charEl(gid).classList.remove('present');
+    var s = dutyStaff, gid = visitorDefs.guard.id;
+    dutyStaff = null;
+
     clearTimeout(tankFeedTimer);
     var feedEl = byId('tankFeed');
     if(feedEl) feedEl.classList.remove('on');
+
+    if(graceful && s){
+      // 퇴근 시각: 둘 다 입구로 걸어 나간 뒤 사라진다
+      if(typeof logDayEvent === 'function') logDayEvent('🚪', '주말 당직 종료 — '+s.name+'와 경비가 퇴근했습니다');
+      clearBubble(s.id);
+      walkOut(s, function(){
+        lowerChar(s);
+        setPos(s.id, s.x, s.y, false);
+        clearBusy(s.id);
+        if(wanderPos) wanderPos[s.id] = { x:s.x, y:s.y };
+      }, true);
+      clearBubble(gid);
+      travelTo({ id:gid }, VISITOR_ENTRANCE, 78, function(){
+        if(charEl(gid)) charEl(gid).classList.remove('present');
+      });
+      return;
+    }
+
+    if(s){
+      cancelTravel(s.id);
+      clearBubble(s.id);
+      setPos(s.id, s.x, s.y, false);
+      lowerChar(s);
+      clearBusy(s.id);
+      if(wanderPos) wanderPos[s.id] = { x:s.x, y:s.y };
+    }
+    cancelTravel(gid);
+    clearBubble(gid);
+    if(charEl(gid)) charEl(gid).classList.remove('present');
   }
 
   function syncWeekendDuty(){
-    if(isNonWorkingDay()){ startWeekendDuty(); }
-    else { stopWeekendDuty(); }
+    if(!isNonWorkingDay()){ stopWeekendDuty(false); return; }
+    var now = new Date();
+    var mins = now.getHours()*60 + now.getMinutes();
+    var inMin = dutyArriveMinute();
+    if(mins < inMin){ stopWeekendDuty(false); return; }        // 아직 출근 전
+    if(mins >= DUTY_LEAVE_MIN){ stopWeekendDuty(true); return; } // 퇴근 시각
+    startWeekendDuty(mins - inMin <= 10);                        // 방금 출근한 시각이면 걸어 들어온다
   }
   // 이 블록보다 아래에서 초기화되는 값(일지 등)을 쓰므로 첫 호출은 한 틱 뒤로 미룬다
   setTimeout(syncWeekendDuty, 0);
