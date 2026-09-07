@@ -1803,12 +1803,12 @@
 </pattern>
 <!-- 라운지 담요: 분홍 바탕에 연두 체크 (stroke="none"을 빼면 조각마다 갈색 선이 생긴다) -->
 <pattern id="blanketCheck" width="8" height="8" patternUnits="userSpaceOnUse" stroke="none">
-  <rect width="8" height="8" fill="#f5b9cb"/>
-  <rect y="0" width="8" height="3.2" fill="#cde5b0" opacity="0.78"/>
-  <rect x="0" width="3.2" height="8" fill="#cde5b0" opacity="0.5"/>
-  <rect x="0" y="0" width="3.2" height="3.2" fill="#a9d089" opacity="0.9"/>
-  <line x1="5.6" y1="0" x2="5.6" y2="8" stroke="#e79bb2" stroke-width="0.55" opacity="0.55"/>
-  <line x1="0" y1="5.6" x2="8" y2="5.6" stroke="#b5d894" stroke-width="0.55" opacity="0.45"/>
+  <rect width="8" height="8" fill="#f3a8be"/>
+  <rect y="0" width="8" height="3.2" fill="#dceec6" opacity="0.72"/>
+  <rect x="0" width="3.2" height="8" fill="#dceec6" opacity="0.44"/>
+  <rect x="0" y="0" width="3.2" height="3.2" fill="#c2dea4" opacity="0.88"/>
+  <line x1="5.6" y1="0" x2="5.6" y2="8" stroke="#e28aa6" stroke-width="0.55" opacity="0.5"/>
+  <line x1="0" y1="5.6" x2="8" y2="5.6" stroke="#cbe3ae" stroke-width="0.55" opacity="0.4"/>
 </pattern>
 <linearGradient id="curtainFoldL" x1="0" y1="0" x2="1" y2="0">
   <stop offset="0%" stop-color="#000" stop-opacity="0.16"/>
@@ -2595,12 +2595,32 @@
 <line x1="732" y1="300" x2="732" y2="326" stroke-width="0.8" opacity="0.5"/>
 <line x1="768" y1="300" x2="768" y2="326" stroke-width="0.8" opacity="0.5"/>
 </g>
-<!-- 담요: 좌석 오른쪽에 걸쳐 앞자락을 살짝 늘어뜨린다 (팔걸이는 가리지 않는다) -->
+<!-- 담요: 좌석을 덮고 앞자락이 완만하게 늘어진다. 등받이와 팔걸이는 소파가 보이게 남긴다 -->
 <g stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round" stroke-linecap="round">
-<path d="M 818 307 L 866 307 L 866 335 Q 860 342 853.5 336.5 Q 847 331 840.5 336 Q 834 341 827.5 335 L 818 330 Z" fill="url(#blanketCheck)"/>
-<path d="M 818 307 L 866 307 L 866 312.5 Q 842 316 818 312 Z" fill="#eda8bd" stroke-width="0.9"/>
-<path d="M 851 313 C 849 321 850 329 853 335" fill="none" stroke="#5c4a3a" stroke-width="0.6" opacity="0.3"/>
-<path d="M 833 314 C 831 321 832 328 834 334" fill="none" stroke="#5c4a3a" stroke-width="0.6" opacity="0.24"/>
+<path d="M 762 310 L 868 310 L 868 333 Q 850.3 340 832.7 333.5 Q 815 327.5 797.3 333.5 Q 779.7 339.5 762 333 Z" fill="url(#blanketCheck)"/>
+<path d="M 868 333 Q 850.3 340 832.7 333.5 Q 815 327.5 797.3 333.5 Q 779.7 339.5 762 333" fill="none" stroke="#eda8bd" stroke-width="1.5"/>
+<g fill="none" stroke="#5c4a3a" stroke-width="0.6">
+<path d="M 800 312 C 798 320 799 328 801 333" opacity="0.24"/>
+<path d="M 836 312 C 834 320 835 328 837 333" opacity="0.24"/>
+</g>
+<!-- 쿠션 둘 (등받이에 기대어 둔다) -->
+<g transform="rotate(-7 777 318)">
+<rect x="766" y="307" width="22" height="21" rx="4.5" fill="#fdfaf3"/>
+<g stroke="#f0a9bd" stroke-width="2.1" stroke-linecap="round">
+<line x1="769.5" y1="312.5" x2="784.5" y2="312.5"/>
+<line x1="769.5" y1="318" x2="784.5" y2="318"/>
+<line x1="769.5" y1="323.5" x2="784.5" y2="323.5"/>
+</g>
+<rect x="766" y="307" width="22" height="21" rx="4.5" fill="none"/>
+</g>
+<g transform="rotate(8 854 318)">
+<rect x="843" y="307" width="22" height="21" rx="4.5" fill="#f2c46b"/>
+<g fill="#fdfaf3" stroke="none">
+<circle cx="854" cy="313.6" r="2.7"/><circle cx="854" cy="322.4" r="2.7"/>
+<circle cx="849.6" cy="318" r="2.7"/><circle cx="858.4" cy="318" r="2.7"/>
+</g>
+<circle cx="854" cy="318" r="2.3" fill="#e0a33f" stroke="none"/>
+</g>
 </g>
 <g transform="translate(742,320)" stroke="#5c4a3a" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round">
 <path d="M 0 0 Q -1 -7 -7 -9 Q -6 -2 0 0 Z" fill="#79ad61"/>
