@@ -167,6 +167,23 @@
   #audioBar{ display:flex; align-items:center; gap:10px; background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; padding:0 10px; height:34px; box-sizing:border-box; }
   #audioBar button{ background:none; border:none; padding:2px; cursor:pointer; display:flex; align-items:center; }
   #volSlider{ width:80px; accent-color:#5c4a3a; height:34px; }
+  #audioBar button.active svg polygon, #audioBar button.active svg path{ fill:#b06b5a; stroke:#b06b5a; }
+  .trackRow{ display:flex; align-items:center; gap:9px; width:100%; background:#fffdf8;
+             border:1.2px solid #5c4a3a; border-radius:9px; padding:9px 11px; margin-bottom:7px;
+             font-family:inherit; font-size:13px; color:#5c4a3a; cursor:pointer; text-align:left; }
+  .trackRow:hover{ background:#f6efe0; }
+  .trackRow .tNum{ font-weight:700; letter-spacing:1px; }
+  .trackRow .tState{ margin-left:auto; font-size:10.5px; color:#8a8a86; }
+  .trackRow.on{ background:#f2ead8; box-shadow:inset 0 0 0 1px #5c4a3a; }
+  .trackRow.on .tState{ color:#5c4a3a; font-weight:600; }
+  .trackRow.soon{ opacity:.5; cursor:not-allowed; }
+  .trackRow .tBar{ display:inline-flex; align-items:flex-end; gap:1.5px; height:11px; }
+  .trackRow .tBar i{ width:2.5px; background:#5c4a3a; border-radius:1px; height:4px; }
+  .trackRow.on .tBar i{ animation:tEq .9s ease-in-out infinite; }
+  .trackRow.on .tBar i:nth-child(2){ animation-delay:.18s; }
+  .trackRow.on .tBar i:nth-child(3){ animation-delay:.36s; }
+  @keyframes tEq{ 0%,100%{ height:3px; } 50%{ height:11px; } }
+  @media (prefers-reduced-motion: reduce){ .trackRow.on .tBar i{ animation:none; height:7px; } }
 
   #prodBarWrap{ flex:1; background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; height:16px; position:relative; overflow:visible; }
   #prodBarTrack{ position:absolute; inset:2px; border-radius:6px; background:#f2efe6; overflow:hidden; }
@@ -1721,7 +1738,7 @@
       <button id="playBtn" aria-label="배경음 재생/일시정지" title="배경음 재생/일시정지">
         <svg id="playIcon" width="12" height="12" viewBox="0 0 12 12"><polygon points="2,1 11,6 2,11" fill="#5c4a3a"/></svg>
       </button>
-      <button id="muteBtn" aria-label="음소거" title="음소거">
+      <button id="muteBtn" aria-label="배경음 목록" title="배경음 목록">
         <svg id="muteIcon" width="14" height="12" viewBox="0 0 14 12"><polygon points="1,4 4,4 7,1 7,11 4,8 1,8" fill="#5c4a3a"/><path d="M9 3 q3 3 0 6" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
       </button>
     </div>
@@ -2884,6 +2901,18 @@
   </div>
 </div>
 
+<audio id="bgmAudio" loop preload="none"></audio>
+
+<div class="mail-overlay" id="audioOverlay">
+  <div class="mail-window" style="max-width:290px;">
+    <div class="mail-head"><div class="headLeft"><span>배경음</span></div><button id="audioCloseX">×</button></div>
+    <div class="mail-body">
+      <div id="trackList"></div>
+      <button class="btn" id="audioMuteRow" style="width:100%; justify-content:center; margin-top:2px;">음소거</button>
+    </div>
+  </div>
+</div>
+
 <div class="mail-overlay" id="placeOverlay">
   <div class="mail-window" style="max-width:300px;">
     <div class="mail-head"><div class="headLeft"><span>장소 이용</span></div><button id="placeCloseX">×</button></div>
@@ -3119,6 +3148,7 @@
       <tr><td>사무실 일지</td><td>화면 오른쪽 가장자리 탭. 출근·회의·방문객·청소 등 그동안 일어난 일이 시간순으로 쌓입니다. 자리를 비운 사이 생긴 소식은 탭에 빨간 숫자로 표시돼요 (지난 7일치 보관)</td></tr>
       <tr><td>말풍선 띄우기</td><td>화면 위 입력창에 <code>/직원이름(또는 직책) 문장</code> 입력 시 해당 캐릭터 말풍선 작동 (예: <code>/이노트 배고파</code>)</td></tr>
       <tr><td>벽면 스위치</td><td>사무실 오른쪽 위 스위치를 누르면 조명·기기 전원·냉난방기를 켜고 끌 수 있어요</td></tr>
+      <tr><td>배경음</td><td>왼쪽 메뉴 맨 아래 <code>▶</code>로 켜고 끄고, 옆의 스피커 버튼을 누르면 음원 목록이 열립니다. 음량은 슬라이더로 조절하고, 고른 음원과 음량은 다음 접속에도 기억돼요</td></tr>
     </table>
 
     <h3>5. 장소 이용은 어떤 곳들이 있나요?</h3>
@@ -8322,26 +8352,152 @@
   }
   scheduleNextScriptedConversation();
 
-  // ===== 사운드 (소리 없음, UI/상태만) =====
-  var isPlaying = false, isMuted = false, volume = 0.6;
+  // ===== 배경음 =====
+  // 스피커 버튼을 누르면 음원 목록이 열린다. 아직 파일이 없는 번호는 '준비 중'으로 둔다.
+  var TRACKS = [
+    { id:'01', src:'audio/01.mp3' },
+    { id:'02', src:null },
+    { id:'03', src:null },
+    { id:'04', src:null },
+    { id:'05', src:null }
+  ];
+  var AUDIO_KEY = 'ggj_office_audio_v1';
+  var bgm = byId('bgmAudio');
   var playBtn = byId('playBtn'), muteBtn = byId('muteBtn'), volSlider = byId('volSlider');
-  playBtn.addEventListener('click', function(){
-    isPlaying = !isPlaying;
-    playBtn.querySelector('svg').innerHTML = isPlaying
+  var audioOverlay = byId('audioOverlay'), trackListEl = byId('trackList');
+
+  var audioState = { track:'01', vol:0.6, muted:false, playing:false };
+  try{
+    var savedAudio = JSON.parse(localStorage.getItem(AUDIO_KEY));
+    if(savedAudio){
+      if(savedAudio.track) audioState.track = savedAudio.track;
+      if(typeof savedAudio.vol === 'number') audioState.vol = savedAudio.vol;
+      audioState.muted = !!savedAudio.muted;
+      audioState.playing = !!savedAudio.playing;
+    }
+  }catch(e){}
+  function saveAudioState(){
+    try{ localStorage.setItem(AUDIO_KEY, JSON.stringify(audioState)); }catch(e){}
+  }
+
+  function trackById(id){
+    for(var i=0;i<TRACKS.length;i++){ if(TRACKS[i].id === id) return TRACKS[i]; }
+    return null;
+  }
+  function firstReadyTrack(){
+    for(var i=0;i<TRACKS.length;i++){ if(TRACKS[i].src) return TRACKS[i]; }
+    return null;
+  }
+
+  function setPlayIcon(on){
+    playBtn.querySelector('svg').innerHTML = on
       ? '<rect x="2" y="1" width="3" height="10" fill="#5c4a3a"/><rect x="7" y="1" width="3" height="10" fill="#5c4a3a"/>'
       : '<polygon points="2,1 11,6 2,11" fill="#5c4a3a"/>';
-    toast(isPlaying ? '배경음 재생 (사운드 준비 중)' : '배경음 일시정지');
+    playBtn.title = on ? '배경음 일시정지' : '배경음 재생';
+  }
+
+  function renderTrackList(){
+    if(!trackListEl) return;
+    trackListEl.innerHTML = '';
+    TRACKS.forEach(function(t){
+      var b = document.createElement('button');
+      b.className = 'trackRow' + (t.src ? '' : ' soon') +
+                    (t.src && t.id === audioState.track && audioState.playing ? ' on' : '');
+      b.setAttribute('data-track', t.id);
+      b.innerHTML = '<span class="tBar"><i></i><i></i><i></i></span>' +
+                    '<span class="tNum">' + t.id + '</span>' +
+                    '<span class="tState">' +
+                    (!t.src ? '준비 중'
+                      : (t.id === audioState.track ? (audioState.playing ? '재생 중' : '선택됨') : '')) +
+                    '</span>';
+      trackListEl.appendChild(b);
+    });
+    var mr = byId('audioMuteRow');
+    if(mr) mr.textContent = audioState.muted ? '음소거 해제' : '음소거';
+  }
+
+  function applyAudio(){
+    bgm.volume = audioState.vol;
+    bgm.muted = audioState.muted;
+    volSlider.value = audioState.vol;
+    volSlider.title = '음량 조절: ' + Math.round(audioState.vol*100) + '%';
+    muteBtn.classList.toggle('active', audioState.muted);
+    setPlayIcon(audioState.playing);
+    renderTrackList();
+  }
+
+  // 브라우저는 사용자 조작 전에는 재생을 막는다. 막히면 조용히 정지 상태로 되돌린다.
+  function playBgm(showToast){
+    var t = trackById(audioState.track);
+    if(!t || !t.src) t = firstReadyTrack();
+    if(!t){ toast('아직 등록된 음원이 없어요'); return; }
+    audioState.track = t.id;
+    if(bgm.getAttribute('src') !== t.src){ bgm.setAttribute('src', t.src); bgm.load(); }
+    var pr = bgm.play();
+    if(pr && pr.catch){
+      pr.then(function(){
+        audioState.playing = true; saveAudioState(); applyAudio();
+        if(showToast) toast('배경음 ' + t.id + ' 재생');
+      }).catch(function(){
+        audioState.playing = false; saveAudioState(); applyAudio();
+        if(showToast) toast('브라우저가 자동 재생을 막았어요. 다시 눌러주세요');
+      });
+    } else {
+      audioState.playing = true; saveAudioState(); applyAudio();
+      if(showToast) toast('배경음 ' + t.id + ' 재생');
+    }
+  }
+  function pauseBgm(){
+    bgm.pause();
+    audioState.playing = false;
+    saveAudioState();
+    applyAudio();
+  }
+
+  playBtn.addEventListener('click', function(){
+    if(audioState.playing) { pauseBgm(); toast('배경음 일시정지'); }
+    else playBgm(true);
   });
+
+  // 기존 스피커 버튼이 음원 목록을 연다
   muteBtn.addEventListener('click', function(){
-    isMuted = !isMuted;
-    muteBtn.classList.toggle('active', isMuted);
-    toast(isMuted ? '음소거 되었습니다' : '음소거를 해제했습니다');
+    renderTrackList();
+    audioOverlay.classList.add('show');
   });
+  byId('audioCloseX').addEventListener('click', function(){ audioOverlay.classList.remove('show'); });
+  audioOverlay.addEventListener('click', function(e){
+    if(e.target === audioOverlay) audioOverlay.classList.remove('show');
+  });
+  byId('audioMuteRow').addEventListener('click', function(){
+    audioState.muted = !audioState.muted;
+    saveAudioState();
+    applyAudio();
+    toast(audioState.muted ? '음소거 되었습니다' : '음소거를 해제했습니다');
+  });
+  trackListEl.addEventListener('click', function(e){
+    var row = e.target.closest ? e.target.closest('.trackRow') : null;
+    if(!row) return;
+    var t = trackById(row.getAttribute('data-track'));
+    if(!t) return;
+    if(!t.src){ toast(t.id + '번은 아직 준비 중이에요'); return; }
+    audioState.track = t.id;
+    saveAudioState();
+    playBgm(true);
+  });
+
   volSlider.addEventListener('input', function(){
-    volume = parseFloat(volSlider.value);
-    volSlider.title = '음량 조절: ' + Math.round(volume*100) + '%';
+    audioState.vol = parseFloat(volSlider.value);
+    bgm.volume = audioState.vol;
+    volSlider.title = '음량 조절: ' + Math.round(audioState.vol*100) + '%';
+    saveAudioState();
   });
-  volSlider.title = '음량 조절: 60%';
+
+  applyAudio();
+  // 지난번에 켜둔 채로 나갔다면, 출근하기(사용자 조작) 직후에 이어서 튼다
+  if(audioState.playing){
+    var enterBtnEl = byId('enterOfficeBtn');
+    if(enterBtnEl) enterBtnEl.addEventListener('click', function(){ playBgm(false); });
+  }
 
   // ===== 설정: 회사명 / 팀명 / 직원명 편집 및 저장 =====
   var settingsPanel = byId('settingsPanel');
