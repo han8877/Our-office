@@ -161,8 +161,14 @@
   @keyframes bubUp{ 0%{ transform:translateY(0); opacity:0; } 12%{ opacity:.8; }
                     90%{ opacity:.5; } 100%{ transform:translateY(var(--bTop)); opacity:0; } }
   .bub{ animation:bubUp 2.8s linear infinite; }
+  /* 먹이 알갱이: 수면에서 자갈 쪽으로 천천히 가라앉는다 */
+  @keyframes pelDrop{ 0%{ transform:translateY(0); opacity:0; } 12%{ opacity:1; }
+                      85%{ opacity:.9; } 100%{ transform:translateY(25px); opacity:0; } }
+  #tankFeed{ transition:opacity .4s ease; }
+  #tankFeed.on{ opacity:1; }
+  #tankFeed.on .pel{ animation:pelDrop 3.2s ease-in infinite; }
   @media (prefers-reduced-motion: reduce){
-    .fishA, .fishB, .fishC, .fishD, .bub{ animation:none; }
+    .fishA, .fishB, .fishC, .fishD, .bub, #tankFeed.on .pel{ animation:none; }
   }
   @keyframes swayLeaf{
     0%   { transform: rotate(-1.6deg); }
@@ -1869,6 +1875,8 @@
 <g transform="translate(104,156)"><g class="fishA"><g transform="scale(1,1)"><ellipse cx="0" cy="0" rx="5.4" ry="3.35" fill="#f2a65a" stroke="#5c4a3a" stroke-width="0.7"/><path d="M -4.86 0 L -9.45 -3.35 L -9.45 3.35 Z" fill="#e08a3c" stroke="#5c4a3a" stroke-width="0.7" stroke-linejoin="round"/><path d="M -0.81 -3.24 L 1.08 -5.67 L 2.70 -2.70 Z" fill="#e08a3c" stroke="#5c4a3a" stroke-width="0.6" stroke-linejoin="round"/><circle cx="2.70" cy="-0.81" r="0.86" fill="#3a2a1f" stroke="none"/></g></g></g>
 <g transform="translate(140,164)"><g class="fishB"><g transform="scale(-1,1)"><ellipse cx="0" cy="0" rx="4.2" ry="2.60" fill="#e8e2d6" stroke="#5c4a3a" stroke-width="0.7"/><path d="M -3.78 0 L -7.35 -2.60 L -7.35 2.60 Z" fill="#cfc6b4" stroke="#5c4a3a" stroke-width="0.7" stroke-linejoin="round"/><path d="M -0.63 -2.52 L 0.84 -4.41 L 2.10 -2.10 Z" fill="#cfc6b4" stroke="#5c4a3a" stroke-width="0.6" stroke-linejoin="round"/><circle cx="2.10" cy="-0.63" r="0.67" fill="#3a2a1f" stroke="none"/></g></g></g>
 <g transform="translate(90,168)"><g class="fishC"><g transform="scale(1,1)"><ellipse cx="0" cy="0" rx="3.4" ry="2.11" fill="#8fb8d8" stroke="#5c4a3a" stroke-width="0.7"/><path d="M -3.06 0 L -5.95 -2.11 L -5.95 2.11 Z" fill="#6d9cc2" stroke="#5c4a3a" stroke-width="0.7" stroke-linejoin="round"/><path d="M -0.51 -2.04 L 0.68 -3.57 L 1.70 -1.70 Z" fill="#6d9cc2" stroke="#5c4a3a" stroke-width="0.6" stroke-linejoin="round"/><circle cx="1.70" cy="-0.51" r="0.54" fill="#3a2a1f" stroke="none"/></g></g></g>
+<!-- 먹이 알갱이: 밥 줄 때만 보인다 -->
+<g id="tankFeed" opacity="0"><circle class="pel" cx="84" cy="147" r="1.0" fill="#c98a3f" stroke="none" style="animation-delay:0s"/><circle class="pel" cx="96" cy="147" r="0.8" fill="#c98a3f" stroke="none" style="animation-delay:0.35s"/><circle class="pel" cx="107" cy="147" r="1.0" fill="#c98a3f" stroke="none" style="animation-delay:0.7s"/><circle class="pel" cx="118" cy="147" r="0.85" fill="#c98a3f" stroke="none" style="animation-delay:1.05s"/><circle class="pel" cx="130" cy="147" r="0.9" fill="#c98a3f" stroke="none" style="animation-delay:1.4s"/><circle class="pel" cx="92" cy="147" r="0.7" fill="#c98a3f" stroke="none" style="animation-delay:1.75s"/></g>
 <g transform="translate(148,156)"><g class="fishD"><g transform="scale(-1,1)"><ellipse cx="0" cy="0" rx="3.0" ry="1.86" fill="#e9a0b4" stroke="#5c4a3a" stroke-width="0.7"/><path d="M -2.70 0 L -5.25 -1.86 L -5.25 1.86 Z" fill="#d0788f" stroke="#5c4a3a" stroke-width="0.7" stroke-linejoin="round"/><path d="M -0.45 -1.80 L 0.60 -3.15 L 1.50 -1.50 Z" fill="#d0788f" stroke="#5c4a3a" stroke-width="0.6" stroke-linejoin="round"/><circle cx="1.50" cy="-0.45" r="0.48" fill="#3a2a1f" stroke="none"/></g></g></g>
 <path d="M 68 182 L 86 146 L 93 146 L 75 182 Z" fill="#ffffff" opacity="0.22" stroke="none"/>
 <path d="M 112 182 L 130 146 L 135 146 L 117 182 Z" fill="#ffffff" opacity="0.14" stroke="none"/>
@@ -3160,7 +3168,7 @@
       <tr><td>18:00</td><td>모두 퇴근</td></tr>
     </table>
     <p>언제 접속해도 그 시각에 맞는 출퇴근 상태로 시작하며, 근무 중 직원들은 랜덤으로 작동되는 혼잣말을 합니다.</p>
-    <p>주말과 공휴일에는 정상 근무가 없고, 대신 <b>당직 직원 한 명과 경비</b>가 출근합니다. 당직자는 아트코너·라운지·재고창고·탕비실을 돌아보고 화분에 물도 줘요. 경비는 복도를 계속 순찰합니다. 당직자는 날짜마다 정해져서 같은 날 다시 들어와도 같은 사람이에요.</p>
+    <p>주말과 공휴일에는 정상 근무가 없고, 대신 <b>당직 직원 한 명과 경비</b>가 출근합니다. 당직자는 아트코너·라운지·재고창고·탕비실을 돌아보고 화분에 물도 주고 어항에 밥도 줍니다. 경비는 복도를 순찰하다가 한 바퀴 끝마다 어항에 밥을 주고 가요. 당직자는 날짜마다 정해져서 같은 날 다시 들어와도 같은 사람이에요.</p>
     <p>매일 랜덤으로 연차 한 명, 출장 한 명, 조퇴 한 명이 생깁니다. 누가 자리를 비웠는지는 명패를 눌러 확인할 수 있어요.</p>
     <p>창밖 날씨는 대체적으로 화창한데 가끔 비가 옵니다. 사무실 양옆 서울 풍경의 하늘은 새벽·아침·낮·노을·저녁·밤 여섯 단계로 바뀌고, 해와 달이 하늘을 가로질러 움직입니다. 저녁(야근모드)부터 창밖만 어두워집니다.</p>
     <p>직원들의 표정도 상황에 따라 바뀝니다. 회의 중에는 집중한 얼굴, 탕비실에서는 웃는 얼굴이 돼요.</p>
@@ -6083,48 +6091,83 @@
     { p:{x:520,y:472}, lines:['너도 목말랐지', '새 잎이 났다'] },
     { p:{x:436,y:750}, lines:['이 녀석은 물을 많이 먹네', '흙이 말랐구나'] }
   ];
+  // 어항은 탁자 오른쪽에 서서 밥을 준다 (어항이 가려지지 않는 자리)
+  var DUTY_TANK = { p:{x:188, y:224}, lines:[
+    '밥 먹자~', '한 꼬집만 줄게', '많이 주면 물이 탁해져',
+    '다들 잘 있었네', '너희는 주말도 없구나', '오늘도 잘 먹네'
+  ] };
   var DUTY_GUARD_LINES = ['이상 없습니다', '조용하네요', '한 바퀴 더 돌고', '문은 잘 잠겼고'];
+  var DUTY_GUARD_TANK_LINES = ['밥은 챙겨줘야지', '한 꼬집이면 되겠지', '물고기도 주말 근무네'];
+  // 순회 계획: 네 공간을 돌면서 사이사이 화분 물주기와 어항 밥주기를 끼운다
+  var DUTY_PLAN = ['stop','stop','plant','stop','tank','stop','plant','stop','tank','stop'];
+
+  // 밥을 주면 알갱이가 잠시 가라앉는다
+  var tankFeedTimer = null;
+  function feedFish(){
+    var el = byId('tankFeed');
+    if(!el) return;
+    el.classList.add('on');
+    clearTimeout(tankFeedTimer);
+    tankFeedTimer = setTimeout(function(){ el.classList.remove('on'); }, 7000);
+  }
 
   var dutyActive = false, dutyStaff = null;
   var dutyTimer = null, dutyGuardTimer = null;
   var dutyRound = 0, dutyStopIdx = 0, dutyPlantIdx = 0, dutyGuardIdx = 0;
-  var dutyWaterLogged = false;
+  var dutyWaterLogged = false, dutyFeedLogged = false;
 
   function dutyGuardObj(){ return { id: visitorDefs.guard.id }; }
 
-  // 당직자: 네 공간을 돌다가 세 번째 차례마다 화분에 물을 준다
+  // 당직자: DUTY_PLAN 순서대로 공간 순회 → 화분 물주기 → 어항 밥주기를 반복한다
   function dutyGo(){
     if(!dutyActive || !dutyStaff) return;
     var s = dutyStaff;
+    var kind = DUTY_PLAN[dutyRound % DUTY_PLAN.length];
     dutyRound++;
-    var watering = (dutyRound % 3 === 0);
     var spot;
-    if(watering){ spot = DUTY_PLANTS[dutyPlantIdx % DUTY_PLANTS.length]; dutyPlantIdx++; }
+    if(kind === 'plant'){ spot = DUTY_PLANTS[dutyPlantIdx % DUTY_PLANTS.length]; dutyPlantIdx++; }
+    else if(kind === 'tank'){ spot = DUTY_TANK; }
     else { spot = DUTY_STOPS[dutyStopIdx % DUTY_STOPS.length]; dutyStopIdx++; }
 
     raiseChar(s);
     travelTo(s, spot.p, 58, function(){
       if(!dutyActive) return;
-      setMood(s.id, watering ? 'happy' : 'normal', 6000);
+      setMood(s.id, (kind === 'stop') ? 'normal' : 'happy', 6000);
       showBubble(s, spot.lines[Math.floor(Math.random()*spot.lines.length)]);
-      // 물 주기는 처음 한 번만 일지에 남긴다 (매번 남기면 일지가 도배된다)
-      if(watering && !dutyWaterLogged){
+      if(kind === 'tank') feedFish();
+      // 물주기·밥주기는 하루 첫 번째만 일지에 남긴다 (매번 남기면 일지가 도배된다)
+      if(kind === 'plant' && !dutyWaterLogged){
         dutyWaterLogged = true;
         if(typeof logDayEvent === 'function') logDayEvent('🪴', s.name+'가 화분에 물을 줬습니다');
+      }
+      if(kind === 'tank' && !dutyFeedLogged){
+        dutyFeedLogged = true;
+        if(typeof logDayEvent === 'function') logDayEvent('🐟', s.name+'가 어항에 밥을 줬습니다');
       }
       dutyTimer = setTimeout(dutyGo, 11000 + Math.random()*7000);
     });
   }
 
-  // 경비: 복도 순찰만 계속 돈다
+  // 경비: 복도를 순찰하고, 한 바퀴 끝마다 어항에 밥을 주고 간다
+  function dutyGuardRoute(){
+    return GUARD_ROUTE.concat([{ p:DUTY_TANK.p, tank:true }]);
+  }
   function dutyGuardGo(){
     if(!dutyActive) return;
     var obj = dutyGuardObj();
-    var stop = GUARD_ROUTE[dutyGuardIdx % GUARD_ROUTE.length];
+    var route = dutyGuardRoute();
+    var stop = route[dutyGuardIdx % route.length];
     dutyGuardIdx++;
     travelTo(obj, stop.p, 78, function(){
       if(!dutyActive) return;
-      if(Math.random() < 0.55){
+      if(stop.tank){
+        feedFish();
+        showBubble(obj, DUTY_GUARD_TANK_LINES[Math.floor(Math.random()*DUTY_GUARD_TANK_LINES.length)]);
+        if(!dutyFeedLogged){
+          dutyFeedLogged = true;
+          if(typeof logDayEvent === 'function') logDayEvent('🐟', '경비가 어항에 밥을 줬습니다');
+        }
+      } else if(Math.random() < 0.55){
         showBubble(obj, DUTY_GUARD_LINES[Math.floor(Math.random()*DUTY_GUARD_LINES.length)]);
       }
       dutyGuardTimer = setTimeout(dutyGuardGo, 12000 + Math.random()*8000);
@@ -6135,7 +6178,8 @@
     if(dutyActive) return;
     dutyStaff = staff[seedHash(dateKey()+'-dutystaff') % staff.length];
     dutyActive = true;
-    dutyRound = 0; dutyStopIdx = 0; dutyPlantIdx = 0; dutyGuardIdx = 0; dutyWaterLogged = false;
+    dutyRound = 0; dutyStopIdx = 0; dutyPlantIdx = 0; dutyGuardIdx = 0;
+    dutyWaterLogged = false; dutyFeedLogged = false;
 
     // 기지개·심부름 같은 자동 동작에 끌려가지 않도록 잡아둔다
     markBusy(dutyStaff.id);
@@ -6175,6 +6219,9 @@
     cancelTravel(gid);
     clearBubble(gid);
     if(charEl(gid)) charEl(gid).classList.remove('present');
+    clearTimeout(tankFeedTimer);
+    var feedEl = byId('tankFeed');
+    if(feedEl) feedEl.classList.remove('on');
   }
 
   function syncWeekendDuty(){
