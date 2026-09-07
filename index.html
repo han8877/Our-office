@@ -3079,7 +3079,8 @@
       <tr><td>13:00</td><td>직원들이 순서대로 복귀하며, 가장 먼저 들어온 직원이 "배부르다."고 말함</td></tr>
       <tr><td>18:00</td><td>모두 퇴근</td></tr>
     </table>
-    <p>언제 접속해도 그 시각에 맞는 출퇴근 상태로 시작하며, 근무 중 직원들은 랜덤으로 작동되는 혼잣말을 합니다. 주말과 공휴일에는 아무도 출근하지 않아요.</p>
+    <p>언제 접속해도 그 시각에 맞는 출퇴근 상태로 시작하며, 근무 중 직원들은 랜덤으로 작동되는 혼잣말을 합니다.</p>
+    <p>주말과 공휴일에는 정상 근무가 없고, 대신 <b>당직 직원 한 명과 경비</b>가 출근합니다. 당직자는 아트코너·라운지·재고창고·탕비실을 돌아보고 화분에 물도 줘요. 경비는 복도를 계속 순찰합니다. 당직자는 날짜마다 정해져서 같은 날 다시 들어와도 같은 사람이에요.</p>
     <p>매일 랜덤으로 연차 한 명, 출장 한 명, 조퇴 한 명이 생깁니다. 누가 자리를 비웠는지는 명패를 눌러 확인할 수 있어요.</p>
     <p>창밖 날씨는 대체적으로 화창한데 가끔 비가 옵니다. 사무실 양옆 서울 풍경의 하늘은 새벽·아침·낮·노을·저녁·밤 여섯 단계로 바뀌고, 해와 달이 하늘을 가로질러 움직입니다. 저녁(야근모드)부터 창밖만 어두워집니다.</p>
     <p>직원들의 표정도 상황에 따라 바뀝니다. 회의 중에는 집중한 얼굴, 탕비실에서는 웃는 얼굴이 돼요.</p>
@@ -3136,11 +3137,11 @@
     <table>
       <tr><th>손님</th><th>찾아오는 조건</th><th>내용</th></tr>
       <tr><td>사장님</td><td>탕비실 20번</td><td>탕비실 간식을 채워줍니다</td></tr>
-      <tr><td>택배기사</td><td>주문 100개</td><td>재고창고로 택배를 옮깁니다</td></tr>
+      <tr><td>택배기사</td><td>주문 50개</td><td>재고창고로 택배를 옮깁니다</td></tr>
       <tr><td>업체직원</td><td>회의 12번</td><td>홍보팀장과 응접 공간에서 회의합니다</td></tr>
       <tr><td>수리기사</td><td>기기 전원 7번</td><td>복합기·공기청정기·정수기를 차례로 점검합니다</td></tr>
-      <tr><td>연주자 조</td><td>아트코너 8번</td><td>경영지원팀과 라운지에서 행사를 논의합니다</td></tr>
-      <tr><td>경비</td><td>청소 15번</td><td>사무실을 한 바퀴 돌며 시설을 점검합니다</td></tr>
+      <tr><td>연주자 조</td><td>아트코너 5번</td><td>경영지원팀과 라운지에서 행사를 논의합니다</td></tr>
+      <tr><td>경비</td><td>청소 5번</td><td>사무실을 한 바퀴 돌며 시설을 점검합니다</td></tr>
     </table>
 
     <h3>7. 주요 프로젝트(타이머)는 어떤 기능인가요?</h3>
@@ -4402,12 +4403,18 @@
 
   var wanderBtn = byId('wanderBtn');
   wanderBtn.addEventListener('click', function(){
+    // 켤 때는 움직일 수 있는 직원이 있는지 먼저 확인한다.
+    // (주말·퇴근 후엔 발동하지 않고, 회의·당직처럼 이벤트 중인 직원은 끌어내지 않는다)
+    var movable = staff.filter(function(s){
+      return charEl(s.id) && charEl(s.id).classList.contains('present') && !isBusy(s.id);
+    });
+    if(!wanderOn && !movable.length){ toast('지금 돌아다닐 수 있는 직원이 없어요'); return; }
     wanderOn = !wanderOn;
     wanderBtn.classList.toggle('active', wanderOn);
     byId('wanderLabel').textContent = wanderOn ? '이동 중' : '랜덤 이동';
     if(wanderOn){
       toast('직원들이 사무실을 돌아다닙니다 (3분 후 자동 복귀)');
-      staff.forEach(function(s, idx){
+      movable.forEach(function(s, idx){
         wanderPos[s.id] = {x:s.x, y:s.y};
         wanderTimers[s.id] = setTimeout(function(){ wanderStep(s); }, idx*700);
       });
@@ -4786,7 +4793,10 @@
   ];
   setInterval(function(){
     if(Math.random() >= 0.3) return; // 낮은 확률로만 발동
-    var present = staff.filter(function(s){ return charEl(s.id).classList.contains('present'); });
+    // 회의·탕비실·방문객 응대·당직처럼 이벤트 중인 직원은 제외한다
+    var present = staff.filter(function(s){
+      return charEl(s.id).classList.contains('present') && !isBusy(s.id);
+    });
     if(present.length === 0) return;
     var pick = present[Math.floor(Math.random()*present.length)];
     var line = idleLines[Math.floor(Math.random()*idleLines.length)];
@@ -4805,7 +4815,9 @@
   setInterval(function(){
     if(Math.random() >= 0.18) return;
     if(inMeeting && Object.keys(inMeeting).length && Math.random()<0.5) return;
-    var present = staff.filter(function(s){ return charEl(s.id).classList.contains('present') && !inMeeting[s.id]; });
+    var present = staff.filter(function(s){
+      return charEl(s.id).classList.contains('present') && !inMeeting[s.id] && !isBusy(s.id);
+    });
     if(present.length < 2) return;
     var shuffled = present.slice().sort(function(){ return Math.random()-0.5; });
     var a = shuffled[0], b = shuffled[1];
@@ -5570,7 +5582,7 @@
   // ---- 택배기사 방문 (누적 주문 100개마다, 8초) ----
   function maybeTriggerCourierVisit(){
     if(visitorEventActive) return;
-    if(lifetime.orders <= 0 || lifetime.orders % 100 !== 0) return;
+    if(lifetime.orders <= 0 || lifetime.orders % 50 !== 0) return;
     visitorEventActive = true;
 
     var courierObj = { id:visitorDefs.courier.id };
@@ -5811,7 +5823,7 @@
     setTimeout(nextStop, 1600);
   }
 
-  // ---- 연주자 조 방문 (아트코너 누적 8번마다) ----
+  // ---- 연주자 조 방문 (아트코너 누적 5번마다) ----
   // 경영지원팀이 마중 나와 라운지에서 행사 이야기를 하고, 아트코너를 보여준 뒤 배웅한다
   var PLAYER_GREET = { x:150, y:700 };   // 입구 앞 복도
   var PLAYER_ART_SPOTS = [ {x:405,y:437}, {x:441,y:437}, {x:477,y:437} ];
@@ -5829,7 +5841,7 @@
 
   function maybeTriggerPlayerVisit(){
     if(visitorEventActive) return;
-    if(lifetime.arts <= 0 || lifetime.arts % 8 !== 0) return;
+    if(lifetime.arts <= 0 || lifetime.arts % 5 !== 0) return;
 
     // 경영지원팀에서 자리에 있고 한가한 두 명
     var biz = staff.filter(function(s){
@@ -5929,7 +5941,7 @@
     }
   }
 
-  // ---- 경비 방문 (청소 누적 15번마다) ----
+  // ---- 경비 방문 (청소 누적 5번마다) ----
   // 팀 자리 사이를 지나지 않도록 복도에 인접한 지점만 찍는다 (경로는 wRoute가 복도로 잡는다)
   var GUARD_ROUTE = [
     { p:{x:250, y:196}, label:'응접 공간' },
@@ -5940,7 +5952,8 @@
 
   function maybeTriggerGuardVisit(){
     if(visitorEventActive) return;
-    if(lifetime.cleans <= 0 || lifetime.cleans % 15 !== 0) return;
+    if(dutyActive) return;   // 주말 당직 중이면 경비가 이미 사무실에 있다
+    if(lifetime.cleans <= 0 || lifetime.cleans % 5 !== 0) return;
     visitorEventActive = true;
 
     var obj = { id:visitorDefs.guard.id };
@@ -5973,6 +5986,123 @@
       guardNext();
     }, 1900);
   }
+
+  // ===== 주말·공휴일 당직 =====
+  // 쉬는 날에 사무실이 완전히 비어 게임이 멈춘 것처럼 보이지 않도록,
+  // 당직 직원 한 명과 경비가 남는다. 당직자는 날짜 시드로 정해져서
+  // 같은 날 다시 접속해도 같은 사람이다 (연차·출장과 같은 방식).
+  var DUTY_STOPS = [
+    { p:{x:441,y:437}, lines:['조각품 먼지 좀 털고', '주말엔 여기가 제일 조용하네', '오늘도 잘 있구나'] },
+    { p:{x:815,y:322}, lines:['소파 정리 끝', '잠깐만 앉아볼까', '주말 라운지는 내 거지'] },
+    { p:{x:890,y:500}, lines:['재고 이상 없음', '박스가 좀 삐뚤었네', '스티커는 넉넉하다'] },
+    { p:{x:920,y:755}, lines:['커피 한 잔 해야지', '간식 채워둬야겠다', '물 끓는 소리뿐이네'] }
+  ];
+  var DUTY_PLANTS = [
+    { p:{x:96,y:556},  lines:['물 주는 건 잊으면 안 되지', '잎이 잘 자랐네'] },
+    { p:{x:520,y:472}, lines:['너도 목말랐지', '새 잎이 났다'] },
+    { p:{x:436,y:750}, lines:['이 녀석은 물을 많이 먹네', '흙이 말랐구나'] }
+  ];
+  var DUTY_GUARD_LINES = ['이상 없습니다', '조용하네요', '한 바퀴 더 돌고', '문은 잘 잠겼고'];
+
+  var dutyActive = false, dutyStaff = null;
+  var dutyTimer = null, dutyGuardTimer = null;
+  var dutyRound = 0, dutyStopIdx = 0, dutyPlantIdx = 0, dutyGuardIdx = 0;
+  var dutyWaterLogged = false;
+
+  function dutyGuardObj(){ return { id: visitorDefs.guard.id }; }
+
+  // 당직자: 네 공간을 돌다가 세 번째 차례마다 화분에 물을 준다
+  function dutyGo(){
+    if(!dutyActive || !dutyStaff) return;
+    var s = dutyStaff;
+    dutyRound++;
+    var watering = (dutyRound % 3 === 0);
+    var spot;
+    if(watering){ spot = DUTY_PLANTS[dutyPlantIdx % DUTY_PLANTS.length]; dutyPlantIdx++; }
+    else { spot = DUTY_STOPS[dutyStopIdx % DUTY_STOPS.length]; dutyStopIdx++; }
+
+    raiseChar(s);
+    travelTo(s, spot.p, 58, function(){
+      if(!dutyActive) return;
+      setMood(s.id, watering ? 'happy' : 'normal', 6000);
+      showBubble(s, spot.lines[Math.floor(Math.random()*spot.lines.length)]);
+      // 물 주기는 처음 한 번만 일지에 남긴다 (매번 남기면 일지가 도배된다)
+      if(watering && !dutyWaterLogged){
+        dutyWaterLogged = true;
+        if(typeof logDayEvent === 'function') logDayEvent('🪴', s.name+'가 화분에 물을 줬습니다');
+      }
+      dutyTimer = setTimeout(dutyGo, 11000 + Math.random()*7000);
+    });
+  }
+
+  // 경비: 복도 순찰만 계속 돈다
+  function dutyGuardGo(){
+    if(!dutyActive) return;
+    var obj = dutyGuardObj();
+    var stop = GUARD_ROUTE[dutyGuardIdx % GUARD_ROUTE.length];
+    dutyGuardIdx++;
+    travelTo(obj, stop.p, 78, function(){
+      if(!dutyActive) return;
+      if(Math.random() < 0.55){
+        showBubble(obj, DUTY_GUARD_LINES[Math.floor(Math.random()*DUTY_GUARD_LINES.length)]);
+      }
+      dutyGuardTimer = setTimeout(dutyGuardGo, 12000 + Math.random()*8000);
+    });
+  }
+
+  function startWeekendDuty(){
+    if(dutyActive) return;
+    dutyStaff = staff[seedHash(dateKey()+'-dutystaff') % staff.length];
+    dutyActive = true;
+    dutyRound = 0; dutyStopIdx = 0; dutyPlantIdx = 0; dutyGuardIdx = 0; dutyWaterLogged = false;
+
+    // 기지개·심부름 같은 자동 동작에 끌려가지 않도록 잡아둔다
+    markBusy(dutyStaff.id);
+    walkIn(dutyStaff, function(){
+      dutyTimer = setTimeout(dutyGo, 2200);
+    }, true);
+
+    var g = dutyGuardObj();
+    setPos(g.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
+    charEl(g.id).classList.add('present');
+    showBubble(g, '주말 근무입니다');
+    dutyGuardTimer = setTimeout(function(){
+      clearBubble(g.id);
+      dutyGuardGo();
+    }, 2800);
+
+    toast('쉬는 날이라 당직 '+dutyStaff.name+'와 경비만 출근했어요');
+    if(typeof logDayEvent === 'function'){
+      logDayEvent('🗓️', '주말 당직 — '+dutyStaff.name+'와 경비가 출근했습니다');
+    }
+  }
+
+  function stopWeekendDuty(){
+    if(!dutyActive) return;
+    dutyActive = false;
+    clearTimeout(dutyTimer); clearTimeout(dutyGuardTimer);
+    if(dutyStaff){
+      cancelTravel(dutyStaff.id);
+      clearBubble(dutyStaff.id);
+      setPos(dutyStaff.id, dutyStaff.x, dutyStaff.y, false);
+      lowerChar(dutyStaff);
+      clearBusy(dutyStaff.id);
+      if(wanderPos) wanderPos[dutyStaff.id] = { x:dutyStaff.x, y:dutyStaff.y };
+      dutyStaff = null;
+    }
+    var gid = visitorDefs.guard.id;
+    cancelTravel(gid);
+    clearBubble(gid);
+    if(charEl(gid)) charEl(gid).classList.remove('present');
+  }
+
+  function syncWeekendDuty(){
+    if(isNonWorkingDay()){ startWeekendDuty(); }
+    else { stopWeekendDuty(); }
+  }
+  // 이 블록보다 아래에서 초기화되는 값(일지 등)을 쓰므로 첫 호출은 한 틱 뒤로 미룬다
+  setTimeout(syncWeekendDuty, 0);
+  setInterval(syncWeekendDuty, 20000);
 
   // ===== 먼지: 10분마다 바닥에 하나씩 쌓이고, 청소 버튼으로 전부 제거 =====
   var DUST_KEY = 'officeDustV1';
@@ -6283,6 +6413,12 @@
 
   // ===== 아트코너: 랜덤 1명이 조각품 아래에서 영감을 받는다 =====
   var ART_SPOT = { x:441, y:437 };
+  var ART_LINES = [
+    '영감이 떠오른다!!!', '이 곡선 좀 봐', '색을 이렇게 쓰면 되겠다',
+    '한참 봐도 안 질리네', '오늘은 잘 될 것 같아', '이런 게 예술이지',
+    '머리가 맑아졌어', '스케치하러 가야겠다', '뭔가 잡힐 것 같은데',
+    '이거 노트 표지로 어때?'
+  ];
   var artBusy = false;
 
   function startArtEvent(){
@@ -6312,7 +6448,7 @@
 
     // 조각품 앞에 도착한 뒤에 말하도록 도착 콜백에서 띄운다
     travelTo(s, ART_SPOT, 62, function(){
-      setTimeout(function(){ showBubble(s, '영감이 떠오른다!!!'); }, 600);
+      setTimeout(function(){ showBubble(s, ART_LINES[Math.floor(Math.random()*ART_LINES.length)]); }, 600);
       setTimeout(function(){
         travelTo(s, {x:s.x, y:s.y}, 62, function(){
           lowerChar(s);
@@ -6327,7 +6463,17 @@
   // ===== 재고창고: 인턴들만 테이블 왼쪽에 나란히 서서 재고를 확인한다 =====
   var STOCK_SPOTS = [ {x:880,y:500}, {x:903,y:500} ];
   var stockBusy = false;
-  var stockLines = ['재고 수량 확인!', '휴, 빨리 끝났다'];
+  // 인턴 둘이 주고받는 대사 세트. 한 명뿐이면 혼자 이어서 말한다
+  var stockDialogues = [
+    ['재고 수량 확인!', '휴, 빨리 끝났다'],
+    ['이 박스 뭐였죠?', '작년 견본집이에요'],
+    ['스티커가 벌써 다 나갔네', '인기 많았나 봐요'],
+    ['여기 라벨이 떨어졌어요', '새로 붙여둘게요'],
+    ['숫자가 하나 안 맞아요', '다시 세볼까요?'],
+    ['생각보다 많이 남았네요', '주문을 줄여야 하나'],
+    ['먼지 좀 봐..', '나중에 한번 털어야겠어요'],
+    ['다 맞습니다!', '수고했어요']
+  ];
 
   function startStockEvent(){
     if(stockBusy){ toast('이미 재고창고에 인턴들이 있어요'); return; }
@@ -6359,7 +6505,8 @@
         arrived++;
         if(arrived < chosen.length) return;
 
-        stockLines.forEach(function(line, j){
+        var talk = stockDialogues[Math.floor(Math.random()*stockDialogues.length)];
+        talk.forEach(function(line, j){
           setTimeout(function(){
             // 인턴이 한 명뿐이면 두 대사를 혼자 이어서 말한다
             var speaker = chosen[j] || chosen[0];
@@ -6376,7 +6523,7 @@
             clearBusy(m.id);
           });
           stockBusy = false;
-        }, 700 + stockLines.length*2600 + 1800);
+        }, 700 + 2*2600 + 1800);
       });
     });
   }
