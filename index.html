@@ -401,6 +401,18 @@
   #chatInputRow input::placeholder{ color:#a8bcc9; }
   #chatSendBtn{ width:33px; height:33px; min-width:33px; padding:0; border-radius:50%; background:#1B7FB8; border:none; color:#fff; font-size:15px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
   .chatBubble.deleted{ color:#a8bcc9; font-style:italic; border-style:dashed; background:#fff; }
+  /* 퇴근(뒤로가기) 확인 — 어떤 창보다 위에 떠야 한다 */
+  #exitOverlay{ position:fixed; inset:0; background:rgba(58,50,40,0.46); display:none;
+                align-items:center; justify-content:center; z-index:60; padding:18px; }
+  #exitOverlay.show{ display:flex; }
+  #exitBox{ background:#fffdf8; border:1.5px solid #5c4a3a; border-radius:14px;
+            width:100%; max-width:292px; padding:20px 18px 16px; text-align:center;
+            box-shadow:0 10px 30px rgba(60,50,40,.22); }
+  #exitBox h3{ margin:0 0 9px; font-size:15.5px; color:#5c4a3a; }
+  #exitBox p{ margin:0 0 16px; font-size:12px; line-height:1.65; color:#7a6a58; }
+  #exitBtns{ display:flex; gap:8px; }
+  #exitBtns .btn{ flex:1; justify-content:center; height:38px; font-size:13px; }
+  #exitLeave{ background:#5c4a3a; color:#fffdf8; }
   /* 입력 중 표시: 상대가 답을 쓰고 있는 동안 점 세 개가 튄다 */
   .chatTypingBubble{ display:flex; align-items:center; gap:4px; padding:11px 13px; }
   .chatTypingBubble i{ width:5.5px; height:5.5px; border-radius:50%; background:#b8c8d3;
@@ -3073,6 +3085,17 @@
 </div><!-- /#mainCol -->
 </div><!-- /#appShell -->
 
+<div id="exitOverlay" role="dialog" aria-modal="true" aria-labelledby="exitTitle">
+  <div id="exitBox">
+    <h3 id="exitTitle">퇴근하시겠어요?</h3>
+    <p>지금 나가면 사무실 화면은 처음부터 다시 시작돼요.<br>오늘 일지와 설정은 그대로 남아 있어요.</p>
+    <div id="exitBtns">
+      <button class="btn" id="exitStay">계속 있기</button>
+      <button class="btn" id="exitLeave">퇴근하기</button>
+    </div>
+  </div>
+</div>
+
 <button id="logTab" aria-label="사무실 일지 열기">
   <span id="logTabBadge"></span>
   <span class="vtxt">사무실 일지</span>
@@ -3404,6 +3427,7 @@
     <p>사업마다 각자 설정한 시간이 지나면 자동 완료돼요. 그리고 그 순간 전 직원이 "프로젝트 완료!"를 외칩니다. 실제 시각 기준 저장이라 새로고침해도 카운트는 유지됩니다.</p>
 
     <h3>8. 실장님의 한마디</h3>
+    <p>휴대폰에서 <b>뒤로가기</b>를 누르면 열려 있던 창부터 하나씩 닫힙니다. 아무 창도 열려 있지 않을 때 누르면 <b>퇴근하시겠어요?</b>를 물어보고, 퇴근하기를 눌러야 사무실에서 나갑니다. 나가더라도 오늘 일지·사물함·설정·연속 출근은 그대로 남아 있어요.</p>
     <p>배경음은 <b>시간대 자동</b>으로 바뀝니다. 오전 근무(09~12시)는 02번, 점심·오후 근무(12~18시)는 03번, 야근(18시 이후 또는 야근모드)은 04번, 주말·공휴일은 05번, 그 밖의 시각은 01번이에요. 목록에서 음원을 직접 고르면 자동이 꺼지고 그 곡으로 계속 틉니다. 자동 버튼을 다시 누르면 지금 시간대에 맞는 곡으로 돌아갑니다.</p>
     <p>메신저 답장은 사람이 보내는 것처럼 옵니다. 내 말을 읽는 시간과 답을 쓰는 시간만큼 기다린 뒤 오고, 그동안 <b>입력 중</b> 표시가 뜹니다. 답이 길면 두 통으로 나눠 보내고, 대화가 이어지도록 가끔 되묻기도 해요. 성격에 따라 말끝도 조금씩 다릅니다.</p>
     <p>화면을 켜둔 채 15분째가 되면, 실장이 자리에 있을 때 노란 말풍선으로 "지켜보고 있는 눈이 느껴져.."라고 가끔 혼잣말을 합니다. 바로 사용자를 인식하고 있는 모습이예요. (점심시간이나 퇴근 후처럼 실장이 사무실에 없을 때는 나타나지 않습니다.)</p>
@@ -9629,6 +9653,89 @@
   if(window.visualViewport) window.visualViewport.addEventListener('resize', refitOffice);
   window.addEventListener('load', refitOffice);
 
+  // ===== 뒤로가기: 열린 창부터 닫고, 없으면 퇴근을 묻는다 =====
+  // 폰에서 습관적으로 뒤로가기를 누르면 게임 화면이 통째로 닫히던 문제를 막는다.
+  // 브라우저 뒤로가기를 없앨 수는 없으니, 히스토리에 여분의 칸 하나를 만들어 두고
+  // 그 칸이 소비될 때(popstate) 대신 창을 닫거나 확인을 띄운다.
+  var DISMISSABLE = '.mail-overlay.show, #panel.show, #helpPanel.show, #settingsPanel.show,'
+                  + ' #settingsHub.show, #reportPanel.show, #profilePanel.show,'
+                  + ' #creditsPanel.show, #logPanel.open, #sideBar.open';
+  var exitOverlay = byId('exitOverlay');
+
+  // 겹쳐 열렸을 때 실제로 맨 위에 있는 것을 고른다
+  // (z-index가 크면 위, 같으면 문서에서 나중에 나온 것이 위에 그려진다)
+  function topOpenLayer(){
+    var els = [].slice.call(document.querySelectorAll(DISMISSABLE));
+    if(!els.length) return null;
+    var best = null, bestZ = -Infinity, bestIdx = -1;
+    els.forEach(function(el, i){
+      var z = parseInt(getComputedStyle(el).zIndex, 10);
+      if(isNaN(z)) z = 0;
+      if(z > bestZ || (z === bestZ && i > bestIdx)){ bestZ = z; bestIdx = i; best = el; }
+    });
+    return best;
+  }
+  function closeTopLayer(){
+    var el = topOpenLayer();
+    if(!el) return false;
+    if(el.id === 'sideBar'){ closeSideBar(); return true; }
+    el.classList.remove('show');
+    el.classList.remove('open');
+    return true;
+  }
+
+  var backArmed = false, leavingForReal = false;
+  function armBackGuard(){
+    if(backArmed) return;
+    backArmed = true;
+    try{ history.pushState({ ggj:'stay' }, ''); }catch(e){ backArmed = false; }
+  }
+  function showExitAsk(){
+    exitOverlay.classList.add('show');
+    var stay = byId('exitStay');
+    if(stay) stay.focus();
+  }
+  function hideExitAsk(){ exitOverlay.classList.remove('show'); }
+
+  window.addEventListener('popstate', function(){
+    if(leavingForReal) return;
+    if(!backArmed) return;
+    // 소비된 칸을 곧바로 다시 만들어 다음 뒤로가기도 잡을 수 있게 한다
+    backArmed = false;
+    armBackGuard();
+    if(exitOverlay.classList.contains('show')){ hideExitAsk(); return; }
+    if(closeTopLayer()) return;
+    showExitAsk();
+  });
+
+  byId('exitStay').addEventListener('click', hideExitAsk);
+  exitOverlay.addEventListener('click', function(e){ if(e.target === exitOverlay) hideExitAsk(); });
+  function cannotLeave(){
+    // 이 페이지와 여분의 칸뿐이면 돌아갈 곳이 없다 (새 탭에서 바로 연 경우)
+    leavingForReal = false;
+    backArmed = false;
+    armBackGuard();
+    toast('브라우저에 돌아갈 페이지가 없어요. 탭을 닫아주세요');
+  }
+  byId('exitLeave').addEventListener('click', function(){
+    hideExitAsk();
+    if(history.length <= 2){ cannotLeave(); return; }
+    leavingForReal = true;
+    // 여분의 칸과 이 페이지를 함께 지나쳐 원래 있던 곳으로 나간다
+    try{ history.go(-2); }catch(e){}
+    // 정말 나갔다면 이 페이지는 사라져 아래 타이머가 돌지 않는다
+    setTimeout(cannotLeave, 700);
+  });
+
+  // ESC는 열린 창만 닫는다 (PC에서 ESC가 '나가기'를 뜻하진 않으니 확인창은 띄우지 않는다).
+  // 아래쪽 일지 패널에도 ESC 처리가 있어, 캡처 단계에서 먼저 잡고 전파를 멈춰 두 번 처리되는 걸 막는다.
+  window.addEventListener('keydown', function(e){
+    if(e.key !== 'Escape') return;
+    if(document.body.classList.contains('introOn')) return;
+    if(exitOverlay.classList.contains('show')){ hideExitAsk(); e.stopPropagation(); return; }
+    if(closeTopLayer()) e.stopPropagation();
+  }, true);
+
   byId('enterOfficeBtn').addEventListener('click', function(){
     byId('introScreen').classList.remove('show');
     document.body.classList.remove('introOn');
@@ -9636,6 +9743,8 @@
     // 인트로가 걷히고 나서야 무대의 진짜 위치를 잴 수 있다
     requestAnimationFrame(refitOffice);
     setTimeout(refitOffice, 300);
+    // 사무실에 들어온 다음부터 뒤로가기를 지킨다 (인트로에서는 그냥 나가게 둔다)
+    armBackGuard();
   });
 
   // 저장된 이름이 있었다면 화면에도 반영
