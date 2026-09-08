@@ -3485,11 +3485,38 @@
       deskDecorMarkup(s) +
       '<g style="cursor:pointer;pointer-events:all;" data-plate-for="'+s.id+'">' +
         '<rect x="-20" y="30" width="40" height="13" rx="0" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.8" shape-rendering="crispEdges"/>' +
-        '<text id="plate-'+s.id+'" x="0" y="39.5" font-size="6.8" text-anchor="middle" fill="#5c4a3a" font-weight="400" stroke="none">'+s.name+'</text>' +
+        '<text id="plate-'+s.id+'" x="0" y="39.5" font-size="10" text-anchor="middle" fill="#4a3a2c" font-weight="700" stroke="none">'+s.name+'</text>' +
       '</g>';
     deskLayer.appendChild(g);
   }
   staff.forEach(deskGroup);
+
+  // 이름표 상자(40x13)는 그대로 두고, 글자가 상자를 넘칠 때만 크기를 줄인다
+  var PLATE_MAX_W = 35, PLATE_MAX_FS = 10, PLATE_MIN_FS = 6;
+  function fitPlate(id){
+    var t = byId('plate-'+id);
+    if(!t) return;
+    var fs = PLATE_MAX_FS;
+    t.setAttribute('font-size', fs);
+    t.removeAttribute('textLength');
+    t.removeAttribute('lengthAdjust');
+    if(t.getComputedTextLength){
+      try{
+        while(fs > PLATE_MIN_FS && t.getComputedTextLength() > PLATE_MAX_W){
+          fs = Math.round((fs - 0.5) * 10) / 10;
+          t.setAttribute('font-size', fs);
+        }
+        // 최소 크기로도 넘칠 만큼 긴 이름은 자간까지 좁혀 상자 안에 맞춘다
+        if(t.getComputedTextLength() > PLATE_MAX_W){
+          t.setAttribute('textLength', PLATE_MAX_W);
+          t.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+        }
+      }catch(e){}
+    }
+    t.setAttribute('y', (36.5 + fs * 0.30).toFixed(2));
+  }
+  function fitAllPlates(){ staff.forEach(function(s){ fitPlate(s.id); }); }
+  fitAllPlates();
   deskLayer.addEventListener('click', function(e){
     var target = e.target.closest ? e.target.closest('[data-plate-for]') : null;
     if(target) openProfile(target.getAttribute('data-plate-for'));
@@ -8754,7 +8781,7 @@
     staff.forEach(function(s){
       s.name = settings.names[s.id];
       var plate = byId('plate-'+s.id);
-      if(plate) plate.textContent = s.name;
+      if(plate){ plate.textContent = s.name; if(typeof fitPlate === 'function') fitPlate(s.id); }
       var charG = charEl(s.id);
       if(charG) charG.setAttribute('data-name', s.name);
     });
