@@ -205,6 +205,11 @@
   }
   @keyframes popFade{ 0%{ opacity:0; } 8%{ opacity:1; } 82%{ opacity:1; } 100%{ opacity:0; } }
   .popBubble{ animation:popFade 4.2s ease forwards; }
+  /* 감정 이모지 말풍선: 글자보다 짧게 떴다 사라진다 */
+  .popEmoji{ animation:popFade 2.6s ease forwards; }
+  @media (prefers-reduced-motion: reduce){
+    .popBubble, .popEmoji{ animation:none; opacity:1; }
+  }
 
   /* 사운드바: 재생/음소거/볼륨을 한 그룹으로 정렬 */
   #audioBar{ display:flex; align-items:center; gap:10px; background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; padding:0 10px; height:34px; box-sizing:border-box; }
@@ -3360,6 +3365,7 @@
     <p>매일 랜덤으로 연차 한 명, 출장 한 명, 조퇴 한 명이 생깁니다. 누가 자리를 비웠는지는 명패를 눌러 확인할 수 있어요.</p>
     <p>창밖 날씨는 대체적으로 화창한데 가끔 비가 옵니다. 사무실 양옆 서울 풍경의 하늘은 새벽·아침·낮·노을·저녁·밤 여섯 단계로 바뀌고, 해와 달이 하늘을 가로질러 움직입니다. 저녁(야근모드)부터 창밖만 어두워집니다.</p>
     <p>직원들의 표정도 상황에 따라 바뀝니다. 회의 중에는 집중한 얼굴, 탕비실에서는 웃는 얼굴이 돼요.</p>
+    <p>표정이 바뀔 때나 혼잣말 대신, 말풍선에 <b>감정 이모지</b>가 뜨기도 합니다. 웃음·졸림·분노·슬픔·놀람·멋짐·무표정 일곱 가지이고, 야근 중에는 졸림·슬픔·분노가, 점심 무렵에는 졸림이 더 자주 나와요.</p>
     <p>화면 위쪽에는 현재 시각, 오늘 주문량, 출근 일수가 표시됩니다. 주문량은 근무시간에만 조금씩 늘어나요.</p>
 
     <h3>3. 어떤 회사이며, 직원 구성은 어떻게 되어있나요?</h3>
@@ -3903,7 +3909,21 @@
     if(ms){
       moodTimers[id] = setTimeout(function(){ setMood(id, 'normal'); }, ms);
     }
+    // 표정이 바뀐 김에 같은 감정을 이모지로도 한 번씩 보여준다.
+    // 말하는 중이면 덮지 않고, 확률을 낮게 둬 장식으로만 쓴다.
+    var em = MOOD_EMOJI && MOOD_EMOJI[mood];
+    if(em && !bubbleBusy(id) && Math.random() < em.p){
+      // 회의처럼 여러 명이 동시에 같은 표정이 될 때 다 같이 뜨면 어수선하다
+      setTimeout(function(){ if(!bubbleBusy(id)) showEmoji(s, em.k); }, 120 + Math.random()*500);
+    }
   }
+  // 표정 5종 중 감정이 뚜렷한 것만 이모지로 잇는다 (normal은 없음)
+  var MOOD_EMOJI = {
+    happy:     { k:'happy',     p:0.35 },
+    tired:     { k:'sleepy',    p:0.35 },
+    surprised: { k:'surprised', p:0.40 },
+    focused:   { k:'blank',     p:0.15 }
+  };
   function setMoodAll(ids, mood, ms){
     (ids||[]).forEach(function(x){ setMood(x.id || x, mood, ms); });
   }
@@ -3988,6 +4008,97 @@
     holder.appendChild(g);
     clearTimeout(holder._tm);
     holder._tm = setTimeout(function(){ holder.innerHTML=''; }, 4400);
+  }
+
+  // ===== 감정 이모지 말풍선 (7종) =====
+  // 시스템 이모지는 기기마다 다르게 그려지고 반짝이는 3D라 손그림 사무실과 안 붙는다.
+  // 캐릭터 얼굴 그리는 방식(faceMarkup)을 그대로 따라 직접 그린다.
+  // 분노는 눈썹 안쪽이 내려가고(\ /), 슬픔은 올라간다(/ \) — 이 방향 하나로 둘이 구분된다.
+  var EMO_FACE = '#f7e6b8';
+  var EMO_ICON = {
+    happy:
+      '<circle cx="0" cy="0" r="9.5" fill="'+EMO_FACE+'" stroke="#5c4a3a" stroke-width="1.1"/>'
+      + '<path d="M -5.2 -1.2 Q -3.4 -3.9 -1.6 -1.2" fill="none" stroke="'+DARK+'" stroke-width="1.4" stroke-linecap="round"/>'
+      + '<path d="M 1.6 -1.2 Q 3.4 -3.9 5.2 -1.2" fill="none" stroke="'+DARK+'" stroke-width="1.4" stroke-linecap="round"/>'
+      + '<path d="M -3.1 2.6 Q 0 6.2 3.1 2.6" fill="none" stroke="'+DARK+'" stroke-width="1.2" stroke-linecap="round"/>'
+      + '<path d="M -8.6 -6.4 L -7 -5.2 M -7.8 -6.9 L -7.8 -4.7" fill="none" stroke="#e0a95c" stroke-width="1" stroke-linecap="round"/>'
+      + '<path d="M 8.6 -6.4 L 7 -5.2 M 7.8 -6.9 L 7.8 -4.7" fill="none" stroke="#e0a95c" stroke-width="1" stroke-linecap="round"/>',
+    sleepy:
+      '<circle cx="0" cy="0" r="9.5" fill="'+EMO_FACE+'" stroke="#5c4a3a" stroke-width="1.1"/>'
+      + '<path d="M -5.2 -2.4 Q -3.4 0.2 -1.6 -2.4" fill="none" stroke="'+DARK+'" stroke-width="1.4" stroke-linecap="round"/>'
+      + '<path d="M 1.6 -2.4 Q 3.4 0.2 5.2 -2.4" fill="none" stroke="'+DARK+'" stroke-width="1.4" stroke-linecap="round"/>'
+      + '<ellipse cx="0" cy="3.6" rx="1.5" ry="2" fill="'+DARK+'" stroke="none"/>'
+      + '<text x="7.4" y="-6.2" font-size="6.4" font-weight="700" fill="#8aa2c4" stroke="none">z</text>'
+      + '<text x="10.6" y="-9.8" font-size="4.6" font-weight="700" fill="#8aa2c4" stroke="none">z</text>',
+    angry:
+      '<circle cx="0" cy="0" r="9.5" fill="'+EMO_FACE+'" stroke="#5c4a3a" stroke-width="1.1"/>'
+      + '<circle cx="-3.4" cy="-0.6" r="1.6" fill="'+DARK+'" stroke="none"/><circle cx="3.4" cy="-0.6" r="1.6" fill="'+DARK+'" stroke="none"/>'
+      + '<path d="M -6 -4.4 L -1.6 -2.4" fill="none" stroke="'+DARK+'" stroke-width="1.4" stroke-linecap="round"/>'
+      + '<path d="M 6 -4.4 L 1.6 -2.4" fill="none" stroke="'+DARK+'" stroke-width="1.4" stroke-linecap="round"/>'
+      + '<path d="M -3.1 4.4 Q 0 1.8 3.1 4.4" fill="none" stroke="'+DARK+'" stroke-width="1.2" stroke-linecap="round"/>'
+      + '<path d="M -9.4 -7.2 C -7.6 -8.8 -5.6 -8.6 -4.4 -7.2 C -6.2 -7.8 -8 -7.8 -9.4 -7.2 Z" fill="#d4634f" stroke="none"/>'
+      + '<path d="M 4.4 -7.2 C 5.6 -8.6 7.6 -8.8 9.4 -7.2 C 8 -7.8 6.2 -7.8 4.4 -7.2 Z" fill="#d4634f" stroke="none"/>',
+    sad:
+      '<circle cx="0" cy="0" r="9.5" fill="'+EMO_FACE+'" stroke="#5c4a3a" stroke-width="1.1"/>'
+      + '<circle cx="-3.4" cy="-0.4" r="1.5" fill="'+DARK+'" stroke="none"/><circle cx="3.4" cy="-0.4" r="1.5" fill="'+DARK+'" stroke="none"/>'
+      + '<path d="M -6.2 -2.6 L -1.8 -4.6" fill="none" stroke="'+DARK+'" stroke-width="1.3" stroke-linecap="round"/>'
+      + '<path d="M 6.2 -2.6 L 1.8 -4.6" fill="none" stroke="'+DARK+'" stroke-width="1.3" stroke-linecap="round"/>'
+      + '<path d="M -3 4.8 Q 0 2.2 3 4.8" fill="none" stroke="'+DARK+'" stroke-width="1.2" stroke-linecap="round"/>'
+      + '<path d="M 5 0.2 C 7.6 3.4 7.9 5.2 6.4 6.2 C 4.9 7.1 3.4 5.9 3.7 4.2 C 3.9 2.8 4.5 1.4 5 0.2 Z" fill="#6aa8d4" stroke="#3f7ba8" stroke-width="0.5"/>'
+      + '<path d="M 4.9 2 C 4.6 3 4.4 4 4.6 4.8" fill="none" stroke="#cfe6f5" stroke-width="0.7" stroke-linecap="round"/>',
+    surprised:
+      '<circle cx="0" cy="0" r="9.5" fill="'+EMO_FACE+'" stroke="#5c4a3a" stroke-width="1.1"/>'
+      + '<circle cx="-3.6" cy="-1.2" r="2.4" fill="'+DARK+'" stroke="none"/><circle cx="3.6" cy="-1.2" r="2.4" fill="'+DARK+'" stroke="none"/>'
+      + '<circle cx="-2.9" cy="-2" r="0.85" fill="#fff" stroke="none"/><circle cx="4.3" cy="-2" r="0.85" fill="#fff" stroke="none"/>'
+      + '<ellipse cx="0" cy="4" rx="1.8" ry="2.3" fill="'+DARK+'" stroke="none"/>'
+      + '<path d="M -9.6 -7 L -7.6 -5.4 M 0 -11.4 L 0 -9 M 9.6 -7 L 7.6 -5.4" fill="none" stroke="#e0a95c" stroke-width="1.2" stroke-linecap="round"/>',
+    cool:
+      '<circle cx="0" cy="0" r="9.5" fill="'+EMO_FACE+'" stroke="#5c4a3a" stroke-width="1.1"/>'
+      + '<path d="M -6.4 -2.2 L 6.4 -2.2" fill="none" stroke="'+DARK+'" stroke-width="1.1" stroke-linecap="round"/>'
+      + '<path d="M -6.2 -2.2 L -1 -2.2 L -1.4 1.8 L -5.2 1.8 Z" fill="'+DARK+'" stroke="none"/>'
+      + '<path d="M 1 -2.2 L 6.2 -2.2 L 5.2 1.8 L 1.4 1.8 Z" fill="'+DARK+'" stroke="none"/>'
+      + '<path d="M -5.4 -1.4 L -2 -1.4" fill="none" stroke="#fff" stroke-width="0.7" stroke-linecap="round" opacity="0.75"/>'
+      + '<path d="M -2.6 4.2 Q 0.4 5.8 3 3.4" fill="none" stroke="'+DARK+'" stroke-width="1.2" stroke-linecap="round"/>'
+      + '<path d="M 8 -6.6 L 9.6 -8.2 M 8.8 -5.4 L 11 -5.4" fill="none" stroke="#e0a95c" stroke-width="1" stroke-linecap="round"/>',
+    blank:
+      '<circle cx="0" cy="0" r="9.5" fill="'+EMO_FACE+'" stroke="#5c4a3a" stroke-width="1.1"/>'
+      + '<circle cx="-3.5" cy="-1.4" r="1.6" fill="'+DARK+'" stroke="none"/><circle cx="3.5" cy="-1.4" r="1.6" fill="'+DARK+'" stroke="none"/>'
+      + '<path d="M -2.8 3.8 L 2.8 3.8" fill="none" stroke="'+DARK+'" stroke-width="1.2" stroke-linecap="round"/>'
+  };
+
+  // 말풍선 자리는 하나뿐이라, 말하고 있는 중이면 이모지로 덮지 않는다
+  function bubbleBusy(id){
+    var h = bubbleLayer.querySelector('[data-bubble-for="'+id+'"]');
+    return !!(h && h.innerHTML);
+  }
+
+  function showEmoji(s, kind){
+    var icon = EMO_ICON[kind];
+    var charEl2 = charEl(s.id);
+    if(!icon || !charEl2) return;
+    var holder = bubbleLayer.querySelector('[data-bubble-for="'+s.id+'"]');
+    if(!holder){
+      holder = document.createElementNS('http://www.w3.org/2000/svg','g');
+      holder.setAttribute('data-bubble-for', s.id);
+      bubbleLayer.appendChild(holder);
+    }
+    holder.style.transform = charEl2.style.transform || ('translate('+s.x+'px,'+s.y+'px)');
+    var g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','popEmoji');
+    // 글자 말풍선과 같은 모양·같은 자리. 폭만 아이콘에 맞춰 좁게 쓴다
+    var w = 34, bx = w/2, r = 8, bot = -50, top = bot - 30;
+    var d = 'M '+(-bx+r)+' '+top +
+            ' H '+(bx-r) + ' A '+r+' '+r+' 0 0 1 '+bx+' '+(top+r) +
+            ' V '+(bot-r) + ' A '+r+' '+r+' 0 0 1 '+(bx-r)+' '+bot +
+            ' H 6 L 0 -42 L -6 '+bot +
+            ' H '+(-bx+r) + ' A '+r+' '+r+' 0 0 1 '+(-bx)+' '+(bot-r) +
+            ' V '+(top+r) + ' A '+r+' '+r+' 0 0 1 '+(-bx+r)+' '+top+' Z';
+    g.innerHTML = '<path d="'+d+'" fill="#fffdf8" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/>'
+                + '<g transform="translate(0,-65)">'+icon+'</g>';
+    holder.innerHTML = '';
+    holder.appendChild(g);
+    clearTimeout(holder._tm);
+    holder._tm = setTimeout(function(){ holder.innerHTML=''; }, 2700);
   }
 
   // ---- 위치 이동 유틸: style.transform만 사용 (SVG attribute와 절대 섞지 않음) ----
@@ -5198,6 +5309,28 @@
     return idleLines[Math.floor(Math.random()*idleLines.length)];
   }
 
+  // 혼잣말 자리의 일부는 말 대신 이모지로. 지금 상황에 맞는 감정이 잘 나오게 가중치를 준다.
+  var EMO_WEIGHTS = {
+    late:   { sleepy:3, sad:2, angry:2, blank:2, happy:1, cool:1 },   // 야근·저녁
+    lunch:  { sleepy:3, happy:2, blank:1, cool:1 },                   // 점심 앞뒤
+    normal: { happy:3, blank:2, cool:2, sleepy:1, surprised:1, angry:1, sad:1 }
+  };
+  function emoWeightKey(){
+    if(overtimeMode) return 'late';
+    var m = new Date().getHours()*60 + new Date().getMinutes();
+    if(m >= 18*60) return 'late';
+    if(m >= 11*60+30 && m <= 13*60+30) return 'lunch';
+    return 'normal';
+  }
+  function pickIdleEmoji(){
+    var w = EMO_WEIGHTS[emoWeightKey()] || EMO_WEIGHTS.normal;
+    var total = 0, k;
+    for(k in w) total += w[k];
+    var r = Math.random() * total;
+    for(k in w){ r -= w[k]; if(r <= 0) return k; }
+    return 'blank';
+  }
+
   setInterval(function(){
     if(Math.random() >= 0.3) return; // 낮은 확률로만 발동
     // 회의·탕비실·방문객 응대·당직처럼 이벤트 중인 직원은 제외한다
@@ -5206,7 +5339,9 @@
     });
     if(present.length === 0) return;
     var pick = present[Math.floor(Math.random()*present.length)];
-    showBubble(pick, pickIdleLine(pick.id));
+    // 셋 중 하나는 말 없이 이모지만 띄운다
+    if(Math.random() < 0.3) showEmoji(pick, pickIdleEmoji());
+    else showBubble(pick, pickIdleLine(pick.id));
   }, 7000);
 
   // ===== 직원끼리 저절로 나누는 짧은 잡담 (근무 중 가끔) =====
