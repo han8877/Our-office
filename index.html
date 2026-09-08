@@ -724,6 +724,12 @@
     #stage::-webkit-scrollbar{ display:none; }
     #officeSvg{ height:var(--officeH,56vh); width:auto; max-width:none; }
     #roomJump{ display:flex; }
+    /* 사무실이 화면을 꽉 채우니 세로 탭은 가로 알약으로 바꿔 구석에 둔다 */
+    #logTab{ top:auto; bottom:12px; right:10px; transform:none; flex-direction:row;
+             border-right:1.3px solid #5c4a3a; border-radius:999px; padding:8px 13px; gap:6px;
+             box-shadow:0 2px 10px rgba(92,74,58,.18); }
+    #logTab:active{ transform:scale(0.97); }
+    #logTab .vtxt{ writing-mode:horizontal-tb; font-size:11.5px; letter-spacing:0; }
   }
 </style>
 </head>
@@ -3285,6 +3291,8 @@
     <p id="profileBio" style="color:#5c4a3a; font-size:12.5px; line-height:1.5; margin:0 0 12px; padding:8px 10px; background:#f7f2e4; border-radius:6px;">-</p>
     <div class="setRow"><label>대화한 횟수</label><span id="profileTalks">0</span></div>
     <div class="setRow"><label>야근한 횟수</label><span id="profileOvertime">0</span></div>
+    <div class="setRow"><label>친밀도</label><span id="profileBond">○○○</span></div>
+    <div id="profileBondNote" class="helpNote"></div>
     <div id="profileLeaveNote" class="helpNote" style="display:none;"></div>
     <button class="btn" id="profileCloseBtn" style="margin-top:12px;">닫기</button>
   </div>
@@ -3309,6 +3317,7 @@
       <tr><td>18:00</td><td>모두 퇴근</td></tr>
     </table>
     <p>언제 접속해도 그 시각에 맞는 출퇴근 상태로 시작하며, 근무 중 직원들은 랜덤으로 작동되는 혼잣말을 합니다.</p>
+    <p>한 직원에게 말을 <b>10번·30번·50번</b> 걸면 그 사람만의 혼잣말이 차례로 열립니다. 처음에는 알아보는 인사, 다음은 사적인 이야기, 마지막은 속마음이에요. 명패를 눌러 친밀도와 다음 단계까지 남은 횟수를 볼 수 있어요.</p>
     <p>주말과 공휴일에는 정상 근무가 없고, 대신 <b>당직 직원 한 명과 경비</b>가 평일과 같은 08:30~09:00 사이에 출근해 18:00에 퇴근합니다. 당직자는 아트코너·라운지·재고창고·탕비실을 돌아보고 화분에 물도 주고 어항에 밥도 줍니다. 경비는 복도를 순찰하다가 한 바퀴 끝마다 어항에 밥을 주고 가요. 당직자는 날짜마다 정해져서 같은 날 다시 들어와도 같은 사람이에요.</p>
     <p>매일 랜덤으로 연차 한 명, 출장 한 명, 조퇴 한 명이 생깁니다. 누가 자리를 비웠는지는 명패를 눌러 확인할 수 있어요.</p>
     <p>창밖 날씨는 대체적으로 화창한데 가끔 비가 옵니다. 사무실 양옆 서울 풍경의 하늘은 새벽·아침·낮·노을·저녁·밤 여섯 단계로 바뀌고, 해와 달이 하늘을 가로질러 움직입니다. 저녁(야근모드)부터 창밖만 어두워집니다.</p>
@@ -5048,6 +5057,106 @@
     '오 됐다!', '나 좀 천재인듯', '그러고보니...', '내일 연차쓸까',
     '드디어 다했다.', '이걸 내가 왜…', '어깨아파', '오예!', '음..어떡하지'
   ];
+
+  // ===== 친밀도: 말을 많이 걸수록 그 사람만의 혼잣말이 열린다 =====
+  // 위 idleLines는 누구나 하는 말이고, 아래는 대화 수가 쌓여야 나오는 전용 대사다.
+  // 10회 = 알아보는 티, 30회 = 사적인 얘기, 50회 = 속내.
+  var BOND_TIERS = [10, 30, 50];
+  var BOND_LINES = {
+    kobujang: [
+      ['또 오셨네요', '오늘 사무실 분위기 괜찮죠?', '이 자리에서 보면 다 보여요'],
+      ['다들 잘 하고 있어요. 제가 한 건 없고요', '실장이라고 특별할 건 없어요', '가끔 저도 헷갈려요'],
+      ['가끔은 아무도 없을 때 여기 앉아 있어요', '처음 이 사무실 계약하던 날이 생각나요', '다들 오래 같이 갔으면 좋겠어요']
+    ],
+    nabujang: [
+      ['오 오셨어요?', '이번 건은 단가가 좀 나왔어요', '견적서 세 개는 비교해봐야죠'],
+      ['제가 좀 따지는 편이라 ㅎㅎ', '싸게 잘 산 날은 하루가 뿌듯해요', '문구류는 제 자리 순서대로 있어야 해요'],
+      ['깎는 게 재밌어서가 아니라 아까워서예요', '한 번 실수로 비싸게 산 적이 있어요', '그때 이후로 계산기를 안 놓아요']
+    ],
+    choiinsa: [
+      ['안녕하세요~ 또 뵙네요', '오늘 서류 정리 다 했어요', '손으로 쓴 게 기억에 남더라고요'],
+      ['집에 고양이가 있어요, 보실래요?', '요즘 손글씨 연습 중이에요', '사람 이름 외우는 게 제 일이라'],
+      ['다들 잘 지내는지가 제일 신경 쓰여요', '입사 첫날 다 기억나요, 한 명씩', '고양이 얘기 들어주셔서 고마워요']
+    ],
+    parkhoegye: [
+      ['아, 또 오셨네요 ㅎㅎ', '이거 보실래요? 이번 달 정산 맞췄어요', '숫자가 딱 떨어지면 기분 좋아요'],
+      ['요즘 자주 들여다보시네요', '색인 스티커 새로 샀어요', '분류가 안 된 건 못 넘어가요'],
+      ['실은 저 숫자 틀리는 게 제일 무서워요', '한 번 크게 틀린 적이 있어요', '그때 아무도 뭐라 안 해서 더 미안했어요']
+    ],
+    kimnote: [
+      ['오셨네요!', '이 색 견본 어때요?', '표지 종이만 열 종류 봤어요'],
+      ['주말엔 산에 가요, 색이 다르거든요', '가을 색이 제일 어려워요', '견본첩 모으는 게 취미예요'],
+      ['색을 고르는 날은 잠이 안 와요', '제가 고른 색이 팔리면 그렇게 좋아요', '이 일 오래 하고 싶어요']
+    ],
+    leenote: [
+      ['어 안녕하세요', '이 펜 삼 년째 써요', '아직 쓸 만한데요 뭐'],
+      ['버리는 게 아까워서요', '연습실 다녀왔어요, 다리 아파요', '몸 쓰는 게 머리 쓰는 것보다 편해요'],
+      ['쓰던 물건에 정이 들어서요', '오래 쓰면 손에 맞아요, 사람도 그렇고', '여기 온 지도 꽤 됐네요']
+    ],
+    jungnote: [
+      ['아 오셨어요?', '차 한 잔 하실래요?', '오늘은 보이차예요'],
+      ['자리에서 마시는 차가 제일 맛있어요', '요즘 읽는 책이 좀 어려워요', '조용한 게 좋아서 이 자리 골랐어요'],
+      ['말수가 적은 거지 관심이 없는 건 아니에요', '가끔 제 얘기도 하고 싶어요', '이렇게 물어봐 주시면 좋아요']
+    ],
+    hannote: [
+      ['앗 안녕하세요!', '제 텀블러 못 보셨어요?', '방금 여기 뒀는데...'],
+      ['어제도 우산을 두고 갔어요', '만화 정주행 중이라 잠이 부족해요', '메모를 해도 메모지를 잃어버려요'],
+      ['덤벙대는 거 저도 알아요', '그래도 일은 안 놓쳐요, 진짜로', '한 번만 더 믿어주세요 ㅎㅎ']
+    ],
+    jungsti: [
+      ['오 오셨네요', '이 각도 어때요?', '방금 찍은 건데 괜찮죠?'],
+      ['커피 없으면 손이 안 움직여요', '사진 찍어두면 나중에 다 쓰여요', '팀원들 몰래 찍은 것도 많아요'],
+      ['잘 나온 사진 한 장이면 하루가 괜찮아요', '언젠가 우리 사무실 사진집 만들고 싶어요', '그때 다 실어드릴게요']
+    ],
+    hansti: [
+      ['안녕하세요~', '이 자투리 버리기 아까워서요', '나중에 다 쓸 데가 있어요'],
+      ['책상이 좀 지저분하죠, 죄송해요', '점심 메뉴 정하는 게 제일 어려워요', '자투리로 만든 것도 있어요'],
+      ['버려진 조각으로 만든 게 제일 마음에 들어요', '남들이 못 쓴다고 한 걸 쓰는 게 좋아요', '저도 그런 사람이고 싶어요']
+    ],
+    yoosti: [
+      ['오셨어요? 반가워요~', '오늘 이 배지 달았어요', '작은 거 모으는 걸 좋아해요'],
+      ['다들 괜찮으면 저도 괜찮아요', '가방에 소품이 스무 개는 될걸요', '고르는 데 한참 걸려요'],
+      ['괜찮다고 말하는 게 습관이 됐어요', '가끔은 저도 안 괜찮아요', '들어주셔서 고마워요']
+    ],
+    chosti: [
+      ['안녕하세요! 오늘도 오셨네요', '주머니에 사탕 있어요, 드실래요?', '오늘도 제일 먼저 왔어요'],
+      ['일찍 오면 사무실이 조용해서 좋아요', '간식은 늘 챙겨둬요', '아침에 아무도 없을 때가 제일 편해요'],
+      ['일찍 오는 건 습관이 아니라 좋아서예요', '불 켜진 사무실 처음 보는 사람이 저예요', '그 시간이 하루 중 제일 좋아요']
+    ],
+    yoohongbo: [
+      ['오 안녕하세요', '어제 전시 다녀왔어요', '볼 때마다 뭔가 하나는 건져요'],
+      ['금요일만 기다려요 ㅋㅋ', '전시 도록이 책장에 꽉 찼어요', '좋은 건 자꾸 보게 돼요'],
+      ['남의 좋은 걸 보면 조급해져요', '그래서 더 보러 다니는 걸지도요', '우리 것도 언젠가 그렇게 되면 좋겠어요']
+    ],
+    seohongbo: [
+      ['안녕하세요~', '핸드크림 쓰실래요?', '요즘 손이 자꾸 터요'],
+      ['강아지 산책 다녀왔어요', '겨울엔 손 관리가 일이에요', '사진 보실래요? 우리 개예요'],
+      ['챙기는 게 좋아서 하는 거예요', '누가 안 챙겨주면 서운하긴 해요', '그래도 계속 챙길 거예요']
+    ],
+    minhongbo: [
+      ['오셨네요, 뭐 필요하세요?', '그거 제가 만들어드릴게요', '금방 돼요 ㅎㅎ'],
+      ['만드는 게 제일 재밌어요', '부탁받는 게 싫지 않아요', '주말에도 뭔가 만들고 있어요'],
+      ['필요한 사람이 되고 싶어서 그래요', '가끔 너무 다 받아버려요', '그래도 만들 때가 제일 저 같아요']
+    ]
+  };
+  function bondTier(id){
+    var t = (staffStats[id] && staffStats[id].talks) || 0;
+    var n = 0;
+    for(var i = 0; i < BOND_TIERS.length; i++) if(t >= BOND_TIERS[i]) n = i + 1;
+    return n;                       // 0 = 아직 잠김, 1~3
+  }
+  // 열린 단계가 있으면 그 안에서, 없으면 공용 대사에서 고른다
+  function pickIdleLine(id){
+    var tier = bondTier(id), own = BOND_LINES[id];
+    if(tier > 0 && own){
+      var pool = [];
+      for(var i = 0; i < tier; i++) if(own[i]) pool = pool.concat(own[i]);
+      // 단계가 열려도 공용 대사가 아예 사라지지는 않게 절반만 전용으로
+      if(pool.length && Math.random() < 0.5) return pool[Math.floor(Math.random()*pool.length)];
+    }
+    return idleLines[Math.floor(Math.random()*idleLines.length)];
+  }
+
   setInterval(function(){
     if(Math.random() >= 0.3) return; // 낮은 확률로만 발동
     // 회의·탕비실·방문객 응대·당직처럼 이벤트 중인 직원은 제외한다
@@ -5056,8 +5165,7 @@
     });
     if(present.length === 0) return;
     var pick = present[Math.floor(Math.random()*present.length)];
-    var line = idleLines[Math.floor(Math.random()*idleLines.length)];
-    showBubble(pick, line);
+    showBubble(pick, pickIdleLine(pick.id));
   }, 7000);
 
   // ===== 직원끼리 저절로 나누는 짧은 잡담 (근무 중 가끔) =====
@@ -8198,6 +8306,7 @@
       var mentionedRoom = findMentionedContact(text);
       var mentionedInTeam = mentionedRoom && members.find(function(s){ return s.id === mentionedRoom.id; });
       var replier2 = mentionedInTeam || (members.length ? members[Math.floor(Math.random()*members.length)] : staff[Math.floor(Math.random()*staff.length)]);
+      if(mentionedInTeam) bumpTalk(mentionedInTeam.id);
       var pal2 = kindPalette[replier2.palKey] || kindPalette[replier2.kind] || kindPalette.cat;
       setTimeout(function(){
         var reply = pickContextualReply(text, { personality: replier2.personality, key: key });
@@ -8207,6 +8316,7 @@
       }, 1500 + Math.random()*2000);
     } else if(target){
       var staffObj = staffMap[target.id];
+      if(staffObj) bumpTalk(staffObj.id);
       setTimeout(function(){
         // 사장님은 정해진 다섯 질문에 정해진 답을 한다
         var reply = (target.isBoss && bossScriptedAnswer(text))
@@ -8222,6 +8332,7 @@
       var mentioned = findMentionedContact(text);
       var replier = (mentioned && !mentioned.isBoss) ? mentioned : pool[Math.floor(Math.random()*pool.length)];
       var replierStaff = staffMap[replier.id];
+      if(mentioned && !mentioned.isBoss && staffMap[mentioned.id]) bumpTalk(mentioned.id);
       setTimeout(function(){
         var reply = pickContextualReply(text, { personality: replierStaff ? replierStaff.personality : null, key: CHAT_GROUP_KEY });
         pushChat(CHAT_GROUP_KEY, { from:replier.name, body:reply, ts:Date.now(), mine:false, avatar:replier.avatar });
@@ -8922,6 +9033,14 @@
     byId('profileBio').textContent = staffBio[id] || '';
     byId('profileTalks').textContent = st.talks;
     byId('profileOvertime').textContent = st.overtime;
+    var tier = bondTier(id);
+    byId('profileBond').textContent = '●●●○○○'.slice(3 - tier, 6 - tier);
+    var bondNote = byId('profileBondNote');
+    if(tier >= BOND_TIERS.length){
+      bondNote.textContent = '속마음까지 들려줍니다.';
+    } else {
+      bondNote.textContent = '말을 ' + (BOND_TIERS[tier] - st.talks) + '번 더 걸면 새로운 혼잣말이 열려요.';
+    }
     var leaveNote = byId('profileLeaveNote');
     if(isOnLeaveToday(id)){
       leaveNote.textContent = '오늘은 연차예요 🌴';
