@@ -9684,11 +9684,26 @@
     return true;
   }
 
-  var backArmed = false, leavingForReal = false;
+  var backArmed = false, leavingForReal = false, rearmHooked = false;
   function armBackGuard(){
     if(backArmed) return;
     backArmed = true;
     try{ history.pushState({ ggj:'stay' }, ''); }catch(e){ backArmed = false; }
+  }
+  // 크롬은 사용자가 손대지 않은 사이에 만들어진 히스토리 항목을 '건너뛸 수 있는 것'으로 본다.
+  // popstate 안에서 바로 다시 밀어 넣으면 다음 뒤로가기가 그걸 지나쳐 페이지를 나가버린다.
+  // 그래서 여분의 칸은 반드시 사용자가 화면을 건드린 순간에 다시 만든다.
+  function rearmOnGesture(){
+    if(backArmed || rearmHooked) return;
+    rearmHooked = true;
+    var once = function(){
+      document.removeEventListener('pointerdown', once, true);
+      document.removeEventListener('keydown', once, true);
+      rearmHooked = false;
+      armBackGuard();
+    };
+    document.addEventListener('pointerdown', once, true);
+    document.addEventListener('keydown', once, true);
   }
   function showExitAsk(){
     exitOverlay.classList.add('show');
@@ -9700,21 +9715,23 @@
   window.addEventListener('popstate', function(){
     if(leavingForReal) return;
     if(!backArmed) return;
-    // 소비된 칸을 곧바로 다시 만들어 다음 뒤로가기도 잡을 수 있게 한다
     backArmed = false;
-    armBackGuard();
+    // 여기서 바로 밀어 넣으면 크롬이 건너뛴다. 다음 조작 때 다시 만든다.
+    rearmOnGesture();
     if(exitOverlay.classList.contains('show')){ hideExitAsk(); return; }
     if(closeTopLayer()) return;
     showExitAsk();
   });
 
-  byId('exitStay').addEventListener('click', hideExitAsk);
-  exitOverlay.addEventListener('click', function(e){ if(e.target === exitOverlay) hideExitAsk(); });
+  // '계속 있기'는 그 자체가 사용자 조작이라 여기서 바로 다시 만들 수 있다
+  function stayHere(){ hideExitAsk(); armBackGuard(); }
+  byId('exitStay').addEventListener('click', stayHere);
+  exitOverlay.addEventListener('click', function(e){ if(e.target === exitOverlay) stayHere(); });
   function cannotLeave(){
     // 이 페이지와 여분의 칸뿐이면 돌아갈 곳이 없다 (새 탭에서 바로 연 경우)
     leavingForReal = false;
     backArmed = false;
-    armBackGuard();
+    rearmOnGesture();
     toast('브라우저에 돌아갈 페이지가 없어요. 탭을 닫아주세요');
   }
   byId('exitLeave').addEventListener('click', function(){
@@ -9732,7 +9749,7 @@
   window.addEventListener('keydown', function(e){
     if(e.key !== 'Escape') return;
     if(document.body.classList.contains('introOn')) return;
-    if(exitOverlay.classList.contains('show')){ hideExitAsk(); e.stopPropagation(); return; }
+    if(exitOverlay.classList.contains('show')){ stayHere(); e.stopPropagation(); return; }
     if(closeTopLayer()) e.stopPropagation();
   }, true);
 
