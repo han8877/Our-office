@@ -216,7 +216,9 @@
              font-family:inherit; font-size:13px; color:#5c4a3a; cursor:pointer; text-align:left; }
   .trackRow:hover{ background:#f6efe0; }
   .trackRow .tNum{ font-weight:700; letter-spacing:1px; }
-  .trackRow .tState{ margin-left:auto; font-size:10.5px; color:#8a8a86; }
+  .trackRow .tUse{ font-size:10.5px; color:#8a8a86; }
+  .trackRow.on .tUse{ color:#6f5c48; }
+  .trackRow .tState{ margin-left:auto; font-size:10.5px; color:#8a8a86; padding-left:7px; }
   .trackRow.on{ background:#f2ead8; box-shadow:inset 0 0 0 1px #5c4a3a; }
   .trackRow.on .tState{ color:#5c4a3a; font-weight:600; }
   .trackRow.soon{ opacity:.5; cursor:not-allowed; }
@@ -3125,6 +3127,8 @@
     <div class="mail-head"><div class="headLeft"><span>배경음</span></div><button id="audioCloseX">×</button></div>
     <div class="mail-body">
       <div id="trackList"></div>
+      <button class="btn" id="audioAutoRow" style="width:100%; justify-content:center; margin-top:2px;">시간대 자동</button>
+      <div id="audioAutoNote" class="helpNote" style="margin:5px 0 2px;"></div>
       <button class="btn" id="audioMuteRow" style="width:100%; justify-content:center; margin-top:2px;">음소거</button>
     </div>
   </div>
@@ -3400,6 +3404,7 @@
     <p>사업마다 각자 설정한 시간이 지나면 자동 완료돼요. 그리고 그 순간 전 직원이 "프로젝트 완료!"를 외칩니다. 실제 시각 기준 저장이라 새로고침해도 카운트는 유지됩니다.</p>
 
     <h3>8. 실장님의 한마디</h3>
+    <p>배경음은 <b>시간대 자동</b>으로 바뀝니다. 오전 근무(09~12시)는 02번, 점심·오후 근무(12~18시)는 03번, 야근(18시 이후 또는 야근모드)은 04번, 주말·공휴일은 05번, 그 밖의 시각은 01번이에요. 목록에서 음원을 직접 고르면 자동이 꺼지고 그 곡으로 계속 틉니다. 자동 버튼을 다시 누르면 지금 시간대에 맞는 곡으로 돌아갑니다.</p>
     <p>메신저 답장은 사람이 보내는 것처럼 옵니다. 내 말을 읽는 시간과 답을 쓰는 시간만큼 기다린 뒤 오고, 그동안 <b>입력 중</b> 표시가 뜹니다. 답이 길면 두 통으로 나눠 보내고, 대화가 이어지도록 가끔 되묻기도 해요. 성격에 따라 말끝도 조금씩 다릅니다.</p>
     <p>화면을 켜둔 채 15분째가 되면, 실장이 자리에 있을 때 노란 말풍선으로 "지켜보고 있는 눈이 느껴져.."라고 가끔 혼잣말을 합니다. 바로 사용자를 인식하고 있는 모습이예요. (점심시간이나 퇴근 후처럼 실장이 사무실에 없을 때는 나타나지 않습니다.)</p>
 
@@ -8961,7 +8966,7 @@
   var playBtn = byId('playBtn'), muteBtn = byId('muteBtn'), volSlider = byId('volSlider');
   var audioOverlay = byId('audioOverlay'), trackListEl = byId('trackList');
 
-  var audioState = { track:'01', vol:0.6, muted:false, playing:false };
+  var audioState = { track:'01', vol:0.6, muted:false, playing:false, auto:true };
   try{
     var savedAudio = JSON.parse(localStorage.getItem(AUDIO_KEY));
     if(savedAudio){
@@ -8969,6 +8974,8 @@
       if(typeof savedAudio.vol === 'number') audioState.vol = savedAudio.vol;
       audioState.muted = !!savedAudio.muted;
       audioState.playing = !!savedAudio.playing;
+      // 예전에 저장된 값에는 auto가 없다. 목록에서 직접 고른 이력이 있으니 수동으로 본다.
+      audioState.auto = (typeof savedAudio.auto === 'boolean') ? savedAudio.auto : false;
     }
   }catch(e){}
   function saveAudioState(){
@@ -8982,6 +8989,64 @@
   function firstReadyTrack(){
     for(var i=0;i<TRACKS.length;i++){ if(TRACKS[i].src) return TRACKS[i]; }
     return null;
+  }
+
+  // ===== 시간대 자동 전환 =====
+  // 01 기본 / 02 오전근무 / 03 점심·오후근무 / 04 야근 / 05 주말근무
+  // 아직 안 들어온 번호는 01로 대신한다 (무음이 되지 않게)
+  var AUTO_SLOTS = {
+    weekend: '05', morning: '02', afternoon: '03', night: '04', base: '01'
+  };
+  var AUTO_LABEL = {
+    weekend: '주말근무', morning: '오전근무', afternoon: '점심·오후근무',
+    night: '야근', base: '기본'
+  };
+  function autoSlotNow(){
+    if(isNonWorkingDay()) return 'weekend';
+    if(overtimeMode) return 'night';
+    var now = new Date();
+    var m = now.getHours()*60 + now.getMinutes();
+    if(m >= 18*60) return 'night';           // 18:00 이후
+    if(m >= 12*60) return 'afternoon';       // 점심 + 오후
+    if(m >= 9*60)  return 'morning';         // 오전 근무
+    return 'base';                            // 출근 전, 심야
+  }
+  // 그 구간에 배정된 음원이 없으면 01로 물러난다
+  function autoTrackNow(){
+    var slot = autoSlotNow();
+    var t = trackById(AUTO_SLOTS[slot]);
+    if(t && t.src) return t;
+    var fb = trackById(AUTO_SLOTS.base);
+    return (fb && fb.src) ? fb : firstReadyTrack();
+  }
+  function autoNoteText(){
+    if(!audioState.auto) return '목록에서 직접 고른 음원으로 계속 틉니다.';
+    var slot = autoSlotNow();
+    var want = trackById(AUTO_SLOTS[slot]);
+    var using = autoTrackNow();
+    if(!using) return '지금은 ' + AUTO_LABEL[slot] + ' — 등록된 음원이 없어요.';
+    if(want && want.src) return '지금은 ' + AUTO_LABEL[slot] + ' — ' + using.id + '번을 틉니다.';
+    return '지금은 ' + AUTO_LABEL[slot] + ' — ' + AUTO_SLOTS[slot] + '번이 준비 중이라 '
+           + using.id + '번을 틉니다.';
+  }
+
+  // 구간이 바뀌면 틀고 있던 음원을 갈아준다 (자동일 때만)
+  var lastAutoSlot = null;
+  function syncAutoTrack(){
+    if(!audioState.auto) return;
+    var slot = autoSlotNow();
+    var t = autoTrackNow();
+    if(!t) return;
+    var changed = (t.id !== audioState.track);
+    audioState.track = t.id;
+    lastAutoSlot = slot;
+    if(changed){
+      saveAudioState();
+      if(audioState.playing) playBgm(false);
+      else applyAudio();
+    }
+    var note = byId('audioAutoNote');
+    if(note && audioOverlay.classList.contains('show')) note.textContent = autoNoteText();
   }
 
   function setPlayIcon(on){
@@ -8999,14 +9064,24 @@
       b.className = 'trackRow' + (t.src ? '' : ' soon') +
                     (t.src && t.id === audioState.track && audioState.playing ? ' on' : '');
       b.setAttribute('data-track', t.id);
+      var slotFor = null;
+      for(var k in AUTO_SLOTS){ if(AUTO_SLOTS[k] === t.id){ slotFor = k; break; } }
       b.innerHTML = '<span class="tBar"><i></i><i></i><i></i></span>' +
                     '<span class="tNum">' + t.id + '</span>' +
+                    (slotFor ? '<span class="tUse">' + AUTO_LABEL[slotFor] + '</span>' : '') +
                     '<span class="tState">' +
                     (!t.src ? '준비 중'
                       : (t.id === audioState.track ? (audioState.playing ? '재생 중' : '선택됨') : '')) +
                     '</span>';
       trackListEl.appendChild(b);
     });
+    var ar = byId('audioAutoRow');
+    if(ar){
+      ar.textContent = audioState.auto ? '시간대 자동 ON' : '시간대 자동 OFF';
+      ar.classList.toggle('active', audioState.auto);
+    }
+    var an = byId('audioAutoNote');
+    if(an) an.textContent = autoNoteText();
     var mr = byId('audioMuteRow');
     if(mr) mr.textContent = audioState.muted ? '음소거 해제' : '음소거';
   }
@@ -9056,6 +9131,7 @@
 
   // 기존 스피커 버튼이 음원 목록을 연다
   muteBtn.addEventListener('click', function(){
+    if(audioState.auto) syncAutoTrack();
     renderTrackList();
     audioOverlay.classList.add('show');
   });
@@ -9075,9 +9151,27 @@
     var t = trackById(row.getAttribute('data-track'));
     if(!t) return;
     if(!t.src){ toast(t.id + '번은 아직 준비 중이에요'); return; }
+    // 직접 고른 건 그대로 두는 게 맞으니 자동 전환을 끈다
+    var wasAuto = audioState.auto;
+    audioState.auto = false;
     audioState.track = t.id;
     saveAudioState();
     playBgm(true);
+    if(wasAuto) toast('시간대 자동을 껐어요');
+  });
+
+  byId('audioAutoRow').addEventListener('click', function(){
+    audioState.auto = !audioState.auto;
+    saveAudioState();
+    if(audioState.auto){
+      lastAutoSlot = null;
+      syncAutoTrack();
+      applyAudio();
+      toast('시간대에 맞는 음원으로 바뀝니다');
+    } else {
+      applyAudio();
+      toast('지금 음원으로 계속 틉니다');
+    }
   });
 
   volSlider.addEventListener('input', function(){
@@ -9087,7 +9181,14 @@
     saveAudioState();
   });
 
+  // 자동이면 먼저 지금 구간의 음원으로 맞춰두고 그린다
+  if(audioState.auto){
+    var t0 = autoTrackNow();
+    if(t0){ audioState.track = t0.id; lastAutoSlot = autoSlotNow(); }
+  }
   applyAudio();
+  // 구간이 바뀌는 순간(09:00·12:00·18:00, 야근모드 on/off, 주말)을 따라간다
+  setInterval(syncAutoTrack, 30000);
   // 지난번에 켜둔 채로 나갔다면, 출근하기(사용자 조작) 직후에 이어서 튼다
   if(audioState.playing){
     var enterBtnEl = byId('enterOfficeBtn');
