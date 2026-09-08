@@ -399,6 +399,17 @@
   #chatInputRow input::placeholder{ color:#a8bcc9; }
   #chatSendBtn{ width:33px; height:33px; min-width:33px; padding:0; border-radius:50%; background:#1B7FB8; border:none; color:#fff; font-size:15px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
   .chatBubble.deleted{ color:#a8bcc9; font-style:italic; border-style:dashed; background:#fff; }
+  /* 입력 중 표시: 상대가 답을 쓰고 있는 동안 점 세 개가 튄다 */
+  .chatTypingBubble{ display:flex; align-items:center; gap:4px; padding:11px 13px; }
+  .chatTypingBubble i{ width:5.5px; height:5.5px; border-radius:50%; background:#b8c8d3;
+                       display:block; animation:chatDot 1.25s ease-in-out infinite; }
+  .chatTypingBubble i:nth-child(2){ animation-delay:.18s; }
+  .chatTypingBubble i:nth-child(3){ animation-delay:.36s; }
+  @keyframes chatDot{ 0%,60%,100%{ transform:translateY(0); opacity:.45; }
+                      30%{ transform:translateY(-4px); opacity:1; } }
+  @media (prefers-reduced-motion: reduce){
+    .chatTypingBubble i{ animation:none; opacity:.7; }
+  }
   .chatSystemMsg{ text-align:center; font-size:11px; color:#8fa6b6; margin:8px 0; }
   .quickReplyChip{ font-size:10.5px; color:#1B7FB8; background:#E6F1FB; border:none; border-radius:12px; padding:5px 10px; cursor:pointer; font-family:inherit; }
   .dayLogRow{ display:flex; gap:8px; font-size:11.5px; color:#5c4a3a; padding:4px 2px; border-bottom:1px dashed #ddd8cc; }
@@ -3389,6 +3400,7 @@
     <p>사업마다 각자 설정한 시간이 지나면 자동 완료돼요. 그리고 그 순간 전 직원이 "프로젝트 완료!"를 외칩니다. 실제 시각 기준 저장이라 새로고침해도 카운트는 유지됩니다.</p>
 
     <h3>8. 실장님의 한마디</h3>
+    <p>메신저 답장은 사람이 보내는 것처럼 옵니다. 내 말을 읽는 시간과 답을 쓰는 시간만큼 기다린 뒤 오고, 그동안 <b>입력 중</b> 표시가 뜹니다. 답이 길면 두 통으로 나눠 보내고, 대화가 이어지도록 가끔 되묻기도 해요. 성격에 따라 말끝도 조금씩 다릅니다.</p>
     <p>화면을 켜둔 채 15분째가 되면, 실장이 자리에 있을 때 노란 말풍선으로 "지켜보고 있는 눈이 느껴져.."라고 가끔 혼잣말을 합니다. 바로 사용자를 인식하고 있는 모습이예요. (점심시간이나 퇴근 후처럼 실장이 사무실에 없을 때는 나타나지 않습니다.)</p>
 
     <button class="btn" id="helpCloseBtn" style="margin-top:14px;">닫기</button>
@@ -7858,7 +7870,88 @@
         wrap.appendChild(row);
       });
     }
+    // 이 방에서 누군가 답을 쓰고 있으면 마지막에 점 세 개를 띄운다
+    var tp = typingIn[key];
+    if(tp){
+      var tRow = document.createElement('div');
+      tRow.className = 'chatMsgRow';
+      var tAv = document.createElement('div');
+      tAv.className = 'chatAvatar';
+      tAv.innerHTML = avatarSVG(false);
+      tRow.appendChild(tAv);
+      var tWrap = document.createElement('div');
+      tWrap.className = 'chatBubbleWrap';
+      var tName = document.createElement('div');
+      tName.className = 'chatSenderName';
+      tName.textContent = tp.name;
+      tWrap.appendChild(tName);
+      var tBub = document.createElement('div');
+      tBub.className = 'chatBubble chatTypingBubble';
+      tBub.innerHTML = '<i></i><i></i><i></i>';
+      tWrap.appendChild(tBub);
+      tRow.appendChild(tWrap);
+      wrap.appendChild(tRow);
+    }
     wrap.scrollTop = wrap.scrollHeight;
+  }
+
+  // ===== 사람이 답하는 것처럼 보이게 하는 장치 =====
+  // 1) 내 말을 읽는 시간 + 답을 타이핑하는 시간을 글자 수로 계산한다
+  // 2) 그 동안 '입력 중' 점 세 개를 띄운다
+  // 3) 가끔 답을 두 통으로 나눠 보내고, 뒤 통은 되묻는 말로 대화를 잇는다
+  // 방 key -> { name:'보내는 사람', n:겹친 개수 }
+  // 연달아 보내면 답장 흐름이 둘 이상 돌 수 있어 개수를 세야 표시가 먼저 사라지지 않는다
+  var typingIn = {};
+  var lastFlavor = null;             // 방금 만든 답장에 붙은 성격 말투 (따로 떼어 보내려고 기억)
+
+  function setTyping(key, name){
+    var cur = typingIn[key];
+    typingIn[key] = { name: name, n: (cur ? cur.n : 0) + 1 };
+    if(isRoomOpen(key)) renderChatWindow();
+  }
+  function clearTyping(key){
+    var cur = typingIn[key];
+    if(!cur) return;
+    if(cur.n > 1) cur.n--;
+    else delete typingIn[key];
+  }
+  function isRoomOpen(key){
+    if(!chatWindowOverlay.classList.contains('show')) return false;
+    var openKey = currentChatTarget ? chatKeyFor(currentChatTarget.id) : CHAT_GROUP_KEY;
+    return openKey === key;
+  }
+
+  // 읽는 시간: 내가 쓴 글이 길면 조금 더 걸린다 (0.4~1.4초)
+  function readDelayFor(myText){
+    var n = (myText || '').length;
+    return Math.min(1200, 400 + n * 30) + Math.random() * 250;
+  }
+  // 타이핑 시간: 답이 길면 오래 걸린다 (0.5~2.5초)
+  // 두 통짜리 답도 전부 합쳐 6초를 넘기지 않아야 기다린다는 느낌이 안 든다
+  function typeDelayFor(reply){
+    var n = (reply || '').length;
+    return Math.min(2200, 500 + n * 55) + Math.random() * 300;
+  }
+
+  // 답장을 실제로 흘려보낸다. onEach로 방마다 다른 저장/렌더를 넘긴다
+  function deliverReply(opt){
+    var key = opt.key, name = opt.name, avatar = opt.avatar;
+    var parts = opt.parts && opt.parts.length ? opt.parts : [opt.body];
+    var i = 0;
+    function step(){
+      var body = parts[i];
+      setTyping(key, name);
+      setTimeout(function(){
+        clearTyping(key);
+        pushChat(key, { from:name, body:body, ts:Date.now(), mine:false, avatar:avatar });
+        if(isRoomOpen(key)) renderChatWindow();
+        updateMsgBadge();
+        i++;
+        // 두 번째 통은 앞 통을 보낸 뒤 잠깐 쉬고 다시 타이핑에 들어간다
+        if(i < parts.length) setTimeout(step, 250 + Math.random() * 300);
+      }, typeDelayFor(body));
+    }
+    setTimeout(step, opt.readDelay);
   }
 
   var quickReplyPresets = ['잘하고 있어요!', '회의실로 와주세요.', '커피 마실래요?', '오늘 업무 어때요?', '퇴근하세요!'];
@@ -8195,8 +8288,12 @@
       rememberReply(key, base);
       if(key) chatContext[key] = { mood: mood || null, ts: Date.now() };
       var line = opener ? (opener + ' ' + base) : base;
+      lastFlavor = null;
       var fl = allowFlavor && !isBoss && personalityFlavor[opts.personality];
-      if(fl && Math.random() < 0.3) line += ' ' + pick(fl);
+      if(fl && Math.random() < 0.3){
+        lastFlavor = pick(fl);
+        line += ' ' + lastFlavor;
+      }
       return line;
     };
 
@@ -8272,6 +8369,99 @@
     return finish(pickFresh(isBoss ? bossReplyLines : replyPoolFor(opts.personality)), false, null, ctx && ctx.mood);
   }
 
+  // ===== 대화를 잇는 되묻기 =====
+  // 답만 하고 끝나면 매번 대화가 끊긴다. 화제에 맞는 질문을 되던져 공을 넘긴다.
+  var BOUNCE_BACK = {
+    work:     ['그쪽은 어떠세요?', '더 볼 거 있으면 말해주세요', '언제까지 필요하세요?', '제가 뭐 도울까요?'],
+    coffee:   ['같이 가실래요?', '뭐 마실지 정하셨어요?', '지금 가요?'],
+    meal:     ['뭐 드실 거예요?', '같이 나가실래요?', '메뉴 정하셨어요?'],
+    negative: ['무슨 일 있으셨어요?', '많이 힘드세요?', '좀 쉬셔야 하는 거 아니에요?'],
+    positive: ['무슨 좋은 일 있으세요?', '뭐 잘 풀렸어요?'],
+    greeting: ['오늘 컨디션 어때요?', '식사는 하셨어요?', '오늘 일정 많으세요?'],
+    farewell: ['내일 일찍 오세요?', '오늘 야근은 없죠?'],
+    praise:   ['다음에도 있으면 말해주세요', '또 필요한 거 있으세요?'],
+    urging:   ['많이 급하세요?', '언제까지면 될까요?'],
+    generic:  ['그런데 무슨 일이세요?', '오늘 어떠세요?', '뭐 필요한 거 있으세요?', '그쪽은요?']
+  };
+  var BOUNCE_BOSS = {
+    generic: ['별일 없나요?', '진행은 잘 되고 있죠?', '어려운 건 없습니까?']
+  };
+  // 방마다 되묻기가 연달아 나오지 않게 기억한다
+  var lastBounceAt = {};
+  var BOUNCE_GAP = 3;                 // 되묻고 나면 최소 3턴은 쉰다
+
+  function myTurnCount(key){
+    var n = 0;
+    loadChat(key).forEach(function(m){ if(m.mine && !m.system) n++; });
+    return n;
+  }
+  function pickBounce(key, mood, isBoss){
+    var turn = myTurnCount(key);
+    if(turn < 2) return null;                                  // 인사 한 번 하고 바로 캐묻지 않게
+    if((turn - (lastBounceAt[key] || -99)) < BOUNCE_GAP) return null;
+    if(Math.random() >= (isBoss ? 0.18 : 0.42)) return null;   // 사장님은 잘 안 되묻는다
+    var table = isBoss ? BOUNCE_BOSS : BOUNCE_BACK;
+    var pool = (mood && table[mood]) || table.generic;
+    if(!pool || !pool.length) return null;
+    lastBounceAt[key] = turn;
+    return pool[Math.floor(Math.random()*pool.length)];
+  }
+
+  // 성격마다 말끝 습관이 달라 같은 문장도 다르게 읽힌다
+  // 이미 물음표·느낌표·물결·웃음으로 끝나면 더 붙이지 않는다
+  function endsSoft(t){ return /[?!~ㅋㅎ]$/.test(t); }
+  var TONE_TWEAK = {
+    playful:    function(t){ return endsSoft(t) ? t : t.replace(/\.$/,'') + ' ㅋㅋ'; },
+    chatty:     function(t){ return endsSoft(t) ? t : t.replace(/\.$/,'') + '~'; },
+    warm:       function(t){ return endsSoft(t) ? t : t.replace(/\.$/,'') + '~'; },
+    quiet:      function(t){ return t.replace(/~+$/,'').replace(/\s*ㅋ+$/,'').replace(/\s*ㅎ+$/,''); },
+    meticulous: function(t){ return (endsSoft(t) || /\.$/.test(t)) ? t : t + '.'; },
+    intern:     function(t){ return endsSoft(t) ? t : t.replace(/\.$/,'') + '!'; },
+    calm:       function(t){ return t; }
+  };
+  function applyTone(text, personality){
+    var fn = personality && TONE_TWEAK[personality];
+    if(!fn || !text) return text;
+    try{ return fn(text); }catch(e){ return text; }
+  }
+
+  // 한 통이 길면 사람처럼 두 통으로 끊어 보낸다
+  function splitLongReply(text){
+    if(!text || text.length < 22) return [text];
+    var cut = -1;
+    // 문장 끝이나 쉼표를 가운데 부근에서 찾는다
+    var marks = [/([.!?])\s+/g, /(,)\s+/g];
+    for(var m = 0; m < marks.length && cut === -1; m++){
+      var re = marks[m], hit;
+      while((hit = re.exec(text)) !== null){
+        var at = hit.index + hit[0].length;
+        if(at >= 4 && at <= text.length - 5){ cut = at; break; }
+      }
+    }
+    if(cut === -1) return [text];
+    return [text.slice(0, cut).trim(), text.slice(cut).trim()];
+  }
+
+  // 답장 한 통을 사람이 보낼 만한 통 묶음으로 만든다
+  function buildReplyParts(reply, key, personality, isBoss){
+    var body = reply, tail = null;
+    // 성격 말투("기록해두겠습니다." 등)는 붙여 쓰면 문장이 늘어져 보여 따로 보낸다
+    if(lastFlavor && body.length > lastFlavor.length + 1
+       && body.slice(-lastFlavor.length) === lastFlavor){
+      body = body.slice(0, -lastFlavor.length).trim();
+      tail = lastFlavor;
+    }
+    var parts = splitLongReply(body);
+    parts = parts.map(function(t){ return applyTone(t, isBoss ? null : personality); });
+    if(tail) parts.push(tail);
+    var ctx = chatContext[key];
+    var bounce = pickBounce(key, ctx && ctx.mood, isBoss);
+    if(bounce && parts.length < 2) parts.push(applyTone(bounce, isBoss ? null : personality));
+    // 세 통 넘게 몰아 보내면 도배처럼 보인다
+    if(parts.length > 2) parts = parts.slice(0, 2);
+    return parts.filter(function(t){ return t && t.length; });
+  }
+
   // 전체채팅에서 "고부장 이것 좀" 처럼 이름·직책을 부르면 그 사람이 답한다
   function findMentionedContact(text){
     var head = text.slice(0, 14);
@@ -8300,6 +8490,8 @@
     input.value = '';
     renderChatWindow();
 
+    var readWait = readDelayFor(text);
+
     if(target && target.isRoom){
       var members = staff.filter(function(s){ return s.teamKey===target.teamKey && !isGoneForDay(s.id); });
       // 팀방에서도 이름을 부르면 그 팀원이 답한다
@@ -8308,23 +8500,19 @@
       var replier2 = mentionedInTeam || (members.length ? members[Math.floor(Math.random()*members.length)] : staff[Math.floor(Math.random()*staff.length)]);
       if(mentionedInTeam) bumpTalk(mentionedInTeam.id);
       var pal2 = kindPalette[replier2.palKey] || kindPalette[replier2.kind] || kindPalette.cat;
-      setTimeout(function(){
-        var reply = pickContextualReply(text, { personality: replier2.personality, key: key });
-        pushChat(key, { from:replier2.name, body:reply, ts:Date.now(), mine:false, avatar:pal2.base });
-        if(chatWindowOverlay.classList.contains('show') && currentChatTarget && currentChatTarget.id===target.id) renderChatWindow();
-        updateMsgBadge();
-      }, 1500 + Math.random()*2000);
+      var reply2 = pickContextualReply(text, { personality: replier2.personality, key: key });
+      deliverReply({ key:key, name:replier2.name, avatar:pal2.base, readDelay:readWait,
+                     parts: buildReplyParts(reply2, key, replier2.personality, false) });
     } else if(target){
       var staffObj = staffMap[target.id];
       if(staffObj) bumpTalk(staffObj.id);
-      setTimeout(function(){
-        // 사장님은 정해진 다섯 질문에 정해진 답을 한다
-        var reply = (target.isBoss && bossScriptedAnswer(text))
-          || pickContextualReply(text, { isBoss: target.isBoss, personality: staffObj ? staffObj.personality : null, key: key });
-        pushChat(key, { from:target.name, body:reply, ts:Date.now(), mine:false, avatar:target.avatar });
-        if(chatWindowOverlay.classList.contains('show') && currentChatTarget && currentChatTarget.id===target.id) renderChatWindow();
-        updateMsgBadge();
-      }, 1500 + Math.random()*2000);
+      // 사장님은 정해진 다섯 질문에 정해진 답을 한다
+      var scripted = target.isBoss && bossScriptedAnswer(text);
+      var reply1 = scripted || pickContextualReply(text, { isBoss: target.isBoss, personality: staffObj ? staffObj.personality : null, key: key });
+      // 정해진 답은 그대로 한 통으로 보낸다
+      var parts1 = scripted ? [reply1]
+                 : buildReplyParts(reply1, key, staffObj ? staffObj.personality : null, !!target.isBoss);
+      deliverReply({ key:key, name:target.name, avatar:target.avatar, readDelay:readWait, parts:parts1 });
     } else {
       // 전체채팅 답장은 실무진만 — 사장님은 실무 대화에 끼지 않음
       var pool = messengerContacts.filter(function(c){ return !c.isBoss; });
@@ -8333,12 +8521,9 @@
       var replier = (mentioned && !mentioned.isBoss) ? mentioned : pool[Math.floor(Math.random()*pool.length)];
       var replierStaff = staffMap[replier.id];
       if(mentioned && !mentioned.isBoss && staffMap[mentioned.id]) bumpTalk(mentioned.id);
-      setTimeout(function(){
-        var reply = pickContextualReply(text, { personality: replierStaff ? replierStaff.personality : null, key: CHAT_GROUP_KEY });
-        pushChat(CHAT_GROUP_KEY, { from:replier.name, body:reply, ts:Date.now(), mine:false, avatar:replier.avatar });
-        if(chatWindowOverlay.classList.contains('show') && !currentChatTarget) renderChatWindow();
-        updateMsgBadge();
-      }, 1500 + Math.random()*2000);
+      var reply3 = pickContextualReply(text, { personality: replierStaff ? replierStaff.personality : null, key: CHAT_GROUP_KEY });
+      deliverReply({ key:CHAT_GROUP_KEY, name:replier.name, avatar:replier.avatar, readDelay:readWait,
+                     parts: buildReplyParts(reply3, CHAT_GROUP_KEY, replierStaff ? replierStaff.personality : null, false) });
     }
   }
   byId('chatSendBtn').addEventListener('click', sendChatMessage);
