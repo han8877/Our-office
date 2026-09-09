@@ -737,14 +737,6 @@
     #sideBar{ transition:none; }
   }
 
-  /* 구역 바로가기 칩 (좁은 화면에서만 보인다) */
-  #roomJump{ display:none; width:100%; max-width:1000px; gap:6px; margin-bottom:7px;
-             overflow-x:auto; padding-bottom:2px; scrollbar-width:none; -ms-overflow-style:none; }
-  #roomJump::-webkit-scrollbar{ display:none; }
-  .jumpChip{ flex:0 0 auto; font-size:11.5px; line-height:1; padding:7px 11px; border-radius:999px;
-             border:1.2px solid #5c4a3a; background:#fffdf8; color:#5c4a3a; cursor:pointer;
-             font-family:inherit; white-space:nowrap; }
-  .jumpChip.on{ background:#5c4a3a; color:#fffdf8; }
 
   /* 좁은 화면: 사무실을 화면 높이에 꽉 채우고 가로로 넘겨 본다 */
   @media (max-width:760px){
@@ -753,7 +745,6 @@
             overscroll-behavior-x:contain; scrollbar-width:none; -ms-overflow-style:none; }
     #stage::-webkit-scrollbar{ display:none; }
     #officeSvg{ height:var(--officeH,56vh); width:auto; max-width:none; }
-    #roomJump{ display:flex; }
     /* 사무실이 화면을 꽉 채우니 세로 탭은 가로 알약으로 바꿔 구석에 둔다 */
     #logTab{ top:auto; bottom:12px; right:10px; transform:none; flex-direction:row;
              border-right:1.3px solid #5c4a3a; border-radius:999px; padding:8px 13px; gap:6px;
@@ -1869,18 +1860,6 @@
 <div class="row">
   <input type="text" id="cmdInput" placeholder="/캐릭터명 문장" maxlength="30">
   <button class="btn" id="cmdBtn">전송</button>
-</div>
-
-<div id="roomJump" aria-label="구역 바로가기">
-  <button class="jumpChip" data-jx="190">노트팀</button>
-  <button class="jumpChip" data-jx="255">경영지원</button>
-  <button class="jumpChip" data-jx="415">아트코너</button>
-  <button class="jumpChip" data-jx="595">회의실</button>
-  <button class="jumpChip" data-jx="645">스티커팀</button>
-  <button class="jumpChip" data-jx="790">실장실</button>
-  <button class="jumpChip" data-jx="830">라운지</button>
-  <button class="jumpChip" data-jx="870">탕비실</button>
-  <button class="jumpChip" data-jx="900">재고창고</button>
 </div>
 
 <div id="stage">
@@ -9727,12 +9706,11 @@
     setTimeout(fitIntroStage, 400);
   })();
 
-  // ===== 좁은 화면: 사무실을 남는 세로 공간까지 채우고, 구역 칩으로 가로 이동 =====
+  // ===== 좁은 화면: 사무실을 남는 세로 공간까지 채운다 =====
   // 도면이 1000x850 가로형이라 세로 화면에서는 폭에만 맞추면 아래가 크게 비고
   // 글자도 0.37배까지 줄어든다. 높이를 채우고 넘치는 가로만 스크롤한다.
   var stageEl = byId('stage');
   var officeSvgEl = byId('officeSvg');
-  var roomJumpEl = byId('roomJump');
   function isNarrowView(){
     return !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches);
   }
@@ -9743,7 +9721,7 @@
     var vh = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0,
                       (vv && vv.height) || 0);
     if(!vh) return;
-    // 무대 위쪽(상태줄·입력줄·칩줄)이 차지한 높이는 문서 기준으로 재야 스크롤에 흔들리지 않는다
+    // 무대 위쪽(상태줄·입력줄)이 차지한 높이는 문서 기준으로 재야 스크롤에 흔들리지 않는다
     var stageBox = stageEl.getBoundingClientRect();
     var top = stageBox.top + (window.pageYOffset || 0);
     // 무대 아래에 남는 것(주문량 진행바)과 본문 아래 여백만큼 미리 빼둔다
@@ -9755,59 +9733,7 @@
     officeSvgEl.style.height = h + 'px';
   }
 
-  function officeScrollTo(x, smooth){
-    if(!stageEl || !officeSvgEl) return;
-    var w = officeSvgEl.getBoundingClientRect().width;
-    if(!w) return;
-    var max = Math.max(0, w - stageEl.clientWidth);
-    var target = Math.max(0, Math.min(max, (x / 1000) * w - stageEl.clientWidth / 2));
-    if(smooth && stageEl.scrollTo){
-      try{ stageEl.scrollTo({ left: target, behavior: 'smooth' }); return; }catch(e){}
-    }
-    stageEl.scrollLeft = target;
-  }
-
-  // 지금 화면 한가운데에 가장 가까운 구역 칩을 켜둔다
-  var jumpChips = roomJumpEl ? [].slice.call(roomJumpEl.querySelectorAll('.jumpChip')) : [];
-  var jumpRaf = 0, jumpStickyTimer = 0;
-  function syncJumpChips(){
-    if(!jumpChips.length || !stageEl || !officeSvgEl) return;
-    // 방금 누른 칩은 스크롤이 멎을 때까지 그대로 켜둔다
-    // (도면 오른쪽 끝은 화면 가운데에 올 수 없어 가까운 칩으로 튀는 걸 막는다)
-    if(jumpStickyTimer) return;
-    var w = officeSvgEl.getBoundingClientRect().width;
-    if(!w) return;
-    var centerX = (stageEl.scrollLeft + stageEl.clientWidth / 2) / w * 1000;
-    var best = null, bestD = Infinity;
-    jumpChips.forEach(function(c){
-      var d = Math.abs(parseFloat(c.getAttribute('data-jx')) - centerX);
-      if(d < bestD){ bestD = d; best = c; }
-    });
-    jumpChips.forEach(function(c){ c.classList.toggle('on', c === best); });
-    // 켜진 칩이 칩 줄 밖에 있으면 보이는 데까지 끌어온다
-    if(best && roomJumpEl && roomJumpEl.scrollWidth > roomJumpEl.clientWidth){
-      var cl = best.offsetLeft, cr = cl + best.offsetWidth;
-      if(cl < roomJumpEl.scrollLeft) roomJumpEl.scrollLeft = cl - 8;
-      else if(cr > roomJumpEl.scrollLeft + roomJumpEl.clientWidth)
-        roomJumpEl.scrollLeft = cr - roomJumpEl.clientWidth + 8;
-    }
-  }
-  jumpChips.forEach(function(c){
-    c.addEventListener('click', function(){
-      officeScrollTo(parseFloat(c.getAttribute('data-jx')), true);
-      jumpChips.forEach(function(o){ o.classList.toggle('on', o === c); });
-      clearTimeout(jumpStickyTimer);
-      jumpStickyTimer = setTimeout(function(){ jumpStickyTimer = 0; }, 900);
-    });
-  });
-  if(stageEl){
-    stageEl.addEventListener('scroll', function(){
-      if(jumpRaf) return;
-      jumpRaf = requestAnimationFrame(function(){ jumpRaf = 0; syncJumpChips(); });
-    }, { passive:true });
-  }
-
-  function refitOffice(){ fitOfficeStage(); syncJumpChips(); }
+  function refitOffice(){ fitOfficeStage(); }
   refitOffice();
   window.addEventListener('resize', refitOffice);
   window.addEventListener('orientationchange', refitOffice);
