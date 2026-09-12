@@ -1872,6 +1872,23 @@
 <title>끄적끄적문구 사무실</title>
 <desc>동물 얼굴 캐릭터들이 실시간으로 출퇴근하는 손그림 스타일 사무실 방치형 게임 화면</desc>
 <defs>
+<!-- 바닥 그림자용 흐림 -->
+<filter id="softShade" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="1.6"/></filter>
+<!-- 방 바닥 결 (아주 옅게) -->
+<pattern id="floorTex" width="18" height="18" patternUnits="userSpaceOnUse">
+  <rect width="18" height="18" fill="#f9f5ea" stroke="none"/>
+  <path d="M0 18 L18 0" stroke="#f4ecd9" stroke-width="0.6" fill="none"/>
+</pattern>
+<!-- 가구 면 음영: 위가 밝고 아래가 어둡다 -->
+<linearGradient id="gTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f3ebda"/></linearGradient>
+<linearGradient id="gMon" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d6d1c6"/><stop offset="1" stop-color="#b6b0a3"/></linearGradient>
+<linearGradient id="gCab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f8f2e6"/><stop offset="1" stop-color="#e9dfc9"/></linearGradient>
+<!-- 창에서 들어오는 빛 -->
+<linearGradient id="gWinLight" x1="0" y1="0" x2="0" y2="1">
+  <stop offset="0" stop-color="#fff4d2" stop-opacity="0.30"/>
+  <stop offset="0.55" stop-color="#fff4d2" stop-opacity="0.10"/>
+  <stop offset="1" stop-color="#fff4d2" stop-opacity="0"/>
+</linearGradient>
 <filter id="wob"><feTurbulence type="fractalNoise" baseFrequency="0.011" numOctaves="2" seed="6" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="1.7"/></filter>
 <pattern id="curtainCheck" width="12" height="12" patternUnits="userSpaceOnUse">
   <rect width="12" height="12" fill="#fdfaf6"/>
@@ -2086,11 +2103,11 @@
 </g>
 
 <!-- ===== 디자인실장실 (구 디자인부) ===== -->
-<rect x="660" y="40" width="305" height="220" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="660" y="40" width="305" height="220" rx="12" fill="url(#floorTex)" stroke="none"/>
 
 <!-- 실장 테이블 (신규, 회의용 원형 테이블+의자2) -->
 <g stroke-width="1.1" transform="translate(30,30)">
-<ellipse cx="680" cy="150" rx="42" ry="20" fill="#f3ece0" stroke-width="1.1"/><ellipse cx="680" cy="150" rx="39" ry="18" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="670.8" cy="144.4" rx="14.7" ry="6.0" fill="#fbf6ea" stroke="none" opacity="0.7"/>
+<ellipse cx="680" cy="150" rx="42" ry="20" fill="url(#gCab)" stroke-width="1.1"/><ellipse cx="680" cy="150" rx="39" ry="18" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="670.8" cy="144.4" rx="14.7" ry="6.0" fill="#fbf6ea" stroke="none" opacity="0.7"/>
 <rect x="672.80" y="114.00" width="14.40" height="16.00" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="674.38" y="106.80" width="11.23" height="9.00" rx="2" fill="#b98d60"/><line x1="676.18" y1="109.68" x2="683.82" y2="109.68" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="676.18" y1="112.74" x2="683.82" y2="112.74" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="675.68" y1="128.72" x2="675.68" y2="132.92" stroke-width="1.25" stroke-linecap="round"/><line x1="684.32" y1="128.72" x2="684.32" y2="132.92" stroke-width="1.25" stroke-linecap="round"/><rect x="677.70" y="118.48" width="4.61" height="3.84" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
 <rect x="672.80" y="170.00" width="14.40" height="16.00" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="674.38" y="184.20" width="11.23" height="9.00" rx="2" fill="#b98d60"/><line x1="676.18" y1="187.26" x2="683.82" y2="187.26" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="676.18" y1="190.32" x2="683.82" y2="190.32" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="675.68" y1="167.08" x2="675.68" y2="171.28" stroke-width="1.25" stroke-linecap="round"/><line x1="684.32" y1="167.08" x2="684.32" y2="171.28" stroke-width="1.25" stroke-linecap="round"/><rect x="677.70" y="177.68" width="4.61" height="3.84" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
 </g>
@@ -2118,7 +2135,7 @@
 <g fill="#5c4a3a" stroke="none" transform="translate(20,16)"><circle cx="806" cy="130" r="2.6"/><circle cx="834" cy="130" r="2.6"/><circle cx="872" cy="130" r="2.6"/><circle cx="900" cy="130" r="2.6"/></g>
 
 <g stroke-width="1.1" transform="translate(0,-160)">
-<rect x="928" y="320" width="34" height="50" rx="2" fill="#f3ece0"/>
+<rect x="928" y="320" width="34" height="50" rx="2" fill="url(#gCab)"/>
 <rect x="928" y="320" width="34" height="5" fill="#e6ddc9" stroke="none"/>
 <rect x="928" y="366" width="34" height="4" fill="#d9cfb8" stroke="none" opacity="0.6"/>
 <line x1="945" y1="320" x2="945" y2="370" stroke-width="0.7"/>
@@ -2133,22 +2150,22 @@
 <!-- 실장 책상은 deskLayer에서 JS로 생성 -->
 
 <!-- ===== 노트 디자인팀 ===== -->
-<rect x="40" y="230" width="300" height="230" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="40" y="230" width="300" height="230" rx="12" fill="url(#floorTex)" stroke="none"/>
 
 
 
 <!-- 노트디자인팀 책상 4개는 deskLayer에서 JS로 생성 -->
 
 <!-- ===== 경영지원팀 (신규, 홍보팀 위 빈칸) ===== -->
-<rect x="40" y="480" width="430" height="150" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="40" y="480" width="430" height="150" rx="12" fill="url(#floorTex)" stroke="none"/>
 
 <!-- 경영지원팀 책상 3개는 deskLayer에서 JS로 생성 -->
 
 <!-- ===== 스티커 디자인팀 ===== -->
-<rect x="490" y="372" width="310" height="258" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="490" y="372" width="310" height="258" rx="12" fill="url(#floorTex)" stroke="none"/>
 
 <g stroke-width="1.1" transform="translate(-78,-85)">
-<rect x="900" y="555" width="32" height="38" rx="4" fill="#f3ece0"/>
+<rect x="900" y="555" width="32" height="38" rx="4" fill="url(#gCab)"/>
 <rect x="900" y="555" width="32" height="5" rx="2" fill="#e6ddc9" stroke="none"/>
 <rect x="900" y="589" width="32" height="4" rx="1" fill="#d9cfb8" stroke="none" opacity="0.6"/>
 <line x1="916" y1="555" x2="916" y2="593" stroke-width="0.7"/>
@@ -2175,7 +2192,7 @@
   <rect x="83" y="628.5" width="4" height="6" rx="0.5" fill="none" stroke="#fdfdf7" stroke-width="0.7"/>
 </g>
 <!-- 자동문 센서 -->
-<rect x="63" y="640" width="29" height="6.5" rx="2.5" fill="#f3ece0" stroke-width="0.9"/>
+<rect x="63" y="640" width="29" height="6.5" rx="2.5" fill="url(#gCab)" stroke-width="0.9"/>
 <circle id="doorSensorLamp" cx="87" cy="643.2" r="1.6" fill="#c9c2b4" stroke="none"/>
 <!-- 자동문 -->
 <clipPath id="entranceDoorClip"><rect x="50" y="650" width="55" height="100" rx="8"/></clipPath>
@@ -2203,7 +2220,7 @@
 </g>
 
 <!-- ===== 홍보팀 ===== -->
-<rect x="120" y="650" width="340" height="140" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="120" y="650" width="340" height="140" rx="12" fill="url(#floorTex)" stroke="none"/>
 
 <!-- 복합기 1 (노트-스티커 디자인팀 사이) -->
 <g stroke-width="1.1" transform="translate(-40,180)">
@@ -2231,7 +2248,7 @@
 
 <!-- 서랍 (홍보팀) -->
 <g stroke-width="1" transform="translate(-20,18)">
-<rect x="425" y="655" width="30" height="34" rx="3" fill="#f3ece0"/>
+<rect x="425" y="655" width="30" height="34" rx="3" fill="url(#gCab)"/>
 <rect x="425" y="655" width="30" height="3" rx="1.5" fill="#e6ddc9" stroke="none"/>
 <rect x="427" y="660" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
 <rect x="437" y="663.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
@@ -2244,7 +2261,7 @@
 
 <!-- 서랍 (경영지원팀) -->
 <g stroke-width="1" transform="translate(0,-26)">
-<rect x="115" y="595" width="30" height="34" rx="3" fill="#f3ece0"/>
+<rect x="115" y="595" width="30" height="34" rx="3" fill="url(#gCab)"/>
 <rect x="115" y="595" width="30" height="3" rx="1.5" fill="#e6ddc9" stroke="none"/>
 <rect x="117" y="600" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
 <rect x="127" y="603.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
@@ -2257,7 +2274,7 @@
 
 <!-- 서랍 (스티커 디자인팀) -->
 <g stroke-width="1" transform="translate(195,-134)">
-<rect x="555" y="560" width="30" height="34" rx="3" fill="#f3ece0"/>
+<rect x="555" y="560" width="30" height="34" rx="3" fill="url(#gCab)"/>
 <rect x="555" y="560" width="30" height="3" rx="1.5" fill="#e6ddc9" stroke="none"/>
 <rect x="557" y="565" width="26" height="8" rx="1.5" fill="#fffdf8" stroke-width="0.6"/>
 <rect x="567" y="568.2" width="6" height="1.6" rx="0.8" fill="#5c4a3a" stroke="none"/>
@@ -2271,9 +2288,9 @@
 <!-- 홍보팀 책상 2개는 deskLayer에서 JS로 생성 -->
 
 <!-- ===== 회의실 ===== -->
-<rect x="480" y="650" width="220" height="150" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="480" y="650" width="220" height="150" rx="12" fill="url(#floorTex)" stroke="none"/>
 <g stroke-width="1.1" transform="translate(25,0)">
-<ellipse cx="590" cy="725" rx="75" ry="30" fill="#f3ece0" stroke-width="1.1"/><ellipse cx="590" cy="725" rx="72" ry="28" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="573.5" cy="716.6" rx="26.2" ry="9.0" fill="#fbf6ea" stroke="none" opacity="0.7"/>
+<ellipse cx="590" cy="725" rx="75" ry="30" fill="url(#gCab)" stroke-width="1.1"/><ellipse cx="590" cy="725" rx="72" ry="28" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="573.5" cy="716.6" rx="26.2" ry="9.0" fill="#fbf6ea" stroke="none" opacity="0.7"/>
 <rect x="581.90" y="672.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="583.68" y="663.76" width="12.64" height="10.80" rx="2" fill="#b98d60"/><line x1="585.70" y1="667.22" x2="594.30" y2="667.22" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="585.70" y1="670.89" x2="594.30" y2="670.89" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="585.14" y1="690.06" x2="585.14" y2="695.10" stroke-width="1.25" stroke-linecap="round"/><line x1="594.86" y1="690.06" x2="594.86" y2="695.10" stroke-width="1.25" stroke-linecap="round"/><rect x="587.41" y="677.78" width="5.18" height="4.61" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
 <rect x="581.90" y="758.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="583.68" y="775.44" width="12.64" height="10.80" rx="2" fill="#b98d60"/><line x1="585.70" y1="779.11" x2="594.30" y2="779.11" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="585.70" y1="782.78" x2="594.30" y2="782.78" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="585.14" y1="754.90" x2="585.14" y2="759.94" stroke-width="1.25" stroke-linecap="round"/><line x1="594.86" y1="754.90" x2="594.86" y2="759.94" stroke-width="1.25" stroke-linecap="round"/><rect x="587.41" y="767.62" width="5.18" height="4.61" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
 <rect x="524.90" y="690.40" width="16.20" height="19.20" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="518.42" y="692.51" width="8.10" height="14.98" rx="2" fill="#b98d60"/><line x1="521.01" y1="694.91" x2="521.01" y2="705.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="523.77" y1="694.91" x2="523.77" y2="705.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="539.80" y1="694.24" x2="543.58" y2="694.24" stroke-width="1.25" stroke-linecap="round"/><line x1="539.80" y1="705.76" x2="543.58" y2="705.76" stroke-width="1.25" stroke-linecap="round"/><rect x="529.44" y="696.93" width="3.89" height="6.14" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
@@ -2283,7 +2300,7 @@
 </g>
 
 <!-- ===== 재고창고 (스티커 디자인팀 우측 여백) ===== -->
-<rect x="820" y="372" width="145" height="258" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="820" y="372" width="145" height="258" rx="12" fill="url(#floorTex)" stroke="none"/>
 
 <!-- 모빌랙 1 (절반 크기) -->
 <g stroke="#8a8578" stroke-width="1">
@@ -2341,7 +2358,7 @@
 
 <!-- 공기청정기 (창고) -->
 <g stroke-width="1">
-<rect x="912" y="392" width="14" height="26" rx="3" fill="#f3ece0"/>
+<rect x="912" y="392" width="14" height="26" rx="3" fill="url(#gCab)"/>
 <rect x="914" y="396" width="10" height="14" rx="1.6" fill="#dcecec"/>
 <line x1="915.5" y1="399" x2="922.5" y2="399" stroke-width="0.35" opacity="0.5"/>
 <line x1="915.5" y1="402" x2="922.5" y2="402" stroke-width="0.35" opacity="0.5"/>
@@ -2351,7 +2368,7 @@
 
 <!-- 창고용 미니 테이블 + 의자 2개 -->
 <g stroke-width="1.1">
-<ellipse cx="935" cy="498" rx="15" ry="8" fill="#f3ece0" stroke-width="1"/>
+<ellipse cx="935" cy="498" rx="15" ry="8" fill="url(#gCab)" stroke-width="1"/>
 <ellipse cx="935" cy="498" rx="12.5" ry="6" fill="none" stroke="#d8c9ac" stroke-width="0.7"/>
 </g>
 <g stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round">
@@ -2365,7 +2382,7 @@
 
 <!-- 공기청정기 (사무실 복도 2곳) -->
 <g stroke-width="1" transform="translate(-343,89)">
-<rect x="473" y="666" width="14" height="26" rx="3" fill="#f3ece0"/>
+<rect x="473" y="666" width="14" height="26" rx="3" fill="url(#gCab)"/>
 <circle class="devLed" cx="483" cy="670" r="1.7" fill="#8fbf6f" stroke="none"/>
 <rect x="475" y="670" width="10" height="14" rx="1.6" fill="#dcecec"/>
 <line x1="476.5" y1="673" x2="483.5" y2="673" stroke-width="0.35" opacity="0.5"/>
@@ -2374,7 +2391,7 @@
 <circle cx="480" cy="687" r="1.2" fill="#8fbf6f" stroke-width="0.4"/>
 </g>
 <g stroke-width="1" transform="translate(6,0)">
-<rect x="38" y="287" width="14" height="26" rx="3" fill="#f3ece0"/>
+<rect x="38" y="287" width="14" height="26" rx="3" fill="url(#gCab)"/>
 <circle class="devLed" cx="48" cy="291" r="1.7" fill="#8fbf6f" stroke="none"/>
 <rect x="40" y="291" width="10" height="14" rx="1.6" fill="#dcecec"/>
 <line x1="41.5" y1="294" x2="48.5" y2="294" stroke-width="0.35" opacity="0.5"/>
@@ -2384,7 +2401,7 @@
 </g>
 
 <!-- ===== 탕비실 ===== -->
-<rect x="720" y="650" width="250" height="150" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="720" y="650" width="250" height="150" rx="12" fill="url(#floorTex)" stroke="none"/>
 <g stroke-width="1.1" transform="translate(6,0)">
 <rect x="725" y="675" width="45" height="68" rx="7" fill="#e6f0f0"/>
 <rect x="727" y="677" width="41" height="64" rx="5" fill="#f2f8f8" stroke-width="0.6"/>
@@ -2496,7 +2513,7 @@
 </g>
 <!-- 탕비실 신규 테이블 (분홍 표시 자리) -->
 <g stroke-width="1.1">
-<ellipse cx="925" cy="755" rx="30" ry="22" fill="#f3ece0" stroke-width="1.1"/><ellipse cx="925" cy="755" rx="27" ry="20" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="918.4" cy="748.8" rx="10.5" ry="6.6" fill="#fbf6ea" stroke="none" opacity="0.7"/>
+<ellipse cx="925" cy="755" rx="30" ry="22" fill="url(#gCab)" stroke-width="1.1"/><ellipse cx="925" cy="755" rx="27" ry="20" fill="none" stroke="#d8c9ac" stroke-width="0.8"/><ellipse cx="918.4" cy="748.8" rx="10.5" ry="6.6" fill="#fbf6ea" stroke="none" opacity="0.7"/>
 <rect x="918.70" y="718.80" width="12.60" height="14.40" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="920.09" y="712.32" width="9.83" height="8.10" rx="2" fill="#b98d60"/><line x1="921.66" y1="714.91" x2="928.34" y2="714.91" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="921.66" y1="717.67" x2="928.34" y2="717.67" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="921.22" y1="732.05" x2="921.22" y2="735.83" stroke-width="1.25" stroke-linecap="round"/><line x1="928.78" y1="732.05" x2="928.78" y2="735.83" stroke-width="1.25" stroke-linecap="round"/><rect x="922.98" y="722.83" width="4.03" height="3.46" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
 <rect x="918.70" y="776.80" width="12.60" height="14.40" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="920.09" y="789.58" width="9.83" height="8.10" rx="2" fill="#b98d60"/><line x1="921.66" y1="792.33" x2="928.34" y2="792.33" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="921.66" y1="795.09" x2="928.34" y2="795.09" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="921.22" y1="774.17" x2="921.22" y2="777.95" stroke-width="1.25" stroke-linecap="round"/><line x1="928.78" y1="774.17" x2="928.78" y2="777.95" stroke-width="1.25" stroke-linecap="round"/><rect x="922.98" y="783.71" width="4.03" height="3.46" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
 <rect x="893.70" y="747.80" width="12.60" height="14.40" rx="2.4" fill="#c9a179" stroke-width="0.7"/><rect x="888.66" y="749.38" width="6.30" height="11.23" rx="2" fill="#b98d60"/><line x1="890.68" y1="751.18" x2="890.68" y2="758.82" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="892.82" y1="751.18" x2="892.82" y2="758.82" stroke="#8a6640" stroke-width="0.75" opacity="0.75"/><line x1="905.29" y1="750.68" x2="908.23" y2="750.68" stroke-width="1.25" stroke-linecap="round"/><line x1="905.29" y1="759.32" x2="908.23" y2="759.32" stroke-width="1.25" stroke-linecap="round"/><rect x="897.23" y="752.70" width="3.02" height="4.61" rx="1.4" fill="#dcbf9a" stroke="none" opacity="0.85"/>
@@ -2539,7 +2556,7 @@
 <path d="M 0.0 -26.0 Q 9.0 -30.2 6.1 -39.7 Q -2.9 -35.5 0.0 -26.0 Z" fill="#a3d191" stroke-width="0.55"/>
 <line x1="0.0" y1="-26.0" x2="5.0" y2="-37.2" stroke="#5c8a48" stroke-width="0.4" opacity="0.5"/>
 </g>
-<rect x="-9" y="0" width="18" height="8" rx="2" fill="#f3ece0" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.4" rx="1.4" fill="#fffdf8" stroke="none" opacity="0.6"/>
+<rect x="-9" y="0" width="18" height="8" rx="2" fill="url(#gCab)" stroke-width="0.7"/><rect x="-9" y="0" width="18" height="2.4" rx="1.4" fill="#fffdf8" stroke="none" opacity="0.6"/>
 </g>
 
 <!-- 화분3: 포토스(탕비실 옆) -->
@@ -2701,8 +2718,8 @@
 </g>
 
 <!-- 쓰레기통 (빈 공간 2곳) -->
-<g stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"><path d="M 431.5 591 L 448.5 591 L 446.0 614 L 434.0 614 Z" fill="#e8e4da"/><path d="M 433.1 597 L 446.9 597 L 445.9 603 L 434.1 603 Z" fill="#d5cfc2" stroke="none" opacity="0.55"/><ellipse cx="440" cy="591" rx="8.5" ry="3" fill="#f3ece0"/><ellipse cx="440" cy="591" rx="6.1" ry="1.9" fill="#8a8578" stroke="none" opacity="0.5"/></g>
-<g stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"><path d="M 857.5 206 L 874.5 206 L 872.0 229 L 860.0 229 Z" fill="#e8e4da"/><path d="M 859.1 212 L 872.9 212 L 871.9 218 L 860.1 218 Z" fill="#d5cfc2" stroke="none" opacity="0.55"/><ellipse cx="866" cy="206" rx="8.5" ry="3" fill="#f3ece0"/><ellipse cx="866" cy="206" rx="6.1" ry="1.9" fill="#8a8578" stroke="none" opacity="0.5"/></g>
+<g stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"><path d="M 431.5 591 L 448.5 591 L 446.0 614 L 434.0 614 Z" fill="#e8e4da"/><path d="M 433.1 597 L 446.9 597 L 445.9 603 L 434.1 603 Z" fill="#d5cfc2" stroke="none" opacity="0.55"/><ellipse cx="440" cy="591" rx="8.5" ry="3" fill="url(#gCab)"/><ellipse cx="440" cy="591" rx="6.1" ry="1.9" fill="#8a8578" stroke="none" opacity="0.5"/></g>
+<g stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"><path d="M 857.5 206 L 874.5 206 L 872.0 229 L 860.0 229 Z" fill="#e8e4da"/><path d="M 859.1 212 L 872.9 212 L 871.9 218 L 860.1 218 Z" fill="#d5cfc2" stroke="none" opacity="0.55"/><ellipse cx="866" cy="206" rx="8.5" ry="3" fill="url(#gCab)"/><ellipse cx="866" cy="206" rx="6.1" ry="1.9" fill="#8a8578" stroke="none" opacity="0.5"/></g>
 
 <g id="dustLayer"></g>
 
@@ -2728,7 +2745,7 @@
 
 
 <!-- ===== 라운지 (실장실-스티커팀 사이, 위아래 20px 통로 확보) ===== -->
-<rect x="660" y="280" width="305" height="72" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="660" y="280" width="305" height="72" rx="12" fill="url(#floorTex)" stroke="none"/>
 <rect x="668" y="286" width="50" height="19" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
 <text x="693" y="299.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">라운지</text>
 <g stroke="#5c4a3a" stroke-width="1" transform="translate(65,4)">
@@ -2818,7 +2835,7 @@
 
 
 <!-- ===== 다목적실 (시계 아래 · 노트디자인팀 오른쪽 빈 공간) ===== -->
-<rect x="360" y="230" width="280" height="122" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="360" y="230" width="280" height="122" rx="12" fill="url(#floorTex)" stroke="none"/>
 <rect x="368" y="238" width="62" height="19" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
 <text x="399" y="251.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">다목적실</text>
 <g transform="translate(480,265)" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
@@ -2858,7 +2875,7 @@
 </g>
 
 <!-- ===== 아트코너 (다목적실 아래) ===== -->
-<rect x="360" y="372" width="110" height="88" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="360" y="372" width="110" height="88" rx="12" fill="url(#floorTex)" stroke="none"/>
 <rect x="366" y="377" width="62" height="19" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
 <text x="397" y="390.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">아트코너</text>
 <g stroke="#5c4a3a" stroke-width="1">
@@ -2894,7 +2911,7 @@
 
 <!-- 노트 디자인팀 우측: 서랍 + 화분 -->
 <g stroke="#5c4a3a" stroke-width="1">
-<rect x="292" y="292" width="30" height="34" rx="3" fill="#f3ece0"/>
+<rect x="292" y="292" width="30" height="34" rx="3" fill="url(#gCab)"/>
 <line x1="292" y1="303.3" x2="322" y2="303.3" stroke-width="0.8"/>
 <line x1="292" y1="314.6" x2="322" y2="314.6" stroke-width="0.8"/>
 <rect x="303.5" y="296.5" width="7" height="2" rx="1" fill="#5c4a3a" stroke="none"/>
@@ -2912,8 +2929,10 @@
 </g>
 
 
+<!-- 창에서 들어오는 빛: 창틀 아래로 퍼진다 -->
+<path id="winLight" d="M 291 108 L 399 108 L 470 340 L 220 340 Z" fill="url(#gWinLight)" stroke="none" pointer-events="none"/>
 <!-- ===== 응접 공간 (창문 아래) ===== -->
-<rect x="195" y="140" width="275" height="70" rx="12" fill="#f9f5ea" stroke="none"/>
+<rect x="195" y="140" width="275" height="70" rx="12" fill="url(#floorTex)" stroke="none"/>
 <rect x="201" y="145" width="68" height="19" rx="5" fill="#fffdf8" stroke="#5c4a3a" stroke-width="0.9"/>
 <text x="235" y="158.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">응접 공간</text>
 
@@ -3035,6 +3054,136 @@
 <rect x="574" y="62" width="60" height="44" rx="1.5" fill="none" stroke="#5c4a3a" stroke-width="0.8"/>
 </g>
 
+<!-- 바닥 그림자: 물체 밑에 깔아 공간감을 준다. 벽걸이·어항 속 물건은 제외 -->
+<g id="shadowLayer" fill="#6b5a44" opacity="0.23" stroke="none" filter="url(#softShade)">
+<ellipse cx="605.2" cy="107.6" rx="28.8" ry="3.6"/>
+<ellipse cx="711.2" cy="224.8" rx="30.0" ry="3.6"/>
+<ellipse cx="400.8" cy="181.2" rx="10.8" ry="2.6"/>
+<ellipse cx="311.6" cy="191.1" rx="17.7" ry="3.6"/>
+<ellipse cx="73.5" cy="176.8" rx="7.5" ry="1.8"/>
+<ellipse cx="593.2" cy="174.4" rx="6.8" ry="1.7"/>
+<ellipse cx="349.2" cy="205.1" rx="10.6" ry="2.5"/>
+<ellipse cx="566.2" cy="175.2" rx="6.0" ry="1.7"/>
+<ellipse cx="791.2" cy="174.6" rx="19.2" ry="3.6"/>
+<ellipse cx="946.2" cy="211.6" rx="16.3" ry="3.6"/>
+<ellipse cx="619.2" cy="175.4" rx="5.3" ry="1.7"/>
+<ellipse cx="368.7" cy="188.8" rx="5.3" ry="1.7"/>
+<ellipse cx="561.1" cy="193.5" rx="30.0" ry="3.6"/>
+<ellipse cx="578.9" cy="196.1" rx="30.0" ry="3.6"/>
+<ellipse cx="833.2" cy="231.6" rx="18.9" ry="3.6"/>
+<ellipse cx="69.7" cy="209.8" rx="7.2" ry="1.7"/>
+<ellipse cx="867.2" cy="229.9" rx="8.2" ry="2.0"/>
+<ellipse cx="414.2" cy="237.8" rx="12.9" ry="3.1"/>
+<ellipse cx="481.1" cy="272.9" rx="8.4" ry="2.0"/>
+<ellipse cx="614.7" cy="330.6" rx="14.9" ry="3.6"/>
+<ellipse cx="52.2" cy="313.8" rx="6.7" ry="1.7"/>
+<ellipse cx="897.2" cy="335.6" rx="15.4" ry="3.6"/>
+<ellipse cx="938.2" cy="337.6" rx="16.3" ry="3.6"/>
+<ellipse cx="441.2" cy="344.6" rx="30.0" ry="3.6"/>
+<ellipse cx="901.4" cy="349.4" rx="12.6" ry="3.0"/>
+<ellipse cx="308.2" cy="327.6" rx="14.4" ry="3.5"/>
+<ellipse cx="941.4" cy="349.4" rx="12.6" ry="3.0"/>
+<ellipse cx="816.2" cy="335.6" rx="30.0" ry="3.6"/>
+<ellipse cx="131.2" cy="322.5" rx="12.5" ry="3.0"/>
+<ellipse cx="231.2" cy="322.5" rx="12.5" ry="3.0"/>
+<ellipse cx="743.2" cy="329.8" rx="6.7" ry="1.7"/>
+<ellipse cx="855.2" cy="326.8" rx="7.7" ry="1.8"/>
+<ellipse cx="778.2" cy="325.1" rx="7.8" ry="1.9"/>
+<ellipse cx="131.2" cy="339.6" rx="22.1" ry="3.6"/>
+<ellipse cx="231.2" cy="339.6" rx="22.1" ry="3.6"/>
+<ellipse cx="213.2" cy="337.8" rx="2.9" ry="1.7"/>
+<ellipse cx="131.2" cy="354.6" rx="19.2" ry="3.6"/>
+<ellipse cx="231.2" cy="354.6" rx="19.2" ry="3.6"/>
+<ellipse cx="448.2" cy="453.8" rx="14.4" ry="3.5"/>
+<ellipse cx="308.2" cy="405.0" rx="8.7" ry="2.1"/>
+<ellipse cx="920.2" cy="418.8" rx="6.7" ry="1.7"/>
+<ellipse cx="844.7" cy="457.6" rx="15.8" ry="3.6"/>
+<ellipse cx="881.7" cy="457.6" rx="15.8" ry="3.6"/>
+<ellipse cx="845.2" cy="408.3" rx="12.5" ry="3.0"/>
+<ellipse cx="882.2" cy="408.3" rx="12.5" ry="3.0"/>
+<ellipse cx="-79.5" cy="437.8" rx="14.6" ry="3.5"/>
+<ellipse cx="131.2" cy="422.5" rx="12.5" ry="3.0"/>
+<ellipse cx="231.2" cy="422.5" rx="12.5" ry="3.0"/>
+<ellipse cx="384.2" cy="430.3" rx="12.5" ry="3.0"/>
+<ellipse cx="844.4" cy="426.8" rx="11.7" ry="2.8"/>
+<ellipse cx="881.4" cy="426.8" rx="11.7" ry="2.8"/>
+<ellipse cx="131.2" cy="439.6" rx="22.1" ry="3.6"/>
+<ellipse cx="231.2" cy="439.6" rx="22.1" ry="3.6"/>
+<ellipse cx="113.2" cy="437.8" rx="2.9" ry="1.7"/>
+<ellipse cx="766.2" cy="476.6" rx="14.4" ry="3.5"/>
+<ellipse cx="545.9" cy="466.9" rx="14.7" ry="3.5"/>
+<ellipse cx="399.2" cy="454.6" rx="25.0" ry="3.6"/>
+<ellipse cx="845.7" cy="447.4" rx="13.4" ry="3.2"/>
+<ellipse cx="882.7" cy="447.4" rx="13.4" ry="3.2"/>
+<ellipse cx="131.2" cy="454.6" rx="19.2" ry="3.6"/>
+<ellipse cx="231.2" cy="454.6" rx="19.2" ry="3.6"/>
+<ellipse cx="601.2" cy="482.5" rx="12.5" ry="3.0"/>
+<ellipse cx="701.2" cy="482.5" rx="12.5" ry="3.0"/>
+<ellipse cx="936.2" cy="531.0" rx="6.9" ry="1.7"/>
+<ellipse cx="839.2" cy="509.6" rx="15.4" ry="3.6"/>
+<ellipse cx="601.2" cy="499.6" rx="22.1" ry="3.6"/>
+<ellipse cx="701.2" cy="499.6" rx="22.1" ry="3.6"/>
+<ellipse cx="583.2" cy="497.8" rx="2.9" ry="1.7"/>
+<ellipse cx="936.2" cy="507.6" rx="14.4" ry="3.5"/>
+<ellipse cx="601.2" cy="514.6" rx="19.2" ry="3.6"/>
+<ellipse cx="701.2" cy="514.6" rx="19.2" ry="3.6"/>
+<ellipse cx="446.2" cy="576.6" rx="14.4" ry="3.5"/>
+<ellipse cx="516.0" cy="580.7" rx="7.9" ry="1.9"/>
+<ellipse cx="764.2" cy="604.6" rx="14.4" ry="3.5"/>
+<ellipse cx="75.7" cy="576.7" rx="13.2" ry="3.2"/>
+<ellipse cx="181.2" cy="577.5" rx="12.5" ry="3.0"/>
+<ellipse cx="281.2" cy="577.5" rx="12.5" ry="3.0"/>
+<ellipse cx="381.2" cy="577.5" rx="12.5" ry="3.0"/>
+<ellipse cx="840.7" cy="620.6" rx="15.8" ry="3.6"/>
+<ellipse cx="877.7" cy="620.6" rx="15.8" ry="3.6"/>
+<ellipse cx="914.7" cy="620.6" rx="15.8" ry="3.6"/>
+<ellipse cx="601.2" cy="582.5" rx="12.5" ry="3.0"/>
+<ellipse cx="701.2" cy="582.5" rx="12.5" ry="3.0"/>
+<ellipse cx="841.2" cy="571.3" rx="12.5" ry="3.0"/>
+<ellipse cx="878.2" cy="571.3" rx="12.5" ry="3.0"/>
+<ellipse cx="915.2" cy="571.3" rx="12.5" ry="3.0"/>
+<ellipse cx="181.2" cy="594.6" rx="22.1" ry="3.6"/>
+<ellipse cx="281.2" cy="594.6" rx="22.1" ry="3.6"/>
+<ellipse cx="381.2" cy="594.6" rx="22.1" ry="3.6"/>
+<ellipse cx="131.2" cy="619.6" rx="14.4" ry="3.5"/>
+<ellipse cx="601.2" cy="599.6" rx="22.1" ry="3.6"/>
+<ellipse cx="701.2" cy="599.6" rx="22.1" ry="3.6"/>
+<ellipse cx="163.2" cy="592.8" rx="2.9" ry="1.7"/>
+<ellipse cx="263.2" cy="592.8" rx="2.9" ry="1.7"/>
+<ellipse cx="841.5" cy="609.3" rx="12.2" ry="2.9"/>
+<ellipse cx="878.5" cy="609.3" rx="12.2" ry="2.9"/>
+<ellipse cx="915.5" cy="609.3" rx="12.2" ry="2.9"/>
+<ellipse cx="683.2" cy="597.8" rx="2.9" ry="1.7"/>
+<ellipse cx="441.2" cy="614.9" rx="8.2" ry="2.0"/>
+<ellipse cx="181.2" cy="609.6" rx="19.2" ry="3.6"/>
+<ellipse cx="281.2" cy="609.6" rx="19.2" ry="3.6"/>
+<ellipse cx="381.2" cy="609.6" rx="19.2" ry="3.6"/>
+<ellipse cx="601.2" cy="614.6" rx="19.2" ry="3.6"/>
+<ellipse cx="701.2" cy="614.6" rx="19.2" ry="3.6"/>
+<ellipse cx="37.5" cy="750.4" rx="12.7" ry="3.0"/>
+<ellipse cx="120.0" cy="750.4" rx="12.7" ry="3.0"/>
+<ellipse cx="815.7" cy="718.6" rx="26.4" ry="3.6"/>
+<ellipse cx="927.2" cy="743.6" rx="26.9" ry="3.6"/>
+<ellipse cx="421.2" cy="723.6" rx="14.4" ry="3.5"/>
+<ellipse cx="868.7" cy="683.4" rx="13.4" ry="3.2"/>
+<ellipse cx="754.7" cy="759.6" rx="21.6" ry="3.6"/>
+<ellipse cx="510.9" cy="745.0" rx="14.2" ry="3.4"/>
+<ellipse cx="926.3" cy="799.3" rx="30.0" ry="3.6"/>
+<ellipse cx="181.2" cy="742.5" rx="12.5" ry="3.0"/>
+<ellipse cx="281.2" cy="742.5" rx="12.5" ry="3.0"/>
+<ellipse cx="381.2" cy="742.5" rx="12.5" ry="3.0"/>
+<ellipse cx="181.2" cy="759.6" rx="22.1" ry="3.6"/>
+<ellipse cx="281.2" cy="759.6" rx="22.1" ry="3.6"/>
+<ellipse cx="381.2" cy="759.6" rx="22.1" ry="3.6"/>
+<ellipse cx="163.2" cy="757.8" rx="2.9" ry="1.7"/>
+<ellipse cx="263.2" cy="757.8" rx="2.9" ry="1.7"/>
+<ellipse cx="433.4" cy="781.9" rx="16.6" ry="3.6"/>
+<ellipse cx="138.2" cy="781.8" rx="6.7" ry="1.7"/>
+<ellipse cx="181.2" cy="774.6" rx="19.2" ry="3.6"/>
+<ellipse cx="281.2" cy="774.6" rx="19.2" ry="3.6"/>
+<ellipse cx="381.2" cy="774.6" rx="19.2" ry="3.6"/>
+<ellipse cx="79.2" cy="796.6" rx="30.0" ry="3.6"/>
+</g>
 <g id="charLayer"></g>
 <g id="deskLayer"></g>
 <g id="wanderLayer"></g>
@@ -3544,31 +3693,73 @@
 
   // ---- 책상+모니터+키보드+명패 (항상 표시되는 가구, 캐릭터와 톤을 맞춰 각진 블록형으로) ----
   var DESK_DECOR_COLORS = ['#e8935a','#8fbf6f','#7fa8c9','#d88fb0','#e3b23c'];
+  // 책상 위는 세 칸으로 나눠 쓴다. 칸끼리도, 모니터·키보드·마우스와도 겹치지 않는 자리다.
+  //   왼쪽  x -21.5~-14.5  세로로 긴 물건
+  //   가운데 x  -6  ~  3.5  키보드 아래 눕는 물건
+  //   오른쪽 x  16  ~  22   마우스 바깥 작은 물건
   function deskDecorMarkup(s){
-    var idx = seedHash(s.id+'-decoritem') % 4;
-    var col = DESK_DECOR_COLORS[seedHash(s.id+'-decorcol') % DESK_DECOR_COLORS.length];
+    var col  = DESK_DECOR_COLORS[seedHash(s.id+'-decorcol') % DESK_DECOR_COLORS.length];
+    var col2 = DESK_DECOR_COLORS[seedHash(s.id+'-decorcol2') % DESK_DECOR_COLORS.length];
+    var L = seedHash(s.id+'-decoritem') % 6;
+    var C = seedHash(s.id+'-deskmid')  % 4;
+    var R = seedHash(s.id+'-deskrt')   % 5;
     var svg = '<g stroke="#5c4a3a" stroke-width="0.6" stroke-linecap="round" stroke-linejoin="round">';
-    if(idx === 0){
-      // 머그컵
+
+    // ---- 왼쪽 칸 ----
+    if(L === 0){                      // 머그컵
       svg += '<rect x="-21" y="20" width="6" height="7" rx="1" fill="'+col+'"/>' +
              '<path d="M -15 21.5 q 3 0 3 2.2 q 0 2.2 -3 2.2" fill="none"/>';
-    } else if(idx === 1){
-      // 연필꽂이
+    } else if(L === 1){               // 연필꽂이
       svg += '<rect x="-21" y="16" width="6" height="11" rx="0.6" fill="#c9a876"/>' +
              '<line x1="-19.5" y1="16" x2="-18.5" y2="10" stroke="'+col+'" stroke-width="1.1"/>' +
              '<line x1="-18" y1="16" x2="-16.6" y2="9.5" stroke="#7fa8c9" stroke-width="1.1"/>' +
              '<line x1="-16.5" y1="16" x2="-15.5" y2="10.5" stroke="#e3b23c" stroke-width="1.1"/>';
-    } else if(idx === 2){
-      // 메모지 스택
+    } else if(L === 2){               // 메모지 스택
       svg += '<rect x="-21.5" y="22.5" width="7" height="5" rx="0.4" fill="#fdeccb"/>' +
              '<rect x="-21" y="21" width="7" height="5" rx="0.4" fill="#f0aec4"/>' +
              '<rect x="-20.5" y="19.5" width="7" height="5" rx="0.4" fill="'+col+'"/>';
-    } else {
-      // 미니 화분
+    } else if(L === 3){               // 미니 화분
       svg += '<rect x="-21" y="21" width="6" height="6" rx="0.8" fill="#c9a876"/>' +
              '<path d="M -18 21 C -19.5 17 -20.5 15 -19 12" fill="none" stroke="#8fbf6f" stroke-width="1.2"/>' +
              '<path d="M -18 21 C -17 16.5 -16 15 -17 11.5" fill="none" stroke="#6fa055" stroke-width="1.2"/>';
+    } else if(L === 4){               // 탁상 달력 (접힌 윗면 + 날짜 줄)
+      svg += '<path d="M -21.5 21 L -18 18 L -14.5 21 Z" fill="#efe6d4"/>' +
+             '<rect x="-21.5" y="21" width="7" height="6" rx="0.4" fill="#fffdf8"/>' +
+             '<rect x="-21.5" y="21" width="7" height="1.8" rx="0.4" fill="'+col+'" stroke="none"/>' +
+             '<line x1="-20.3" y1="24.4" x2="-15.7" y2="24.4" stroke-width="0.4" opacity="0.5"/>' +
+             '<line x1="-20.3" y1="25.8" x2="-16.8" y2="25.8" stroke-width="0.4" opacity="0.5"/>';
+    } else {                          // 책 두 권 (눕혀 쌓음)
+      svg += '<rect x="-21.5" y="23.4" width="7.5" height="3.6" rx="0.5" fill="'+col+'"/>' +
+             '<rect x="-21" y="20" width="7" height="3.6" rx="0.5" fill="'+col2+'"/>' +
+             '<line x1="-20.6" y1="24.4" x2="-14.6" y2="24.4" stroke-width="0.4" opacity="0.45"/>';
     }
+
+    // ---- 가운데 칸 (키보드 아래) ----
+    if(C === 1){                      // 서류 더미
+      svg += '<rect x="-5.4" y="20.2" width="8" height="5.8" rx="0.5" fill="#fdf6e6" transform="rotate(-4 -1.4 23.1)"/>' +
+             '<rect x="-6" y="19.2" width="8" height="5.8" rx="0.5" fill="#fffdf8" transform="rotate(3 -2 22.1)"/>';
+    } else if(C === 2){               // 노트 (스프링)
+      svg += '<rect x="-5" y="19.8" width="8" height="6" rx="0.6" fill="#fffdf8" transform="rotate(2 -1 22.8)"/>' +
+             '<line x1="-4.4" y1="20.4" x2="-4.4" y2="25.4" stroke="'+col2+'" stroke-width="1.1"/>';
+    } else if(C === 3){               // 클립보드
+      svg += '<rect x="-4.5" y="19" width="8" height="7.5" rx="0.5" fill="#e0cba6"/>' +
+             '<rect x="-3.6" y="20.4" width="6.2" height="5.4" rx="0.3" fill="#fffdf8"/>' +
+             '<rect x="-1.8" y="18.4" width="2.6" height="1.6" rx="0.5" fill="#b3ada0"/>';
+    }
+
+    // ---- 오른쪽 칸 (마우스 바깥) ----
+    if(R === 1){                      // 포스트잇 한 장
+      svg += '<rect x="17" y="4" width="4.4" height="4.4" rx="0.3" fill="#f6d97a" stroke="none" transform="rotate(-7 19.2 6.2)"/>';
+    } else if(R === 2){               // 머그컵 자국
+      svg += '<circle cx="19.5" cy="23" r="2.6" fill="none" stroke="#d9c9a8" stroke-width="0.7"/>';
+    } else if(R === 3){               // 텀블러
+      svg += '<rect x="17.2" y="3.5" width="4.6" height="8" rx="1.6" fill="'+col2+'"/>' +
+             '<rect x="17.2" y="3.5" width="4.6" height="1.8" rx="0.9" fill="#e8e2d4"/>';
+    } else if(R === 4){               // 포스트잇 두 장
+      svg += '<rect x="17" y="3.5" width="4.4" height="4.4" rx="0.3" fill="#bfe3b0" stroke="none" transform="rotate(6 19.2 5.7)"/>' +
+             '<rect x="17.6" y="10" width="3.8" height="3.8" rx="0.3" fill="#f3b5c6" stroke="none" transform="rotate(-9 19.5 11.9)"/>';
+    }
+
     svg += '</g>';
     return svg;
   }
@@ -3578,12 +3769,12 @@
     g.innerHTML =
       // 책상 상판 (미세 음영)
       '<g stroke="#5c4a3a" stroke-width="0.9" stroke-linecap="round" stroke-linejoin="round">' +
-        '<rect x="-23" y="2" width="46" height="26" rx="1.4" fill="#fffdf8"/>' +
+        '<rect x="-23" y="2" width="46" height="26" rx="1.4" fill="url(#gTop)"/>' +
         '<rect x="-23" y="2" width="46" height="4" rx="1.4" fill="#f2ead9" stroke="none"/>' +
       '</g>' +
       // 모니터 뒷모습: 캐릭터가 화면을 보고 사용자는 뒤판을 봄
       '<g stroke="#5c4a3a" stroke-width="0.85" stroke-linecap="round" stroke-linejoin="round">' +
-        '<rect x="-13" y="-9" width="26" height="14" rx="1.4" fill="#c9c4b8"/>' +
+        '<rect x="-13" y="-9" width="26" height="14" rx="1.4" fill="url(#gMon)"/>' +
         '<rect x="-9" y="-6" width="4" height="9" rx="1" fill="#b3ada0" stroke="none"/>' +
         '<rect x="-2" y="-6" width="4" height="9" rx="1" fill="#b3ada0" stroke="none"/>' +
         '<rect x="5" y="-6" width="4" height="9" rx="1" fill="#b3ada0" stroke="none"/>' +
