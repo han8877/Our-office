@@ -4639,6 +4639,7 @@
     <p>휴대폰에서 <b>뒤로가기</b>를 누르면 열려 있던 창부터 하나씩 닫힙니다. 아무 창도 열려 있지 않을 때 누르면 <b>퇴근하시겠어요?</b>를 물어보고, 퇴근하기를 눌러야 사무실에서 나갑니다. 나가더라도 오늘 일지·사물함·설정·연속 출근은 그대로 남아 있어요.</p>
     <p>배경음은 <b>시간대 자동</b>으로 바뀝니다. 오전 근무(09~12시)는 02번, 점심·오후 근무(12~18시)는 03번, 야근(18시 이후 또는 야근모드)은 04번, 주말·공휴일은 05번, 그 밖의 시각은 01번이에요. 목록에서 음원을 직접 고르면 자동이 꺼지고 그 곡으로 계속 틉니다. 자동 버튼을 다시 누르면 지금 시간대에 맞는 곡으로 돌아갑니다.</p>
     <p>메신저 답장은 사람이 보내는 것처럼 옵니다. 내 말을 읽는 시간과 답을 쓰는 시간만큼 기다린 뒤 오고, 그동안 <b>입력 중</b> 표시가 뜹니다. 답이 길면 두 통으로 나눠 보내고, 대화가 이어지도록 가끔 되묻기도 해요. 성격에 따라 말끝도 조금씩 다릅니다.</p>
+    <p>메신저에는 2층 사람들도 있습니다. <b>윤안내</b>·<b>강안내</b>는 친절하고 다정하게, <b>보안요원</b>은 씩씩한 군인 말투로 답해요. 접속 상태도 2층 근무표(안내 직원은 평일 9시~18시, 보안요원은 매일 8시~21시)를 그대로 따릅니다. 사무실 식구가 아니라서 전체채팅에는 끼지 않고 1:1 대화와 쪽지만 주고받아요.</p>
     <p>화면을 켜둔 채 15분째가 되면, 실장이 자리에 있을 때 노란 말풍선으로 "지켜보고 있는 눈이 느껴져.."라고 가끔 혼잣말을 합니다. 바로 사용자를 인식하고 있는 모습이예요. (점심시간이나 퇴근 후처럼 실장이 사무실에 없을 때는 나타나지 않습니다.)</p>
 
     <button class="btn" id="helpCloseBtn" style="margin-top:14px;">닫기</button>
@@ -8861,7 +8862,12 @@
       var pal = kindPalette[s.palKey] || kindPalette[s.kind] || kindPalette.cat;
       return { id:s.id, name:s.name, avatar:pal.base, isBoss:false };
     })
-  );
+  ).concat([
+    // 2층 사람들. 사무실 직원이 아니라서 전체채팅에는 끼지 않고 개별 대화만 한다
+    { id:'f2yun',   f2id:'yun',   name:'윤안내',   avatar:'#e8d9bd', isBoss:false, floor2:true, voice:'guide'   },
+    { id:'f2kang',  f2id:'kang',  name:'강안내',   avatar:'#cbb08c', isBoss:false, floor2:true, voice:'guide'   },
+    { id:'f2guard', f2id:'guard', name:'보안요원', avatar:'#918d86', isBoss:false, floor2:true, voice:'soldier' }
+  ]);
 
   function isBossOnline(){
     var h = new Date().getHours();
@@ -8883,10 +8889,19 @@
     chosti:     '오늘도 일찍 출근!',
     yoohongbo:  '불금이 기다려진다',
     seohongbo:  '강아지랑 산책 중',
-    minhongbo:  '뭐든 만들어드림'
+    minhongbo:  '뭐든 만들어드림',
+    f2yun:      '무엇을 도와드릴까요',
+    f2kang:     '오늘도 좋은 하루 되세요',
+    f2guard:    '이상 무'
   };
 
   function contactStatus(c){
+    // 2층 사람들은 3층 출퇴근 로직과 근무표가 달라 2층 모듈이 직접 답한다
+    if(c.floor2){
+      var fs = (typeof window.f2ContactStatus === 'function') ? window.f2ContactStatus(c.f2id) : null;
+      if(!fs) return { online:false, text:'' };
+      return { online:fs.online, text: fs.online ? (defaultStatusMsg[c.id] || '') : fs.text };
+    }
     if(c.isBoss){
       var on = isBossOnline();
       return { online:on, text: on ? (defaultStatusMsg.boss||'') : '외근중' };
@@ -9024,7 +9039,8 @@
 
     setTimeout(function(){
       var s2 = staffMap[target.id];
-      var reply = pickContextualReply(body, { isBoss: target.isBoss, personality: s2 ? s2.personality : null, key: 'note:'+target.id });
+      var reply = pickContextualReply(body, { isBoss: target.isBoss, voice: target.voice || null,
+                                              personality: target.voice || (s2 ? s2.personality : null), key: 'note:'+target.id });
       pushNote(NOTES_INBOX_KEY, { id:'n'+(Date.now()+1), from:target.name, body:reply, ts:Date.now(), read:false });
       updateMsgBadge();
       toast(target.name+'에게서 쪽지가 도착했습니다');
@@ -9200,7 +9216,15 @@
     dmHeader.className = 'chatListSectionHeader';
     dmHeader.textContent = '개별채팅';
     wrap.appendChild(dmHeader);
-    messengerContacts.forEach(function(c){
+    messengerContacts.filter(function(c){ return !c.floor2; }).forEach(function(c){
+      wrap.appendChild(buildChatListRow(c, chatKeyFor(c.id)));
+    });
+
+    var f2Header = document.createElement('div');
+    f2Header.className = 'chatListSectionHeader';
+    f2Header.textContent = '2층 안내·보안';
+    wrap.appendChild(f2Header);
+    messengerContacts.filter(function(c){ return c.floor2; }).forEach(function(c){
       wrap.appendChild(buildChatListRow(c, chatKeyFor(c.id)));
     });
   }
@@ -9375,6 +9399,29 @@
     var hit = bossQuickReplies.find(function(p){ return p.q === text; });
     return hit ? hit.a : null;
   }
+  // 2층 사람들도 정해진 다섯 질문에는 정해진 답을 한다
+  var voiceQuickReplies = {
+    guide: [
+      { q:'안녕하세요',        a:'안녕하세요! 끄적끄적문구 2층 안내데스크입니다 :)' },
+      { q:'3층은 어떻게 가요?', a:'엘리베이터 타고 3층 누르시면 바로 사무실이에요~' },
+      { q:'화장실 어디예요?',   a:'복도 끝 오른쪽에 있어요. 제가 안내해드릴까요?' },
+      { q:'잠깐 쉴 데 있을까요?', a:'라운지 소파 편하게 쓰셔도 돼요. 어항 구경도 하고 가세요 :)' },
+      { q:'고맙습니다',        a:'별말씀을요~ 더 필요하신 거 있으면 언제든 불러주세요' }
+    ],
+    soldier: [
+      { q:'수고하십니다',      a:'충성! 별일 없이 근무 중입니다' },
+      { q:'오늘 별일 없죠?',    a:'이상 무! 아침부터 지금까지 특이사항 없습니다' },
+      { q:'몇 시까지 근무하세요?', a:'오전 여덟 시부터 밤 아홉 시까지. 주말도 예외 없습니다' },
+      { q:'무섭지 않으세요?',   a:'이 자리를 지키는 게 제 임무입니다. 걱정 마십시오' },
+      { q:'식사는 하셨어요?',   a:'교대하고 먹겠습니다. 끼니 거르지 마십시오' }
+    ]
+  };
+  function voiceScriptedAnswer(voice, text){
+    var set = voice && voiceQuickReplies[voice];
+    if(!set) return null;
+    var hit = set.find(function(p){ return p.q === text; });
+    return hit ? hit.a : null;
+  }
 
   function renderQuickReplies(){
     var wrap = byId('chatQuickReplies');
@@ -9382,9 +9429,10 @@
     var isOneOnOne = currentChatTarget && !currentChatTarget.isRoom;
     if(!isOneOnOne) return;
     var isBossChat = !!currentChatTarget.isBoss;
+    var voiceSet = currentChatTarget.voice && voiceQuickReplies[currentChatTarget.voice];
     var presets = isBossChat
       ? bossQuickReplies.map(function(p){ return p.q; })
-      : quickReplyPresets;
+      : (voiceSet ? voiceSet.map(function(p){ return p.q; }) : quickReplyPresets);
     presets.forEach(function(text){
       var chip = document.createElement('button');
       chip.className = 'quickReplyChip';
@@ -9483,46 +9531,74 @@
   var replyCategories = [
     { mood:'greeting', kind:'social', test: /안녕|하이|굿모닝|출근했|오셨|(^|\s)왔어/,
       staff: ['어서오세요~', '오셨네요!', '안녕하세요 :)', '좋은 아침이에요~'],
-      boss:  ['어서와요.', '오늘도 좋은 하루예요.', '반갑습니다.'] },
+      boss:  ['어서와요.', '오늘도 좋은 하루예요.', '반갑습니다.'],
+      guide: ['어서 오세요!', '안녕하세요, 반갑습니다 :)', '오셨어요~ 오늘도 좋은 하루 되세요', '네 안녕하세요! 편히 계세요'],
+      soldier:['충성! 안녕하십니까', '어서 오십시오', '반갑습니다!', '좋은 아침입니다'] },
     { mood:'farewell', kind:'social', test: /퇴근|안녕히|바이|수고하세요|들어가|가볼게/,
       staff: ['수고하셨어요!', '내일 봬요~', '조심히 들어가세요', '오늘도 고생했어요'],
-      boss:  ['수고 많았어요.', '내일 봅시다.', '조심히 들어가요.'] },
+      boss:  ['수고 많았어요.', '내일 봅시다.', '조심히 들어가요.'],
+      guide: ['조심히 들어가세요~', '오늘도 고생 많으셨어요', '안녕히 가세요 :)', '내일 또 뵐게요!'],
+      soldier:['살펴 가십시오', '수고하셨습니다!', '안전하게 들어가십시오', '내일 뵙겠습니다'] },
     { mood:'apology', kind:'social', test: /죄송|미안|사과|잘못했|실수했/,
       staff: ['괜찮아요~', '그럴 수도 있죠!', '아니에요, 신경 쓰지 마세요', '저도 자주 그래요 ㅎㅎ'],
-      boss:  ['괜찮습니다.', '그럴 수 있어요, 다음에 잘하면 돼요.'] },
+      boss:  ['괜찮습니다.', '그럴 수 있어요, 다음에 잘하면 돼요.'],
+      guide: ['괜찮아요, 전혀 신경 쓰지 마세요', '아니에요~ 그럴 수 있죠 :)', '마음 쓰지 않으셔도 돼요'],
+      soldier:['괜찮습니다', '그럴 수 있습니다', '신경 쓰지 마십시오'] },
     { mood:'praise', kind:'social', test: /고마워|감사|수고했|잘했|최고|대단|멋지|훌륭/,
       staff: ['별말씀을요 ㅎㅎ', '저도 감사해요!', '헤헤 감사합니다', '아니에요~ 다 같이 한 건데요'],
-      boss:  ['별말씀을요.', '늘 애써줘서 고마워요.'] },
+      boss:  ['별말씀을요.', '늘 애써줘서 고마워요.'],
+      guide: ['어머 감사합니다 :)', '그렇게 말씀해주시니 힘이 나요~', '별말씀을요, 제가 더 감사하죠'],
+      soldier:['감사합니다!', '당연한 일을 했을 뿐입니다', '과찬이십니다'] },
     { mood:'urging', kind:'social', test: /아직|언제까지|빨리|서둘|늦어|왜 안|아직도/,
       staff: ['아 지금 바로 볼게요!', '조금만 기다려주세요 ㅠㅠ', '거의 다 됐어요!', '앗 확인하겠습니다'],
-      boss:  ['확인해보고 알려줄게요.', '조금만 기다려봅시다.'] },
+      boss:  ['확인해보고 알려줄게요.', '조금만 기다려봅시다.'],
+      guide: ['아 지금 바로 확인해드릴게요!', '조금만 기다려주시겠어요? 금방 됩니다', '앗 죄송해요, 바로 알아볼게요'],
+      soldier:['즉시 확인하겠습니다!', '바로 조치하겠습니다', '잠시만 기다려 주십시오'] },
     { mood:'agree', kind:'social', test: /맞아|맞네|그러게|동의|그렇죠|인정|ㅇㅈ/,
       staff: ['그쵸 그쵸', '역시 통하네요 ㅎㅎ', '저도 같은 생각이에요', '맞아요 맞아요'],
-      boss:  ['같은 생각입니다.', '동의합니다.'] },
+      boss:  ['같은 생각입니다.', '동의합니다.'],
+      guide: ['그러니까요 ㅎㅎ', '저도 같은 생각이에요~', '맞아요 맞아요!'],
+      soldier:['동감입니다', '옳은 말씀입니다', '그렇습니다!'] },
     // ---- 화제 ----
     { mood:'coffee', kind:'topic', test: /커피|탕비실|쉬자|휴식|간식|차 한잔|음료/,
       staff: ['좋아요, 잠깐 쉬어요!', '탕비실에서 만나요 ㅎㅎ', '커피 콜!', '저도 당 떨어졌어요'],
-      boss:  ['다들 잠깐 쉬었다 해요.', '적당히 쉬어가면서 해요.'] },
+      boss:  ['다들 잠깐 쉬었다 해요.', '적당히 쉬어가면서 해요.'],
+      guide: ['잠깐 쉬었다 하세요~', '차 한 잔 내어드릴까요?', '라운지 바에 앉아 계셔도 좋아요 :)'],
+      soldier:['잠시 쉬어 가십시오', '저는 근무 중이라 사양하겠습니다', '커피는 교대 후에 마시겠습니다'] },
     { mood:'work', kind:'topic', test: /프로젝트|업무|작업|디자인|마감|기획|보고서|시안|샘플|납품/,
       staff: ['그거 저도 확인해볼게요', '진행상황 공유할게요', '오늘 안에 마무리해볼게요', '체크해서 말씀드릴게요'],
-      boss:  ['잘 진행되고 있는지 챙겨볼게요.', '좋습니다, 계속 진행해봐요.'] },
+      boss:  ['잘 진행되고 있는지 챙겨볼게요.', '좋습니다, 계속 진행해봐요.'],
+      guide: ['제가 확인해서 안내해드릴게요', '담당자분께 연결해드릴까요?', '잠시만요, 바로 알아볼게요~'],
+      soldier:['제 소관은 아니지만 알아보겠습니다', '확인해서 알려드리겠습니다', '차질 없이 처리하겠습니다'] },
     { mood:'meal', kind:'topic', test: /밥|점심|먹었|배고파|저녁|메뉴|식사/,
       staff: ['저도 배고파요 ㅋㅋ', '점심 뭐 드실 거예요?', '아직이요! 뭐 맛있는 거 없나', '먹었어요~ 든든하네요'],
-      boss:  ['식사들 챙겨 드세요.', '점심 맛있게 드셨어요?'] },
+      boss:  ['식사들 챙겨 드세요.', '점심 맛있게 드셨어요?'],
+      guide: ['지하 구내식당 이용하시면 돼요~', '식사는 하셨어요? :)', '저도 슬슬 배가 고프네요 ㅎㅎ'],
+      soldier:['식사는 교대로 합니다', '든든하게 드셔야 합니다', '아직입니다. 근무 중입니다'] },
     { mood:'weather', kind:'topic', test: /날씨|비\s|비가|맑|흐려|흐린|눈이|더워|추워/,
       staff: ['오늘 날씨 어때요?', '창밖 보니 그러네요', '날씨 좋으면 기분도 좋죠'],
-      boss:  ['날씨가 그렇군요.'] },
+      boss:  ['날씨가 그렇군요.'],
+      guide: ['오늘 날씨가 그렇더라고요~', '우산은 챙기셨어요?', '이런 날은 로비가 참 좋아요 :)'],
+      soldier:['날씨와 상관없이 근무는 계속됩니다', '비가 와도 순찰은 돕니다', '바깥이 쌀쌀합니다. 조심하십시오'] },
     // ---- 감정 색 ----
     { mood:'negative', kind:'affect', flip:'positive', test: /싫|힘들|힘드|힘든|피곤|지쳐|지치|짜증|화나|우울|못하겠|어렵|어려워|바쁘|바빠|야근/,
       staff: ['에구 ㅠㅠ 고생 많으세요', '조금만 더 힘내요!', '저도 그래요.. 같이 힘내요', '잠깐 쉬었다 해요'],
       strong:['헉 많이 힘드신가봐요 ㅠㅠ', '괜찮으세요? 잠깐 쉬셔야 할 것 같은데요', '아이고.. 오늘 진짜 고생이 많으시네요'],
       boss:  ['고생 많아요, 무리하지 말아요.', '너무 무리하진 마세요.'],
-      strongBoss:['많이 힘든가 보네요. 오늘은 일찍 들어가요.', '무리하지 말고 좀 쉬어요.'] },
+      strongBoss:['많이 힘든가 보네요. 오늘은 일찍 들어가요.', '무리하지 말고 좀 쉬어요.'],
+      guide: ['어머 많이 힘드셨겠어요 ㅠㅠ', '잠깐 앉아서 쉬었다 가세요~', '제가 도울 일 있으면 말씀 주세요'],
+      strongGuide:['괜찮으세요? 많이 안 좋아 보이세요 ㅠㅠ', '무리하지 마시고 꼭 쉬셔야 해요', '어떡해요.. 오늘 정말 고생 많으셨어요'],
+      soldier:['힘내십시오!', '누구에게나 그런 날이 있습니다', '버티면 지나갑니다'],
+      strongSoldier:['많이 힘드신 모양입니다. 잠시 쉬십시오', '무리는 금물입니다', '제가 지키고 있으니 걱정 마십시오'] },
     { mood:'positive', kind:'affect', flip:'negative', test: /좋[아다네은]|재밌|재미있|신난|기분\s?좋|행복|만족|성공|해냈|괜찮|잘\s?나왔|잘\s?됐|잘됐|맘에 들|마음에 들/,
       staff: ['오 좋네요!', '저도 기분 좋아지는데요 ㅎㅎ', '완전 공감이요!', '좋습니다~'],
       strong:['우와 진짜요? 완전 좋네요!', '오오 축하드려요!!', '와 저까지 기분 좋아지는데요 ㅎㅎ'],
       boss:  ['좋은 소식이네요.', '다행입니다.'],
-      strongBoss:['정말 좋은 소식이네요. 축하합니다.', '아주 잘됐습니다.'] }
+      strongBoss:['정말 좋은 소식이네요. 축하합니다.', '아주 잘됐습니다.'],
+      guide: ['우와 잘됐네요! :)', '저까지 기분이 좋아지는데요~', '좋은 일 있으셨나 봐요 ㅎㅎ'],
+      strongGuide:['어머 정말요? 축하드려요!!', '와 너무 잘됐어요~', '듣기만 해도 기분이 좋네요 :)'],
+      soldier:['좋은 소식입니다!', '잘된 일입니다', '기분 좋은 날입니다'],
+      strongSoldier:['축하드립니다! 아주 잘된 일입니다', '훌륭합니다!', '오늘 같은 날이 또 있겠습니까'] }
   ];
   function categoryByMood(mood){
     for(var i=0; i<replyCategories.length; i++){
@@ -9567,17 +9643,29 @@
   // 카테고리가 하나도 안 걸렸을 때, 화행만으로 답한다 (등록할 키워드 0개)
   var actReplies = {
     request:  { staff:['넵 바로 해볼게요!', '알겠습니다, 처리할게요', '그거 제가 맡을게요', '넵 확인해서 알려드릴게요'],
-                boss: ['알겠어요, 챙겨볼게요.', '그렇게 해봅시다.'] },
+                boss: ['알겠어요, 챙겨볼게요.', '그렇게 해봅시다.'],
+                guide:['네, 바로 도와드릴게요!', '그럼요~ 금방 처리해드릴게요', '잠시만요, 확인해드릴게요 :)'],
+                soldier:['알겠습니다! 바로 조치하겠습니다', '맡겨 주십시오', '즉시 처리하겠습니다'] },
     question: { staff:['음 글쎄요 ㅎㅎ', '왜 궁금하세요?', '저도 잘 모르겠어요 ㅋㅋ', '좋은 질문이네요!'],
-                boss: ['글쎄요, 한번 살펴볼게요.', '좋은 질문이네요.'] },
+                boss: ['글쎄요, 한번 살펴볼게요.', '좋은 질문이네요.'],
+                guide:['제가 확인해드릴게요~', '음 그건 좀 알아봐야 할 것 같아요', '무엇이 궁금하세요? :)'],
+                soldier:['확인해보겠습니다', '아는 선에서 답변드리겠습니다', '잠시만 기다려 주십시오'] },
     promise:  { staff:['넵 믿고 있을게요~', '부탁드려요!', '좋아요, 기다릴게요'],
-                boss: ['그럼 부탁해요.', '잘 부탁합니다.'] },
+                boss: ['그럼 부탁해요.', '잘 부탁합니다.'],
+                guide:['네, 기다릴게요~ 감사합니다 :)', '믿고 있을게요!', '천천히 하셔도 괜찮아요'],
+                soldier:['알겠습니다. 기다리겠습니다', '믿겠습니다!', '부탁드리겠습니다'] },
     report:   { staff:['오 벌써요? 빠르네요', '확인했습니다!', '수고하셨어요~', '넵 잘 받았어요'],
-                boss: ['수고했어요.', '확인해볼게요.'] },
+                boss: ['수고했어요.', '확인해볼게요.'],
+                guide:['어머 벌써요? 감사합니다~', '네, 잘 받았어요 :)', '확인했어요! 고생하셨어요'],
+                soldier:['확인했습니다!', '수고하셨습니다', '보고 감사합니다'] },
     propose:  { staff:['좋아요 콜!', '그럴까요?', '저도 좋습니다~', '오 괜찮은데요?'],
-                boss: ['그럽시다.', '좋은 생각이네요.'] },
+                boss: ['그럽시다.', '좋은 생각이네요.'],
+                guide:['좋아요~ 그렇게 해요 :)', '네 저도 좋습니다!', '그럼 그렇게 할까요?'],
+                soldier:['좋습니다!', '그렇게 하겠습니다', '이의 없습니다'] },
     remark:   { staff:['그러게요 ㅎㅎ', '그렇네요', '저도 그렇게 느꼈어요', '음.. 그러네요'],
-                boss: ['그렇군요.', '그러게 말이에요.'] }
+                boss: ['그렇군요.', '그러게 말이에요.'],
+                guide:['그러게요 ㅎㅎ', '맞아요, 저도 그렇게 느꼈어요~', '그런 것 같아요 :)'],
+                soldier:['그렇습니다', '동감입니다', '맞는 말씀입니다'] }
   };
 
   // 성격별 말투 색: 무드 답변 뒤에 가끔 덧붙는다
@@ -9587,23 +9675,37 @@
     chatty:     ['근데 그거 아세요?', '아 맞다, 그래서 말인데요~', '다들 어떻게 생각해요?'],
     playful:    ['ㅋㅋㅋ', '오 이거 재밌는데요?', '헤헤'],
     quiet:      ['넵.', '알겠습니다.'],
-    intern:     ['제가 배워야 할 게 많네요!', '넵 열심히 하겠습니다!', '아 그렇군요..!']
+    intern:     ['제가 배워야 할 게 많네요!', '넵 열심히 하겠습니다!', '아 그렇군요..!'],
+    guide:      ['편하게 말씀 주세요 :)', '더 필요하신 거 있으실까요?', '오늘도 좋은 하루 되세요~'],
+    soldier:    ['이상입니다!', '자리 지키고 있겠습니다', '필요하시면 부르십시오']
   };
 
   // 시간대 반영: 점심 전후, 퇴근 무렵, 야근 등
   var timeOfDayLines = {
     lunch:    { staff:['슬슬 점심시간이네요~', '오늘 점심 뭐 드세요?', '배고파요.. 밥 먹으러 가요!', '점심 뭐 먹을지가 제일 어려워요 ㅋㅋ'],
-                boss:['식사들 챙겨 드세요.', '점심 맛있게 드세요.'] },
+                boss:['식사들 챙겨 드세요.', '점심 맛있게 드세요.'],
+                guide:['점심시간이네요~ 식사하셨어요?', '지하 구내식당 한번 가보세요 :)', '저도 곧 교대하고 다녀올게요'],
+                soldier:['식사 시간입니다. 든든히 드십시오', '저는 교대 후에 먹겠습니다', '끼니는 거르면 안 됩니다'] },
     leaving:  { staff:['이제 곧 퇴근이네요!', '오늘 하루도 끝나가요~', '퇴근 준비 슬슬 해야겠어요', '오늘 정시 퇴근 가능할까요 ㅎㅎ'],
-                boss:['오늘도 수고 많았어요.', '정리하고 들어가요.'] },
+                boss:['오늘도 수고 많았어요.', '정리하고 들어가요.'],
+                guide:['오늘 하루도 고생 많으셨어요~', '슬슬 퇴근 시간이네요 :)', '조심히 들어가세요!'],
+                soldier:['퇴근 시간입니다. 안전하게 가십시오', '저는 아홉 시까지 근무입니다', '오늘도 이상 없었습니다'] },
     overtime: { staff:['오늘 야근이네요.. ㅠㅠ', '조금만 더 하면 끝나요!', '야근 각인가요', '커피 한 잔 더 마셔야겠어요'],
-                boss:['늦게까지 고생이 많아요.', '무리하지 말고 정리해요.'] },
+                boss:['늦게까지 고생이 많아요.', '무리하지 말고 정리해요.'],
+                guide:['늦게까지 고생이 많으세요 ㅠㅠ', '따뜻한 차라도 한 잔 드릴까요?', '너무 무리하지 마세요~'],
+                soldier:['야간에도 제가 지키고 있습니다', '늦게까지 고생이 많으십니다', '나가실 때 불만 꺼주십시오'] },
     arrive:   { staff:['이제 막 출근했어요~', '좋은 아침이에요!', '오늘 하루도 시작이네요'],
-                boss:['좋은 아침입니다.'] },
+                boss:['좋은 아침입니다.'],
+                guide:['좋은 아침이에요! :)', '오늘도 잘 부탁드려요~', '어서 오세요, 오늘 하루도 힘내세요'],
+                soldier:['좋은 아침입니다!', '오늘도 이상 없이 시작합니다', '출근 확인했습니다'] },
     afternoon:{ staff:['오후엔 좀 나른하네요~', '커피 한 잔 하실래요?', '오늘따라 시간이 안 가요 ㅋㅋ'],
-                boss:['오후도 힘내봅시다.'] },
+                boss:['오후도 힘내봅시다.'],
+                guide:['오후엔 좀 나른하시죠~', '차 한 잔 하시면서 쉬어 가세요 :)', '오후도 힘내세요!'],
+                soldier:['오후 순찰 나가겠습니다', '오후도 이상 없습니다', '졸음은 근무의 적입니다'] },
     work:     { staff:['지금 작업 중이에요!', '집중해서 해볼게요', '오늘 안에 마무리해볼게요'],
-                boss:['잘 진행해봐요.'] }
+                boss:['잘 진행해봐요.'],
+                guide:['제가 안내해드릴게요~', '필요하신 거 있으면 말씀 주세요 :)', '천천히 둘러보셔도 돼요'],
+                soldier:['근무 중입니다', '맡은 자리는 지킵니다', '이상 없이 진행 중입니다'] }
   };
 
   // ===== 짧은 후속 발화: "응", "왜?", "ㅋㅋ" 처럼 그 자체로는 정보가 없는 말 =====
@@ -9625,14 +9727,27 @@
     urging:   ['거의 다 됐어요!', '금방 보내드릴게요'],
     agree:    ['그쵸 ㅎㅎ', '역시 통하네요']
   };
-  var followupGeneric = { staff:['ㅋㅋ 네', '그쵸~', '음 그러게요', '넵넵'], boss:['그렇군요.', '네.'] };
+  var followupGeneric = { staff:['ㅋㅋ 네', '그쵸~', '음 그러게요', '넵넵'], boss:['그렇군요.', '네.'],
+    guide:['네~ ㅎㅎ', '그러게요 :)', '네 말씀하세요~', '그럼요~'],
+    soldier:['그렇습니다', '네!', '말씀하십시오', '알겠습니다'] };
+  // 두 말투가 마지막까지 아무것도 못 골랐을 때 쓰는 기본 답
+  var voiceReplyLines = {
+    guide:  ['네, 알겠습니다 :)', '그럼요~', '편하게 말씀 주세요', '네네 확인했어요~', '언제든 도와드릴게요'],
+    soldier:['알겠습니다!', '확인했습니다', '이상 없습니다', '문제없습니다', '맡겨 주십시오']
+  };
 
   // ===== 명사 되받기: 아무 카테고리에도 안 걸렸을 때 상대 문장의 낱말을 받아친다 =====
   // 등록할 키워드가 0개인데도 알아들은 것처럼 들린다
   var ECHO_STOPWORDS = ['그리고','하지만','그래서','그런데','근데','저기','혹시','약간','조금','제가','우리','저희','오늘','내일','어제','지금','아까','이거','그거','저거','뭔가','정말','진짜','너무','완전'];
   var ECHO_PARTICLES = ['이랑','에서','으로','부터','까지','한테','에게','보다','에','은','는','이','가','을','를','로','도','만','과','와','랑','의','께'];
+  // 명사만 되받아야 하므로 서술어 어미로 끝나는 낱말은 거른다
+  var VERB_TAIL = /(습니다|십니다|합니다|입니다|니다|세요|어요|아요|해요|네요|이요|예요|에요|더라|는데|겠다|드려요|드립니다|했다|한다|있다|없다|같다)$/;
   var echoTemplates = ['%s 말씀이시죠?', '아 %s이요? 저도 궁금했어요', '%s 얘기 나오니까 생각났는데요~', '%s 쪽은 제가 한번 볼게요'];
-  function nounEcho(text){
+  var echoTemplatesByVoice = {
+    guide:  ['%s 말씀이시죠? 확인해드릴게요', '아 %s이요? 잠시만요~', '%s 쪽은 제가 알아볼게요 :)'],
+    soldier:['%s 말입니까? 확인하겠습니다', '%s 건은 제가 알아보겠습니다', '%s 말씀이십니까?']
+  };
+  function nounEcho(text, voice){
     var tokens = text.trim().split(/\s+/).filter(function(t){ return /^[가-힣]+$/.test(t); });
     var best = null;
     tokens.forEach(function(t){
@@ -9643,10 +9758,12 @@
       }
       if(w.length < 2 || w.length > 5) return;
       if(ECHO_STOPWORDS.indexOf(w) !== -1) return;
+      if(VERB_TAIL.test(w)) return;   // '많으십니다' 같은 서술어를 명사로 잘못 되받지 않게
       if(!best || w.length > best.length) best = w;
     });
     if(!best) return null;
-    var tpl = echoTemplates[Math.floor(Math.random()*echoTemplates.length)];
+    var tplPool = (voice && echoTemplatesByVoice[voice]) || echoTemplates;
+    var tpl = tplPool[Math.floor(Math.random()*tplPool.length)];
     return tpl.replace('%s', best);
   }
 
@@ -9680,6 +9797,8 @@
   function pickContextualReply(text, opts){
     opts = opts || {};
     var isBoss = !!opts.isBoss;
+    var voice = opts.voice || null;   // 'guide'(안내) | 'soldier'(보안) — 있으면 그 말투 풀을 먼저 쓴다
+    var byVoice = function(obj, base){ return (voice && obj && obj[voice] && obj[voice].length) ? obj[voice] : base; };
     var key = opts.key || null;
     var pick = function(arr){ return arr[Math.floor(Math.random()*arr.length)]; };
     // 최근 3개에 없는 후보를 우선 고르고, 전부 겹치면 그냥 아무거나
@@ -9710,7 +9829,8 @@
     // 0) "응", "왜?", "ㅋㅋ" 같은 짧은 대꾸는 직전 화제를 이어서 답한다
     var ctx = key ? chatContext[key] : null;
     if(trimmed.length <= 6 && SHORT_FOLLOWUP.test(trimmed) && ctx && (Date.now() - ctx.ts) < CONTEXT_TTL){
-      var fpool = (!isBoss && ctx.mood && followupLines[ctx.mood])
+      var fpool = (voice && followupGeneric[voice])
+                  || (!isBoss && ctx.mood && followupLines[ctx.mood])
                   || (isBoss ? followupGeneric.boss : followupGeneric.staff);
       return finish(pickFresh(fpool), false, null, ctx.mood);
     }
@@ -9741,9 +9861,10 @@
 
     if(best && bestScore >= SCORE_THRESHOLD){
       // 감정이 강하게 실린 말에는 더 크게 반응한다
-      var pool = isBoss ? best.boss : best.staff;
+      var pool = isBoss ? best.boss : byVoice(best, best.staff);
       if(intense && best.kind === 'affect'){
-        var strongPool = isBoss ? best.strongBoss : best.strong;
+        var strongKey = voice === 'guide' ? 'strongGuide' : (voice === 'soldier' ? 'strongSoldier' : null);
+        var strongPool = isBoss ? best.strongBoss : ((strongKey && best[strongKey]) || (voice ? null : best.strong));
         if(strongPool && strongPool.length) pool = strongPool;
       }
       // 화제가 이겼는데 감정도 함께 읽혔다면 짧은 감탄사를 앞에 붙인다
@@ -9757,24 +9878,25 @@
 
     // 2) 키워드가 하나도 안 걸리면 화행만으로 답한다
     if(act && actReplies[act]){
-      var apool = isBoss ? actReplies[act].boss : actReplies[act].staff;
+      var apool = isBoss ? actReplies[act].boss : byVoice(actReplies[act], actReplies[act].staff);
       if(apool && apool.length) return finish(pickFresh(apool), false, null, ctx && ctx.mood);
     }
 
     // 3) 그래도 없으면 상대 문장의 낱말을 되받아 물어본다
     if(!isBoss && trimmed.length >= 5 && Math.random() < 0.5){
-      var echo = nounEcho(trimmed);
+      var echo = nounEcho(trimmed, voice);
       if(echo) return finish(echo, false, null, ctx && ctx.mood);
     }
 
     // 4) 시간대를 반영한 잡담으로 (점심·퇴근·야근 등)
     var tod = currentAmbientCategory();
     if(tod && timeOfDayLines[tod] && Math.random() < 0.55){
-      var tpool = isBoss ? timeOfDayLines[tod].boss : timeOfDayLines[tod].staff;
+      var tpool = isBoss ? timeOfDayLines[tod].boss : byVoice(timeOfDayLines[tod], timeOfDayLines[tod].staff);
       if(tpool && tpool.length) return finish(pickFresh(tpool), false, null, ctx && ctx.mood);
     }
 
-    return finish(pickFresh(isBoss ? bossReplyLines : replyPoolFor(opts.personality)), false, null, ctx && ctx.mood);
+    return finish(pickFresh(isBoss ? bossReplyLines
+                          : (voice ? voiceReplyLines[voice] : replyPoolFor(opts.personality))), false, null, ctx && ctx.mood);
   }
 
   // ===== 대화를 잇는 되묻기 =====
@@ -9794,6 +9916,10 @@
   var BOUNCE_BOSS = {
     generic: ['별일 없나요?', '진행은 잘 되고 있죠?', '어려운 건 없습니까?']
   };
+  var BOUNCE_VOICE = {
+    guide:  { generic:['더 필요하신 거 있으세요?', '다른 건 괜찮으세요?', '제가 뭘 더 도와드릴까요?'] },
+    soldier:{ generic:['더 필요한 것 있으십니까?', '특이사항 있으십니까?', '제가 도울 일 있습니까?'] }
+  };
   // 방마다 되묻기가 연달아 나오지 않게 기억한다
   var lastBounceAt = {};
   var BOUNCE_GAP = 3;                 // 되묻고 나면 최소 3턴은 쉰다
@@ -9803,12 +9929,12 @@
     loadChat(key).forEach(function(m){ if(m.mine && !m.system) n++; });
     return n;
   }
-  function pickBounce(key, mood, isBoss){
+  function pickBounce(key, mood, isBoss, voice){
     var turn = myTurnCount(key);
     if(turn < 2) return null;                                  // 인사 한 번 하고 바로 캐묻지 않게
     if((turn - (lastBounceAt[key] || -99)) < BOUNCE_GAP) return null;
     if(Math.random() >= (isBoss ? 0.18 : 0.42)) return null;   // 사장님은 잘 안 되묻는다
-    var table = isBoss ? BOUNCE_BOSS : BOUNCE_BACK;
+    var table = isBoss ? BOUNCE_BOSS : (voice && BOUNCE_VOICE[voice] ? BOUNCE_VOICE[voice] : BOUNCE_BACK);
     var pool = (mood && table[mood]) || table.generic;
     if(!pool || !pool.length) return null;
     lastBounceAt[key] = turn;
@@ -9825,7 +9951,10 @@
     quiet:      function(t){ return t.replace(/~+$/,'').replace(/\s*ㅋ+$/,'').replace(/\s*ㅎ+$/,''); },
     meticulous: function(t){ return (endsSoft(t) || /\.$/.test(t)) ? t : t + '.'; },
     intern:     function(t){ return endsSoft(t) ? t : t.replace(/\.$/,'') + '!'; },
-    calm:       function(t){ return t; }
+    calm:       function(t){ return t; },
+    // 안내 직원은 딱딱한 마침표를 덜어내고, 보안요원은 물결·웃음을 걷어낸다
+    guide:      function(t){ return /[?!~ㅋㅎ):]$/.test(t) ? t : t.replace(/\.$/, ''); },
+    soldier:    function(t){ return t.replace(/\s*:\)$/,'').replace(/~+$/,'').replace(/\s*ㅋ+$/,'').replace(/\s*ㅎ+$/,''); }
   };
   function applyTone(text, personality){
     var fn = personality && TONE_TWEAK[personality];
@@ -9851,7 +9980,7 @@
   }
 
   // 답장 한 통을 사람이 보낼 만한 통 묶음으로 만든다
-  function buildReplyParts(reply, key, personality, isBoss){
+  function buildReplyParts(reply, key, personality, isBoss, voice){
     var body = reply, tail = null;
     // 성격 말투("기록해두겠습니다." 등)는 붙여 쓰면 문장이 늘어져 보여 따로 보낸다
     if(lastFlavor && body.length > lastFlavor.length + 1
@@ -9863,7 +9992,7 @@
     parts = parts.map(function(t){ return applyTone(t, isBoss ? null : personality); });
     if(tail) parts.push(tail);
     var ctx = chatContext[key];
-    var bounce = pickBounce(key, ctx && ctx.mood, isBoss);
+    var bounce = pickBounce(key, ctx && ctx.mood, isBoss, voice);
     if(bounce && parts.length < 2) parts.push(applyTone(bounce, isBoss ? null : personality));
     // 세 통 넘게 몰아 보내면 도배처럼 보인다
     if(parts.length > 2) parts = parts.slice(0, 2);
@@ -9914,19 +10043,21 @@
     } else if(target){
       var staffObj = staffMap[target.id];
       if(staffObj) bumpTalk(staffObj.id);
-      // 사장님은 정해진 다섯 질문에 정해진 답을 한다
-      var scripted = target.isBoss && bossScriptedAnswer(text);
-      var reply1 = scripted || pickContextualReply(text, { isBoss: target.isBoss, personality: staffObj ? staffObj.personality : null, key: key });
+      // 사장님과 2층 사람들은 정해진 다섯 질문에 정해진 답을 한다
+      var voice1 = target.voice || null;
+      var scripted = (target.isBoss && bossScriptedAnswer(text)) || voiceScriptedAnswer(voice1, text);
+      var tone1 = voice1 || (staffObj ? staffObj.personality : null);
+      var reply1 = scripted || pickContextualReply(text, { isBoss: target.isBoss, voice: voice1, personality: tone1, key: key });
       // 정해진 답은 그대로 한 통으로 보낸다
       var parts1 = scripted ? [reply1]
-                 : buildReplyParts(reply1, key, staffObj ? staffObj.personality : null, !!target.isBoss);
+                 : buildReplyParts(reply1, key, tone1, !!target.isBoss, voice1);
       deliverReply({ key:key, name:target.name, avatar:target.avatar, readDelay:readWait, parts:parts1 });
     } else {
       // 전체채팅 답장은 실무진만 — 사장님은 실무 대화에 끼지 않음
-      var pool = messengerContacts.filter(function(c){ return !c.isBoss; });
+      var pool = messengerContacts.filter(function(c){ return !c.isBoss && !c.floor2; });
       // 이름이나 직책을 부르면 그 사람이, 아니면 기존처럼 랜덤으로 답한다
       var mentioned = findMentionedContact(text);
-      var replier = (mentioned && !mentioned.isBoss) ? mentioned : pool[Math.floor(Math.random()*pool.length)];
+      var replier = (mentioned && !mentioned.isBoss && !mentioned.floor2) ? mentioned : pool[Math.floor(Math.random()*pool.length)];
       var replierStaff = staffMap[replier.id];
       if(mentioned && !mentioned.isBoss && staffMap[mentioned.id]) bumpTalk(mentioned.id);
       var reply3 = pickContextualReply(text, { personality: replierStaff ? replierStaff.personality : null, key: CHAT_GROUP_KEY });
@@ -11439,6 +11570,16 @@
     });
     setF2Light(true);
     setInterval(applyF2Light, 30000);
+
+    // ---- 메신저에 알려줄 근무 상태 (2층 근무표는 이 안에만 있다) ----
+    window.f2ContactStatus = function(id){
+      if(f2Visible(id)) return { online:true, text:'' };
+      var now = new Date(), t = now.getHours()*60 + now.getMinutes();
+      if(id === 'guard') return { online:false, text: t < 480 ? '출근 전' : '퇴근' };
+      if(isNonWorkingDay(now)) return { online:false, text:'휴무' };
+      if(t >= 720 && t < 780) return { online:false, text:'점심시간' };
+      return { online:false, text: t < arriveMin(id) ? '출근 전' : '퇴근' };
+    };
   })();
 
   // ===== 엘리베이터: 층을 오간다 =====
