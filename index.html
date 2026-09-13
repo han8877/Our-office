@@ -39,7 +39,7 @@
   .btn:disabled{ opacity:.4; cursor:not-allowed; }
   input[type=text]{ font-size:12.5px; padding:8px 10px; border-radius:8px; border:1.3px solid #5c4a3a; flex:1; min-width:120px; height:34px; box-sizing:border-box; }
   #stage{ width:100%; max-width:1000px; overflow:hidden; border-radius:12px; background:#fffdf8; position:relative; }
-  #officeSvg{ display:block; width:100%; height:auto; }
+  #officeSvg, #floor2Svg{ display:block; width:100%; height:auto; }
   .office-char{ transition:opacity .9s ease; opacity:0; }
   .office-char.present{ opacity:1; }
   /* 입구 자동문: 두 짝이 좌우로 갈라지며 열린다 */
@@ -671,6 +671,16 @@
   .sideBtn:disabled{ opacity:.4; cursor:not-allowed; }
   .sideBtn svg{ flex:0 0 auto; }
   .sideSep{ width:44px; height:1px; background:#e6e0d2; margin:3px 0; flex:0 0 auto; }
+  .sideEmoji{ font-size:15px; line-height:1; height:13px; display:block; }
+  /* 엘리베이터 층 버튼 */
+  #elevGrid{ display:grid; grid-template-columns:repeat(9,1fr); gap:4px; }
+  .floorBtn{ height:40px; padding:0; border:1.2px solid #d8cdb6; border-radius:8px; background:#fffdf8;
+             color:#8a8a86; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+  .floorBtn.open{ border-color:#5c4a3a; color:#5c4a3a; }
+  .floorBtn.open:hover{ background:#f4ecdc; }
+  .floorBtn.here{ background:#5c4a3a; border-color:#5c4a3a; color:#fffdf8; }
+  #elevNow{ font-size:12px; color:#8a8a86; text-align:center; margin-top:2px; }
+  #elevMsg{ font-size:12.5px; color:#b0553f; text-align:center; min-height:18px; }
   /* 음원 조절은 세로바 맨 아래에 붙인다 */
   #sideBar #audioBar{ flex-direction:column; height:auto; width:62px; gap:5px;
                       padding:6px 3px 7px; border-radius:8px; }
@@ -749,7 +759,7 @@
     #stage{ overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
             overscroll-behavior-x:contain; scrollbar-width:none; -ms-overflow-style:none; }
     #stage::-webkit-scrollbar{ display:none; }
-    #officeSvg{ height:var(--officeH,56vh); width:auto; max-width:none; }
+    #officeSvg, #floor2Svg{ height:var(--officeH,56vh); width:auto; max-width:none; }
     /* 사무실이 화면을 꽉 채우니 세로 탭은 가로 알약으로 바꿔 구석에 둔다 */
     #logTab{ top:auto; bottom:12px; right:10px; transform:none; flex-direction:row;
              border-right:1.3px solid #5c4a3a; border-radius:999px; padding:8px 13px; gap:6px;
@@ -1787,6 +1797,11 @@
 <div id="appShell">
 
 <nav id="sideBar" aria-label="사무실 메뉴">
+  <button class="sideBtn" id="elevBtn" aria-label="엘리베이터">
+    <span class="sideEmoji" aria-hidden="true">🛗</span>
+    <span>엘베</span>
+  </button>
+  <i class="sideSep"></i>
   <button class="sideBtn" id="wanderBtn" aria-label="랜덤 이동">
     <svg width="14" height="12" viewBox="0 0 14 12"><path d="M1 9.5 h3 l2.5 -7 h3" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 2.5 h3 l2.5 7 h3" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 0.8 L13 2.5 L10.6 4.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M10.6 7.8 L13 9.5 L10.6 11.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span id="wanderLabel">랜덤 이동</span>
@@ -3162,6 +3177,418 @@
 <g id="floaters"></g>
 <g id="bubbleLayer"></g>
 </svg>
+
+<!-- ===== 2층: 안내데스크와 휴게 공간 (엘리베이터로 오간다) ===== -->
+<svg id="floor2Svg" viewBox="0 0 1000 850" xmlns="http://www.w3.org/2000/svg" role="img" style="display:none;">
+<title>2층 안내·휴게 공간</title>
+<desc>안내데스크에 안내 직원 두 명이 서 있고 호텔 로비 같은 휴게 공간이 있는 2층 화면</desc>
+<defs>
+  <!-- 대리석 카운터 -->
+  <linearGradient id="f2Marble" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fffdf9"/><stop offset="1" stop-color="#f1e9da"/>
+  </linearGradient>
+  <!-- 우드 패널 -->
+  <linearGradient id="f2Wood" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#d5ae83"/><stop offset="1" stop-color="#bb8f65"/>
+  </linearGradient>
+  <!-- 램프 갓: 위가 밝고 아래가 따뜻하게 깊어진다 -->
+  <linearGradient id="f2Shade" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f7e3b8"/><stop offset="1" stop-color="#d8b071"/>
+  </linearGradient>
+  <radialGradient id="f2Glow" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#ffe9b8" stop-opacity="0.55"/>
+    <stop offset="1" stop-color="#ffe9b8" stop-opacity="0"/>
+  </radialGradient>
+  <!-- 러그 결 -->
+  <pattern id="f2Rug" width="14" height="14" patternUnits="userSpaceOnUse">
+    <rect width="14" height="14" fill="#ece0cb" stroke="none"/>
+    <path d="M0 14 L14 0" stroke="#e3d4b9" stroke-width="0.7" fill="none"/>
+    <path d="M0 0 L14 14" stroke="#e3d4b9" stroke-width="0.7" fill="none"/>
+  </pattern>
+  <!-- 소파 천 -->
+  <linearGradient id="f2Sofa" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e2c9a4"/><stop offset="1" stop-color="#cbab80"/>
+  </linearGradient>
+</defs>
+
+<!-- 방 테두리 -->
+<rect x="20" y="20" width="960" height="800" rx="16" fill="none" stroke="#5c4a3a" stroke-width="1.6"/>
+
+<g stroke="#5c4a3a" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="none">
+
+<!-- ===== 엘리베이터 (좌측 상단 · 3층 입구 자동문과 같은 모양) ===== -->
+<rect x="56" y="44" width="47" height="18" rx="4" fill="#3f342a" stroke="#5c4a3a" stroke-width="0.9"/>
+<text x="79.5" y="57" font-size="10" font-weight="700" text-anchor="middle" fill="#f0c96a" stroke="none">▲ 2</text>
+<clipPath id="f2ElevClip"><rect x="52" y="72" width="55" height="100" rx="8"/></clipPath>
+<rect x="52" y="72" width="55" height="100" rx="8" stroke-width="1.3" fill="#d5c8b1"/>
+<g clip-path="url(#f2ElevClip)">
+  <rect x="53" y="73" width="26.5" height="98" fill="#e8dcc8" stroke="#5c4a3a" stroke-width="1"/>
+  <rect x="58" y="80" width="16.5" height="84" rx="3" fill="#dbe9ef" stroke="#5c4a3a" stroke-width="0.7" opacity="0.85"/>
+  <rect x="75" y="73" width="4.5" height="98" fill="#c9a179" stroke="none"/>
+  <rect x="79.5" y="73" width="26.5" height="98" fill="#e8dcc8" stroke="#5c4a3a" stroke-width="1"/>
+  <rect x="84.5" y="80" width="16.5" height="84" rx="3" fill="#dbe9ef" stroke="#5c4a3a" stroke-width="0.7" opacity="0.85"/>
+  <rect x="79.5" y="73" width="4.5" height="98" fill="#c9a179" stroke="none"/>
+</g>
+<rect x="52" y="72" width="55" height="100" rx="8" stroke-width="1.3" fill="none"/>
+<line x1="52" y1="72" x2="107" y2="72" stroke-width="0.9"/>
+<!-- 호출 버튼 -->
+<rect x="113" y="104" width="10" height="18" rx="3" fill="url(#gCab)" stroke-width="0.8"/>
+<circle cx="118" cy="109" r="1.7" fill="#d8b45c" stroke="none"/>
+<circle cx="118" cy="117" r="1.7" fill="#c9c2b4" stroke="none"/>
+<rect x="48" y="174" width="63" height="6" rx="2.5" fill="#c9a179" stroke-width="0.8"/>
+<text x="79.5" y="196" font-size="10" text-anchor="middle" fill="#5c4a3a" stroke="none">엘리베이터</text>
+
+<!-- ===== 안내데스크 ===== -->
+<rect x="150" y="46" width="500" height="200" rx="12" fill="url(#floorTex)" stroke="none"/>
+<rect x="158" y="54" width="78" height="19" rx="5" fill="#fffdf8" stroke-width="0.9"/>
+<text x="197" y="67.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">안내데스크</text>
+
+<!-- 뒤쪽 우드 루버 월 + 브랜드 사인 -->
+<rect x="176" y="80" width="440" height="34" rx="4" fill="url(#f2Wood)" stroke-width="1"/>
+<g stroke="#a97f57" stroke-width="0.7" opacity="0.55">
+<line x1="196" y1="84" x2="196" y2="110"/><line x1="216" y1="84" x2="216" y2="110"/>
+<line x1="236" y1="84" x2="236" y2="110"/><line x1="256" y1="84" x2="256" y2="110"/>
+<line x1="276" y1="84" x2="276" y2="110"/><line x1="296" y1="84" x2="296" y2="110"/>
+<line x1="500" y1="84" x2="500" y2="110"/><line x1="520" y1="84" x2="520" y2="110"/>
+<line x1="540" y1="84" x2="540" y2="110"/><line x1="560" y1="84" x2="560" y2="110"/>
+<line x1="580" y1="84" x2="580" y2="110"/><line x1="600" y1="84" x2="600" y2="110"/>
+</g>
+<rect x="316" y="84" width="164" height="26" rx="4" fill="#fffdf8" stroke-width="0.9"/>
+<text x="398" y="101.5" font-size="13" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none" letter-spacing="1">끄적끄적문구</text>
+</g>
+<!-- 안내 직원 두 명 (베이지 안내복장 · 브라운 스카프). 카운터보다 먼저 그려 하반신이 가려지게 한다 -->
+<g transform="translate(266,160)"><ellipse cx="0" cy="9" rx="13" ry="2.6" fill="#3a2a1f" opacity="0.13" stroke="none"/><g class="charBody" style="animation-delay:0s"><ellipse cx="-4.5" cy="6.5" rx="3.4" ry="3.8" fill="#3a2a1f" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><ellipse cx="4.5" cy="6.5" rx="3.4" ry="3.8" fill="#3a2a1f" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><ellipse cx="-5.4" cy="-47.5" rx="3.1" ry="8.6" fill="#f0e6da" transform="rotate(-12 -5.4 -47.5)" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><ellipse cx="5.4" cy="-47.5" rx="3.1" ry="8.6" fill="#f0e6da" transform="rotate(12 5.4 -47.5)" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><ellipse cx="-5.4" cy="-47.5" rx="1.4" ry="5.8" fill="#f6c9c2" transform="rotate(-12 -5.4 -47.5)" stroke="none"/><ellipse cx="5.4" cy="-47.5" rx="1.4" ry="5.8" fill="#f6c9c2" transform="rotate(12 5.4 -47.5)" stroke="none"/><path d="M -9.6 -16.4 C -13.4 -15 -13.8 -9 -12.6 -5.2 C -11.9 -2.8 -9.2 -3 -9 -5.6 Z" fill="#e8d9bd" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M 9.6 -16.4 C 13.4 -15 13.8 -9 12.6 -5.2 C 11.9 -2.8 9.2 -3 9 -5.6 Z" fill="#e8d9bd" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><circle cx="-11.5" cy="-4.2" r="2.4" fill="#fff9f2" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><circle cx="11.5" cy="-4.2" r="2.4" fill="#fff9f2" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="#e8d9bd" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M -1.8 -19.4 L -3.4 -7.6 L 0 -4.8 L 3.4 -7.6 L 1.8 -19.4 Z" fill="#fdfaf3" stroke="none"/><path d="M -1.2 -19.6 L -7.6 -15.4 L -3.4 -4.6 L -0.6 -9.4 Z" fill="#d6c29c" stroke="none"/><path d="M 1.2 -19.6 L 7.6 -15.4 L 3.4 -4.6 L 0.6 -9.4 Z" fill="#d6c29c" stroke="none"/><path d="M 2.2 -19.2 L 5.8 -10.4 L 2.6 -9.2 L 0.4 -18 Z" fill="#71462c" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M -6.8 -19.6 C -3.2 -16.2 3.2 -16.2 6.8 -19.6 C 6.2 -22.6 -6.2 -22.6 -6.8 -19.6 Z" fill="#8a5a3c" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><circle cx="0" cy="-31" r="12.6" fill="#f0e6da" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><ellipse cx="0" cy="-26.4" rx="7" ry="5.2" fill="#fff9f2" stroke="none"/><ellipse cx="-7.5" cy="-27" rx="2.3" ry="1.6" fill="#f4a99a" opacity="0.6" stroke="none"/><ellipse cx="7.5" cy="-27" rx="2.3" ry="1.6" fill="#f4a99a" opacity="0.6" stroke="none"/><g class="charEyes"><circle cx="-4.7" cy="-31.4" r="2.0" fill="#3a2a1f" stroke="none"/><circle cx="4.7" cy="-31.4" r="2.0" fill="#3a2a1f" stroke="none"/><circle cx="-4.0" cy="-32.2" r="0.7" fill="#fff" stroke="none"/><circle cx="5.4" cy="-32.2" r="0.7" fill="#fff" stroke="none"/></g><ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="#3a2a1f" stroke="none"/><path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="#3a2a1f" stroke-width="0.8" stroke-linecap="round"/><path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="#3a2a1f" stroke-width="0.8" stroke-linecap="round"/></g></g>
+<g transform="translate(406,160)"><ellipse cx="0" cy="9" rx="13" ry="2.6" fill="#3a2a1f" opacity="0.13" stroke="none"/><g class="charBody" style="animation-delay:-1.4s"><ellipse cx="-4.5" cy="6.5" rx="3.4" ry="3.8" fill="#3a2a1f" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><ellipse cx="4.5" cy="6.5" rx="3.4" ry="3.8" fill="#3a2a1f" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M -12.4 -37.6 L -10.6 -48.6 L -2.6 -42.2 Z" fill="#cbb08c" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M 12.4 -37.6 L 10.6 -48.6 L 2.6 -42.2 Z" fill="#cbb08c" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M -10.8 -39.4 L -9.8 -45.6 L -5.4 -42 Z" fill="#f0cfc7" stroke="none"/><path d="M 10.8 -39.4 L 9.8 -45.6 L 5.4 -42 Z" fill="#f0cfc7" stroke="none"/><path d="M -9.6 -16.4 C -13.4 -15 -13.8 -9 -12.6 -5.2 C -11.9 -2.8 -9.2 -3 -9 -5.6 Z" fill="#e8d9bd" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M 9.6 -16.4 C 13.4 -15 13.8 -9 12.6 -5.2 C 11.9 -2.8 9.2 -3 9 -5.6 Z" fill="#e8d9bd" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><circle cx="-11.5" cy="-4.2" r="2.4" fill="#eddcc2" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><circle cx="11.5" cy="-4.2" r="2.4" fill="#eddcc2" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="#e8d9bd" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M -1.8 -19.4 L -3.4 -7.6 L 0 -4.8 L 3.4 -7.6 L 1.8 -19.4 Z" fill="#fdfaf3" stroke="none"/><path d="M -1.2 -19.6 L -7.6 -15.4 L -3.4 -4.6 L -0.6 -9.4 Z" fill="#d6c29c" stroke="none"/><path d="M 1.2 -19.6 L 7.6 -15.4 L 3.4 -4.6 L 0.6 -9.4 Z" fill="#d6c29c" stroke="none"/><path d="M 2.2 -19.2 L 5.8 -10.4 L 2.6 -9.2 L 0.4 -18 Z" fill="#71462c" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M -6.8 -19.6 C -3.2 -16.2 3.2 -16.2 6.8 -19.6 C 6.2 -22.6 -6.2 -22.6 -6.8 -19.6 Z" fill="#8a5a3c" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><circle cx="0" cy="-31" r="12.6" fill="#cbb08c" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><ellipse cx="0" cy="-26.4" rx="7" ry="5.2" fill="#eddcc2" stroke="none"/><ellipse cx="-7.5" cy="-27" rx="2.3" ry="1.6" fill="#f4a99a" opacity="0.6" stroke="none"/><ellipse cx="7.5" cy="-27" rx="2.3" ry="1.6" fill="#f4a99a" opacity="0.6" stroke="none"/><g class="charEyes"><circle cx="-4.7" cy="-31.4" r="2.0" fill="#3a2a1f" stroke="none"/><circle cx="4.7" cy="-31.4" r="2.0" fill="#3a2a1f" stroke="none"/><circle cx="-4.0" cy="-32.2" r="0.7" fill="#fff" stroke="none"/><circle cx="5.4" cy="-32.2" r="0.7" fill="#fff" stroke="none"/></g><ellipse cx="0" cy="-26.5" rx="1.1" ry="0.8" fill="#3a2a1f" stroke="none"/><path d="M 0 -25.8 C 0 -24.8 -1.4 -24.2 -2.2 -24.7" fill="none" stroke="#3a2a1f" stroke-width="0.8" stroke-linecap="round"/><path d="M 0 -25.8 C 0 -24.8 1.4 -24.2 2.2 -24.7" fill="none" stroke="#3a2a1f" stroke-width="0.8" stroke-linecap="round"/></g></g>
+
+<g stroke="#5c4a3a" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="none">
+<!-- 안내 카운터: 상판(대리석) + 앞면 + 걸레받이 -->
+<ellipse cx="396" cy="212.4" rx="202" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<rect x="176" y="148" width="440" height="28" rx="3" fill="url(#f2Marble)" stroke-width="1.1"/>
+<rect x="176" y="148" width="440" height="5" rx="2.5" fill="#fffdf9" stroke="none"/>
+<g stroke="#e2d7c2" stroke-width="0.7" fill="none" opacity="0.8">
+  <path d="M 210 172 C 232 166 246 174 268 168"/>
+  <path d="M 330 174 C 352 167 368 173 392 167"/>
+  <path d="M 470 173 C 492 166 508 172 534 166"/>
+</g>
+<rect x="176" y="176" width="440" height="28" rx="3" fill="url(#gCab)" stroke-width="1.1"/>
+<g stroke="#ded2b8" stroke-width="0.7" fill="none">
+  <line x1="336" y1="179" x2="336" y2="201"/><line x1="456" y1="179" x2="456" y2="201"/><line x1="556" y1="179" x2="556" y2="201"/>
+</g>
+<rect x="176" y="204" width="440" height="5" rx="2" fill="#c9a179" stroke-width="0.8"/>
+
+<!-- 모니터 2대 (뒷모습) -->
+<rect x="196" y="126" width="40" height="24" rx="2" fill="url(#gMon)" stroke-width="0.9"/>
+<rect x="202" y="131" width="6" height="14" rx="1" fill="#b3ada0" stroke="none"/>
+<rect x="211" y="131" width="6" height="14" rx="1" fill="#b3ada0" stroke="none"/>
+<rect x="220" y="131" width="6" height="14" rx="1" fill="#b3ada0" stroke="none"/>
+<circle cx="231" cy="131.8" r="1.1" fill="#8a8578" stroke="none"/>
+<rect x="212" y="150" width="8" height="10" fill="#a39d8f" stroke-width="0.7"/>
+<rect x="205" y="159" width="22" height="3.6" rx="1.8" fill="#a39d8f" stroke-width="0.7"/>
+
+<rect x="436" y="126" width="40" height="24" rx="2" fill="url(#gMon)" stroke-width="0.9"/>
+<rect x="442" y="131" width="6" height="14" rx="1" fill="#b3ada0" stroke="none"/>
+<rect x="451" y="131" width="6" height="14" rx="1" fill="#b3ada0" stroke="none"/>
+<rect x="460" y="131" width="6" height="14" rx="1" fill="#b3ada0" stroke="none"/>
+<circle cx="471" cy="131.8" r="1.1" fill="#8a8578" stroke="none"/>
+<rect x="452" y="150" width="8" height="10" fill="#a39d8f" stroke-width="0.7"/>
+<rect x="445" y="159" width="22" height="3.6" rx="1.8" fill="#a39d8f" stroke-width="0.7"/>
+
+<!-- 전화기 -->
+<rect x="296" y="155" width="36" height="18" rx="2.5" fill="#efe8da" stroke-width="0.9"/>
+<g fill="#bdb5a4" stroke="none">
+  <rect x="313" y="159" width="3" height="2.4" rx="0.7"/><rect x="317.5" y="159" width="3" height="2.4" rx="0.7"/><rect x="322" y="159" width="3" height="2.4" rx="0.7"/>
+  <rect x="313" y="163" width="3" height="2.4" rx="0.7"/><rect x="317.5" y="163" width="3" height="2.4" rx="0.7"/><rect x="322" y="163" width="3" height="2.4" rx="0.7"/>
+  <rect x="313" y="167" width="3" height="2.4" rx="0.7"/><rect x="317.5" y="167" width="3" height="2.4" rx="0.7"/><rect x="322" y="167" width="3" height="2.4" rx="0.7"/>
+</g>
+<rect x="294" y="152" width="34" height="7" rx="3.5" fill="#cfc7b6" stroke-width="0.9"/>
+<rect x="294" y="151" width="8" height="9" rx="2.6" fill="#c2b9a6" stroke-width="0.9"/>
+<rect x="320" y="151" width="8" height="9" rx="2.6" fill="#c2b9a6" stroke-width="0.9"/>
+<path d="M 332 160 C 337 162 337 168 332 170" fill="none" stroke="#b8af9c" stroke-width="0.8"/>
+<!-- 메모장 + 연필 -->
+<rect x="346" y="156" width="30" height="16" rx="1.5" fill="#fffdf8" stroke-width="0.9"/>
+<g stroke="#ddd5c2" stroke-width="0.7" fill="none">
+  <line x1="350" y1="161" x2="372" y2="161"/><line x1="350" y1="164.5" x2="372" y2="164.5"/><line x1="350" y1="168" x2="366" y2="168"/>
+</g>
+<rect x="346" y="156" width="30" height="3" rx="1.5" fill="#e8dcc8" stroke="none"/>
+<path d="M 380 171 L 390 158" stroke="#d9a441" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+<path d="M 389.4 158.8 L 391 156.6 L 391.4 159.4 Z" fill="#6b5a44" stroke="none"/>
+
+<!-- 화분 -->
+<g stroke="#5c4a3a" stroke-width="0.9">
+  <path d="M 512 148 C 508 136 510 124 516 118 C 518 128 518 140 514 148 Z" fill="#7fae68" stroke-width="0.6"/>
+  <path d="M 517 148 C 514 134 517 121 522 116 C 525 127 524 140 520 148 Z" fill="#96c47d" stroke-width="0.6"/>
+  <path d="M 522 148 C 522 136 527 125 533 121 C 533 132 530 142 526 148 Z" fill="#7fae68" stroke-width="0.6"/>
+  <path d="M 508 150 L 536 150 L 533 168 L 511 168 Z" fill="#cf9b6e"/>
+  <rect x="507" y="148" width="30" height="4.6" rx="1.6" fill="#e0b183" stroke-width="0.8"/>
+</g>
+
+<!-- 안내 팸플릿 스탠드 -->
+<g stroke="#5c4a3a" stroke-width="0.9">
+  <rect x="556" y="152" width="40" height="18" rx="2" fill="#e8dcc8"/>
+  <rect x="560" y="142" width="10" height="16" rx="1" fill="#fdf6e6"/>
+  <rect x="573" y="140" width="10" height="18" rx="1" fill="#f6e8cf"/>
+  <rect x="586" y="143" width="9" height="15" rx="1" fill="#fdf6e6"/>
+  <line x1="562" y1="147" x2="568" y2="147" stroke="#c9b291" stroke-width="0.6"/>
+  <line x1="575" y1="145" x2="581" y2="145" stroke="#c9b291" stroke-width="0.6"/>
+</g>
+
+<!-- 안내 직원 명패 (카운터 앞면) -->
+<rect x="246" y="180" width="40" height="14" rx="0" fill="#fffdf8" stroke-width="0.8" shape-rendering="crispEdges"/>
+<text x="266" y="190" font-size="8" text-anchor="middle" fill="#4a3a2c" font-weight="700" stroke="none">윤안내</text>
+<rect x="386" y="180" width="40" height="14" rx="0" fill="#fffdf8" stroke-width="0.8" shape-rendering="crispEdges"/>
+<text x="406" y="190" font-size="8" text-anchor="middle" fill="#4a3a2c" font-weight="700" stroke="none">강안내</text>
+</g>
+
+<g stroke="#5c4a3a" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="none">
+
+<!-- ===== 아트 월 (우측 상단) ===== -->
+<rect x="680" y="46" width="280" height="200" rx="12" fill="url(#floorTex)" stroke="none"/>
+<rect x="688" y="54" width="62" height="19" rx="5" fill="#fffdf8" stroke-width="0.9"/>
+<text x="719" y="67.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">아트 월</text>
+<!-- 대형 액자 -->
+<rect x="736" y="80" width="128" height="52" rx="3" fill="#b98d5f" stroke-width="1.2"/>
+<rect x="741" y="85" width="118" height="42" rx="2" fill="#f4ead6" stroke-width="0.8"/>
+<path d="M 741 115 C 762 100 776 112 794 101 C 812 90 830 112 859 98 L 859 127 L 741 127 Z" fill="#cfae7e" stroke="none"/>
+<path d="M 741 120 C 766 110 784 121 806 113 C 828 105 842 117 859 112 L 859 127 L 741 127 Z" fill="#a8865c" stroke="none"/>
+<circle cx="827" cy="94" r="6" fill="#e8c477" stroke="none"/>
+<!-- 콘솔 테이블 -->
+<ellipse cx="800" cy="221.2" rx="52" ry="3.2" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<rect x="754" y="194" width="7" height="24" rx="2" fill="#b8935f" stroke-width="0.9"/>
+<rect x="839" y="194" width="7" height="24" rx="2" fill="#b8935f" stroke-width="0.9"/>
+<rect x="746" y="172" width="108" height="24" rx="3" fill="url(#f2Wood)" stroke-width="1.1"/>
+<rect x="746" y="172" width="108" height="6" rx="3" fill="#e0bd93" stroke="none"/>
+<!-- 꽃병 + 꽃 -->
+<g stroke="#5c4a3a" stroke-width="0.8">
+  <path d="M 793 146 C 790 140 793 136 798 136" fill="none"/>
+  <path d="M 800 144 C 800 137 803 134 807 134" fill="none"/>
+  <path d="M 806 147 C 809 141 813 139 816 140" fill="none"/>
+  <circle cx="797.5" cy="135" r="4.2" fill="#f4f0e2"/><circle cx="806.5" cy="133" r="4.6" fill="#fbf7ea"/>
+  <circle cx="816" cy="139.5" r="3.8" fill="#f4f0e2"/>
+  <circle cx="797.5" cy="135" r="1.5" fill="#e3c06a" stroke="none"/><circle cx="806.5" cy="133" r="1.6" fill="#e3c06a" stroke="none"/>
+  <circle cx="816" cy="139.5" r="1.3" fill="#e3c06a" stroke="none"/>
+  <path d="M 790 152 L 816 152 L 812 178 L 794 178 Z" fill="#d8cdb8" stroke-width="1"/>
+  <rect x="789" y="149" width="28" height="4.4" rx="1.8" fill="#e6ddcb"/>
+</g>
+<!-- 키 큰 화분 두 개 -->
+<ellipse cx="712" cy="213" rx="17" ry="3" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<g stroke="#5c4a3a" stroke-width="0.7">
+  <path d="M 708 178 C 700 164 698 146 702 132 C 710 146 712 164 710 178 Z" fill="#7fae68"/>
+  <path d="M 713 178 C 710 160 714 140 720 130 C 723 148 721 166 716 178 Z" fill="#96c47d"/>
+  <path d="M 717 178 C 720 162 727 148 734 142 C 732 158 726 172 721 178 Z" fill="#7fae68"/>
+</g>
+<path d="M 697 178 L 727 178 L 723 210 L 701 210 Z" fill="#cf9b6e" stroke-width="1"/>
+<rect x="695" y="175" width="34" height="5" rx="2" fill="#e0b183" stroke-width="0.9"/>
+
+<ellipse cx="898" cy="213" rx="17" ry="3" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<g stroke="#5c4a3a" stroke-width="0.7">
+  <path d="M 894 178 C 886 164 884 146 888 132 C 896 146 898 164 896 178 Z" fill="#7fae68"/>
+  <path d="M 899 178 C 896 160 900 140 906 130 C 909 148 907 166 902 178 Z" fill="#96c47d"/>
+  <path d="M 903 178 C 906 162 913 148 920 142 C 918 158 912 172 907 178 Z" fill="#7fae68"/>
+</g>
+<path d="M 883 178 L 913 178 L 909 210 L 887 210 Z" fill="#cf9b6e" stroke-width="1"/>
+<rect x="881" y="175" width="34" height="5" rx="2" fill="#e0b183" stroke-width="0.9"/>
+</g>
+
+<g stroke="#5c4a3a" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="none">
+
+<!-- ===== 라운지 (호텔 로비 느낌의 휴게 공간) ===== -->
+<rect x="150" y="268" width="510" height="542" rx="12" fill="url(#floorTex)" stroke="none"/>
+<rect x="158" y="276" width="52" height="19" rx="5" fill="#fffdf8" stroke-width="0.9"/>
+<text x="184" y="289.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">라운지</text>
+
+<!-- 러그 -->
+<rect x="210" y="372" width="390" height="344" rx="8" fill="url(#f2Rug)" stroke="#d5c3a2" stroke-width="1.2"/>
+<rect x="222" y="384" width="366" height="320" rx="5" fill="none" stroke="#ddcdb0" stroke-width="0.9"/>
+
+<!-- 돔 플로어 램프 -->
+<ellipse cx="252.0" cy="414.0" rx="51.0" ry="37.4" fill="url(#f2Glow)" stroke="none"/><ellipse cx="252.0" cy="467.7" rx="12.0" ry="2.7" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="250.3" y="417.0" width="3.4" height="48.0" fill="#a98f6a" stroke-width="0.7"/><ellipse cx="252.0" cy="465.0" rx="12" ry="5" fill="#c0a377" stroke-width="0.9"/><path d="M 222.0 404.0 a 30.0 17.0 0 0 1 60.0 0 Z" fill="url(#f2Shade)" stroke-width="1.1"/><ellipse cx="252.0" cy="404.0" rx="30.0" ry="7.1" fill="#f2dcae" stroke-width="1"/><ellipse cx="252.0" cy="403.0" rx="18.0" ry="4.1" fill="#fdf1d2" stroke="none"/>
+<ellipse cx="538.0" cy="414.0" rx="51.0" ry="37.4" fill="url(#f2Glow)" stroke="none"/><ellipse cx="538.0" cy="467.7" rx="12.0" ry="2.7" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="536.3" y="417.0" width="3.4" height="48.0" fill="#a98f6a" stroke-width="0.7"/><ellipse cx="538.0" cy="465.0" rx="12" ry="5" fill="#c0a377" stroke-width="0.9"/><path d="M 508.0 404.0 a 30.0 17.0 0 0 1 60.0 0 Z" fill="url(#f2Shade)" stroke-width="1.1"/><ellipse cx="538.0" cy="404.0" rx="30.0" ry="7.1" fill="#f2dcae" stroke-width="1"/><ellipse cx="538.0" cy="403.0" rx="18.0" ry="4.1" fill="#fdf1d2" stroke="none"/>
+<ellipse cx="252.0" cy="645.0" rx="51.0" ry="37.4" fill="url(#f2Glow)" stroke="none"/><ellipse cx="252.0" cy="698.7" rx="12.0" ry="2.7" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="250.3" y="648.0" width="3.4" height="48.0" fill="#a98f6a" stroke-width="0.7"/><ellipse cx="252.0" cy="696.0" rx="12" ry="5" fill="#c0a377" stroke-width="0.9"/><path d="M 222.0 635.0 a 30.0 17.0 0 0 1 60.0 0 Z" fill="url(#f2Shade)" stroke-width="1.1"/><ellipse cx="252.0" cy="635.0" rx="30.0" ry="7.1" fill="#f2dcae" stroke-width="1"/><ellipse cx="252.0" cy="634.0" rx="18.0" ry="4.1" fill="#fdf1d2" stroke="none"/>
+
+<!-- 3인 소파 두 개 (마주보게) -->
+<ellipse cx="395.0" cy="453.4" rx="94.8" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="292.0" y="398.0" width="14" height="48.0" rx="6" fill="#c6a276" stroke-width="1"/><rect x="484.0" y="398.0" width="14" height="48.0" rx="6" fill="#c6a276" stroke-width="1"/><rect x="300.0" y="392.0" width="190.0" height="58.0" rx="10" fill="url(#f2Sofa)" stroke-width="1.1"/><rect x="300.0" y="392.0" width="190.0" height="14" rx="7" fill="#ecd7b6" stroke-width="0.8"/><line x1="363.3" y1="408.0" x2="363.3" y2="446.0" stroke="#b8996e" stroke-width="0.8" opacity="0.6"/><line x1="426.7" y1="408.0" x2="426.7" y2="446.0" stroke="#b8996e" stroke-width="0.8" opacity="0.6"/><rect x="322.0" y="412.0" width="26" height="24" rx="5" fill="#e9dcc0" stroke-width="0.9"/><rect x="442.0" y="412.0" width="26" height="24" rx="5" fill="#d8bd97" stroke-width="0.9"/>
+<ellipse cx="395.0" cy="701.4" rx="94.8" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="292.0" y="646.0" width="14" height="48.0" rx="6" fill="#c6a276" stroke-width="1"/><rect x="484.0" y="646.0" width="14" height="48.0" rx="6" fill="#c6a276" stroke-width="1"/><rect x="300.0" y="640.0" width="190.0" height="58.0" rx="10" fill="url(#f2Sofa)" stroke-width="1.1"/><rect x="300.0" y="640.0" width="190.0" height="14" rx="7" fill="#ecd7b6" stroke-width="0.8"/><line x1="363.3" y1="656.0" x2="363.3" y2="694.0" stroke="#b8996e" stroke-width="0.8" opacity="0.6"/><line x1="426.7" y1="656.0" x2="426.7" y2="694.0" stroke="#b8996e" stroke-width="0.8" opacity="0.6"/><rect x="322.0" y="660.0" width="26" height="24" rx="5" fill="#e9dcc0" stroke-width="0.9"/><rect x="442.0" y="660.0" width="26" height="24" rx="5" fill="#d8bd97" stroke-width="0.9"/>
+
+<!-- 1인 암체어 두 개 -->
+<ellipse cx="260.0" cy="581.4" rx="32.2" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="226.0" y="522.0" width="12" height="48.0" rx="5" fill="#c6a276" stroke-width="1"/><rect x="282.0" y="522.0" width="12" height="48.0" rx="5" fill="#c6a276" stroke-width="1"/><rect x="232.0" y="512.0" width="56.0" height="66.0" rx="12" fill="url(#f2Sofa)" stroke-width="1.1"/><rect x="232.0" y="512.0" width="56.0" height="13" rx="6.5" fill="#ecd7b6" stroke-width="0.8"/><rect x="242.0" y="532.0" width="36.0" height="22" rx="6" fill="#e9dcc0" stroke-width="0.9"/>
+<ellipse cx="530.0" cy="581.4" rx="32.2" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="496.0" y="522.0" width="12" height="48.0" rx="5" fill="#c6a276" stroke-width="1"/><rect x="552.0" y="522.0" width="12" height="48.0" rx="5" fill="#c6a276" stroke-width="1"/><rect x="502.0" y="512.0" width="56.0" height="66.0" rx="12" fill="url(#f2Sofa)" stroke-width="1.1"/><rect x="502.0" y="512.0" width="56.0" height="13" rx="6.5" fill="#ecd7b6" stroke-width="0.8"/><rect x="512.0" y="532.0" width="36.0" height="22" rx="6" fill="#e9dcc0" stroke-width="0.9"/>
+
+<!-- 낮은 원형 커피 테이블 -->
+<ellipse cx="395.0" cy="600.4" rx="73.6" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<ellipse cx="395" cy="545" rx="80" ry="52" fill="url(#f2Wood)" stroke-width="1.2"/>
+<ellipse cx="395" cy="539" rx="70" ry="43" fill="#dfb98c" stroke="none"/>
+<ellipse cx="380" cy="528" rx="30" ry="16" fill="#e8c89f" stroke="none" opacity="0.65"/>
+
+<!-- 테이블 위: 꽃병 · 책 두 권 · 트레이 -->
+<g stroke="#5c4a3a" stroke-width="0.8">
+<circle cx="392" cy="509" r="4.6" fill="#fbf7ea"/><circle cx="401" cy="512" r="4" fill="#f4f0e2"/>
+<circle cx="384" cy="513" r="3.6" fill="#fbf7ea"/>
+<circle cx="392" cy="509" r="1.5" fill="#e3c06a" stroke="none"/><circle cx="401" cy="512" r="1.3" fill="#e3c06a" stroke="none"/>
+<path d="M 385 521 L 401 521 L 399 540 L 387 540 Z" fill="#d8cdb8" stroke-width="0.9"/>
+<rect x="384" y="519" width="18" height="3.6" rx="1.5" fill="#e6ddcb"/>
+<rect x="336" y="541" width="34" height="9" rx="1.6" fill="#c0654f"/>
+<rect x="339" y="536" width="34" height="8" rx="1.6" fill="#e0e2d4"/>
+<ellipse cx="437" cy="548" rx="19" ry="11" fill="#e3d3b4"/>
+<ellipse cx="437" cy="546.5" rx="14" ry="7.6" fill="#f2e8d2" stroke="none"/>
+</g>
+
+<!-- 구석 화분 네 개 (구역 이름표와 안 겹치게 내려 놓는다) -->
+<ellipse cx="180.0" cy="423.4" rx="16.6" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><g stroke="#5c4a3a" stroke-width="0.7"><path d="M 176.0 381.6 C 168.0 365.6 166.0 347.6 170.0 333.6 C 178.0 347.6 180.0 365.6 178.0 381.6 Z" fill="#7fae68"/><path d="M 181.0 381.6 C 178.0 361.6 182.0 339.6 188.0 329.6 C 191.0 347.6 189.0 367.6 184.0 381.6 Z" fill="#96c47d"/><path d="M 185.0 381.6 C 188.0 363.6 195.0 349.6 202.0 343.6 C 200.0 359.6 194.0 373.6 189.0 381.6 Z" fill="#7fae68"/></g><path d="M 164.0 381.6 L 196.0 381.6 L 192.0 420.0 L 168.0 420.0 Z" fill="#cf9b6e" stroke-width="1"/><rect x="161.0" y="378.9" width="38" height="5.4" rx="2.2" fill="#e0b183" stroke-width="0.9"/>
+<ellipse cx="630.0" cy="383.4" rx="16.6" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><g stroke="#5c4a3a" stroke-width="0.7"><path d="M 626.0 341.6 C 618.0 325.6 616.0 307.6 620.0 293.6 C 628.0 307.6 630.0 325.6 628.0 341.6 Z" fill="#7fae68"/><path d="M 631.0 341.6 C 628.0 321.6 632.0 299.6 638.0 289.6 C 641.0 307.6 639.0 327.6 634.0 341.6 Z" fill="#96c47d"/><path d="M 635.0 341.6 C 638.0 323.6 645.0 309.6 652.0 303.6 C 650.0 319.6 644.0 333.6 639.0 341.6 Z" fill="#7fae68"/></g><path d="M 614.0 341.6 L 646.0 341.6 L 642.0 380.0 L 618.0 380.0 Z" fill="#cf9b6e" stroke-width="1"/><rect x="611.0" y="338.9" width="38" height="5.4" rx="2.2" fill="#e0b183" stroke-width="0.9"/>
+<ellipse cx="180.0" cy="809.4" rx="16.6" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><g stroke="#5c4a3a" stroke-width="0.7"><path d="M 176.0 767.6 C 168.0 751.6 166.0 733.6 170.0 719.6 C 178.0 733.6 180.0 751.6 178.0 767.6 Z" fill="#7fae68"/><path d="M 181.0 767.6 C 178.0 747.6 182.0 725.6 188.0 715.6 C 191.0 733.6 189.0 753.6 184.0 767.6 Z" fill="#96c47d"/><path d="M 185.0 767.6 C 188.0 749.6 195.0 735.6 202.0 729.6 C 200.0 745.6 194.0 759.6 189.0 767.6 Z" fill="#7fae68"/></g><path d="M 164.0 767.6 L 196.0 767.6 L 192.0 806.0 L 168.0 806.0 Z" fill="#cf9b6e" stroke-width="1"/><rect x="161.0" y="764.9" width="38" height="5.4" rx="2.2" fill="#e0b183" stroke-width="0.9"/>
+<ellipse cx="630.0" cy="809.4" rx="16.6" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><g stroke="#5c4a3a" stroke-width="0.7"><path d="M 626.0 767.6 C 618.0 751.6 616.0 733.6 620.0 719.6 C 628.0 733.6 630.0 751.6 628.0 767.6 Z" fill="#7fae68"/><path d="M 631.0 767.6 C 628.0 747.6 632.0 725.6 638.0 715.6 C 641.0 733.6 639.0 753.6 634.0 767.6 Z" fill="#96c47d"/><path d="M 635.0 767.6 C 638.0 749.6 645.0 735.6 652.0 729.6 C 650.0 745.6 644.0 759.6 639.0 767.6 Z" fill="#7fae68"/></g><path d="M 614.0 767.6 L 646.0 767.6 L 642.0 806.0 L 618.0 806.0 Z" fill="#cf9b6e" stroke-width="1"/><rect x="611.0" y="764.9" width="38" height="5.4" rx="2.2" fill="#e0b183" stroke-width="0.9"/>
+</g>
+
+<g stroke="#5c4a3a" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" fill="none">
+
+<!-- ===== 라운지 바 ===== -->
+<rect x="690" y="268" width="270" height="262" rx="12" fill="url(#floorTex)" stroke="none"/>
+<rect x="698" y="276" width="72" height="19" rx="5" fill="#fffdf8" stroke-width="0.9"/>
+<text x="734" y="289.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">라운지 바</text>
+
+<!-- 백바 선반 + 술병 -->
+<rect x="716" y="300" width="218" height="48" rx="3" fill="url(#f2Wood)" stroke-width="1.1"/>
+<rect x="720" y="322" width="210" height="2.6" rx="1.2" fill="#e0bd93" stroke="none"/>
+<rect x="720" y="343" width="210" height="2.6" rx="1.2" fill="#e0bd93" stroke="none"/>
+<rect x="726.0" y="307.0" width="7.0" height="15.0" rx="1.6" fill="#a9bcc9" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="728.5" y="304.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="742.0" y="307.0" width="7.0" height="15.0" rx="1.6" fill="#ddc9a8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="744.5" y="304.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="758.0" y="311.0" width="6.0" height="11.0" rx="1.6" fill="#ddc9a8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="760.0" y="308.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="773.0" y="307.0" width="7.0" height="15.0" rx="1.6" fill="#ddc9a8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="775.5" y="304.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="789.0" y="311.0" width="6.0" height="11.0" rx="1.6" fill="#a9bcc9" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="791.0" y="308.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="804.0" y="311.0" width="7.0" height="11.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="806.5" y="308.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="820.0" y="307.0" width="6.0" height="15.0" rx="1.6" fill="#a9bcc9" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="822.0" y="304.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="835.0" y="307.0" width="7.0" height="15.0" rx="1.6" fill="#b3a2b8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="837.5" y="304.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="851.0" y="307.0" width="6.0" height="15.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="853.0" y="304.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="866.0" y="311.0" width="6.0" height="11.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="868.0" y="308.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="881.0" y="311.0" width="6.0" height="11.0" rx="1.6" fill="#ddc9a8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="883.0" y="308.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="896.0" y="309.0" width="6.0" height="13.0" rx="1.6" fill="#c49483" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="898.0" y="306.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="911.0" y="307.0" width="7.0" height="15.0" rx="1.6" fill="#d3b881" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="913.5" y="304.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="726.0" y="327.0" width="6.0" height="16.0" rx="1.6" fill="#c49483" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="728.0" y="324.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="741.0" y="331.0" width="7.0" height="12.0" rx="1.6" fill="#b3a2b8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="743.5" y="328.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="757.0" y="329.0" width="6.0" height="14.0" rx="1.6" fill="#b3a2b8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="759.0" y="326.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="772.0" y="329.0" width="7.0" height="14.0" rx="1.6" fill="#ddc9a8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="774.5" y="326.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="788.0" y="327.0" width="6.0" height="16.0" rx="1.6" fill="#c49483" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="790.0" y="324.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="803.0" y="331.0" width="7.0" height="12.0" rx="1.6" fill="#ddc9a8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="805.5" y="328.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="819.0" y="331.0" width="7.0" height="12.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="821.5" y="328.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="835.0" y="329.0" width="6.0" height="14.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="837.0" y="326.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="850.0" y="329.0" width="7.0" height="14.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="852.5" y="326.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="866.0" y="327.0" width="6.0" height="16.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="868.0" y="324.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="881.0" y="331.0" width="6.0" height="12.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="883.0" y="328.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="896.0" y="329.0" width="7.0" height="14.0" rx="1.6" fill="#b3a2b8" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="898.5" y="326.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+<rect x="912.0" y="329.0" width="7.0" height="14.0" rx="1.6" fill="#b6c9bb" stroke="#5c4a3a" stroke-width="0.5"/>
+<rect x="914.5" y="326.0" width="2" height="3.4" rx="0.8" fill="#d9cdb6" stroke="none"/>
+
+<!-- 라운드 바 카운터 -->
+<ellipse cx="825.0" cy="450.2" rx="99.4" ry="4.2" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<ellipse cx="825" cy="406" rx="108" ry="40" fill="url(#f2Wood)" stroke-width="1.3"/>
+<ellipse cx="825" cy="401" rx="96" ry="31" fill="#e5c095" stroke-width="0.9"/>
+<ellipse cx="800" cy="392" rx="40" ry="13" fill="#eed2ad" stroke="none" opacity="0.6"/>
+
+<!-- 바 위: 잔 두 개 · 병 하나 · 트레이 -->
+<g stroke="#5c4a3a" stroke-width="0.8">
+<path d="M 764 390 L 778 390 L 776 404 L 766 404 Z" fill="#eef3f2" opacity="0.9"/>
+<path d="M 784 392 L 796 392 L 794.5 404 L 785.5 404 Z" fill="#eef3f2" opacity="0.9"/>
+<rect x="862" y="384" width="12" height="20" rx="2.4" fill="#a8c4b0"/>
+<rect x="866" y="376" width="4" height="9" rx="1.4" fill="#8fae9c"/>
+<ellipse cx="826" cy="398" rx="17" ry="8.5" fill="#e3d3b4"/>
+<ellipse cx="826" cy="396.6" rx="12" ry="5.6" fill="#f2e8d2" stroke="none"/>
+</g>
+
+<!-- 바 스툴 네 개 -->
+<ellipse cx="741.0" cy="497.4" rx="14.7" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<rect x="739.5" y="482" width="3" height="12" fill="#a98f6a" stroke-width="0.7"/>
+<ellipse cx="741.0" cy="494" rx="9" ry="3.6" fill="#c0a377" stroke-width="0.9"/>
+<ellipse cx="741.0" cy="478" rx="15" ry="12" fill="url(#f2Sofa)" stroke-width="1.1"/>
+<ellipse cx="741.0" cy="475.5" rx="10.5" ry="8" fill="#ecd7b6" stroke-width="0.7"/>
+<ellipse cx="741.0" cy="474.5" rx="5" ry="3.4" fill="#f3e6cd" stroke="none"/>
+<ellipse cx="797.0" cy="497.4" rx="14.7" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<rect x="795.5" y="482" width="3" height="12" fill="#a98f6a" stroke-width="0.7"/>
+<ellipse cx="797.0" cy="494" rx="9" ry="3.6" fill="#c0a377" stroke-width="0.9"/>
+<ellipse cx="797.0" cy="478" rx="15" ry="12" fill="url(#f2Sofa)" stroke-width="1.1"/>
+<ellipse cx="797.0" cy="475.5" rx="10.5" ry="8" fill="#ecd7b6" stroke-width="0.7"/>
+<ellipse cx="797.0" cy="474.5" rx="5" ry="3.4" fill="#f3e6cd" stroke="none"/>
+<ellipse cx="853.0" cy="497.4" rx="14.7" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<rect x="851.5" y="482" width="3" height="12" fill="#a98f6a" stroke-width="0.7"/>
+<ellipse cx="853.0" cy="494" rx="9" ry="3.6" fill="#c0a377" stroke-width="0.9"/>
+<ellipse cx="853.0" cy="478" rx="15" ry="12" fill="url(#f2Sofa)" stroke-width="1.1"/>
+<ellipse cx="853.0" cy="475.5" rx="10.5" ry="8" fill="#ecd7b6" stroke-width="0.7"/>
+<ellipse cx="853.0" cy="474.5" rx="5" ry="3.4" fill="#f3e6cd" stroke="none"/>
+<ellipse cx="909.0" cy="497.4" rx="14.7" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<rect x="907.5" y="482" width="3" height="12" fill="#a98f6a" stroke-width="0.7"/>
+<ellipse cx="909.0" cy="494" rx="9" ry="3.6" fill="#c0a377" stroke-width="0.9"/>
+<ellipse cx="909.0" cy="478" rx="15" ry="12" fill="url(#f2Sofa)" stroke-width="1.1"/>
+<ellipse cx="909.0" cy="475.5" rx="10.5" ry="8" fill="#ecd7b6" stroke-width="0.7"/>
+<ellipse cx="909.0" cy="474.5" rx="5" ry="3.4" fill="#f3e6cd" stroke="none"/>
+
+<!-- ===== 독서 코너 ===== -->
+<rect x="690" y="556" width="270" height="254" rx="12" fill="url(#floorTex)" stroke="none"/>
+<rect x="698" y="564" width="72" height="19" rx="5" fill="#fffdf8" stroke-width="0.9"/>
+<text x="734" y="577.5" font-size="12" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">독서 코너</text>
+<ellipse cx="746.0" cy="669.4" rx="31.3" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="712.0" y="596.0" width="68.0" height="70.0" rx="3" fill="url(#gCab)" stroke-width="1.1"/><rect x="716.0" y="617.0" width="60.0" height="2.4" rx="1" fill="#d9caa9" stroke="none"/><rect x="719.0" y="605.0" width="4.0" height="12.0" rx="0.8" fill="#c9a24a" stroke="none"/><rect x="724.6" y="605.0" width="5.0" height="12.0" rx="0.8" fill="#c46f7d" stroke="none"/><rect x="731.2" y="605.0" width="6.0" height="12.0" rx="0.8" fill="#7f9fb5" stroke="none"/><rect x="738.8" y="602.0" width="6.0" height="15.0" rx="0.8" fill="#c46f7d" stroke="none"/><rect x="746.4" y="605.0" width="5.0" height="12.0" rx="0.8" fill="#87a978" stroke="none"/><rect x="753.0" y="605.0" width="4.0" height="12.0" rx="0.8" fill="#c46f7d" stroke="none"/><rect x="758.6" y="605.0" width="6.0" height="12.0" rx="0.8" fill="#c46f7d" stroke="none"/><rect x="766.2" y="605.0" width="5.0" height="12.0" rx="0.8" fill="#c9a24a" stroke="none"/><rect x="716.0" y="637.0" width="60.0" height="2.4" rx="1" fill="#d9caa9" stroke="none"/><rect x="719.0" y="625.0" width="4.0" height="12.0" rx="0.8" fill="#c9a24a" stroke="none"/><rect x="724.6" y="624.0" width="6.0" height="13.0" rx="0.8" fill="#b9705f" stroke="none"/><rect x="732.2" y="622.0" width="6.0" height="15.0" rx="0.8" fill="#c9a24a" stroke="none"/><rect x="739.8" y="622.0" width="6.0" height="15.0" rx="0.8" fill="#9b7fa8" stroke="none"/><rect x="747.4" y="624.0" width="4.0" height="13.0" rx="0.8" fill="#c46f7d" stroke="none"/><rect x="753.0" y="625.0" width="6.0" height="12.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="760.6" y="624.0" width="6.0" height="13.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="716.0" y="657.0" width="60.0" height="2.4" rx="1" fill="#d9caa9" stroke="none"/><rect x="719.0" y="645.0" width="6.0" height="12.0" rx="0.8" fill="#c46f7d" stroke="none"/><rect x="726.6" y="644.0" width="4.0" height="13.0" rx="0.8" fill="#7f9fb5" stroke="none"/><rect x="732.2" y="642.0" width="4.0" height="15.0" rx="0.8" fill="#c46f7d" stroke="none"/><rect x="737.8" y="644.0" width="4.0" height="13.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="743.4" y="644.0" width="6.0" height="13.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="751.0" y="644.0" width="6.0" height="13.0" rx="0.8" fill="#cf8d62" stroke="none"/><rect x="758.6" y="645.0" width="6.0" height="12.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="766.2" y="642.0" width="6.0" height="15.0" rx="0.8" fill="#cf8d62" stroke="none"/>
+<ellipse cx="830.0" cy="669.4" rx="31.3" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="796.0" y="596.0" width="68.0" height="70.0" rx="3" fill="url(#gCab)" stroke-width="1.1"/><rect x="800.0" y="617.0" width="60.0" height="2.4" rx="1" fill="#d9caa9" stroke="none"/><rect x="803.0" y="602.0" width="5.0" height="15.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="809.6" y="602.0" width="6.0" height="15.0" rx="0.8" fill="#7f9fb5" stroke="none"/><rect x="817.2" y="602.0" width="6.0" height="15.0" rx="0.8" fill="#cf8d62" stroke="none"/><rect x="824.8" y="602.0" width="6.0" height="15.0" rx="0.8" fill="#87a978" stroke="none"/><rect x="832.4" y="602.0" width="4.0" height="15.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="838.0" y="602.0" width="5.0" height="15.0" rx="0.8" fill="#87a978" stroke="none"/><rect x="844.6" y="605.0" width="4.0" height="12.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="850.2" y="605.0" width="4.0" height="12.0" rx="0.8" fill="#7f9fb5" stroke="none"/><rect x="800.0" y="637.0" width="60.0" height="2.4" rx="1" fill="#d9caa9" stroke="none"/><rect x="803.0" y="625.0" width="4.0" height="12.0" rx="0.8" fill="#b9705f" stroke="none"/><rect x="808.6" y="625.0" width="6.0" height="12.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="816.2" y="622.0" width="4.0" height="15.0" rx="0.8" fill="#b9705f" stroke="none"/><rect x="821.8" y="622.0" width="6.0" height="15.0" rx="0.8" fill="#9b7fa8" stroke="none"/><rect x="829.4" y="622.0" width="5.0" height="15.0" rx="0.8" fill="#7f9fb5" stroke="none"/><rect x="836.0" y="624.0" width="6.0" height="13.0" rx="0.8" fill="#c9a24a" stroke="none"/><rect x="843.6" y="625.0" width="4.0" height="12.0" rx="0.8" fill="#87a978" stroke="none"/><rect x="849.2" y="622.0" width="5.0" height="15.0" rx="0.8" fill="#7f9fb5" stroke="none"/><rect x="800.0" y="657.0" width="60.0" height="2.4" rx="1" fill="#d9caa9" stroke="none"/><rect x="803.0" y="642.0" width="6.0" height="15.0" rx="0.8" fill="#87a978" stroke="none"/><rect x="810.6" y="645.0" width="5.0" height="12.0" rx="0.8" fill="#6f8fa0" stroke="none"/><rect x="817.2" y="644.0" width="5.0" height="13.0" rx="0.8" fill="#c46f7d" stroke="none"/><rect x="823.8" y="644.0" width="5.0" height="13.0" rx="0.8" fill="#87a978" stroke="none"/><rect x="830.4" y="645.0" width="4.0" height="12.0" rx="0.8" fill="#87a978" stroke="none"/><rect x="836.0" y="645.0" width="4.0" height="12.0" rx="0.8" fill="#9b7fa8" stroke="none"/><rect x="841.6" y="644.0" width="6.0" height="13.0" rx="0.8" fill="#cf8d62" stroke="none"/><rect x="849.2" y="644.0" width="6.0" height="13.0" rx="0.8" fill="#9b7fa8" stroke="none"/>
+<ellipse cx="742.0" cy="771.4" rx="34.0" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="706.0" y="716.0" width="12" height="44.0" rx="5" fill="#c6a276" stroke-width="1"/><rect x="766.0" y="716.0" width="12" height="44.0" rx="5" fill="#c6a276" stroke-width="1"/><rect x="712.0" y="706.0" width="60.0" height="62.0" rx="12" fill="url(#f2Sofa)" stroke-width="1.1"/><rect x="712.0" y="706.0" width="60.0" height="13" rx="6.5" fill="#ecd7b6" stroke-width="0.8"/><rect x="722.0" y="726.0" width="40.0" height="22" rx="6" fill="#e9dcc0" stroke-width="0.9"/>
+<ellipse cx="826.0" cy="771.4" rx="34.0" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="790.0" y="716.0" width="12" height="44.0" rx="5" fill="#c6a276" stroke-width="1"/><rect x="850.0" y="716.0" width="12" height="44.0" rx="5" fill="#c6a276" stroke-width="1"/><rect x="796.0" y="706.0" width="60.0" height="62.0" rx="12" fill="url(#f2Sofa)" stroke-width="1.1"/><rect x="796.0" y="706.0" width="60.0" height="13" rx="6.5" fill="#ecd7b6" stroke-width="0.8"/><rect x="806.0" y="726.0" width="40.0" height="22" rx="6" fill="#e9dcc0" stroke-width="0.9"/>
+
+<!-- 사이드 테이블 + 스탠드 램프 -->
+<ellipse cx="908.0" cy="619.0" rx="40.8" ry="28.6" fill="url(#f2Glow)" stroke="none"/><ellipse cx="908.0" cy="654.7" rx="12.0" ry="2.7" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><rect x="906.3" y="618.0" width="3.4" height="34.0" fill="#a98f6a" stroke-width="0.7"/><ellipse cx="908.0" cy="652.0" rx="12" ry="5" fill="#c0a377" stroke-width="0.9"/><path d="M 884.0 609.0 a 24.0 13.0 0 0 1 48.0 0 Z" fill="url(#f2Shade)" stroke-width="1.1"/><ellipse cx="908.0" cy="609.0" rx="24.0" ry="5.5" fill="#f2dcae" stroke-width="1"/><ellipse cx="908.0" cy="608.0" rx="14.4" ry="3.1" fill="#fdf1d2" stroke="none"/>
+<ellipse cx="908.0" cy="729.4" rx="23.9" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<ellipse cx="908" cy="706" rx="26" ry="20" fill="url(#f2Wood)" stroke-width="1.2"/>
+<ellipse cx="908" cy="702" rx="20" ry="15.5" fill="#dfb98c" stroke="none"/>
+<rect x="896" y="693" width="26" height="8" rx="1.4" fill="#8fa8bd" stroke-width="0.8"/>
+<rect x="899" y="688" width="24" height="7" rx="1.4" fill="#e0e2d4" stroke-width="0.8"/>
+
+<!-- ===== 좌측 통로 ===== -->
+
+<!-- 안내 배너 -->
+<ellipse cx="84.0" cy="305.4" rx="26.7" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<path d="M 60 302 L 70 240 L 98 240 L 108 302 Z" fill="#fffdf8" stroke-width="1.1"/>
+<rect x="68" y="248" width="32" height="22" rx="3" fill="#e8d9bd" stroke-width="0.8"/>
+<text x="84" y="263" font-size="11" font-weight="700" text-anchor="middle" fill="#5c4a3a" stroke="none">2F</text>
+<line x1="70" y1="280" x2="98" y2="280" stroke="#c9bda4" stroke-width="0.8"/>
+<line x1="72" y1="288" x2="96" y2="288" stroke="#c9bda4" stroke-width="0.8"/>
+<ellipse cx="84.0" cy="435.4" rx="16.6" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/><g stroke="#5c4a3a" stroke-width="0.7"><path d="M 80.0 393.6 C 72.0 377.6 70.0 359.6 74.0 345.6 C 82.0 359.6 84.0 377.6 82.0 393.6 Z" fill="#7fae68"/><path d="M 85.0 393.6 C 82.0 373.6 86.0 351.6 92.0 341.6 C 95.0 359.6 93.0 379.6 88.0 393.6 Z" fill="#96c47d"/><path d="M 89.0 393.6 C 92.0 375.6 99.0 361.6 106.0 355.6 C 104.0 371.6 98.0 385.6 93.0 393.6 Z" fill="#7fae68"/></g><path d="M 68.0 393.6 L 100.0 393.6 L 96.0 432.0 L 72.0 432.0 Z" fill="#cf9b6e" stroke-width="1"/><rect x="65.0" y="390.9" width="38" height="5.4" rx="2.2" fill="#e0b183" stroke-width="0.9"/>
+
+<!-- 대기 벤치 -->
+<ellipse cx="85.0" cy="575.4" rx="34.0" ry="3.4" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<rect x="46" y="508" width="12" height="58" rx="5" fill="#c6a276" stroke-width="1"/>
+<rect x="112" y="508" width="12" height="58" rx="5" fill="#c6a276" stroke-width="1"/>
+<rect x="52" y="500" width="66" height="72" rx="8" fill="url(#f2Wood)" stroke-width="1.1"/>
+<rect x="52" y="500" width="66" height="13" rx="6.5" fill="#e0bd93" stroke-width="0.8"/>
+<g stroke="#a97f57" stroke-width="0.8" opacity="0.55" fill="none">
+<line x1="55" y1="526" x2="115" y2="526"/><line x1="55" y1="540" x2="115" y2="540"/><line x1="55" y1="554" x2="115" y2="554"/>
+</g>
+
+<!-- 휴지통 -->
+<ellipse cx="85.0" cy="680.9" rx="12.9" ry="2.9" fill="#6b5a44" opacity="0.22" stroke="none" filter="url(#softShade)"/>
+<path d="M 72 642 L 98 642 L 95 678 L 75 678 Z" fill="#ded6c4" stroke-width="1"/>
+<rect x="70" y="639" width="30" height="5" rx="2" fill="#cfc7b6" stroke-width="0.9"/>
+</g>
+</svg>
 </div>
 
 <div class="row">
@@ -3241,6 +3668,17 @@
       <button class="btn" id="audioAutoRow" style="width:100%; justify-content:center; margin-top:2px;">시간대 자동</button>
       <div id="audioAutoNote" class="helpNote" style="margin:5px 0 2px;"></div>
       <button class="btn" id="audioMuteRow" style="width:100%; justify-content:center; margin-top:2px;">음소거</button>
+    </div>
+  </div>
+</div>
+
+<div class="mail-overlay" id="elevOverlay">
+  <div class="mail-window" style="max-width:340px;">
+    <div class="mail-head"><div class="headLeft"><span>🛗 엘리베이터</span></div><button id="elevCloseX">×</button></div>
+    <div class="mail-body">
+      <div id="elevGrid"></div>
+      <div id="elevNow"></div>
+      <div id="elevMsg"></div>
     </div>
   </div>
 </div>
@@ -3467,14 +3905,15 @@
     <p>왼쪽 메뉴의 버튼들을 이용하며 사무실의 운영자가 될 수 있어요. (화면이 좁으면 <code>☰ 메뉴</code>를 누르면 열립니다)</p>
     <table>
       <tr><th>버튼</th><th>내용</th></tr>
+      <tr><td>엘베</td><td>층을 고르는 창이 열립니다. 우리 사무실은 3층이고, 지금은 2층 안내·휴게 공간까지 두 층만 열려 있어요. 나머지 층은 관계자 외 출입금지입니다</td></tr>
       <tr><td>랜덤 이동</td><td>전 직원이 사무실을 자유롭게 돌아다닙니다. 다시 누르면 자리로 돌아가요</td></tr>
       <tr><td>회의</td><td>랜덤 6명, 10초간 회의실행, 회의 끝날 때까지 비활성</td></tr>
       <tr><td>탕비실</td><td>회의 중이 아닌 직원 중 랜덤 2명이 잡담</td></tr>
-      <tr><td>장소 이용</td><td>사무실의 여섯 공간을 이용합니다 (5번 설명 참고)</td></tr>
+      <tr><td>장소 이용</td><td>사무실의 여섯 공간을 이용합니다 (6번 설명 참고)</td></tr>
       <tr><td>청소</td><td>10분마다 바닥에 먼지가 한 곳씩 쌓입니다. 누르면 한 번에 치워요</td></tr>
       <tr><td>메일</td><td>직원 중 한 명이 메일 내용의 최대 20자를 말풍선에 띄움</td></tr>
       <tr><td>메신저</td><td>전체채팅·1:1 채팅과 쪽지를 주고받을 수 있어요. 새 쪽지가 오면 버튼에 빨간 숫자가 붙습니다</td></tr>
-      <tr><td>프로젝트</td><td>사업 등록·관리 (6번 설명 참고)</td></tr>
+      <tr><td>프로젝트</td><td>사업 등록·관리 (8번 설명 참고)</td></tr>
       <tr><td>야근모드</td><td>전원 퇴근 후 랜덤 2~4명만 남아 야근 시작</td></tr>
       <tr><td>설정</td><td>제작자 소개, 이름 변경(회사명·팀명·직원 이름), 주간 리포트, 초기화</td></tr>
     </table>
@@ -3487,7 +3926,10 @@
       <tr><td>배경음</td><td>왼쪽 메뉴 맨 아래 <code>▶</code>로 켜고 끄고, 옆의 스피커 버튼을 누르면 음원 목록이 열립니다. 음량은 슬라이더로 조절하고, 고른 음원과 음량은 다음 접속에도 기억돼요</td></tr>
     </table>
 
-    <h3>5. 장소 이용은 어떤 곳들이 있나요?</h3>
+    <h3>5. 2층에는 무엇이 있나요?</h3>
+    <p>왼쪽 메뉴의 <code>엘베</code>에서 <code>2</code>를 누르면 2층으로 내려갑니다. 엘리베이터 옆 안내데스크에 안내 직원 <b>윤안내</b>와 <b>강안내</b>가 서 있고, 나머지는 라운지·라운지 바·독서 코너로 이어지는 휴게 공간이에요. 다시 <code>3</code>을 누르면 사무실로 돌아옵니다. (휴대폰에서 뒤로가기를 눌러도 먼저 3층으로 돌아와요)</p>
+
+    <h3>6. 장소 이용은 어떤 곳들이 있나요?</h3>
     <table>
       <tr><th>공간</th><th>내용</th></tr>
       <tr><td>사물함</td><td>하늘빛이 바뀔 때마다(하루 6번) 8칸 중 한 칸에 누군가의 물건이 놓입니다. 물건이 든 칸은 문이 아주 살짝 떠 있어요</td></tr>
@@ -3498,7 +3940,7 @@
       <tr><td>재고창고</td><td>인턴들이 재고를 확인해요</td></tr>
     </table>
 
-    <h3>6. 가끔 낯선 손님이 찾아오나요?</h3>
+    <h3>7. 가끔 낯선 손님이 찾아오나요?</h3>
     <p>같은 기능을 여러 번 사용하면 손님이 찾아옵니다. 방문 기록은 사무실 일지에도 남아요.</p>
     <table>
       <tr><th>손님</th><th>찾아오는 조건</th><th>내용</th></tr>
@@ -3510,12 +3952,12 @@
       <tr><td>경비</td><td>청소 5번</td><td>사무실을 한 바퀴 돌며 시설을 점검합니다</td></tr>
     </table>
 
-    <h3>7. 주요 프로젝트(타이머)는 어떤 기능인가요?</h3>
+    <h3>8. 주요 프로젝트(타이머)는 어떤 기능인가요?</h3>
     <p>직원들이 함께 이루고 싶은 주요 프로젝트를 설정할 수 있으며, 사용자가 입력한 내용에 대한 타이머로 활용할 수 있어요.</p>
     <p><code>추가</code> → 사업명·기간·내용·예산 + 완료까지 걸리는 시간(분) 입력 → <code>저장</code> (최대 10개)</p>
     <p>사업마다 각자 설정한 시간이 지나면 자동 완료돼요. 그리고 그 순간 전 직원이 "프로젝트 완료!"를 외칩니다. 실제 시각 기준 저장이라 새로고침해도 카운트는 유지됩니다.</p>
 
-    <h3>8. 실장님의 한마디</h3>
+    <h3>9. 실장님의 한마디</h3>
     <p>휴대폰에서 <b>뒤로가기</b>를 누르면 열려 있던 창부터 하나씩 닫힙니다. 아무 창도 열려 있지 않을 때 누르면 <b>퇴근하시겠어요?</b>를 물어보고, 퇴근하기를 눌러야 사무실에서 나갑니다. 나가더라도 오늘 일지·사물함·설정·연속 출근은 그대로 남아 있어요.</p>
     <p>배경음은 <b>시간대 자동</b>으로 바뀝니다. 오전 근무(09~12시)는 02번, 점심·오후 근무(12~18시)는 03번, 야근(18시 이후 또는 야근모드)은 04번, 주말·공휴일은 05번, 그 밖의 시각은 01번이에요. 목록에서 음원을 직접 고르면 자동이 꺼지고 그 곡으로 계속 틉니다. 자동 버튼을 다시 누르면 지금 시간대에 맞는 곡으로 돌아갑니다.</p>
     <p>메신저 답장은 사람이 보내는 것처럼 옵니다. 내 말을 읽는 시간과 답을 쓰는 시간만큼 기다린 뒤 오고, 그동안 <b>입력 중</b> 표시가 뜹니다. 답이 길면 두 통으로 나눠 보내고, 대화가 이어지도록 가끔 되묻기도 해요. 성격에 따라 말끝도 조금씩 다릅니다.</p>
@@ -9830,12 +10272,20 @@
   // 글자도 0.37배까지 줄어든다. 높이를 채우고 넘치는 가로만 스크롤한다.
   var stageEl = byId('stage');
   var officeSvgEl = byId('officeSvg');
+  var floor2SvgEl = byId('floor2Svg');
+  var curFloor = '3';                 // 사무실이 3층
   function isNarrowView(){
     return !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches);
   }
+  function floorSvgs(){
+    return [officeSvgEl, floor2SvgEl].filter(Boolean);
+  }
   function fitOfficeStage(){
     if(!stageEl || !officeSvgEl) return;
-    if(!isNarrowView()){ officeSvgEl.style.removeProperty('height'); return; }
+    if(!isNarrowView()){
+      floorSvgs().forEach(function(el){ el.style.removeProperty('height'); });
+      return;
+    }
     var vv = window.visualViewport;
     var vh = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0,
                       (vv && vv.height) || 0);
@@ -9849,7 +10299,82 @@
     if(col && col.getBoundingClientRect) below = Math.max(0, col.getBoundingClientRect().bottom - stageBox.bottom);
     var padBottom = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
     var h = Math.floor(Math.max(280, Math.min(760, vh - top - below - padBottom - 1)));
-    officeSvgEl.style.height = h + 'px';
+    floorSvgs().forEach(function(el){ el.style.height = h + 'px'; });
+  }
+
+  // ===== 엘리베이터: 층을 오간다 =====
+  // 지금 열려 있는 층은 2층(안내·휴게)과 3층(사무실) 둘뿐이고,
+  // 나머지는 눌러도 '관계자 외 출입금지'만 뜬다.
+  var FLOORS = [
+    { k:'B1', name:'구내식당' },
+    { k:'1',  name:'판매샵·카페' },
+    { k:'2',  name:'안내·휴게 공간' },
+    { k:'3',  name:'우리 사무실' },
+    { k:'4',  name:'사장님실' },
+    { k:'5',  name:'연구소' },
+    { k:'6',  name:'연구소' },
+    { k:'7',  name:'건물주' },
+    { k:'L',  name:'옥상정원' }
+  ];
+  var OPEN_FLOORS = ['2', '3'];
+  var elevOverlay = byId('elevOverlay');
+  var elevGrid = byId('elevGrid');
+  var elevNow = byId('elevNow');
+  var elevMsg = byId('elevMsg');
+
+  function floorLabel(k){
+    var f = null;
+    FLOORS.forEach(function(x){ if(x.k === k) f = x; });
+    if(!f) return k;
+    return (k === 'B1' ? '지하 1층' : k === 'L' ? '옥상' : k + '층') + ' ' + f.name;
+  }
+  function isOpenFloor(k){ return OPEN_FLOORS.indexOf(k) >= 0; }
+
+  if(elevGrid){
+    elevGrid.innerHTML = FLOORS.map(function(f){
+      return '<button type="button" class="floorBtn' + (isOpenFloor(f.k) ? ' open' : '') +
+             '" data-floor="' + f.k + '" title="' + floorLabel(f.k) + '">' + f.k + '</button>';
+    }).join('');
+  }
+  function syncElevUI(){
+    if(!elevGrid) return;
+    [].slice.call(elevGrid.querySelectorAll('.floorBtn')).forEach(function(b){
+      b.classList.toggle('here', b.getAttribute('data-floor') === curFloor);
+    });
+    if(elevNow) elevNow.textContent = '지금 ' + floorLabel(curFloor);
+  }
+  function showFloor(k){
+    curFloor = k;
+    if(officeSvgEl) officeSvgEl.style.display = (k === '3') ? 'block' : 'none';
+    if(floor2SvgEl) floor2SvgEl.style.display = (k === '2') ? 'block' : 'none';
+    syncElevUI();
+    fitOfficeStage();
+  }
+  function goFloor(k){
+    if(elevMsg) elevMsg.textContent = '';
+    if(k === curFloor){ elevOverlay.classList.remove('show'); return; }
+    if(!isOpenFloor(k)){
+      if(elevMsg) elevMsg.textContent = floorLabel(k) + ' — 관계자 외 출입금지입니다';
+      return;
+    }
+    showFloor(k);
+    elevOverlay.classList.remove('show');
+    toast(k === '2' ? '2층 안내·휴게 공간에 도착했어요' : '3층 사무실로 돌아왔어요');
+  }
+  if(elevOverlay){
+    byId('elevBtn').addEventListener('click', function(){
+      if(elevMsg) elevMsg.textContent = '';
+      syncElevUI();
+      elevOverlay.classList.add('show');
+      closeSideBar();
+    });
+    byId('elevCloseX').addEventListener('click', function(){ elevOverlay.classList.remove('show'); });
+    elevOverlay.addEventListener('click', function(e){ if(e.target === elevOverlay) elevOverlay.classList.remove('show'); });
+    elevGrid.addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('.floorBtn') : null;
+      if(b) goFloor(b.getAttribute('data-floor'));
+    });
+    syncElevUI();
   }
 
   function refitOffice(){ fitOfficeStage(); }
@@ -9883,7 +10408,11 @@
   }
   function closeTopLayer(){
     var el = topOpenLayer();
-    if(!el) return false;
+    // 열린 창이 없는데 사무실 층이 아니면, 나가기 전에 먼저 3층으로 되돌린다
+    if(!el){
+      if(curFloor !== '3'){ showFloor('3'); return true; }
+      return false;
+    }
     if(el.id === 'sideBar'){ closeSideBar(); return true; }
     el.classList.remove('show');
     el.classList.remove('open');
