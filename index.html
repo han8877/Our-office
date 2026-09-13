@@ -3203,7 +3203,7 @@
   </linearGradient>
   <!-- 조명 스위치 놋쇠판 -->
   <linearGradient id="f2Brass" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0" stop-color="#f0dcb0"/><stop offset="0.55" stop-color="#dcc18a"/><stop offset="1" stop-color="#c2a266"/>
+    <stop offset="0" stop-color="#dcc4a2"/><stop offset="0.55" stop-color="#caae87"/><stop offset="1" stop-color="#b89a74"/>
   </linearGradient>
   <!-- 램프 갓: 위가 밝고 아래가 따뜻하게 깊어진다 -->
   <linearGradient id="f2Shade" x1="0" y1="0" x2="0" y2="1">
@@ -4245,18 +4245,18 @@
 
 <!-- 조명 스위치: 3층은 미끄러지는 동그란 손잡이, 2층은 호텔식 놋쇠 레버 -->
 <g id="f2LightSwitch" style="cursor:pointer;">
-  <rect x="196" y="83.6" width="38" height="29" rx="4" fill="url(#f2Brass)" stroke="#5c4a3a" stroke-width="1.1"/>
-  <rect x="198.4" y="86" width="33.2" height="24.2" rx="2.6" fill="none" stroke="#b08f5c" stroke-width="0.6"/>
+  <rect x="198" y="86" width="30" height="23" rx="3.4" fill="url(#f2Brass)" stroke="#5c4a3a" stroke-width="0.9"/>
+  <rect x="200" y="88" width="26" height="19" rx="2.4" fill="none" stroke="#a98d6a" stroke-width="0.5" opacity="0.7"/>
   <!-- 레버가 오르내리는 홈 -->
-  <rect x="201.6" y="87.6" width="11.8" height="21" rx="5.9" fill="#6b5a44" stroke="#5c4a3a" stroke-width="0.8"/>
-  <ellipse cx="207.5" cy="98.1" rx="4.2" ry="2.4" fill="#584a39" stroke="none"/>
-  <g id="f2LightLever" transform="rotate(0 207.5 98.1)" style="transition:transform .18s ease;">
-    <path d="M 205.7 98.4 L 205.9 91.6 C 205.9 89.7 209.1 89.7 209.1 91.6 L 209.3 98.4 Z" fill="#fbf0d6" stroke="#5c4a3a" stroke-width="0.8" stroke-linejoin="round"/>
-    <line x1="207.5" y1="91.8" x2="207.5" y2="97.4" stroke="#e0cfa6" stroke-width="0.7" stroke-linecap="round"/>
+  <rect x="202.6" y="89.4" width="9.4" height="16.2" rx="4.7" fill="#6f6152" stroke="#5c4a3a" stroke-width="0.7"/>
+  <ellipse cx="207.3" cy="97.5" rx="3.4" ry="1.9" fill="#5f5241" stroke="none"/>
+  <g id="f2LightLever" transform="rotate(0 207.3 97.5)" style="transition:transform .18s ease;">
+    <path d="M 205.9 97.8 L 206.1 92.4 C 206.1 90.9 208.5 90.9 208.5 92.4 L 208.7 97.8 Z" fill="#e6dac0" stroke="#5c4a3a" stroke-width="0.7" stroke-linejoin="round"/>
+    <line x1="207.3" y1="92.6" x2="207.3" y2="97" stroke="#d2c3a2" stroke-width="0.6" stroke-linecap="round"/>
   </g>
-  <circle cx="207.5" cy="98.1" r="1.5" fill="#8a7558" stroke="#5c4a3a" stroke-width="0.6"/>
-  <circle id="f2LightLamp" cx="224.6" cy="92.2" r="2.6" fill="#e3b23c" stroke="#5c4a3a" stroke-width="0.8"/>
-  <text x="224.6" y="106.2" font-size="6" font-weight="700" text-anchor="middle" fill="#6b5a44" stroke="none" style="pointer-events:none;">조명</text>
+  <circle cx="207.3" cy="97.5" r="1.2" fill="#8a7558" stroke="#5c4a3a" stroke-width="0.5"/>
+  <circle id="f2LightLamp" cx="220" cy="93" r="1.9" fill="#c9a25c" stroke="#5c4a3a" stroke-width="0.6"/>
+  <text x="220" y="104" font-size="5.2" font-weight="700" text-anchor="middle" fill="#7d6b54" stroke="none" style="pointer-events:none;">조명</text>
 </g>
 </svg>
 </div>
@@ -11424,8 +11424,8 @@
     }
     function setF2Light(on){
       f2LightOn = on;
-      f2Lever.setAttribute('transform', 'rotate(' + (on ? 0 : 180) + ' 207.5 98.1)');
-      f2Lamp.setAttribute('fill', on ? '#e3b23c' : '#8a8a86');
+      f2Lever.setAttribute('transform', 'rotate(' + (on ? 0 : 180) + ' 207.3 97.5)');
+      f2Lamp.setAttribute('fill', on ? '#c9a25c' : '#948f86');
       applyF2Light();
     }
     byId('f2LightSwitch').addEventListener('click', function(e){
