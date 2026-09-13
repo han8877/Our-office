@@ -3201,6 +3201,10 @@
   <linearGradient id="f2Wood" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0" stop-color="#d5ae83"/><stop offset="1" stop-color="#bb8f65"/>
   </linearGradient>
+  <!-- 조명 스위치 놋쇠판 -->
+  <linearGradient id="f2Brass" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f0dcb0"/><stop offset="0.55" stop-color="#dcc18a"/><stop offset="1" stop-color="#c2a266"/>
+  </linearGradient>
   <!-- 램프 갓: 위가 밝고 아래가 따뜻하게 깊어진다 -->
   <linearGradient id="f2Shade" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0" stop-color="#f7e3b8"/><stop offset="1" stop-color="#d8b071"/>
@@ -4235,6 +4239,25 @@
 <g id="f2RHelperBubbleHolder"></g>
 </g>
 <g id="f2BubbleLayer"></g>
+
+<!-- 2층 소등 오버레이 -->
+<rect id="f2LightOverlay" x="20" y="20" width="960" height="800" rx="16" fill="#1c1c2e" opacity="0" style="transition:opacity .5s ease; pointer-events:none;"/>
+
+<!-- 조명 스위치: 3층은 미끄러지는 동그란 손잡이, 2층은 호텔식 놋쇠 레버 -->
+<g id="f2LightSwitch" style="cursor:pointer;">
+  <rect x="196" y="83.6" width="38" height="29" rx="4" fill="url(#f2Brass)" stroke="#5c4a3a" stroke-width="1.1"/>
+  <rect x="198.4" y="86" width="33.2" height="24.2" rx="2.6" fill="none" stroke="#b08f5c" stroke-width="0.6"/>
+  <!-- 레버가 오르내리는 홈 -->
+  <rect x="201.6" y="87.6" width="11.8" height="21" rx="5.9" fill="#6b5a44" stroke="#5c4a3a" stroke-width="0.8"/>
+  <ellipse cx="207.5" cy="98.1" rx="4.2" ry="2.4" fill="#584a39" stroke="none"/>
+  <g id="f2LightLever" transform="rotate(0 207.5 98.1)" style="transition:transform .18s ease;">
+    <path d="M 205.7 98.4 L 205.9 91.6 C 205.9 89.7 209.1 89.7 209.1 91.6 L 209.3 98.4 Z" fill="#fbf0d6" stroke="#5c4a3a" stroke-width="0.8" stroke-linejoin="round"/>
+    <line x1="207.5" y1="91.8" x2="207.5" y2="97.4" stroke="#e0cfa6" stroke-width="0.7" stroke-linecap="round"/>
+  </g>
+  <circle cx="207.5" cy="98.1" r="1.5" fill="#8a7558" stroke="#5c4a3a" stroke-width="0.6"/>
+  <circle id="f2LightLamp" cx="224.6" cy="92.2" r="2.6" fill="#e3b23c" stroke="#5c4a3a" stroke-width="0.8"/>
+  <text x="224.6" y="106.2" font-size="6" font-weight="700" text-anchor="middle" fill="#6b5a44" stroke="none" style="pointer-events:none;">조명</text>
+</g>
 </svg>
 </div>
 
@@ -4582,7 +4605,7 @@
       <tr><td>방문객 다섯 분</td><td>평일 9시에 와서 18시에 돌아갑니다. 둘은 계속 돌아다니고 셋은 공간을 옮겨 다녀요</td></tr>
       <tr><td>R-도우미</td><td>3층과 똑같이 2층 통로를 돌며 공기 상태를 알려줍니다</td></tr>
     </table>
-    <p>2층 사람들도 3층 직원들처럼 가끔 혼잣말을 하거나 감정 이모지를 띄웁니다. 안내데스크 오른쪽 벽에는 작은 시계가 걸려 있어요.</p>
+    <p>2층 사람들도 3층 직원들처럼 가끔 혼잣말을 하거나 감정 이모지를 띄웁니다. 안내데스크 오른쪽 벽에는 작은 시계가, 윤안내 쪽 벽에는 <code>조명</code>이라고 적힌 놋쇠 레버 스위치가 붙어 있어요. 눌러서 2층 불을 끄고 켤 수 있습니다.</p>
 
     <h3>6. 장소 이용은 어떤 곳들이 있나요?</h3>
     <table>
@@ -11379,6 +11402,43 @@
       if(Math.random() < 0.3) f2Emo(c.id, pickIdleEmoji());
       else f2Say(c.id, pick(c.lines).replace('{사}', c.co || ''));
     }, 7000);
+
+    // ---- 조명 스위치 (안내데스크 윤안내 쪽 벽) ----
+    // 3층과 같은 3단계: 켜짐(0) → 아무도 없는 이른 아침·저녁의 어스름(0.42) → 직접 소등(0.55)
+    var f2Overlay = byId('f2LightOverlay');
+    var f2Lever   = byId('f2LightLever');
+    var f2Lamp    = byId('f2LightLamp');
+    var f2LightOn = true;
+    var F2_DUSK = 0.42, F2_OFF = 0.55;
+
+    function f2AnyoneHere(){
+      if(f2Visible('yun') || f2Visible('kang') || f2Visible('guard')) return true;
+      for(var i=0;i<VISITORS.length;i++){ if(f2Visible(VISITORS[i].id)) return true; }
+      return false;
+    }
+    function applyF2Light(){
+      if(!f2LightOn){ f2Overlay.style.opacity = F2_OFF; return; }
+      if(f2AnyoneHere()){ f2Overlay.style.opacity = 0; return; }
+      var hh = new Date().getHours();
+      f2Overlay.style.opacity = (hh >= 18 || hh < 8) ? F2_DUSK : 0;
+    }
+    function setF2Light(on){
+      f2LightOn = on;
+      f2Lever.setAttribute('transform', 'rotate(' + (on ? 0 : 180) + ' 207.5 98.1)');
+      f2Lamp.setAttribute('fill', on ? '#e3b23c' : '#8a8a86');
+      applyF2Light();
+    }
+    byId('f2LightSwitch').addEventListener('click', function(e){
+      e.stopPropagation();
+      setF2Light(!f2LightOn);
+      toast(f2LightOn ? '2층 조명을 켰습니다' : '2층 조명을 껐습니다');
+      if(!f2LightOn){
+        if(f2Visible('yun')) f2Say('yun', '어머 불이 꺼졌네');
+        if(f2Visible('kang')) setTimeout(function(){ if(f2Visible('kang')) f2Say('kang', '스위치 눌렸나 봐요'); }, 1100);
+      }
+    });
+    setF2Light(true);
+    setInterval(applyF2Light, 30000);
   })();
 
   // ===== 엘리베이터: 층을 오간다 =====
