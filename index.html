@@ -11041,7 +11041,12 @@
             + '<g class="charBody" style="animation-delay:'+v.delay+'s">'
             + '<ellipse cx="-4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+F2_DARK+'"'+SIL+'/>'
             + '<ellipse cx="4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+F2_DARK+'"'+SIL+'/>'
-            + f2Ears(v.animal, fur, furL);
+            + (v.calico
+                ? '<path d="M -12.4 -37.6 L -10.6 -48.6 L -2.6 -42.2 Z" fill="#d99a62"'+SIL+'/>'
+                + '<path d="M 12.4 -37.6 L 10.6 -48.6 L 2.6 -42.2 Z" fill="#5f554b"'+SIL+'/>'
+                + '<path d="M -10.8 -39.4 L -9.8 -45.6 L -5.4 -42 Z" fill="#f0cfc7" stroke="none"/>'
+                + '<path d="M 10.8 -39.4 L 9.8 -45.6 L 5.4 -42 Z" fill="#c9a49c" stroke="none"/>'
+                : f2Ears(v.animal, fur, furL));
       if(v.item === 'backpack') h += f2Backpack(v.bagCol, v.bagDark);
       h += '<path d="M -9.6 -16.4 C -13.4 -15 -13.8 -9 -12.6 -5.2 C -11.9 -2.8 -9.2 -3 -9 -5.6 Z" fill="'+suit+'"'+SIL+'/>'
          + '<path d="M 9.6 -16.4 C 13.4 -15 13.8 -9 12.6 -5.2 C 11.9 -2.8 9.2 -3 9 -5.6 Z" fill="'+suit+'"'+SIL+'/>'
@@ -11057,8 +11062,16 @@
       else
         h += '<path d="M 2.2 -19.2 L 5.4 -11.4 L 2.4 -10.2 L 0.4 -18 Z" fill="'+v.neckCol2+'"'+SIL+'/>'
            + '<path d="M -6.8 -19.6 C -3.2 -16.2 3.2 -16.2 6.8 -19.6 C 6.2 -22.6 -6.2 -22.6 -6.8 -19.6 Z" fill="'+v.neckCol+'"'+SIL+'/>';
-      h += '<circle cx="0" cy="-31" r="12.6" fill="'+fur+'"'+SIL+'/>'
-         + '<ellipse cx="0" cy="-26.4" rx="7" ry="5.2" fill="'+furL+'" stroke="none"/>'
+      h += '<circle cx="0" cy="-31" r="12.6" fill="'+fur+'"'+SIL+'/>';
+      if(v.calico){
+        h += '<clipPath id="f2head-'+v.id+'"><circle cx="0" cy="-31" r="12.6"/></clipPath>'
+           + '<g clip-path="url(#f2head-'+v.id+')" stroke="none">'
+           + '<ellipse cx="-7.6" cy="-39.6" rx="9.4" ry="7.2" fill="#d99a62" transform="rotate(-22 -7.6 -39.6)"/>'
+           + '<ellipse cx="9.8" cy="-27.6" rx="7.2" ry="6.2" fill="#5f554b" transform="rotate(16 9.8 -27.6)"/>'
+           + '<ellipse cx="-9.4" cy="-23.6" rx="5.4" ry="3.6" fill="#d99a62" transform="rotate(-14 -9.4 -23.6)"/>'
+           + '</g>';
+      }
+      h += '<ellipse cx="0" cy="-26.4" rx="7" ry="5.2" fill="'+furL+'" stroke="none"/>'
          + f2Face()
          + f2Item(v.item)
          + '</g>'
@@ -11069,19 +11082,19 @@
 
     // ---- 방문객 다섯 (평일 오전 9시 ~ 오후 6시) ----
     var VISITORS = [
-      { id:'v1', name:'S사 한부장', animal:'fox',    fur:'#d99a62', furL:'#f0c79a',
+      { id:'v1', co:'S사', name:'S사 한부장', animal:'fox',    fur:'#d99a62', furL:'#f0c79a',
         suit:'#a8cbe0', suitD:'#8bb2cb', neck:'scarf', neckCol:'#7c9fb8', neckCol2:'#6b8ca6',
         item:'case',   mode:'wander', delay:'0' },
-      { id:'v2', name:'L사 이과장', animal:'dog',    fur:'#c9a179', furL:'#e8cfaa',
+      { id:'v2', co:'L사', name:'L사 이과장', animal:'dog',    fur:'#c9a179', furL:'#e8cfaa',
         suit:'#9aa0a6', suitD:'#828890', neck:'tie',   neckCol:'#4a5f7a', neckCol2:'#4a5f7a',
         item:'laptop', mode:'wander', delay:'-1.1' },
-      { id:'v3', name:'N사 임차장', animal:'bear',   fur:'#8e857c', furL:'#bdb5aa',
+      { id:'v3', co:'N사', name:'N사 임차장', animal:'bear',   fur:'#8e857c', furL:'#bdb5aa',
         suit:'#3c4450', suitD:'#2c333d', neck:'tie',   neckCol:'#8f3f3f', neckCol2:'#8f3f3f',
         item:'file',   mode:'spot',   delay:'-2.2' },
-      { id:'v4', name:'T사 백대리', animal:'rabbit', fur:'#efe5d6', furL:'#fffaf2',
+      { id:'v4', co:'T사', name:'T사 백대리', animal:'rabbit', fur:'#9e9a94', furL:'#cfcbc4',
         suit:'#e0cfab', suitD:'#c9b68e', neck:'scarf', neckCol:'#c98a7a', neckCol2:'#b0705f',
         item:'backpack', bagCol:'#7a6a58', bagDark:'#5f5344', mode:'spot', delay:'-0.6' },
-      { id:'v5', name:'K사 민주임', animal:'cat',    fur:'#cbb08c', furL:'#eddcc2',
+      { id:'v5', co:'K사', name:'K사 민주임', animal:'cat', calico:true, fur:'#f4efe6', furL:'#fffbf4',
         suit:'#f2efe6', suitD:'#ddd8c9', neck:'scarf', neckCol:'#a8bfa0', neckCol2:'#8ea787',
         item:'paper',  mode:'spot',   delay:'-1.7' }
     ];
@@ -11177,13 +11190,13 @@
 
     // ---- 혼잣말 ----
     var GUEST_LINES = [
-      '몇 층이었더라', '3층이랬지 아마', '명함 챙겼나', '5분 일찍 왔네', '엘리베이터 빠르네',
-      '로비가 좋다', '어항 크다', '물고기 몇 마리야', '여기 커피 되나', '자료 한 번 더 볼까',
-      '이게 수정본 맞나', '아 파일 하나 빠뜨렸다', '노트북 배터리 20%', '충전기 가져올걸', '와이파이 되나',
+      '몇 층이었더라', '3층이랬지 아마', '{사} 명함 챙겼나', '5분 일찍 왔네', '엘리베이터 빠르네',
+      '로비가 좋다', '어항 크다', '물고기 몇 마리야', '여기 커피 되나', '{사} 자료 한 번 더 볼까',
+      '이게 수정본 맞나', '{사} 로고 박힌 파일 어디 갔지', '노트북 배터리 20%', '충전기 가져올걸', '와이파이 되나',
       '연락 왔나 확인 좀', '조금만 기다리면 되겠지', '넥타이 삐뚤어졌나', '구두가 좀 조이네', '오늘 잘 됐으면',
-      '발표 순서 다시 정리하자', '첫인상이 반이지', '아 긴장된다', '심호흡 한 번', '이 조각 멋있네',
-      '그림이 내 취향이다', '석등은 처음 보네', '사무실 분위기 좋다', '우리 회사도 이랬으면', '화분 관리 잘하시네',
-      '점심 뭐 먹지', '끝나면 바로 복귀해야지', '주차 어디 했더라', '다음 미팅이 두 시', '명함 더 뽑을걸'
+      '{사} 제안서 순서 다시 정리하자', '첫인상이 반이지', '아 긴장된다', '심호흡 한 번', '이 조각 멋있네',
+      '그림이 내 취향이다', '석등은 처음 보네', '{사} 사무실보다 여기가 넓네', '우리도 이랬으면', '화분 관리 잘하시네',
+      '점심 뭐 먹지', '{사} 복귀는 두 시까지', '주차 어디 했더라', '{사} 이름 걸고 하는 거니까', '{사}에서 왔습니다'
     ];
     var STAFF_LINES = {
       yun: ['안녕하세요 어서오세요', '방문 예약 확인했습니다', '3층은 저쪽 엘리베이터예요', '방명록 한 번만 부탁드려요',
@@ -11360,11 +11373,11 @@
       if(f2Visible('yun'))   cand.push({id:'yun',   lines:STAFF_LINES.yun});
       if(f2Visible('kang'))  cand.push({id:'kang',  lines:STAFF_LINES.kang});
       if(f2Visible('guard')) cand.push({id:'guard', lines:STAFF_LINES.guard});
-      VISITORS.forEach(function(v){ if(f2Visible(v.id)) cand.push({id:v.id, lines:GUEST_LINES}); });
+      VISITORS.forEach(function(v){ if(f2Visible(v.id)) cand.push({id:v.id, lines:GUEST_LINES, co:v.co}); });
       if(!cand.length) return;
       var c = cand[Math.floor(Math.random()*cand.length)];
       if(Math.random() < 0.3) f2Emo(c.id, pickIdleEmoji());
-      else f2Say(c.id, pick(c.lines));
+      else f2Say(c.id, pick(c.lines).replace('{사}', c.co || ''));
     }, 7000);
   })();
 
