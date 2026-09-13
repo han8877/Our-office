@@ -11280,12 +11280,21 @@
 
     // ---- 위치·표시 ----
     var f2pos = {};
+    // style.transform은 속성 transform을 통째로 덮는다. 배율이 있는 캐릭터는 같이 실어줘야 한다
+    var F2_XFORM = { guard:' scale(1.18)' };
     function f2El(id){ return byId('f2c-'+id); }
+    // 자리를 옮길 때 말풍선 자리도 같은 시간으로 함께 옮긴다.
+    // 여기 한 곳에서만 움직여야 걷는 도중에 말해도 말풍선이 따로 놀지 않는다.
+    // (말풍선에는 배율을 빼고 좌표만 준다. 배율까지 주면 풍선이 같이 커진다)
     function f2SetPos(id, x, y, dur){
       var el = f2El(id); if(!el) return;
       f2pos[id] = {x:x, y:y};
-      el.style.transition = dur ? ('transform '+dur+'s linear') : 'none';
-      el.style.transform = 'translate('+x+'px,'+y+'px)';
+      var tr = dur ? ('transform '+dur+'s linear') : 'none';
+      el.style.transition = tr;
+      el.style.transform = 'translate('+x+'px,'+y+'px)' + (F2_XFORM[id] || '');
+      var h = f2Holder(id);
+      h.style.transition = tr;
+      h.style.transform = 'translate('+x+'px,'+y+'px)';
     }
     function f2Show(id, on){
       var el = f2El(id); if(!el) return;
@@ -11318,7 +11327,6 @@
     function f2Say(id, text){
       var el = f2El(id); if(!el || !el._on) return;
       var h = f2Holder(id);
-      h.style.transform = el.style.transform || 'translate(0px,0px)';
       var lines = [text];
       if(measureBubbleText(text) + BUBBLE_PAD > BUBBLE_MAX_W) lines = splitBubbleText(text);
       var tw = 0, i;
@@ -11337,7 +11345,6 @@
       var icon = EMO_ICON[kind], el = f2El(id);
       if(!icon || !el || !el._on) return;
       var h = f2Holder(id);
-      h.style.transform = el.style.transform || 'translate(0px,0px)';
       h.innerHTML = '<g class="popEmoji"><path d="'+f2BubblePath(34, 1)+'" fill="#fffdf8" '
                   + 'stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/>'
                   + '<g transform="translate(0,-65)">'+icon+'</g></g>';
@@ -11391,8 +11398,6 @@
       var p = f2pos[v.id] || F2_ELEV;
       var dur = Math.max(0.6, Math.hypot(x-p.x, y-p.y) / F2_SPEED);
       f2SetPos(v.id, x, y, dur);
-      var h = f2Bub.querySelector('[data-f2-for="'+v.id+'"]');
-      if(h){ h.style.transition = 'transform '+dur+'s linear'; h.style.transform = 'translate('+x+'px,'+y+'px)'; }
       clearTimeout(v._mv);
       v._mv = setTimeout(done, dur*1000 + 60);
     }
@@ -11453,6 +11458,66 @@
       }
     }
 
+    // ---- 안내 직원·보안요원 출퇴근 ----
+    // 엘리베이터에서 나와 제자리까지 걸어가고, 퇴근할 땐 같은 길로 돌아간다
+    var F2_HOME = {
+      yun:  { x:266, y:160 },
+      kang: { x:406, y:160 },
+      guard:{ x:85,  y:700 }
+    };
+    // 안내 직원은 카운터 왼쪽 끝(x=176)을 돌아 뒤로 들어간다.
+    // 카운터 앞으로 질러가면 카운터에 몸이 잘려 보인다
+    var F2_ROUTE = { yun:[{x:148,y:176}], kang:[{x:148,y:176}], guard:[] };
+    // 점심 끝나고 둘이 동시에 돌아오면 겹쳐 보인다. 강안내가 조금 늦게 움직인다
+    var F2_WALK_DELAY = { yun:400, kang:2400, guard:400 };
+    // _on은 null로 시작한다. false로 두면 '아직 출근 전'인 첫 틱이 통째로 건너뛰어져
+    // 숨기지 못하고 마크업 기본값(보임) 그대로 남는다
+    var f2Walker = { yun:{id:'yun', _on:null}, kang:{id:'kang', _on:null}, guard:{id:'guard', _on:null} };
+
+    function f2StaffGo(id, pts, done){
+      var w = f2Walker[id], i = 0;
+      clearTimeout(w._mv); clearTimeout(w._wait);
+      (function step(){
+        if(i >= pts.length){ if(done) done(); return; }
+        var q = pts[i++];
+        moveTo(w, q.x, q.y, step);
+      })();
+    }
+    // walk=false면 걷는 과정 없이 제자리에 둔다 (출근 시간이 한참 지나서 접속한 경우)
+    function f2StaffShow(id, on, walk){
+      var w = f2Walker[id];
+      if(w._on === on) return;
+      w._on = on;
+      if(on){
+        if(!walk){
+          clearTimeout(w._mv); clearTimeout(w._wait);
+          f2SetPos(id, F2_HOME[id].x, F2_HOME[id].y, 0);
+          f2Show(id, true);
+          return;
+        }
+        f2SetPos(id, F2_ELEV.x, F2_ELEV.y, 0);
+        clearTimeout(w._mv); clearTimeout(w._wait);
+        w._wait = setTimeout(function(){
+          f2Show(id, true);
+          f2StaffGo(id, F2_ROUTE[id].concat([F2_HOME[id]]));
+        }, F2_WALK_DELAY[id]);
+      } else {
+        clearTimeout(w._mv); clearTimeout(w._wait);
+        if(!walk){
+          f2Show(id, false);
+          f2SetPos(id, F2_ELEV.x, F2_ELEV.y, 0);
+          return;
+        }
+        w._wait = setTimeout(function(){
+          var back = F2_ROUTE[id].slice().reverse().concat([F2_ELEV]);
+          f2StaffGo(id, back, function(){ f2Show(id, false); });
+        }, F2_WALK_DELAY[id]);
+      }
+    }
+    ['yun','kang','guard'].forEach(function(id){
+      f2SetPos(id, F2_HOME[id].x, F2_HOME[id].y, 0);
+    });
+
     // ---- R-도우미 (3층과 같은 기능) ----
     var rEl = byId('f2RHelper'), rNode = 'a2', rPrev = null;
     function rSet(x, y, dur){
@@ -11511,9 +11576,11 @@
       }
       var work = !isNonWorkingDay(now);
       var lunch = (t >= 720 && t < 780);
-      f2Show('yun',  work && t >= arriveMin('yun')  && t < 1080 && !lunch);
-      f2Show('kang', work && t >= arriveMin('kang') && t < 1080 && !lunch);
-      f2Show('guard', t >= F2_GUARD_IN && t < F2_GUARD_OUT);
+      // 접속한 순간은 이미 그 상태인 거라 제자리에 두고, 그 뒤의 출퇴근·점심은 걸어서 오간다
+      var walk = f2Booted;
+      f2StaffShow('yun',  work && t >= arriveMin('yun')  && t < 1080 && !lunch, walk);
+      f2StaffShow('kang', work && t >= arriveMin('kang') && t < 1080 && !lunch, walk);
+      f2StaffShow('guard', t >= F2_GUARD_IN && t < F2_GUARD_OUT, walk);
       var guestsIn = work && t >= 540 && t < 1080;
       VISITORS.forEach(function(v){
         if(guestsIn && !f2Visible(v.id) && !v._leaving) startVisitor(v);
@@ -11521,7 +11588,9 @@
       });
       // 첫 호출은 조명 블록보다 먼저 돌아서 f2Overlay가 아직 없다
       if(f2Overlay) applyF2Light();
+      f2Booted = true;
     }
+    var f2Booted = false;   // 첫 틱인지 (첫 틱은 걷는 과정 없이 자리부터 잡는다)
     f2Tick();
     setInterval(f2Tick, 1000);
 
