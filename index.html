@@ -11275,6 +11275,8 @@
     ];
     var F2_ELEV = {x:85, y:205};
     var F2_SPEED = 46;   // px/초
+    // 보안요원 근무시간. 2층에 사람이 있는 시간대이기도 해서 조명 기준으로도 쓴다
+    var F2_GUARD_IN = 8*60, F2_GUARD_OUT = 21*60;
 
     // ---- 위치·표시 ----
     var f2pos = {};
@@ -11511,12 +11513,14 @@
       var lunch = (t >= 720 && t < 780);
       f2Show('yun',  work && t >= arriveMin('yun')  && t < 1080 && !lunch);
       f2Show('kang', work && t >= arriveMin('kang') && t < 1080 && !lunch);
-      f2Show('guard', t >= 480 && t < 1260);
+      f2Show('guard', t >= F2_GUARD_IN && t < F2_GUARD_OUT);
       var guestsIn = work && t >= 540 && t < 1080;
       VISITORS.forEach(function(v){
         if(guestsIn && !f2Visible(v.id) && !v._leaving) startVisitor(v);
         else if(!guestsIn && f2Visible(v.id)){ v._leaving = true; stopVisitor(v); setTimeout(function(){ v._leaving = false; }, 8000); }
       });
+      // 첫 호출은 조명 블록보다 먼저 돌아서 f2Overlay가 아직 없다
+      if(f2Overlay) applyF2Light();
     }
     f2Tick();
     setInterval(f2Tick, 1000);
@@ -11551,8 +11555,10 @@
     function applyF2Light(){
       if(!f2LightOn){ f2Overlay.style.opacity = F2_OFF; return; }
       if(f2AnyoneHere()){ f2Overlay.style.opacity = 0; return; }
-      var hh = new Date().getHours();
-      f2Overlay.style.opacity = (hh >= 18 || hh < 8) ? F2_DUSK : 0;
+      // 2층이 비는 시간 = 보안요원이 없는 시간. 둘이 어긋나면 07~08시처럼
+      // 아무도 없는데 밝거나, 사람이 있는데 어두운 구간이 생긴다
+      var now = new Date(), t = now.getHours()*60 + now.getMinutes();
+      f2Overlay.style.opacity = (t < F2_GUARD_IN || t >= F2_GUARD_OUT) ? F2_DUSK : 0;
     }
     function setF2Light(on){
       f2LightOn = on;
@@ -11570,7 +11576,6 @@
       }
     });
     setF2Light(true);
-    setInterval(applyF2Light, 30000);
 
     // ---- 메신저에 알려줄 근무 상태 (2층 근무표는 이 안에만 있다) ----
     window.f2ContactStatus = function(id){
