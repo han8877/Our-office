@@ -5198,15 +5198,25 @@
   var BUBBLE_PAD = 22;    // 텍스트 좌우 여백
   var BUBBLE_MAX_W = 190; // 말풍선이 이보다 넓어지면 두 줄로 나눔
   var BUBBLE_LINE_H = 14;
+  // 글자 길이를 재는 자.
+  // display:none인 SVG 안에서는 getComputedTextLength()가 0을 돌려준다.
+  // 3층 레이어에 두면 2층을 보는 동안 폭이 0으로 잡혀 말풍선이 글자를 못 담는다.
+  // 그래서 어느 층을 보든 항상 레이아웃이 잡히는 전용 자를 따로 만든다.
   var measureBubbleText = (function(){
     var probe = null;
     return function(str){
       if(!probe){
-        probe = document.createElementNS('http://www.w3.org/2000/svg','text');
+        var NS = 'http://www.w3.org/2000/svg';
+        var ruler = document.createElementNS(NS,'svg');
+        ruler.setAttribute('width','0');
+        ruler.setAttribute('height','0');
+        ruler.setAttribute('aria-hidden','true');
+        ruler.style.cssText = 'position:absolute;left:-9999px;top:0;width:0;height:0;overflow:hidden;';
+        probe = document.createElementNS(NS,'text');
         probe.setAttribute('font-size', BUBBLE_FONT);
         probe.setAttribute('text-anchor','middle');
-        probe.setAttribute('visibility','hidden');
-        bubbleLayer.appendChild(probe);
+        ruler.appendChild(probe);
+        document.body.appendChild(ruler);
       }
       probe.textContent = str;
       return probe.getComputedTextLength();
