@@ -671,7 +671,6 @@
   .sideBtn:disabled{ opacity:.4; cursor:not-allowed; }
   .sideBtn svg{ flex:0 0 auto; }
   .sideSep{ width:44px; height:1px; background:#e6e0d2; margin:3px 0; flex:0 0 auto; }
-  .sideEmoji{ font-size:15px; line-height:1; height:13px; display:block; }
   /* 엘리베이터 층 버튼 */
   #elevGrid{ display:grid; grid-template-columns:repeat(9,1fr); gap:4px; }
   .floorBtn{ height:40px; padding:0; border:1.2px solid #d8cdb6; border-radius:8px; background:#fffdf8;
@@ -1798,7 +1797,7 @@
 
 <nav id="sideBar" aria-label="사무실 메뉴">
   <button class="sideBtn" id="elevBtn" aria-label="엘리베이터">
-    <span class="sideEmoji" aria-hidden="true">🛗</span>
+    <svg width="14" height="13" viewBox="0 0 14 13"><rect x="0.5" y="0.5" width="13" height="12" rx="1.6" stroke="#5c4a3a" stroke-width="1" fill="none"/><line x1="7" y1="0.5" x2="7" y2="12.5" stroke="#5c4a3a" stroke-width="1"/><path d="M 2.4 5.8 L 4 3.8 L 5.6 5.8" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M 8.4 7.2 L 10 9.2 L 11.6 7.2" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
     <span>엘베</span>
   </button>
   <i class="sideSep"></i>
@@ -3674,7 +3673,7 @@
 
 <div class="mail-overlay" id="elevOverlay">
   <div class="mail-window" style="max-width:340px;">
-    <div class="mail-head"><div class="headLeft"><span>🛗 엘리베이터</span></div><button id="elevCloseX">×</button></div>
+    <div class="mail-head"><div class="headLeft"><span>엘리베이터</span></div><button id="elevCloseX">×</button></div>
     <div class="mail-body">
       <div id="elevGrid"></div>
       <div id="elevNow"></div>
