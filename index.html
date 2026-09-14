@@ -11737,12 +11737,38 @@
            + '<path d="M 9.2 -19.4 C 11.6 -14.6 11.6 -8.6 10 -5.4" fill="none" stroke="'+dark+'" stroke-width="1.8" stroke-linecap="round"/>';
     }
 
-    function f2Body(v){
+    // ---- 앉은 자세 ----
+    // 기준점은 '앉는 면'이다. 몸통·머리·팔은 선 자세를 그대로 쓰고 하반신만 바꾼다.
+    // 정강이와 구두는 몸통보다 먼저(뒤에), 허벅지는 몸통보다 나중에(앞에) 그려야
+    // 무릎이 이쪽을 향해 접힌 것처럼 보인다.
+    // 하반신은 전부 몸통보다 먼저(뒤에) 그린다. 몸통 아래로 무릎이 양옆으로 튀어나오고
+    // 그 아래 짧은 정강이와 구두가 안쪽으로 모인다. 몸통 위를 덮지 않아야 몸이 갈라져 보이지 않는다
+    function f2SeatLegs(v){
+      var pants = v.suitD, shoe = F2_DARK;
+      function thigh(sx){
+        return '<path d="M ' + (sx*1) + ' 1.2'
+             + ' C ' + (sx*7.8) + ' 1.2 ' + (sx*13.4) + ' 4 ' + (sx*13.4) + ' 8.4'
+             + ' C ' + (sx*13.4) + ' 12.2 ' + (sx*10) + ' 13.8 ' + (sx*6.6) + ' 13.8'
+             + ' C ' + (sx*3) + ' 13.8 ' + (sx*1) + ' 11.6 ' + (sx*1) + ' 8.6 Z"'
+             + ' fill="'+pants+'"'+SIL+'/>';
+      }
+      function shin(sx){
+        return '<rect x="' + (sx > 0 ? 4.6 : -9.4) + '" y="11" width="4.8" height="6.6" rx="2.3"'
+             + ' fill="'+pants+'"'+SIL+'/>'
+             + '<ellipse cx="'+(sx*7)+'" cy="18" rx="4" ry="3.1" fill="'+shoe+'"'+SIL+'/>';
+      }
+      return shin(-1) + shin(1) + thigh(-1) + thigh(1);
+    }
+    function f2Body(v, seated){
       var suit = v.suit, suitD = v.suitD, fur = v.fur, furL = v.furL;
-      var h = '<ellipse cx="0" cy="9" rx="13" ry="2.6" fill="'+F2_DARK+'" opacity="0.13" stroke="none"/>'
+      // 앉으면 그림자는 발밑으로 내려가고 명패도 그만큼 따라 내려간다
+      var h = '<ellipse cx="0" cy="' + (seated ? 20.4 : 9) + '" rx="' + (seated ? 12 : 13) + '" ry="2.4"'
+            + ' fill="'+F2_DARK+'" opacity="0.13" stroke="none"/>'
             + '<g class="charBody" style="animation-delay:'+v.delay+'s">'
-            + '<ellipse cx="-4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+F2_DARK+'"'+SIL+'/>'
-            + '<ellipse cx="4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+F2_DARK+'"'+SIL+'/>'
+            + (seated
+                ? f2SeatLegs(v)
+                : '<ellipse cx="-4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+F2_DARK+'"'+SIL+'/>'
+                + '<ellipse cx="4.5" cy="6.5" rx="3.4" ry="3.8" fill="'+F2_DARK+'"'+SIL+'/>')
             + (v.calico
                 ? '<path d="M -12.4 -37.6 L -10.6 -48.6 L -2.6 -42.2 Z" fill="#d99a62"'+SIL+'/>'
                 + '<path d="M 12.4 -37.6 L 10.6 -48.6 L 2.6 -42.2 Z" fill="#5f554b"'+SIL+'/>'
@@ -11750,10 +11776,13 @@
                 + '<path d="M 10.8 -39.4 L 9.8 -45.6 L 5.4 -42 Z" fill="#c9a49c" stroke="none"/>'
                 : f2Ears(v.animal, fur, furL));
       if(v.item === 'backpack') h += f2Backpack(v.bagCol, v.bagDark);
-      h += '<path d="M -9.6 -16.4 C -13.4 -15 -13.8 -9 -12.6 -5.2 C -11.9 -2.8 -9.2 -3 -9 -5.6 Z" fill="'+suit+'"'+SIL+'/>'
+      var armDy = seated ? 2.4 : 0;   // 앉으면 팔을 무릎 쪽으로 조금 내린다
+      h += '<g transform="translate(0,'+armDy+')">'
+         + '<path d="M -9.6 -16.4 C -13.4 -15 -13.8 -9 -12.6 -5.2 C -11.9 -2.8 -9.2 -3 -9 -5.6 Z" fill="'+suit+'"'+SIL+'/>'
          + '<path d="M 9.6 -16.4 C 13.4 -15 13.8 -9 12.6 -5.2 C 11.9 -2.8 9.2 -3 9 -5.6 Z" fill="'+suit+'"'+SIL+'/>'
          + '<circle cx="-11.5" cy="-4.2" r="2.4" fill="'+furL+'"'+SIL+'/>'
          + '<circle cx="11.5" cy="-4.2" r="2.4" fill="'+furL+'"'+SIL+'/>'
+         + '</g>'
          + '<path d="M -9.5 -18 C -11.5 -12 -11.5 -4 -8 2 C -5 7 5 7 8 2 C 11.5 -4 11.5 -12 9.5 -18 C 5.5 -21 -5.5 -21 -9.5 -18 Z" fill="'+suit+'"'+SIL+'/>'
          + '<path d="M -1.8 -19.4 L -3.4 -7.6 L 0 -4.8 L 3.4 -7.6 L 1.8 -19.4 Z" fill="#fdfaf3" stroke="none"/>'
          + '<path d="M -1.2 -19.6 L -7.6 -15.4 L -3.4 -4.6 L -0.6 -9.4 Z" fill="'+suitD+'" stroke="none"/>'
@@ -11766,8 +11795,9 @@
            + '<path d="M -6.8 -19.6 C -3.2 -16.2 3.2 -16.2 6.8 -19.6 C 6.2 -22.6 -6.2 -22.6 -6.8 -19.6 Z" fill="'+v.neckCol+'"'+SIL+'/>';
       h += '<circle cx="0" cy="-31" r="12.6" fill="'+fur+'"'+SIL+'/>';
       if(v.calico){
-        h += '<clipPath id="f2head-'+v.id+'"><circle cx="0" cy="-31" r="12.6"/></clipPath>'
-           + '<g clip-path="url(#f2head-'+v.id+')" stroke="none">'
+        var headClip = 'f2head-' + v.id + (seated ? '-s' : '');
+        h += '<clipPath id="'+headClip+'"><circle cx="0" cy="-31" r="12.6"/></clipPath>'
+           + '<g clip-path="url(#'+headClip+')" stroke="none">'
            + '<ellipse cx="-7.6" cy="-39.6" rx="9.4" ry="7.2" fill="#d99a62" transform="rotate(-22 -7.6 -39.6)"/>'
            + '<ellipse cx="9.8" cy="-27.6" rx="7.2" ry="6.2" fill="#5f554b" transform="rotate(16 9.8 -27.6)"/>'
            + '<ellipse cx="-9.4" cy="-23.6" rx="5.4" ry="3.6" fill="#d99a62" transform="rotate(-14 -9.4 -23.6)"/>'
@@ -11777,8 +11807,8 @@
          + f2Face()
          + f2Item(v.item)
          + '</g>'
-         + '<g stroke="none"><rect x="-26" y="14" width="52" height="13" rx="0" fill="#fffdf8" stroke="'+F2_OUT+'" stroke-width="0.8" shape-rendering="crispEdges"/>'
-         + '<text x="0" y="23.5" font-size="6.8" text-anchor="middle" fill="'+F2_OUT+'" stroke="none">'+v.name+'</text></g>';
+         + '<g stroke="none"><rect x="-26" y="' + (seated ? 25 : 14) + '" width="52" height="13" rx="0" fill="#fffdf8" stroke="'+F2_OUT+'" stroke-width="0.8" shape-rendering="crispEdges"/>'
+         + '<text x="0" y="' + (seated ? 34.5 : 23.5) + '" font-size="6.8" text-anchor="middle" fill="'+F2_OUT+'" stroke="none">'+v.name+'</text></g>';
       return h;
     }
 
@@ -11864,6 +11894,15 @@
       if(!on){ var h = f2Bub.querySelector('[data-f2-for="'+id+'"]'); if(h) h.innerHTML = ''; }
     }
     function f2Visible(id){ var el = f2El(id); return !!(el && el._on); }
+    // 앉기/서기 전환 (몸을 두 벌 만들어 두고 보여줄 쪽만 켠다)
+    function f2Sit(id, on){
+      var el = f2El(id); if(!el) return;
+      var st = el.querySelector('.f2stand'), si = el.querySelector('.f2sit');
+      if(!st || !si) return;
+      st.style.display = on ? 'none' : '';
+      si.style.display = on ? '' : 'none';
+      el._sit = !!on;
+    }
 
     // ---- 말풍선·이모지 (3층과 같은 모양·같은 비율) ----
     function f2Holder(id){
@@ -11946,7 +11985,8 @@
       g.setAttribute('id', 'f2c-'+v.id);
       g.setAttribute('class', 'f2visitor');
       g.style.opacity = 0;
-      g.innerHTML = f2Body(v);
+      g.innerHTML = '<g class="f2stand">' + f2Body(v, false) + '</g>'
+                  + '<g class="f2sit" style="display:none">' + f2Body(v, true) + '</g>';
       visLayer.appendChild(g);
       f2SetPos(v.id, F2_ELEV.x, F2_ELEV.y, 0);
       v.node = 'a1';
