@@ -11834,9 +11834,10 @@
       e :{x:85, y:205}, h0:{x:85, y:255}, h1:{x:85, y:340}, h2:{x:85, y:415},
       h3:{x:85, y:530}, h4:{x:85, y:620},
       t1:{x:230,y:255}, t2:{x:400,y:255}, t3:{x:560,y:255}, t4:{x:675,y:255}, aw:{x:830,y:255},
-      g1:{x:675,y:340}, g2:{x:675,y:415}, g3:{x:675,y:509}, g4:{x:675,y:640},
+      g1:{x:675,y:340}, g2:{x:675,y:415}, g3:{x:675,y:509}, g4:{x:675,y:638},
       b1:{x:770,y:509}, b2:{x:905,y:509},
-      l1:{x:180,y:415}, p1:{x:265,y:415}, l2:{x:325,y:415},
+      r1:{x:770,y:638}, r2:{x:875,y:638}, r3:{x:770,y:735}, r4:{x:875,y:735},
+      l1:{x:180,y:415}, p1:{x:265,y:415}, l2:{x:325,y:415}, s1:{x:405,y:415},
       l3:{x:485,y:415}, p2:{x:525,y:415}, l4:{x:630,y:415},
       m1:{x:325,y:528}, p3:{x:395,y:528}, m2:{x:485,y:528}
     };
@@ -11845,14 +11846,37 @@
       h2:['h1','h3','l1'],   h3:['h2','h4'],       h4:['h3'],
       t1:['h0','t2'],        t2:['t1','t3'],       t3:['t2','t4'],
       t4:['t3','aw','g1'],   aw:['t4'],
-      g1:['t4','g2'],        g2:['g1','g3','l4'],  g3:['g2','g4','b1'],  g4:['g3'],
+      g1:['t4','g2'],        g2:['g1','g3','l4'],  g3:['g2','g4','b1'],  g4:['g3','r1'],
       b1:['g3','b2'],        b2:['b1'],
-      l1:['h2','p1'],        p1:['l1','l2'],       l2:['p1','l3','m1'],
-      l3:['l2','p2','m2'],   p2:['l3','l4'],       l4:['p2','g2'],
+      r1:['g4','r2','r3'],   r2:['r1','r4'],       r3:['r1'],            r4:['r2'],
+      l1:['h2','p1'],        p1:['l1','l2'],       l2:['p1','s1','m1'],
+      s1:['l2','l3'],        l3:['s1','p2','m2'],  p2:['l3','l4'],       l4:['p2','g2'],
       m1:['l2','p3'],        p3:['m1','m2'],       m2:['p3','l3']
     };
     // 머무를 만한 길목 (안내데스크 앞·아트 월·복도·통로·라운지 바·독서 코너·라운지)
     var F2_SPOT_KEYS = ['t1','t2','t3','aw','h1','h3','g1','g2','g4','b1','b2','p1','p2','p3'];
+    // 앉는 자리. 자리마다 앉는 좌표와 거쳐 갈 길목을 둔다.
+    // 길목까지는 길을 따라 걷고 거기서 자리까지만 한 걸음 들어간다.
+    // y는 '가구 위에 엉덩이가 닿는 높이'라서 길목 y보다 늘 위쪽이다
+    var F2_SEATS = [
+      { id:'bar1', via:'b1', x:743, y:459 },   // 라운지 바 스툴 넷
+      { id:'bar2', via:'b1', x:797, y:459 },
+      { id:'bar3', via:'b2', x:851, y:459 },
+      { id:'bar4', via:'b2', x:905, y:459 },
+      { id:'rda',  via:'r1', x:722, y:661 },   // 독서 코너 암체어 넷
+      { id:'rdb',  via:'r3', x:722, y:757 },
+      { id:'rdc',  via:'r2', x:928, y:661 },
+      { id:'rdd',  via:'r4', x:928, y:757 },
+      { id:'sfa1', via:'s1', x:363, y:358 },   // 위쪽 3인 소파
+      { id:'sfa2', via:'s1', x:405, y:358 },
+      { id:'sfa3', via:'s1', x:447, y:358 },
+      { id:'sfb1', via:'p3', x:363, y:571 },   // 아래쪽 3인 소파
+      { id:'sfb2', via:'p3', x:405, y:571 },
+      { id:'sfb3', via:'p3', x:447, y:571 },
+      { id:'arm1', via:'p1', x:278, y:455 },   // 라운지 1인 암체어 둘
+      { id:'arm2', via:'p2', x:532, y:455 }
+    ];
+    var f2SeatBy = {};   // 자리 id → 앉아 있는 사람 id (한 자리에 한 명)
     var F2_ELEV = F2_NODES.e;
     var F2_SPEED = 46;   // px/초
     // 보안요원 근무시간. 2층에 사람이 있는 시간대이기도 해서 조명 기준으로도 쓴다
@@ -12023,8 +12047,19 @@
         moveTo(v, n.x, n.y, hop);
       })();
     }
-    function stepWander(v){
+    function stepWander(v, noSit){
       if(!f2Visible(v.id)) return;
+      // 계속 돌아다니는 손님도 가끔은 한 자리에 앉아 쉰다
+      if(!noSit && Math.random() < 0.15){
+        var seat = pickSeat(v);
+        if(seat){
+          stepSeat(v, seat, function(){
+            clearTimeout(v._wait);
+            v._wait = setTimeout(function(){ stepWander(v, true); }, 2000 + Math.random()*3000);
+          });
+          return;
+        }
+      }
       var opts = F2_EDGES[v.node].slice();
       if(opts.length > 1 && v.prev){
         var f = opts.filter(function(n){ return n !== v.prev; });
@@ -12050,8 +12085,59 @@
       }
       return true;
     }
-    function stepSpot(v){
+    // ---- 앉기 ----
+    // 비어 있고 길이 닿는 자리 중에서 하나 고른다
+    function pickSeat(v){
+      var free = F2_SEATS.filter(function(st){
+        return !f2SeatBy[st.id] && f2Path(v.node, st.via) !== null;
+      });
+      if(!free.length) return null;
+      return free[Math.floor(Math.random()*free.length)];
+    }
+    // 앉은 자리를 놓아준다. 서 있는 몸으로 되돌리는 것까지 여기서 한다
+    function leaveSeat(v){
+      f2Sit(v.id, false);
+      if(!v.seat) return;
+      if(f2SeatBy[v.seat.id] === v.id) delete f2SeatBy[v.seat.id];
+      v.seat = null;
+    }
+    // 일어나서 들어왔던 길목으로 되돌아 나온다. 가구 위에서 곧장 걷지 않게
+    // 항상 이걸 거쳐야 한다
+    function riseFromSeat(v, done){
+      var st = v.seat, el = f2El(v.id);
+      // 아직 앉기 전(가는 중)이면 찜만 풀고 선 자리에서 이어간다
+      if(!st || !el || !el._sit){ leaveSeat(v); done(); return; }
+      f2Sit(v.id, false);
+      var back = F2_NODES[st.via];
+      v.target = {x:back.x, y:back.y};
+      moveTo(v, back.x, back.y, function(){ leaveSeat(v); done(); });
+    }
+    // 길목까지 걸어가 → 자리로 한 걸음 들어가 앉고 → 1~3분 뒤 일어난다.
+    // 자리는 고르는 순간 찜해 둔다. 걸어가는 동안 다른 사람이 채가지 않게
+    function stepSeat(v, st, done){
+      f2SeatBy[st.id] = v.id;
+      v.seat = st;
+      var path = f2Path(v.node, st.via) || [];
+      v.target = {x:st.x, y:st.y};
+      f2Travel(v, path, function(){
+        moveTo(v, st.x, st.y, function(){
+          f2Sit(v.id, true);
+          clearTimeout(v._wait);
+          v._wait = setTimeout(function(){ riseFromSeat(v, done); }, 60000 + Math.random()*120000);
+        });
+      });
+    }
+    // noSit이면 이번 차례는 앉지 않는다 (막 일어난 사람이 곧바로 다시 앉지 않게)
+    function stepSpot(v, noSit){
       if(!f2Visible(v.id)) return;
+      var st = noSit ? null : (Math.random() < 0.55 ? pickSeat(v) : null);
+      if(st){
+        stepSeat(v, st, function(){
+          clearTimeout(v._wait);
+          v._wait = setTimeout(function(){ stepSpot(v, true); }, 3000 + Math.random()*6000);
+        });
+        return;
+      }
       var free = F2_SPOT_KEYS.filter(function(k){ return spotFree(F2_NODES[k], v); });
       if(!free.length) free = F2_SPOT_KEYS;
       var k = free[Math.floor(Math.random()*free.length)];
@@ -12067,14 +12153,40 @@
     }
     // 한 칸에서 다섯이 한꺼번에 쏟아지면 겹쳐 보인다. 2.2초 간격으로 한 명씩 내린다
     var F2_VIS_GAP = 2200;
-    function visitorRoam(v){
+    function visitorRoam(v, seated){
       clearTimeout(v._wait);
+      // 이미 앉은 채로 시작한 사람은 남은 시간만 채우고 일어난다
+      if(seated){
+        v._wait = setTimeout(function(){
+          riseFromSeat(v, function(){
+            v._wait = setTimeout(function(){
+              if(v.mode === 'wander') stepWander(v, true); else stepSpot(v, true);
+            }, 3000 + Math.random()*6000);
+          });
+        }, 20000 + Math.random()*90000);
+        return;
+      }
       v._wait = setTimeout(function(){
         if(v.mode === 'wander') stepWander(v); else stepSpot(v);
       }, 400 + Math.random()*2600);
     }
     // 접속한 순간은 이미 와 있던 거라 엘리베이터를 태우지 않고 제자리에 둔다
+    // 앉은 채로 시작했으면 true를 준다
     function placeVisitor(v){
+      leaveSeat(v);
+      if(Math.random() < (v.mode === 'wander' ? 0.15 : 0.5)){
+        var open = F2_SEATS.filter(function(q){ return !f2SeatBy[q.id]; });
+        if(open.length){
+          var st = open[Math.floor(Math.random()*open.length)];
+          f2SeatBy[st.id] = v.id; v.seat = st;
+          v.node = st.via; v.prev = null;
+          v.target = {x:st.x, y:st.y};
+          f2SetPos(v.id, st.x, st.y, 0);
+          f2Sit(v.id, true);
+          f2Show(v.id, true);
+          return true;
+        }
+      }
       var pool = v.mode === 'wander' ? Object.keys(F2_NODES) : F2_SPOT_KEYS;
       var free = pool.filter(function(k){ return k !== 'e' && spotFree(F2_NODES[k], v); });
       if(!free.length) free = pool;
@@ -12083,10 +12195,12 @@
       v.target = {x:F2_NODES[k].x, y:F2_NODES[k].y};
       f2SetPos(v.id, F2_NODES[k].x, F2_NODES[k].y, 0);
       f2Show(v.id, true);
+      return false;
     }
     function startVisitor(v, ride, done){
       clearTimeout(v._wait); clearTimeout(v._mv); clearTimeout(v._ride);
-      if(!ride){ placeVisitor(v); visitorRoam(v); if(done) done(); return; }
+      if(!ride){ visitorRoam(v, placeVisitor(v)); if(done) done(); return; }
+      leaveSeat(v);
       v.node = 'e'; v.prev = null; v.target = {x:F2_ELEV.x, y:F2_ELEV.y};
       f2SetPos(v.id, F2_DOOR.x, F2_DOOR.y, 0);
       v._wait = setTimeout(function(){
@@ -12097,15 +12211,19 @@
       clearTimeout(v._wait); clearTimeout(v._mv); clearTimeout(v._ride);
       v.target = null;
       if(!ride || !f2Visible(v.id)){
+        leaveSeat(v);
         f2Show(v.id, false);
         f2SetPos(v.id, F2_DOOR.x, F2_DOOR.y, 0);
         if(done) done();
         return;
       }
       v._wait = setTimeout(function(){
-        var path = f2Path(v.node, 'e') || ['e'];
-        v.target = {x:F2_ELEV.x, y:F2_ELEV.y};
-        f2Travel(v, path, function(){ f2RideOut(v, done); });
+        // 앉아 있었으면 먼저 일어나 길목으로 나온 뒤에 엘리베이터로 향한다
+        riseFromSeat(v, function(){
+          var path = f2Path(v.node, 'e') || ['e'];
+          v.target = {x:F2_ELEV.x, y:F2_ELEV.y};
+          f2Travel(v, path, function(){ f2RideOut(v, done); });
+        });
       }, VISITORS.indexOf(v) * F2_VIS_GAP);
     }
 
