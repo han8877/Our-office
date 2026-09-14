@@ -52,26 +52,17 @@
     #doorLeafLeft, #doorLeafRight,
     #f2DoorLeafLeft, #f2DoorLeafRight{ transition:none; }
   }
-  /* ===== 근무일지 (누가 썼는지 모르는 낡은 수첩) ===== */
+  /* ===== 오래된 근무일지 (ebook처럼 한 장씩 넘겨 읽는다) ===== */
   #diaryOverlay .mail-window{ max-width:380px; }
-  #diaryOverlay .mail-body{ max-height:64vh; overflow-y:auto; background:#efe6d2; padding:0; }
-  /* 종이: 누런 바탕에 옅은 괘선. 왼쪽에 수첩 철한 자국 */
-  /* 괘선은 26px 간격. 글줄도 26px이라 모든 줄이 선 위에 정확히 앉는다.
-     문단 간격도 26의 배수로만 준다. 하나라도 어긋나면 아래 글이 통째로 밀린다 */
-  .dyPage{
-    position:relative; background:#f6efdd; padding:18px 16px 20px 26px;
-    background-image:repeating-linear-gradient(to bottom, transparent 0 25px, #e2d6ba 25px 26px);
-    background-position:0 18px;
-  }
-  .dyPage::before{
-    content:''; position:absolute; left:15px; top:0; bottom:0; width:1px; background:#d8b9a8;
-  }
-  .dyCover{ text-align:center; padding:22px 18px 18px; background-image:none; }
-  .dyCover::before{ display:none; }
-  .dyCoverMark{ font-size:30px; letter-spacing:6px; color:#8a7a63; font-weight:700; }
-  .dyCoverTitle{ font-size:14px; color:#5c4a3a; margin-top:6px; font-weight:700; }
-  .dyCoverSub{ font-size:11.5px; color:#9a8a72; margin-top:8px; line-height:1.7; }
-  .dyList{ padding:12px 12px 16px; }
+  #diaryOverlay .mail-body{ max-height:78vh; overflow-y:auto; background:#efe6d2; padding:0; }
+  /* 표지 */
+  .dyCover{ text-align:center; padding:26px 20px 16px; }
+  .dyCoverTitle{ font-size:17px; font-weight:700; color:#5c4a3a; letter-spacing:1px; }
+  .dyCoverRule{ width:52px; height:1px; background:#c9b89a; margin:13px auto; }
+  .dyCoverSub{ font-size:11.5px; color:#9a8a72; line-height:1.9; }
+  .dyCoverBtn{ margin:16px auto 0; display:block; min-width:132px; }
+  .dyToc{ padding:4px 12px 16px; }
+  .dyTocCap{ font-size:10.5px; font-weight:700; color:#a3927a; margin:0 3px 7px; letter-spacing:1px; }
   .dyItem{
     display:flex; align-items:baseline; gap:9px; width:100%; box-sizing:border-box; text-align:left;
     background:#fbf6e9; border:1px solid #ddd0b2; border-radius:9px;
@@ -82,21 +73,50 @@
   .dyItem .dyNo{ font-size:10.5px; font-weight:700; color:#8a7a63; flex:none; }
   .dyItem .dyTitle{ flex:1; }
   .dyItem .dyNew{ font-size:9.5px; font-weight:700; color:#fff; background:#c9736a; border-radius:8px; padding:1px 6px; flex:none; }
-  /* 아직 안 열린 회차: 찢긴 종이 */
-  .dyItem.locked{
-    cursor:default; color:#a99a82; background:#eee5d1; border-style:dashed;
-  }
+  /* 아직 안 열린 장: 찢긴 종이 */
+  .dyItem.locked{ cursor:default; color:#a99a82; background:#eee5d1; border-style:dashed; }
   .dyItem.locked .dyTitle{ letter-spacing:3px; }
   .dyLockWhen{ font-size:10.5px; color:#a99a82; flex:none; }
-  /* 본문 */
+
+  /* 종이: 누런 바탕에 옅은 괘선. 왼쪽에 수첩 철한 자국.
+     괘선은 26px 간격이고 글줄도 26px이라 모든 줄이 선 위에 정확히 앉는다.
+     종이 높이와 문단 간격도 전부 26의 배수여야 다음 쪽 첫 줄까지 선을 탄다 */
+  .dyPaper{
+    position:relative; overflow:hidden; background:#f6efdd;
+    padding:18px 16px 18px 26px;
+    background-image:repeating-linear-gradient(to bottom, transparent 0 25px, #e2d6ba 25px 26px);
+    background-position:0 18px;
+  }
+  .dyPaper::before{
+    content:''; position:absolute; left:15px; top:0; bottom:0; width:1px; background:#d8b9a8;
+  }
+  /* 단을 종이 너비만큼씩 만들어 놓고 가로로 밀어서 쪽을 넘긴다 (줄바꿈은 브라우저가 한다) */
+  .dyFlow{ height:100%; column-fill:auto; transition:transform .22s ease; }
+  .dyChap{ break-inside:auto; }
+  .dyChap + .dyChap, .dyEnd{ break-before:column; }
+  .dyHead{ break-after:avoid; break-inside:avoid; }
   .dyMeta{ font-size:10.5px; line-height:26px; color:#9a8a72; margin:0; }
   .dyH{ font-size:14px; font-weight:700; line-height:26px; color:#5c4a3a; margin:0 0 26px; }
   .dyP{ font-size:12.5px; line-height:26px; color:#4a3f33; margin:0; word-break:keep-all; }
   .dyP.gap{ margin-top:26px; }
   /* 여백에 흘려 쓴 메모 */
   .dyNote{ font-size:11.5px; line-height:26px; color:#8a6f53; margin:26px 0 0; padding-left:10px; border-left:2px solid #d8c5a2; font-style:italic; }
-  .dyFoot{ display:flex; gap:7px; padding:12px; background:#efe6d2; }
-  .dyFoot .btn{ flex:1; justify-content:center; font-size:12px; height:32px; }
+  /* 마지막 쪽: 다음 장은 아직 안 열렸다 */
+  .dyEnd{ text-align:center; color:#a3927a; padding-top:52px; }
+  .dyEnd .dyEndMark{ font-size:22px; letter-spacing:5px; line-height:52px; }
+  .dyEnd .dyEndTxt{ font-size:11.5px; line-height:26px; margin:0; }
+
+  /* 쪽 넘김 막대 */
+  .dyNav{ display:flex; align-items:center; gap:8px; padding:10px 12px; background:#efe6d2; }
+  .dyNav .dyArrow{
+    width:38px; height:32px; flex:none; border:1.3px solid #5c4a3a; border-radius:8px;
+    background:#fff; color:#5c4a3a; font-size:15px; line-height:1; cursor:pointer; font-family:inherit;
+  }
+  .dyNav .dyArrow:disabled{ opacity:.3; cursor:not-allowed; }
+  .dyNav .dyArrow:active:not(:disabled){ transform:scale(0.96); }
+  .dyPageNo{ flex:1; text-align:center; font-size:11.5px; color:#8a7a63; }
+  .dyPageNo b{ color:#5c4a3a; }
+  .dyNav .dyHome{ height:32px; padding:0 10px; flex:none; font-size:11.5px; }
   /* ===== 결재함 ===== */
   #apprOverlay .mail-window{ max-width:360px; }
   #apprOverlay .mail-body{ max-height:60vh; overflow-y:auto; background:#faf7f0; padding:10px; }
@@ -4387,7 +4407,7 @@
 
 <div class="mail-overlay" id="diaryOverlay">
   <div class="mail-window" id="diaryWindow">
-    <div class="mail-head"><span id="diaryHeadTitle">???의 근무일지</span><button id="diaryCloseX">×</button></div>
+    <div class="mail-head"><span id="diaryHeadTitle">오래된 근무일지</span><button id="diaryCloseX">×</button></div>
     <div class="mail-body" id="diaryBody"></div>
   </div>
 </div>
@@ -4673,7 +4693,7 @@
       <tr><td>메신저</td><td>전체채팅·1:1 채팅과 쪽지를 주고받을 수 있어요. 새 쪽지가 오면 버튼에 빨간 숫자가 붙습니다</td></tr>
       <tr><td>프로젝트</td><td>사업 등록·관리 (8번 설명 참고)</td></tr>
       <tr><td>야근모드</td><td>전원 퇴근 후 랜덤 2~4명만 남아 야근 시작</td></tr>
-      <tr><td>일지</td><td>사물함에서 나온 주인 없는 수첩을 읽습니다 (11번 설명 참고). 아직 안 읽은 장이 있으면 버튼에 빨간 숫자가 붙어요</td></tr>
+      <tr><td>일지</td><td>사물함에서 나온 <b>오래된 근무일지</b>를 한 쪽씩 넘겨 읽습니다 (10번 설명 참고). 아직 안 읽은 장이 있으면 버튼에 빨간 숫자가 붙어요</td></tr>
       <tr><td>설정</td><td>제작자 소개, 이름 변경(회사명·팀명·직원 이름), 주간 리포트, 초기화</td></tr>
     </table>
     <p>그 밖에 화면에서 직접 쓸 수 있는 것들입니다.</p>
@@ -4755,9 +4775,10 @@
       <tr><td>그 외</td><td>휴가류와 공통 비품은 그날 출근한 직원 누구나 올립니다</td></tr>
     </table>
 
-    <h3>10. ???의 근무일지는 무엇인가요?</h3>
-    <p>사물함에서 나온 <b>주인 없는 수첩</b>입니다. 이 건물에서 일하는 누군가가 매일 한 장씩 적어둔 기록이고, 끝까지 이름이 적혀 있지 않아요. 게임은 누가 썼는지 알려주지 않습니다. 답은 수첩 안에만 있어요.</p>
-    <p>장은 <b>누적 접속일</b>에 따라 한 장씩 열립니다. 연속 출근이 아니라 누적이라서 하루 건너뛰어도 읽던 진도는 그대로예요. 아직 열리지 않은 장은 제목 자리에 <code>???</code>만 보이고, 옆에 며칠째부터 열리는지가 적혀 있습니다.</p>
+    <h3>10. 오래된 근무일지는 무엇인가요?</h3>
+    <p>사물함에서 나온 <b>주인 없는 수첩</b>입니다. 이 건물에서 일하는 누군가가 하루에 한 장씩 적어둔 기록이고, 표지에도 안쪽에도 이름이 없어요. 게임은 누가 썼는지 알려주지 않습니다. 답은 수첩 안에만 있어요.</p>
+    <p>왼쪽 메뉴의 <code>일지</code>를 누르면 표지가 열리고, <code>읽기</code>를 누르면 첫 장 첫 쪽부터 펼쳐집니다. 아래 <code>‹</code> <code>›</code>로 한 쪽씩 넘기고, 휴대폰에서는 손가락으로 쓸어 넘겨도 돼요. 컴퓨터에서는 좌우 화살표 키도 먹습니다. 표지의 목차에서 장을 고르면 그 장이 시작하는 쪽으로 바로 갑니다.</p>
+    <p>장은 <b>누적 접속일</b>에 따라 한 장씩 열립니다. 연속 출근이 아니라 누적이라서 하루 건너뛰어도 읽던 진도는 그대로예요. 아직 열리지 않은 장은 목차에서 제목 자리에 <code>???</code>만 보이고, 옆에 며칠째부터 열리는지가 적혀 있습니다.</p>
 
     <h3>11. 실장님의 한마디</h3>
     <p>휴대폰에서 <b>뒤로가기</b>를 누르면 열려 있던 창부터 하나씩 닫힙니다. 아무 창도 열려 있지 않을 때 누르면 <b>퇴근하시겠어요?</b>를 물어보고, 퇴근하기를 눌러야 사무실에서 나갑니다. 나가더라도 오늘 일지·사물함·설정·연속 출근은 그대로 남아 있어요.</p>
@@ -7110,7 +7131,7 @@
   });
 
   // ══════════════════════════════════════════════════════════════
-  //  ???의 근무일지 — 여기 DIARY 배열에만 글을 써 넣으면 된다
+  //  오래된 근무일지 — 여기 DIARY 배열에만 글을 써 넣으면 된다
   //
   //  { no  : 회차 번호 (1부터 차례대로)
   //    day : 누적 접속 며칠째부터 열리는지 (1이면 처음부터)
@@ -7184,25 +7205,34 @@
 
   var diaryOverlay = byId('diaryOverlay');
   var diaryBody = byId('diaryBody');
-  var diaryHeadTitle = byId('diaryHeadTitle');
 
-  // 목록: 표지 + 회차. 안 열린 회차는 제목 대신 ???만 보인다
-  function diaryList(){
-    diaryHeadTitle.textContent = '???의 근무일지';
-    var opened = DIARY.filter(diaryOpened).length;
-    var h = '<div class="dyPage dyCover">'
-          + '<div class="dyCoverMark">???</div>'
-          + '<div class="dyCoverTitle">의 근무일지</div>'
-          + '<div class="dyCoverSub">사물함에서 나온 수첩입니다.<br>주인을 찾지 못했습니다.<br>'
+  function diaryEsc(t){
+    return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function diaryOpenList(){ return DIARY.filter(diaryOpened); }
+  function diaryNextLocked(){
+    var f = null;
+    DIARY.forEach(function(ep){ if(!f && !diaryOpened(ep)) f = ep; });
+    return f;
+  }
+
+  // ---- 표지 ----
+  // 읽기를 누르면 첫 장 첫 쪽부터 펼쳐진다. 목차에서 장을 골라 바로 갈 수도 있다
+  function diaryCover(){
+    var opened = diaryOpenList().length;
+    var h = '<div class="dyCover">'
+          + '<div class="dyCoverTitle">오래된 근무일지</div>'
+          + '<div class="dyCoverRule"></div>'
+          + '<div class="dyCoverSub">사물함에서 나온 수첩입니다.<br>표지에도 안쪽에도 이름이 없습니다.<br>'
           + '지금까지 ' + opened + '장 / 모두 ' + DIARY.length + '장</div>'
-          + '</div><div class="dyList">';
+          + '<button class="btn dyCoverBtn" id="dyStartBtn">읽기</button>'
+          + '</div><div class="dyToc"><p class="dyTocCap">목차</p>';
     DIARY.forEach(function(ep){
       if(diaryOpened(ep)){
-        var isNew = !diaryState.read[ep.no];
         h += '<button class="dyItem" data-no="' + ep.no + '">'
            + '<span class="dyNo">' + ep.no + '장</span>'
-           + '<span class="dyTitle">' + ep.title + '</span>'
-           + (isNew ? '<span class="dyNew">새 장</span>' : '')
+           + '<span class="dyTitle">' + diaryEsc(ep.title) + '</span>'
+           + (diaryState.read[ep.no] ? '' : '<span class="dyNew">새 장</span>')
            + '</button>';
       } else {
         h += '<div class="dyItem locked">'
@@ -7215,50 +7245,156 @@
     h += '</div>';
     diaryBody.innerHTML = h;
     diaryBody.scrollTop = 0;
-    Array.prototype.forEach.call(diaryBody.querySelectorAll('.dyItem[data-no]'), function(b){
-      b.addEventListener('click', function(){ diaryOpen(+b.getAttribute('data-no')); });
+    diaryMode = 'cover';
+    var sb = byId('dyStartBtn');
+    if(opened) sb.addEventListener('click', function(){ diaryRead(0); });
+    else { sb.disabled = true; sb.textContent = '아직 없음'; }
+    Array.prototype.forEach.call(diaryBody.querySelectorAll('.dyItem[data-no]'), function(btn){
+      btn.addEventListener('click', function(){ diaryRead(+btn.getAttribute('data-no')); });
     });
   }
 
-  function diaryEsc(t){
-    return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-  function diaryOpen(no){
-    var ep = null;
-    DIARY.forEach(function(e){ if(e.no === no) ep = e; });
-    if(!ep || !diaryOpened(ep)) return;
-    diaryHeadTitle.textContent = '???의 근무일지';
-    var h = '<div class="dyPage dyRead">';
-    h += '<div class="dyMeta">' + ep.no + '장' + (ep.when ? ' · ' + diaryEsc(ep.when) : '') + '</div>';
-    h += '<h3 class="dyH">' + diaryEsc(ep.title) + '</h3>';
-    (ep.lines || []).forEach(function(ln){
-      var gap = ln.indexOf('__') === 0;
-      h += '<p class="dyP' + (gap ? ' gap' : '') + '">' + diaryEsc(gap ? ln.slice(2) : ln) + '</p>';
+  // ---- 본문 ----
+  // 단(column)을 종이 너비만큼씩 만들어 두고 가로로 밀어서 쪽을 넘긴다.
+  // 줄바꿈과 쪽 나누기는 브라우저가 하므로 글이 아무리 길어져도 그대로 흐른다
+  var diaryMode = 'cover';
+  var dyPaper = null, dyFlow = null, dyPage = 0, dyPages = 1, dyStep = 0;
+  var DY_GAP = 40;
+
+  function diaryFlowHtml(){
+    var h = '';
+    diaryOpenList().forEach(function(ep){
+      h += '<div class="dyChap" data-no="' + ep.no + '">'
+         + '<div class="dyHead">'
+         + '<div class="dyMeta">' + ep.no + '장' + (ep.when ? ' · ' + diaryEsc(ep.when) : '') + '</div>'
+         + '<h3 class="dyH">' + diaryEsc(ep.title) + '</h3>'
+         + '</div>';
+      (ep.lines || []).forEach(function(ln){
+        var gap = ln.indexOf('__') === 0;
+        h += '<p class="dyP' + (gap ? ' gap' : '') + '">' + diaryEsc(gap ? ln.slice(2) : ln) + '</p>';
+      });
+      if(ep.note) h += '<p class="dyNote">' + diaryEsc(ep.note) + '</p>';
+      h += '</div>';
     });
-    if(ep.note) h += '<p class="dyNote">' + diaryEsc(ep.note) + '</p>';
-    h += '</div><div class="dyFoot">'
-       + '<button class="btn" id="dyBackBtn">목록</button>'
-       + (diaryNextOf(ep) ? '<button class="btn" id="dyNextBtn">다음 장</button>' : '')
-       + '</div>';
-    diaryBody.innerHTML = h;
-    diaryBody.scrollTop = 0;
-    if(!diaryState.read[ep.no]){ diaryState.read[ep.no] = true; diarySave(); diaryBadge(); }
-    byId('dyBackBtn').addEventListener('click', diaryList);
-    var nb = byId('dyNextBtn');
-    if(nb) nb.addEventListener('click', function(){ diaryOpen(diaryNextOf(ep).no); });
+    var nx = diaryNextLocked();
+    if(nx){
+      h += '<div class="dyEnd"><div class="dyEndMark">???</div>'
+         + '<p class="dyEndTxt">다음 장은 아직 쓰이지 않았습니다.</p>'
+         + '<p class="dyEndTxt">누적 ' + nx.day + '일째에 펼쳐집니다.</p></div>';
+    } else {
+      h += '<div class="dyEnd"><div class="dyEndMark">·</div>'
+         + '<p class="dyEndTxt">여기까지가 수첩에 적힌 전부입니다.</p></div>';
+    }
+    return h;
   }
-  function diaryNextOf(ep){
-    var found = null;
-    DIARY.forEach(function(e){ if(!found && e.no > ep.no && diaryOpened(e)) found = e; });
-    return found;
+
+  // 종이 높이는 26의 배수로만 잡는다. 한 줄이라도 어긋나면 다음 쪽 첫 줄이 선에서 벗어난다
+  function diaryPaperH(){
+    var avail = Math.min(window.innerHeight * 0.52, 546);
+    return Math.max(208, Math.floor(avail / 26) * 26);
+  }
+
+  function diaryRead(startNo){
+    diaryMode = 'read';
+    diaryBody.innerHTML =
+        '<div class="dyPaper" id="dyPaper"><div class="dyFlow" id="dyFlow">' + diaryFlowHtml() + '</div></div>'
+      + '<div class="dyNav">'
+      + '<button class="dyArrow" id="dyPrev" aria-label="이전 쪽">‹</button>'
+      + '<span class="dyPageNo" id="dyPageNo"></span>'
+      + '<button class="dyArrow" id="dyNext" aria-label="다음 쪽">›</button>'
+      + '<button class="btn dyHome" id="dyHomeBtn">표지</button>'
+      + '</div>';
+    diaryBody.scrollTop = 0;
+    dyPaper = byId('dyPaper'); dyFlow = byId('dyFlow');
+    diaryLayout();
+    // startNo가 0이면 첫 쪽, 아니면 그 장이 시작하는 쪽으로
+    diaryGo(startNo ? diaryPageOfChapter(startNo) : 0);
+    byId('dyPrev').addEventListener('click', function(){ diaryGo(dyPage - 1); });
+    byId('dyNext').addEventListener('click', function(){ diaryGo(dyPage + 1); });
+    byId('dyHomeBtn').addEventListener('click', diaryCover);
+    diarySwipe(dyPaper);
+  }
+
+  function diaryLayout(){
+    if(!dyPaper || !dyFlow) return;
+    dyPaper.style.height = diaryPaperH() + 'px';
+    var w = dyFlow.clientWidth;
+    dyStep = w + DY_GAP;
+    dyFlow.style.columnWidth = w + 'px';
+    dyFlow.style.columnGap = DY_GAP + 'px';
+    // 단이 다시 짜인 뒤에 재야 전체 너비가 맞다
+    dyPages = Math.max(1, Math.round((dyFlow.scrollWidth + DY_GAP) / dyStep));
+  }
+
+  function diaryPageOfChapter(no){
+    if(!dyFlow || !dyStep) return 0;
+    var el = dyFlow.querySelector('.dyChap[data-no="' + no + '"]');
+    if(!el) return 0;
+    return Math.max(0, Math.min(dyPages - 1, Math.round(el.offsetLeft / dyStep)));
+  }
+
+  function diaryGo(n){
+    if(!dyFlow) return;
+    dyPage = Math.max(0, Math.min(dyPages - 1, n));
+    dyFlow.style.transform = 'translateX(' + (-dyPage * dyStep) + 'px)';
+    byId('dyPrev').disabled = dyPage <= 0;
+    byId('dyNext').disabled = dyPage >= dyPages - 1;
+    byId('dyPageNo').innerHTML = '<b>' + (dyPage + 1) + '</b> / ' + dyPages;
+    diaryMarkRead();
+  }
+
+  // 지금 펼쳐진 쪽에 걸쳐 있는 장을 읽은 것으로 친다
+  function diaryMarkRead(){
+    if(!dyFlow || !dyStep) return;
+    var left = dyPage * dyStep, right = left + dyStep, changed = false;
+    Array.prototype.forEach.call(dyFlow.querySelectorAll('.dyChap'), function(el){
+      var a = el.offsetLeft, b = a + el.offsetWidth;
+      if(a < right - 1 && b > left + 1){
+        var no = el.getAttribute('data-no');
+        if(!diaryState.read[no]){ diaryState.read[no] = true; changed = true; }
+      }
+    });
+    if(changed){ diarySave(); diaryBadge(); }
+  }
+
+  // 손가락으로 쓸어 넘기기
+  function diarySwipe(el){
+    var x0 = null;
+    el.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+    el.addEventListener('touchend', function(e){
+      if(x0 === null) return;
+      var dx = e.changedTouches[0].clientX - x0;
+      x0 = null;
+      if(Math.abs(dx) < 40) return;
+      diaryGo(dyPage + (dx < 0 ? 1 : -1));
+    }, {passive:true});
   }
 
   byId('diaryBtn').addEventListener('click', function(){
-    diaryList();
+    diaryCover();
     diaryOverlay.classList.add('show');
   });
   byId('diaryCloseX').addEventListener('click', function(){ diaryOverlay.classList.remove('show'); });
   diaryOverlay.addEventListener('click', function(e){ if(e.target===diaryOverlay) diaryOverlay.classList.remove('show'); });
+
+  // 좌우 화살표로도 넘긴다 (일지가 펼쳐져 있을 때만)
+  document.addEventListener('keydown', function(e){
+    if(diaryMode !== 'read' || !diaryOverlay.classList.contains('show')) return;
+    if(e.key === 'ArrowLeft'){ diaryGo(dyPage - 1); e.preventDefault(); }
+    else if(e.key === 'ArrowRight'){ diaryGo(dyPage + 1); e.preventDefault(); }
+  });
+  // 창 크기가 바뀌면 쪽 나눔이 달라진다. 보던 장을 잃지 않게 그 장 첫 쪽으로 다시 맞춘다
+  window.addEventListener('resize', function(){
+    if(diaryMode !== 'read' || !diaryOverlay.classList.contains('show')) return;
+    var keep = null;
+    var left = dyPage * dyStep, right = left + dyStep;
+    Array.prototype.forEach.call(dyFlow.querySelectorAll('.dyChap'), function(el){
+      if(keep === null && el.offsetLeft < right - 1 && el.offsetLeft + el.offsetWidth > left + 1)
+        keep = el.getAttribute('data-no');
+    });
+    diaryLayout();
+    diaryGo(keep ? diaryPageOfChapter(+keep) : 0);
+  });
   diaryBadge();
 
   // ===== 회의: 랜덤 6명, 10초간 회의실행, 버튼 비활성화 =====
