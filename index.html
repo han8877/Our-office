@@ -7233,6 +7233,57 @@
         '최실장은 비밀을 알고 있을까?',
         '혼자 사무공간이 있는 최실장을',
         '관찰하기란 어려운 일이다.'
+      ] },
+
+    { no:4, day:10,
+      lines:[
+        '탕비실에서 김팀장과 이야기했다.',
+        '큰 소득은 없었다. 평범한 이야기 뿐이었다.',
+        '매일 이런 식이다.'
+      ] },
+
+    { no:5, day:14,
+      lines:[
+        '비가 온다. 비가 오면 창문아래 우산이 생긴다.',
+        '우산 세 개, 그 우산은 누구것일까?'
+      ] },
+
+    { no:6, day:18,
+      lines:[
+        '출근, 출근… 또 출근.',
+        '머리가 아프다.'
+      ] },
+
+    { no:7, day:22,
+      lines:[
+        '메신저에서 소외감이 든다.',
+        '나는 알 수 없는 이야기들 뿐…',
+        '내 말에 대답을 제대로 해주지 않는다.',
+        '어쩌다 가끔 대화를 나눌뿐이다.',
+        '누구와 얘기해야하지?'
+      ] },
+
+    { no:8, day:27,
+      lines:[
+        '곧 점심시간이다.',
+        '사무실에 혼자 남을 수가 없다.'
+      ] },
+
+    { no:9, day:32,
+      lines:[
+        '재고창고에 물건들이 많다.',
+        '똑같이 생긴 물건들…',
+        '그 물건들은 다 어디로 가는 것일까?'
+      ] },
+
+    { no:10, day:38,
+      lines:[
+        '최실장과 우연히 마주쳤다.',
+        '기분 탓일까? 눈빛이 무언가를',
+        '얘기하고 싶어하는 것 같았다.',
+        '내일 탕비실에서 이야기 나눌 수 있을까?',
+        '계속 비가 온다.',
+        '같이 야근하자고 할까?'
       ] }
   ];
 
@@ -7259,8 +7310,9 @@
   function diaryBadge(){
     if(!diaryBadgeEl) return;
     var n = diaryUnread();
-    diaryBadgeEl.textContent = n || '';
-    diaryBadgeEl.style.display = n ? '' : 'none';
+    diaryBadgeEl.textContent = n > 0 ? n : '';
+    diaryBadgeEl.classList.toggle('has-count', n > 0);
+    diaryBadgeEl.style.display = n > 0 ? '' : 'none';
   }
 
   var diaryOverlay = byId('diaryOverlay');
