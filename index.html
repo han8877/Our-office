@@ -52,6 +52,39 @@
     #doorLeafLeft, #doorLeafRight,
     #f2DoorLeafLeft, #f2DoorLeafRight{ transition:none; }
   }
+  /* ===== 결재함 ===== */
+  #apprOverlay .mail-window{ max-width:360px; }
+  #apprOverlay .mail-body{ max-height:60vh; overflow-y:auto; background:#faf7f0; padding:10px; }
+  #apprBudget{ background:#fffdf8; border:1px solid #e3ddcd; border-radius:9px; padding:9px 11px; margin-bottom:10px; }
+  #apprBudget .apprBudTop{ display:flex; justify-content:space-between; align-items:baseline; font-size:12px; color:#6b5a44; }
+  #apprBudget .apprBudTop b{ font-size:13.5px; color:#5c4a3a; }
+  .apprBudBar{ height:7px; background:#ece5d5; border-radius:4px; margin-top:7px; overflow:hidden; }
+  .apprBudFill{ height:100%; background:#8fbf6f; border-radius:4px; transition:width .4s ease; }
+  .apprBudFill.low{ background:#e0a35a; }
+  .apprBudFill.out{ background:#c9736a; }
+  .apprSec{ font-size:11.5px; font-weight:700; color:#8a7a63; margin:12px 2px 6px; }
+  .apprCard{ background:#fffdf8; border:1px solid #e3ddcd; border-radius:10px; padding:10px 11px; margin-bottom:8px; }
+  .apprTop{ display:flex; align-items:center; gap:7px; margin-bottom:6px; }
+  .apprIcon{ font-size:15px; line-height:1; }
+  .apprKind{ font-size:10.5px; font-weight:700; color:#7d6b54; background:#f1ebdc; border-radius:9px; padding:2px 7px; }
+  .apprWho{ font-size:11.5px; color:#8a7a63; margin-left:auto; }
+  .apprTitle{ font-size:13px; font-weight:700; color:#4a3a2c; line-height:1.35; }
+  .apprWhy{ font-size:11.5px; color:#7d6b54; margin-top:3px; line-height:1.4; }
+  .apprCost{ font-size:12px; font-weight:700; color:#5c4a3a; margin-top:6px; }
+  .apprCost .free{ color:#8a7a63; font-weight:500; }
+  .apprBtns{ display:flex; gap:6px; margin-top:9px; }
+  .apprBtns button{ flex:1; border:1px solid #d8d0bd; border-radius:7px; padding:7px 0; font-size:12.5px;
+                    font-family:inherit; cursor:pointer; background:#fffdf8; color:#5c4a3a; }
+  .apprBtns .ok{ background:#eaf3e3; border-color:#b9d3a6; color:#4a6b39; font-weight:700; }
+  .apprBtns .ok:disabled{ background:#f2efe8; border-color:#e0d9c8; color:#b0a794; cursor:not-allowed; font-weight:500; }
+  .apprBtns .no{ background:#f7efee; border-color:#e2c7c3; color:#8f5750; }
+  .apprDone{ opacity:0.72; }
+  .apprStamp{ font-size:11px; font-weight:700; border-radius:8px; padding:2px 8px; margin-left:auto; }
+  .apprStamp.ok{ color:#4a6b39; background:#eaf3e3; }
+  .apprStamp.no{ color:#8f5750; background:#f7efee; }
+  .apprEmpty{ text-align:center; color:#9a8f7c; font-size:12.5px; padding:26px 10px; line-height:1.6; }
+  .apprNote{ font-size:11px; color:#9a8f7c; text-align:center; margin-top:10px; line-height:1.5; }
+
   .bubble{ }
   .floater{ font-size:12px; fill:#5c4a3a; animation:floatUp 1.3s ease-out forwards; }
   @keyframes floatUp{ 0%{ transform:translateY(0); opacity:1; } 100%{ transform:translateY(-26px); opacity:0; } }
@@ -1824,9 +1857,9 @@
     <span>청소</span>
   </button>
   <i class="sideSep"></i>
-  <button class="sideBtn" id="mailOpenBtn" aria-label="메일 보내기">
-    <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="11" rx="1.5" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M1 1 L8 7 L15 1" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
-    <span>메일</span>
+  <button class="sideBtn" id="apprOpenBtn" aria-label="결재함">
+    <svg width="13" height="14" viewBox="0 0 13 14"><path d="M1.5 0.5 h7 l3 3 v10 h-10 z" fill="none" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M8.5 0.5 v3 h3" fill="none" stroke="#5c4a3a" stroke-width="1" stroke-linejoin="round"/><path d="M3.6 8.6 L5.3 10.3 L9.2 6.4" fill="none" stroke="#5c4a3a" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span>결재 <span id="apprBadge" class="msg-badge"></span></span>
   </button>
   <button class="sideBtn" id="messengerBtn" aria-label="메신저">
     <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="9" rx="2" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M4 9.5 L4 11.5 L6.5 9.5" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
@@ -4300,17 +4333,10 @@
   <div id="logBody"></div>
 </aside>
 
-<div class="mail-overlay" id="mailOverlay">
+<div class="mail-overlay" id="apprOverlay">
   <div class="mail-window">
-    <div class="mail-head"><span>새 메일 작성</span><button id="mailCloseX">×</button></div>
-    <div class="mail-body">
-      <div class="mail-field"><label>받는사람</label><input type="text" id="mailTo" placeholder="(주)끄적끄적문구 디자인실장실" value="(주)끄적끄적문구 디자인실장실"></div>
-      <div class="mail-field"><label>보내는사람</label><input type="text" id="mailFrom" value="나"></div>
-      <div class="mail-field"><label>제목</label><input type="text" id="mailSubject" placeholder="제목 없음"></div>
-      <textarea id="mailBody" placeholder="내용을 입력하세요" maxlength="60"></textarea>
-      <div class="mail-error" id="mailError"></div>
-      <button class="btn mail-send" id="mailSendBtn">보내기</button>
-    </div>
+    <div class="mail-head"><span>결재함</span><button id="apprCloseX">×</button></div>
+    <div class="mail-body" id="apprBody"></div>
   </div>
 </div>
 
@@ -4588,7 +4614,7 @@
       <tr><td>탕비실</td><td>회의 중이 아닌 직원 중 랜덤 2명이 잡담</td></tr>
       <tr><td>장소 이용</td><td>사무실의 여섯 공간을 이용합니다 (6번 설명 참고)</td></tr>
       <tr><td>청소</td><td>10분마다 바닥에 먼지가 한 곳씩 쌓입니다. 누르면 한 번에 치워요</td></tr>
-      <tr><td>메일</td><td>직원 중 한 명이 메일 내용의 최대 20자를 말풍선에 띄움</td></tr>
+      <tr><td>결재</td><td>직원들이 올린 결재를 승인·반려합니다 (9번 설명 참고). 미결재가 있으면 버튼에 빨간 숫자가 붙어요</td></tr>
       <tr><td>메신저</td><td>전체채팅·1:1 채팅과 쪽지를 주고받을 수 있어요. 새 쪽지가 오면 버튼에 빨간 숫자가 붙습니다</td></tr>
       <tr><td>프로젝트</td><td>사업 등록·관리 (8번 설명 참고)</td></tr>
       <tr><td>야근모드</td><td>전원 퇴근 후 랜덤 2~4명만 남아 야근 시작</td></tr>
@@ -4643,7 +4669,21 @@
     <p><code>추가</code> → 사업명·기간·내용·예산 + 완료까지 걸리는 시간(분) 입력 → <code>저장</code> (최대 10개)</p>
     <p>사업마다 각자 설정한 시간이 지나면 자동 완료돼요. 그리고 그 순간 전 직원이 "프로젝트 완료!"를 외칩니다. 실제 시각 기준 저장이라 새로고침해도 카운트는 유지됩니다.</p>
 
-    <h3>9. 실장님의 한마디</h3>
+    <h3>9. 결재함은 어떤 기능인가요?</h3>
+    <p>매일 직원들이 <b>1~3건</b>을 올립니다. 휴가·비품·복리·시설·교육·인사 여섯 갈래이고, 누가 무엇을 올릴지는 날짜마다 정해져 있어 같은 날 다시 들어와도 같은 건이 기다리고 있어요. 이미 처리한 건은 도장이 찍힌 채로 남습니다.</p>
+    <p>승인하면 <b>이번 달 결재 예산</b>에서 금액이 빠집니다. 예산은 매달 150만원이고 달이 바뀌면 다시 채워져요. 남은 예산보다 비싼 건은 승인 버튼이 잠깁니다.</p>
+    <p>승인·반려 둘 다 신청자가 바로 반응합니다. 표정이 바뀌고 한마디 하고, 사무실 일지에도 남아요.</p>
+    <table class="helpTable">
+      <thead><tr><th>갈래</th><th>승인하면</th></tr></thead>
+      <tr><td>휴가</td><td>신청한 직원이 <b>다음 근무일에 연차</b>를 씁니다</td></tr>
+      <tr><td>교육</td><td>신청한 직원이 <b>다음 근무일에 출장</b>을 갑니다</td></tr>
+      <tr><td>비품</td><td>그날 <b>주문량이 1.5배</b> 빠르게 쌓입니다</td></tr>
+      <tr><td>시설(냉난방기)</td><td><b>수리기사</b>가 바로 방문해 기기를 점검합니다</td></tr>
+      <tr><td>시설(어항)</td><td>관리 업체가 <b>어항에 밥</b>을 주고 갑니다</td></tr>
+      <tr><td>복리·인사</td><td>신청한 직원의 기분이 그날 내내 좋아집니다</td></tr>
+    </table>
+
+    <h3>10. 실장님의 한마디</h3>
     <p>휴대폰에서 <b>뒤로가기</b>를 누르면 열려 있던 창부터 하나씩 닫힙니다. 아무 창도 열려 있지 않을 때 누르면 <b>퇴근하시겠어요?</b>를 물어보고, 퇴근하기를 눌러야 사무실에서 나갑니다. 나가더라도 오늘 일지·사물함·설정·연속 출근은 그대로 남아 있어요.</p>
     <p>배경음은 <b>시간대 자동</b>으로 바뀝니다. 오전 근무(09~12시)는 02번, 점심·오후 근무(12~18시)는 03번, 야근(18시 이후 또는 야근모드)은 04번, 주말·공휴일은 05번, 그 밖의 시각은 01번이에요. 목록에서 음원을 직접 고르면 자동이 꺼지고 그 곡으로 계속 틉니다. 자동 버튼을 다시 누르면 지금 시간대에 맞는 곡으로 돌아갑니다.</p>
     <p>메신저 답장은 사람이 보내는 것처럼 옵니다. 내 말을 읽는 시간과 답을 쓰는 시간만큼 기다린 뒤 오고, 그동안 <b>입력 중</b> 표시가 뜹니다. 답이 길면 두 통으로 나눠 보내고, 대화가 이어지도록 가끔 되묻기도 해요. 성격에 따라 말끝도 조금씩 다릅니다.</p>
@@ -5493,6 +5533,8 @@
     return staff[idx];
   }
   function isOnLeaveToday(id){
+    // 어제 결재로 승인한 연차가 있으면 그 사람이 오늘 연차다
+    if(typeof apprLeaveIdToday === 'function' && apprLeaveIdToday() === id) return true;
     var s = getOnLeaveStaffToday();
     return !!s && s.id === id;
   }
@@ -5509,6 +5551,7 @@
     return pool[idx];
   }
   function isOnTripToday(id){
+    if(typeof apprTripIdToday === 'function' && apprTripIdToday() === id) return true;
     var s = getOnTripStaffToday();
     return !!s && s.id === id;
   }
@@ -5522,13 +5565,22 @@
     if(trip) ids[trip.id] = 'trip';
     return ids;
   }
+  // 결재로 생긴 연차·출장까지 포함한 목록 (결재함이 신청자를 고를 때는 위 함수를 쓴다)
+  function getOutAllDayIdsAll(){
+    var ids = getOutAllDayIds();
+    if(typeof apprLeaveIdToday === 'function'){
+      var al = apprLeaveIdToday(); if(al) ids[al] = 'leave';
+      var at = apprTripIdToday();  if(at) ids[at] = 'trip';
+    }
+    return ids;
+  }
 
   // 오늘 조퇴하는 직원(있다면) — 매일 약 20% 확률로 한 명, 14:30~17:29 사이 랜덤 시각에 조퇴 (연차/출장자는 제외)
   function getEarlyLeaveStaffToday(){
     var key = dateKey();
     var flagVal = seedHash(key+'-earlyflag') % 100;
     if(flagVal >= 20) return null;
-    var outIds = getOutAllDayIds();
+    var outIds = getOutAllDayIdsAll();
     var pool = staff.filter(function(s){ return !outIds[s.id]; });
     if(pool.length === 0) return null;
     var idx = seedHash(key+'-earlyidx') % pool.length;
@@ -5547,7 +5599,7 @@
   }
   // 오늘 하루 기준으로 이 직원이 "지금은 없는" 상태인지(연차/출장/조퇴 통합)
   function isGoneForDay(id){
-    var outIds = getOutAllDayIds();
+    var outIds = getOutAllDayIdsAll();
     if(outIds[id]) return true;
     return hasLeftEarlyByNow(id);
   }
@@ -5580,7 +5632,7 @@
   // 08:30이 되면, 각 직원마다 0~30분 사이 랜덤한 시각에 혼자 걸어들어오도록 예약 (연차/출장자는 제외)
   function scheduleRandomArrivals(){
     if(isNonWorkingDay()) return;
-    var outIds = getOutAllDayIds();
+    var outIds = getOutAllDayIdsAll();
     staff.forEach(function(s){
       if(outIds[s.id]) return;
       var offsetMin = Math.random() * 29.5;
@@ -5603,7 +5655,7 @@
   // 9시 정각에는 예약이 늦었더라도 무조건 전원 출근 상태로 보정 (연차/출장자는 제외)
   function ensureAllArrived(){
     if(isNonWorkingDay()) return;
-    var outIds = getOutAllDayIds();
+    var outIds = getOutAllDayIdsAll();
     staff.forEach(function(s){
       if(outIds[s.id]) return;
       if(!charEl(s.id).classList.contains('present')) showInstant(s.id);
@@ -5625,7 +5677,7 @@
 
   function lunchReturn(){
     if(isNonWorkingDay()) return;
-    var outIds = getOutAllDayIds();
+    var outIds = getOutAllDayIdsAll();
     var eligible = staff.filter(function(s){
       return !outIds[s.id] && !hasLeftEarlyByNow(s.id);
     }).map(function(s){
@@ -5692,7 +5744,7 @@
     flagEarly = !earlyTodayPre || hasLeftEarlyByNow(earlyTodayPre.staff.id, h, m);
 
     try{
-      var outIds = getOutAllDayIds();
+      var outIds = getOutAllDayIdsAll();
       if(minutesNow < t830){
         setAllInstant(false);
       } else if(minutesNow < t900){
@@ -6389,7 +6441,7 @@
     var h = now.getHours(), m = now.getMinutes();
     var minutesNow = h*60 + m;
     if(minutesNow < 9*60) return; // 출근 유예 시간대(08:30~09:00)는 개별 예약 로직을 존중
-    var outIds = getOutAllDayIds();
+    var outIds = getOutAllDayIdsAll();
     var working = (h>=9 && h<12) || (h>=13 && h<18);
     staff.forEach(function(s){
       if(isBusy(s.id) || overtimeStaffIds[s.id]) return; // 회의/탕비실/방문객 대응 중이거나 야근 중인 직원은 건드리지 않음
@@ -6450,7 +6502,9 @@
     var h = new Date().getHours();
     var working = (h>=9 && h<18 && h!==12) && !isNonWorkingDay();
     if(!working) return;
-    prodProgress += 2 + Math.random()*5; // 랜덤하게 서서히 증가
+    // 비품 결재를 승인한 날은 주문이 더 잘 들어온다 (기본 1, 승인 시 1.5)
+    var boost = (typeof apprOrderBoost === 'number') ? apprOrderBoost : 1;
+    prodProgress += (2 + Math.random()*5) * boost; // 랜덤하게 서서히 증가
     if(prodProgress >= 100){
       prodProgress = 0;
       orderCount++;
@@ -7588,9 +7642,10 @@
   ];
   var FIXER_COOLER = { x:348, y:214 };
 
-  function maybeTriggerFixerVisit(){
+  function maybeTriggerFixerVisit(force){
     if(visitorEventActive) return;
-    if(lifetime.devToggles <= 0 || lifetime.devToggles % 7 !== 0) return;
+    // force는 시설 결재를 승인했을 때. 평소에는 기기 전원을 일곱 번 껐다 켰을 때만 온다
+    if(!force && (lifetime.devToggles <= 0 || lifetime.devToggles % 7 !== 0)) return;
     visitorEventActive = true;
 
     var obj = { id:visitorDefs.fixer.id };
@@ -8844,35 +8899,347 @@
     toast('사무실을 청소했습니다 ✨');
   });
 
-  // ===== 메일: 보내면 랜덤 직원이 내용을 20자까지만 읽음 =====
-  var mailOverlay = byId('mailOverlay');
-  byId('mailOpenBtn').addEventListener('click', function(){ mailOverlay.classList.add('show'); });
-  byId('mailCloseX').addEventListener('click', closeMail);
-  mailOverlay.addEventListener('click', function(e){ if(e.target===mailOverlay) closeMail(); });
-  function closeMail(){
-    mailOverlay.classList.remove('show');
-    byId('mailError').textContent = '';
-  }
-  byId('mailSendBtn').addEventListener('click', function(){
-    var subject = byId('mailSubject').value.trim();
-    var body = byId('mailBody').value.trim();
-    var err = byId('mailError');
-    if(!subject || !body){
-      err.textContent = '제목과 내용을 입력해주세요';
-      return;
-    }
-    err.textContent = '';
-    closeMail();
-    byId('mailSubject').value = '';
-    byId('mailBody').value = '';
-    toast('메일을 보냈습니다');
+  // ===== 결재함 =====
+  // 매일 직원들이 1~3건을 올린다. 무엇이 올라오는지는 날짜 시드로 정해져
+  // 같은 날 다시 들어와도 같은 건이고, 이미 처리한 건은 처리한 대로 남는다.
+  // 승인하면 이번 달 예산에서 돈이 빠지고, 건마다 사무실에 실제 효과가 생긴다.
+  var APPR_KEY = 'ggj_office_appr_v1';
+  var APPR_MONTH_BUDGET = 1500000;
 
-    var reader = staff[Math.floor(Math.random()*staff.length)];
-    if(!charEl(reader.id).classList.contains('present')) showInstant(reader.id);
-    var readText = body.length > 20 ? body.slice(0,20) : body;
-    readText += '...';
-    setTimeout(function(){ showBubble(reader, readText); }, 500);
+  var APPR_POOL = [
+    { id:'leave',  kind:'휴가', icon:'🌴', cost:0,      eff:'leave', w:4,
+      title:'연차 사용 신청',
+      why:['다음 날 집안 행사가 있습니다','오랜만에 하루 푹 쉬고 싶습니다','병원 예약이 그날로 잡혔습니다'] },
+    { id:'edu',    kind:'교육', icon:'🎓', cost:180000, eff:'trip',  w:2,
+      title:'외부 디자인 워크숍 참가',
+      why:['신제품 도안에 참고할 세션이 있습니다','올해 색 트렌드 강의를 듣고 오겠습니다'] },
+    { id:'marker', kind:'비품', icon:'🖍️', cost:120000, eff:'order',
+      title:'디자인용 마커 세트 구매',
+      why:['쓰던 마커가 거의 다 말랐습니다','시안 색을 손으로 확인하기 어렵습니다'] },
+    { id:'paper',  kind:'비품', icon:'📄', cost:90000,  eff:'order',
+      title:'고급 용지 추가 발주',
+      why:['샘플 출력용 용지가 떨어졌습니다','거래처에 보낼 견본이 밀렸습니다'] },
+    { id:'card',   kind:'비품', icon:'🏷️', cost:50000,  eff:'order',
+      title:'명함 추가 제작',
+      why:['거래처 미팅이 부쩍 늘었습니다','남은 명함이 한 통뿐입니다'] },
+    { id:'snack',  kind:'복리', icon:'🍪', cost:60000,  eff:'snack',
+      title:'탕비실 간식 보충',
+      why:['간식 바구니가 비었습니다','오후만 되면 다들 당이 떨어집니다'] },
+    { id:'coffee', kind:'복리', icon:'☕', cost:250000, eff:'snack',
+      title:'커피머신 교체',
+      why:['원두 내리는 소리가 이상합니다','점심 뒤에는 줄이 깁니다'] },
+    { id:'dinner', kind:'복리', icon:'🍲', cost:400000, eff:'cheer',
+      title:'분기 회식 진행',
+      why:['이번 분기 마감을 무사히 넘겼습니다','다 같이 모인 자리가 오래됐습니다'] },
+    { id:'hvac',   kind:'시설', icon:'❄️', cost:300000, eff:'fixer',
+      title:'냉난방기 점검 요청',
+      why:['한쪽에서만 바람이 나옵니다','오후가 되면 사무실이 덥습니다'] },
+    { id:'tank',   kind:'시설', icon:'🐟', cost:150000, eff:'tank',
+      title:'어항 관리 업체 계약',
+      why:['유리에 이끼가 끼기 시작했습니다','물갈이를 놓치는 날이 많습니다'] },
+    { id:'plant',  kind:'시설', icon:'🪴', cost:80000,  eff:'cheer',
+      title:'화분 추가 배치',
+      why:['라운지 쪽이 휑합니다','초록이 좀 있으면 좋겠습니다'] },
+    { id:'chair',  kind:'시설', icon:'🪑', cost:350000, eff:'cheer',
+      title:'의자 교체 요청',
+      why:['등받이가 내려앉았습니다','오래 앉아 있으면 허리가 아픕니다'] },
+    { id:'ot',     kind:'인사', icon:'🌙', cost:220000, eff:'cheer',
+      title:'야근수당 정산',
+      why:['지난주 마감으로 늦게까지 남았습니다','정산이 한 주 밀려 있습니다'] },
+    { id:'book',   kind:'교육', icon:'📚', cost:70000,  eff:'cheer',
+      title:'참고 도서 구입',
+      why:['배색 자료집이 필요합니다','2층 독서 코너에 둘 책입니다'] }
+  ];
+
+  // 승인/반려했을 때 신청자가 하는 말
+  var APPR_SAY_OK = ['감사합니다!','바로 진행할게요','기다린 보람이 있네요','잘 쓰겠습니다','역시 말씀드리길 잘했어요'];
+  var APPR_SAY_NO = ['아쉽네요..','다음에 다시 올려볼게요','알겠습니다..','조금 더 버텨볼게요','그럼 어쩔 수 없죠'];
+
+  // seedHash는 날짜가 하루 늘면 결과도 딱 1만큼 늘어난다. 그대로 나머지를 취하면
+  // 며칠 내리 같은 사람이 같은 건을 올린다. 비트를 충분히 섞어서 쓴다
+  function apprMix(str){
+    var h = seedHash(str);
+    h ^= h >>> 15; h = Math.imul(h, 2246822519) >>> 0;
+    h ^= h >>> 13; h = Math.imul(h, 3266489917) >>> 0;
+    h ^= h >>> 16;
+    return h >>> 0;
+  }
+  function apprWon(n){ return n.toLocaleString('ko-KR') + '원'; }
+  function apprMonthKey(d){ d = d || new Date(); return d.getFullYear() + '-' + pad2(d.getMonth()+1); }
+  function apprDayKey(d){ return dateKey(d); }
+  // 연차·출장은 다음 근무일에 잡는다 (토·일·공휴일에 잡히면 아무 일도 안 일어난다)
+  function apprNextWorkdayKey(){
+    var d = new Date();
+    for(var i=0;i<10;i++){
+      d.setDate(d.getDate() + 1);
+      if(!isNonWorkingDay(d)) return dateKey(d);
+    }
+    return dateKey(d);
+  }
+
+  function apprLoad(){
+    var raw = null;
+    try{ raw = JSON.parse(localStorage.getItem(APPR_KEY)); }catch(e){}
+    if(!raw || typeof raw !== 'object') raw = {};
+    if(raw.month !== apprMonthKey()){ raw.month = apprMonthKey(); raw.spent = 0; }
+    if(typeof raw.spent !== 'number') raw.spent = 0;
+    if(!raw.done || typeof raw.done !== 'object') raw.done = {};
+    if(!raw.leave || typeof raw.leave !== 'object') raw.leave = {};
+    if(!raw.trip  || typeof raw.trip  !== 'object') raw.trip  = {};
+    return raw;
+  }
+  function apprSave(st){
+    // 지난 기록이 무한히 쌓이지 않게 최근 것만 남긴다
+    ['done','leave','trip'].forEach(function(f){
+      var keys = Object.keys(st[f]).sort();
+      while(keys.length > 10){ delete st[f][keys.shift()]; }
+    });
+    try{ localStorage.setItem(APPR_KEY, JSON.stringify(st)); }catch(e){}
+  }
+  var apprState = apprLoad();
+
+  // ---- 결재로 정해진 다음 날 연차·출장 ----
+  // 이 둘은 결재함 블록이 실행되기 전에도 출근 판정에서 불린다 (apprState가 아직 없을 수 있다)
+  function apprLeaveIdToday(){ return (apprState && apprState.leave[apprDayKey()]) || null; }
+  function apprTripIdToday(){ return (apprState && apprState.trip[apprDayKey()]) || null; }
+
+  // 무게를 반영해 하나 고른다 (w가 없으면 1)
+  function apprWeightedPick(seed, used){
+    var pool = APPR_POOL.filter(function(x){ return !used[x.id]; });
+    if(!pool.length) return null;
+    var total = 0;
+    pool.forEach(function(x){ total += (x.w || 1); });
+    var r = seed % total, acc = 0;
+    for(var i=0;i<pool.length;i++){
+      acc += (pool[i].w || 1);
+      if(r < acc) return pool[i];
+    }
+    return pool[pool.length-1];
+  }
+
+  // ---- 오늘 올라온 결재 (날짜 시드로 고정) ----
+  function apprTodayItems(){
+    var key = apprDayKey();
+    var n = 1 + (apprMix(key + '-apprN') % 3);
+    // 연차/출장으로 자리를 비운 사람은 결재를 올리지 않는다 (결재로 생긴 연차는 여기 안 본다)
+    var base = getOutAllDayIds();
+    var who = staff.filter(function(x){ return !base[x.id]; });
+    if(!who.length) who = staff.slice();
+
+    var items = [], usedPool = {}, usedWho = {};
+    for(var i=0; i<n; i++){
+      var item = apprWeightedPick(apprMix(key + '-apprP' + i), usedPool);
+      if(!item) break;
+      usedPool[item.id] = true;
+
+      var left = who.filter(function(x){ return !usedWho[x.id]; });
+      if(!left.length) left = who;
+      var by = left[apprMix(key + '-apprW' + i) % left.length];
+      usedWho[by.id] = true;
+
+      items.push({
+        id: item.id,
+        by: by,
+        icon: item.icon, kind: item.kind, cost: item.cost, eff: item.eff, title: item.title,
+        why: item.why[apprMix(key + '-apprY' + i) % item.why.length]
+      });
+    }
+    return items;
+  }
+
+  function apprDecisionOf(id){
+    var day = apprState.done[apprDayKey()];
+    return (day && day[id]) || null;
+  }
+  function apprPendingCount(){
+    var items = apprTodayItems(), n = 0;
+    for(var i=0;i<items.length;i++) if(!apprDecisionOf(items[i].id)) n++;
+    return n;
+  }
+  function apprUpdateBadge(){
+    var badge = byId('apprBadge');
+    if(!badge) return;
+    var n = apprPendingCount();
+    badge.textContent = n > 0 ? n : '';
+    badge.classList.toggle('has-count', n > 0);
+  }
+
+  // ---- 승인 효과 ----
+  var apprOrderBoost = 1;          // 비품 승인은 그날 주문이 더 잘 들어온다
+  var apprCheerIds = {};           // 승인받은 사람은 그날 기분이 좋다
+  function apprApplyPersistent(item){
+    if(item.eff === 'order') apprOrderBoost = 1.5;
+    if(item.eff === 'cheer' || item.eff === 'snack') apprCheerIds[item.by.id] = true;
+  }
+  function apprApplyOnce(item){
+    if(item.eff === 'leave') apprState.leave[apprNextWorkdayKey()] = item.by.id;
+    if(item.eff === 'trip')  apprState.trip[apprNextWorkdayKey()]  = item.by.id;
+    if(item.eff === 'tank' && typeof feedFish === 'function'){
+      setTimeout(function(){
+        feedFish();
+        logDayEvent('🐟', '어항 관리 업체가 다녀갔습니다');
+      }, 1500);
+    }
+    if(item.eff === 'fixer' && typeof maybeTriggerFixerVisit === 'function'){
+      setTimeout(function(){ maybeTriggerFixerVisit(true); }, 2500);
+    }
+  }
+  // 새로 고쳐도 이어져야 하는 효과는 다시 걸어 준다
+  function apprReapply(){
+    apprOrderBoost = 1; apprCheerIds = {};
+    apprTodayItems().forEach(function(it){
+      if(apprDecisionOf(it.id) === 'ok') apprApplyPersistent(it);
+    });
+  }
+
+  function apprDecide(item, ok){
+    var day = apprState.done[apprDayKey()] || (apprState.done[apprDayKey()] = {});
+    if(day[item.id]) return;
+    if(ok && apprState.spent + item.cost > APPR_MONTH_BUDGET) return;
+
+    day[item.id] = ok ? 'ok' : 'no';
+    if(ok){
+      apprState.spent += item.cost;
+      // 저장보다 먼저 걸어야 연차·출장 예약이 같이 저장된다
+      apprApplyPersistent(item);
+      apprApplyOnce(item);
+    }
+    apprSave(apprState);
+
+    logDayEvent(ok ? '🟢' : '🔴',
+      '결재 ' + (ok ? '승인' : '반려') + ' — ' + item.by.name + ' · ' + item.title);
+    toast(item.title + (ok ? ' 승인했습니다' : ' 반려했습니다'));
+
+    // 신청자가 바로 반응한다
+    var s = staffMap[item.by.id];
+    if(s && charEl(s.id)){
+      if(!charEl(s.id).classList.contains('present') && typeof showInstant === 'function') showInstant(s.id);
+      setMood(s.id, ok ? 'happy' : 'tired', 6000);
+      var pool = ok ? APPR_SAY_OK : APPR_SAY_NO;
+      setTimeout(function(){
+        showBubble(s, pool[Math.floor(Math.random()*pool.length)]);
+      }, 600);
+    }
+    apprRender();
+    apprUpdateBadge();
+  }
+
+  // ---- 화면 ----
+  var apprOverlay = byId('apprOverlay');
+  function apprCard(item, decision){
+    var wrap = document.createElement('div');
+    wrap.className = 'apprCard' + (decision ? ' apprDone' : '');
+
+    var top = document.createElement('div');
+    top.className = 'apprTop';
+    top.innerHTML = '<span class="apprIcon">' + item.icon + '</span>'
+                  + '<span class="apprKind">' + item.kind + '</span>';
+    if(decision){
+      var stamp = document.createElement('span');
+      stamp.className = 'apprStamp ' + (decision === 'ok' ? 'ok' : 'no');
+      stamp.textContent = decision === 'ok' ? '승인' : '반려';
+      top.appendChild(stamp);
+    } else {
+      var who = document.createElement('span');
+      who.className = 'apprWho';
+      who.textContent = item.by.name + ' · ' + item.by.role;
+      top.appendChild(who);
+    }
+    wrap.appendChild(top);
+
+    var t = document.createElement('div');
+    t.className = 'apprTitle'; t.textContent = item.title;
+    wrap.appendChild(t);
+
+    var why = document.createElement('div');
+    why.className = 'apprWhy';
+    why.textContent = decision ? (item.by.name + ' · ' + item.by.role) : ('"' + item.why + '"');
+    wrap.appendChild(why);
+
+    var cost = document.createElement('div');
+    cost.className = 'apprCost';
+    cost.innerHTML = item.cost > 0 ? apprWon(item.cost) : '<span class="free">비용 없음</span>';
+    wrap.appendChild(cost);
+
+    if(!decision){
+      var left = APPR_MONTH_BUDGET - apprState.spent;
+      var over = item.cost > left;
+      var btns = document.createElement('div');
+      btns.className = 'apprBtns';
+      var ok = document.createElement('button');
+      ok.className = 'ok';
+      ok.textContent = over ? '예산 부족' : '승인';
+      ok.disabled = over;
+      ok.addEventListener('click', function(){ apprDecide(item, true); });
+      var no = document.createElement('button');
+      no.className = 'no'; no.textContent = '반려';
+      no.addEventListener('click', function(){ apprDecide(item, false); });
+      btns.appendChild(ok); btns.appendChild(no);
+      wrap.appendChild(btns);
+    }
+    return wrap;
+  }
+
+  function apprRender(){
+    var body = byId('apprBody');
+    if(!body) return;
+    body.innerHTML = '';
+
+    var left = Math.max(0, APPR_MONTH_BUDGET - apprState.spent);
+    var pct = Math.round(left / APPR_MONTH_BUDGET * 100);
+    var bud = document.createElement('div');
+    bud.id = 'apprBudget';
+    bud.innerHTML = '<div class="apprBudTop"><span>' + apprState.month + ' 결재 예산</span>'
+                  + '<b>' + apprWon(left) + '</b></div>'
+                  + '<div class="apprBudBar"><div class="apprBudFill' + (pct <= 0 ? ' out' : pct < 30 ? ' low' : '')
+                  + '" style="width:' + pct + '%"></div></div>';
+    body.appendChild(bud);
+
+    var items = apprTodayItems();
+    var todo = items.filter(function(it){ return !apprDecisionOf(it.id); });
+    var done = items.filter(function(it){ return !!apprDecisionOf(it.id); });
+
+    if(todo.length){
+      var h1 = document.createElement('div');
+      h1.className = 'apprSec'; h1.textContent = '미결재 ' + todo.length + '건';
+      body.appendChild(h1);
+      todo.forEach(function(it){ body.appendChild(apprCard(it, null)); });
+    } else {
+      var empty = document.createElement('div');
+      empty.className = 'apprEmpty';
+      empty.textContent = done.length ? '오늘 올라온 결재를 모두 처리했어요' : '오늘 올라온 결재가 없어요';
+      body.appendChild(empty);
+    }
+
+    if(done.length){
+      var h2 = document.createElement('div');
+      h2.className = 'apprSec'; h2.textContent = '오늘 처리한 건';
+      body.appendChild(h2);
+      done.forEach(function(it){ body.appendChild(apprCard(it, apprDecisionOf(it.id))); });
+    }
+
+    var note = document.createElement('div');
+    note.className = 'apprNote';
+    note.textContent = '예산은 달이 바뀌면 다시 채워집니다';
+    body.appendChild(note);
+  }
+
+  byId('apprOpenBtn').addEventListener('click', function(){
+    apprRender();
+    apprOverlay.classList.add('show');
   });
+  byId('apprCloseX').addEventListener('click', function(){ apprOverlay.classList.remove('show'); });
+  apprOverlay.addEventListener('click', function(e){ if(e.target===apprOverlay) apprOverlay.classList.remove('show'); });
+
+  apprReapply();
+  apprUpdateBadge();
+  // 자정을 넘기면 오늘 올라온 건이 바뀐다
+  setInterval(function(){
+    if(apprState.month !== apprMonthKey()){ apprState = apprLoad(); apprSave(apprState); }
+    apprReapply();
+    apprUpdateBadge();
+    if(apprOverlay.classList.contains('show')) apprRender();
+  }, 60000);
 
   // ===== 메신저: 접속자 목록 + 쪽지 작성/보관함 =====
   var messengerContacts = [{ id:'boss', name:'사장님', avatar:'#f0973f', isBoss:true }].concat(
