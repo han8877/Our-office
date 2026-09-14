@@ -4748,7 +4748,7 @@
       <tr><td>메신저</td><td>전체채팅·1:1 채팅과 쪽지를 주고받을 수 있어요. 새 쪽지가 오면 버튼에 빨간 숫자가 붙습니다</td></tr>
       <tr><td>프로젝트</td><td>사업 등록·관리 (8번 설명 참고)</td></tr>
       <tr><td>야근모드</td><td>전원 퇴근 후 랜덤 2~4명만 남아 야근 시작</td></tr>
-      <tr><td>일지</td><td>주인 없는 문서 파일 <b>오래된 근무일지</b>를 한 쪽씩 넘겨 읽습니다 (10번 설명 참고). 아직 안 읽은 장이 있으면 버튼에 빨간 숫자가 붙어요</td></tr>
+      <tr><td>일지</td><td>주인 없는 문서 파일 <b>오래된 근무일지</b>를 한 쪽씩 넘겨 읽습니다 (10번 설명 참고). 안 읽은 쪽이 있으면 초록 테두리가 켜져요</td></tr>
       <tr><td>설정</td><td>제작자 소개, 이름 변경(회사명·팀명·직원 이름), 주간 리포트, 초기화</td></tr>
     </table>
     <p>그 밖에 화면에서 직접 쓸 수 있는 것들입니다.</p>
@@ -4833,8 +4833,9 @@
     <h3>10. 오래된 근무일지는 무엇인가요?</h3>
     <p>이 건물 어딘가에 남아 있던 <b>주인 없는 문서 파일</b>입니다. 표지에도 안쪽에도 이름이 없고, 옛날 문서프로그램으로 쓰여 있어요. 누군가가 이곳에서 겪은 일을 한 장씩 적어둔 기록입니다. 게임은 누가 썼는지 알려주지 않습니다. 답은 글 안에만 있어요.</p>
     <p>왼쪽 메뉴의 <code>일지</code>를 누르면 <b>문서 정보</b>가 뜨고, <code>읽기</code>를 누르면 그 자리에 본문이 들어옵니다. 아래 <code>‹</code> <code>›</code>로 <code>p.1</code>부터 한 쪽씩 넘기고, 휴대폰에서는 손가락으로 쓸어 넘겨도 돼요. 컴퓨터에서는 좌우 화살표 키도 먹습니다.</p>
-    <p>차례는 일부러 두지 않았습니다. 무슨 이야기가 나올지 미리 알면 한 쪽씩 넘겨 읽는 재미가 없으니까요.</p>
-    <p>쪽은 <b>누적 접속일</b>에 따라 하나씩 늘어납니다. 연속 출근이 아니라 누적이라서 하루 건너뛰어도 읽던 진도는 그대로예요. 마지막 쪽까지 넘기면 다음 쪽이 며칠째에 이어지는지 알려줍니다.</p>
+    <p>적혀 있는 쪽은 <b>언제든 끝까지 읽을 수 있습니다.</b> 며칠을 기다려야 열리거나 하지 않아요. 새 쪽은 게임이 업데이트될 때 늘어납니다.</p>
+    <p>차례도, 전체가 몇 쪽인지도 일부러 알려주지 않습니다. 무슨 이야기가 얼마나 남았는지 미리 알면 한 쪽씩 넘겨 읽는 재미가 없으니까요. 마지막까지 넘기면 여기가 끝이라고 알려줍니다.</p>
+    <p>안 읽은 쪽이 있으면 <code>일지</code> 버튼에 초록 테두리가 켜지고, 전부 읽으면 사라집니다.</p>
 
     <h3>11. 실장님의 한마디</h3>
     <p>휴대폰에서 <b>뒤로가기</b>를 누르면 열려 있던 창부터 하나씩 닫힙니다. 아무 창도 열려 있지 않을 때 누르면 <b>퇴근하시겠어요?</b>를 물어보고, 퇴근하기를 눌러야 사무실에서 나갑니다. 나가더라도 오늘 일지·사물함·설정·연속 출근은 그대로 남아 있어요.</p>
@@ -6953,7 +6954,8 @@
   }catch(e){}
   (function updateStreak(){
     var today = dateKey();
-    // 누적 접속일: 연속이 끊겨도 줄지 않는다. 근무일지 회차가 이걸 보고 열린다
+    // 누적 접속일: 연속이 끊겨도 줄지 않는다. 지금 화면에 쓰이는 데는 없고,
+    // 나중에 오래 플레이한 사람을 알아보는 데 쓰려고 세어만 둔다
     if(typeof streakInfo.totalDays !== 'number') streakInfo.totalDays = streakInfo.streak || 1;
     if(streakInfo.lastDate === today){ /* 오늘 이미 반영됨 */ }
     else {
@@ -7194,17 +7196,17 @@
   // ══════════════════════════════════════════════════════════════
   //  오래된 근무일지 — 여기 DIARY 배열에만 글을 써 넣으면 된다
   //
-  //  { no  : 회차 번호 (1부터 차례대로)
-  //    day : 누적 접속 며칠째부터 열리는지 (1이면 처음부터)
+  //  { no  : 쪽 번호 (1부터 차례대로)
   //    when: 일지에 적힌 날짜. 아무렇게나 적어도 되고 비워도 된다
   //    lines: 문단들. 한 줄이 한 문단이다.
   //           줄 앞에 '__'를 붙이면 그 앞에서 한 박자 쉰다 (빈 줄 효과)
   //    note : 여백에 흘려 쓴 메모 한 줄 (없으면 빼도 된다) }
   //
+  //  여기 적어 넣은 쪽은 곧바로 읽을 수 있다. 잠가두지 않는다.
   //  게임은 누가 썼는지 절대 말하지 않는다. 밝히는 건 글이 할 일이다.
   // ══════════════════════════════════════════════════════════════
   var DIARY = [
-    { no:1, day:1,
+    { no:1,
       lines:[
         '며칠 째 같은 업무만 하고 있다.',
         '의미없는 일들의 연속…',
@@ -7218,7 +7220,7 @@
         '이곳에서 나가는 방법을 알아내겠다.'
       ] },
 
-    { no:2, day:3,
+    { no:2,
       lines:[
         '며칠 만에 다시 일지를 쓴다. 지금은 5시 46분..',
         '자꾸 기억이 흐릿해진다.',
@@ -7227,7 +7229,7 @@
         '여기저기 메모를 써둬야겠다.'
       ] },
 
-    { no:3, day:7,
+    { no:3,
       lines:[
         '오전에 최실장과 이야기를 나누었다.',
         '최실장은 비밀을 알고 있을까?',
@@ -7235,26 +7237,26 @@
         '관찰하기란 어려운 일이다.'
       ] },
 
-    { no:4, day:10,
+    { no:4,
       lines:[
         '탕비실에서 김팀장과 이야기했다.',
         '큰 소득은 없었다. 평범한 이야기 뿐이었다.',
         '매일 이런 식이다.'
       ] },
 
-    { no:5, day:14,
+    { no:5,
       lines:[
         '비가 온다. 비가 오면 창문아래 우산이 생긴다.',
         '우산 세 개, 그 우산은 누구것일까?'
       ] },
 
-    { no:6, day:18,
+    { no:6,
       lines:[
         '출근, 출근… 또 출근.',
         '머리가 아프다.'
       ] },
 
-    { no:7, day:22,
+    { no:7,
       lines:[
         '메신저에서 소외감이 든다.',
         '나는 알 수 없는 이야기들 뿐…',
@@ -7263,20 +7265,20 @@
         '누구와 얘기해야하지?'
       ] },
 
-    { no:8, day:27,
+    { no:8,
       lines:[
         '곧 점심시간이다.',
         '사무실에 혼자 남을 수가 없다.'
       ] },
 
-    { no:9, day:32,
+    { no:9,
       lines:[
         '재고창고에 물건들이 많다.',
         '똑같이 생긴 물건들…',
         '그 물건들은 다 어디로 가는 것일까?'
       ] },
 
-    { no:10, day:38,
+    { no:10,
       lines:[
         '최실장과 우연히 마주쳤다.',
         '기분 탓일까? 눈빛이 무언가를',
@@ -7299,20 +7301,20 @@
   }catch(e){}
   function diarySave(){ try{ localStorage.setItem(DIARY_KEY, JSON.stringify(diaryState)); }catch(e){} }
 
-  function diaryDays(){ return streakInfo.totalDays || 1; }
-  function diaryOpened(ep){ return diaryDays() >= ep.day; }
+  // 잠가두는 쪽은 없다. 적혀 있는 만큼 죽 읽어나가면 된다
   function diaryUnread(){
     var n = 0;
-    DIARY.forEach(function(ep){ if(diaryOpened(ep) && !diaryState.read[ep.no]) n++; });
+    DIARY.forEach(function(ep){ if(!diaryState.read[ep.no]) n++; });
     return n;
   }
   var diaryBadgeEl = byId('diaryBadge');
+  // 몇 쪽이 남았는지는 알려주지 않는다. 안 읽은 쪽이 있으면 초록 테두리만 켜고,
+  // 전부 읽으면 사라진다
   function diaryBadge(){
     if(!diaryBadgeEl) return;
-    var n = diaryUnread();
-    diaryBadgeEl.textContent = n > 0 ? n : '';
-    diaryBadgeEl.classList.toggle('has-count', n > 0);
-    diaryBadgeEl.style.display = n > 0 ? '' : 'none';
+    diaryBadgeEl.textContent = '';
+    diaryBadgeEl.classList.remove('has-count');
+    diaryBadgeEl.style.display = diaryUnread() > 0 ? '' : 'none';
   }
 
   var diaryOverlay = byId('diaryOverlay');
@@ -7320,12 +7322,6 @@
 
   function diaryEsc(t){
     return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  }
-  function diaryOpenList(){ return DIARY.filter(diaryOpened); }
-  function diaryNextLocked(){
-    var f = null;
-    DIARY.forEach(function(ep){ if(!f && !diaryOpened(ep)) f = ep; });
-    return f;
   }
 
   // ---- 문서 정보 틀 ----
@@ -7338,14 +7334,12 @@
          + '<dt>파일 이름</dt><dd>근무일지.doc</dd>'
          + '<dt>만든 사람</dt><dd class="dim">(없음)</dd>'
          + '<dt>마지막 저장</dt><dd class="dim">알 수 없음</dd>'
-         + '<dt>쪽 수</dt><dd>' + diaryOpenList().length + '쪽</dd>'
          + '</dl>' + inner + foot
          + '</div></div>';
   }
   // ---- 표지 ----
   // 앞으로 무슨 이야기가 나오는지는 미리 알려주지 않는다. 차례를 두지 않는 이유다
   function diaryCover(){
-    var opened = diaryOpenList().length;
     diaryBody.innerHTML = diaryFrame(
       '<p class="dyNote2">표지에도 안쪽에도 이름이 없는 근무일지입니다. '
       + '옛날 문서프로그램으로 쓰여진 오래된 근무일지이며, 시간이 지날 수록 페이지가 늘어납니다.</p>',
@@ -7353,7 +7347,7 @@
     diaryBody.scrollTop = 0;
     diaryMode = 'cover';
     var sb = byId('dyStartBtn');
-    if(opened) sb.addEventListener('click', function(){ diaryRead(0); });
+    if(DIARY.length) sb.addEventListener('click', function(){ diaryRead(0); });
     else { sb.disabled = true; sb.textContent = '아직 없음'; }
   }
 
@@ -7366,7 +7360,7 @@
 
   function diaryFlowHtml(){
     var h = '';
-    diaryOpenList().forEach(function(ep){
+    DIARY.forEach(function(ep){
       // 쪽 번호만 얹고 곧바로 본문이다. 편집자가 붙인 제목이 없어야
       // 남이 타이핑해둔 파일을 그대로 열어본 것처럼 읽힌다
       h += '<div class="dyChap" data-no="' + ep.no + '">'
@@ -7381,15 +7375,8 @@
       if(ep.note) h += '<p class="dyNote">' + diaryEsc(ep.note) + '</p>';
       h += '</div>';
     });
-    var nx = diaryNextLocked();
-    if(nx){
-      h += '<div class="dyEnd"><div class="dyEndMark">???</div>'
-         + '<p class="dyEndTxt">다음 쪽은 아직 쓰이지 않았습니다.</p>'
-         + '<p class="dyEndTxt">누적 ' + nx.day + '일째에 이어집니다.</p></div>';
-    } else {
-      h += '<div class="dyEnd"><div class="dyEndMark">·</div>'
-         + '<p class="dyEndTxt">여기까지가 이 파일에 적힌 전부입니다.</p></div>';
-    }
+    h += '<div class="dyEnd"><div class="dyEndMark">···</div>'
+       + '<p class="dyEndTxt">여기까지가 지금 적혀 있는 전부입니다.</p></div>';
     return h;
   }
 
@@ -7465,12 +7452,10 @@
     dyFlow.style.transform = 'translateX(' + (-dyPage * dyStep) + 'px)';
     byId('dyPrev').disabled = dyPage <= 0;
     byId('dyNext').disabled = dyPage >= dyPages - 1;
-    // 맨 끝 한 쪽은 '아직 안 쓰였다'는 안내라서 쪽 수에 넣지 않는다.
-    // 그 쪽에서는 번호 대신 물음표를 띄운다
-    var written = Math.max(1, dyPages - 1);
-    byId('dyPageNo').innerHTML = (dyPage >= written)
-      ? ('<b>p.?</b> / ' + written)
-      : ('<b>p.' + (dyPage + 1) + '</b> / ' + written);
+    // 전체가 몇 쪽인지는 알려주지 않는다. 지금 펼친 쪽 번호만 띄운다.
+    // 맨 끝 한 쪽은 본문이 아니라 마침 안내라서 번호 대신 물음표를 쓴다
+    byId('dyPageNo').innerHTML = (dyPage >= Math.max(1, dyPages - 1))
+      ? '<b>p.?</b>' : ('<b>p.' + (dyPage + 1) + '</b>');
     diaryMarkRead();
   }
 
