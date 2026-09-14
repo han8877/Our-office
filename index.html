@@ -119,8 +119,7 @@
   .dyPaper, .dyPaper *{
     font-family:'굴림체','GulimChe','바탕체','BatangChe','D2Coding','NanumGothicCoding','Courier New',monospace;
   }
-  .dyMeta{ font-size:10.5px; line-height:26px; color:#7a7365; margin:0; }
-  .dyH{ font-size:13px; font-weight:700; line-height:26px; color:#1d1b17; margin:0 0 26px; letter-spacing:0.5px; }
+  .dyMeta{ font-size:10.5px; line-height:26px; color:#7a7365; margin:0 0 26px; }
   .dyP{ font-size:12px; line-height:26px; color:#23211d; margin:0; word-break:keep-all; }
   .dyP.gap{ margin-top:26px; }
   .dyNote{ font-size:11px; line-height:26px; color:#5a554a; margin:26px 0 0; padding-left:9px; border-left:2px solid #c9c3b5; }
@@ -156,7 +155,6 @@
     .dyInfo{ padding:8px 8px 9px; }
     .dyPaper{ padding:9px 8px; }
     .dyP{ font-size:11px; }
-    .dyH{ font-size:12.5px; }
   }
   /* ===== 결재함 ===== */
   #apprOverlay .mail-window{ max-width:360px; }
@@ -7199,7 +7197,6 @@
   //  { no  : 회차 번호 (1부터 차례대로)
   //    day : 누적 접속 며칠째부터 열리는지 (1이면 처음부터)
   //    when: 일지에 적힌 날짜. 아무렇게나 적어도 되고 비워도 된다
-  //    title: 회차 제목
   //    lines: 문단들. 한 줄이 한 문단이다.
   //           줄 앞에 '__'를 붙이면 그 앞에서 한 박자 쉰다 (빈 줄 효과)
   //    note : 여백에 흘려 쓴 메모 한 줄 (없으면 빼도 된다) }
@@ -7207,7 +7204,7 @@
   //  게임은 누가 썼는지 절대 말하지 않는다. 밝히는 건 글이 할 일이다.
   // ══════════════════════════════════════════════════════════════
   var DIARY = [
-    { no:1, day:1, title:'같은 표정, 같은 움직임',
+    { no:1, day:1,
       lines:[
         '며칠 째 같은 업무만 하고 있다.',
         '의미없는 일들의 연속…',
@@ -7221,7 +7218,7 @@
         '이곳에서 나가는 방법을 알아내겠다.'
       ] },
 
-    { no:2, day:3, title:'여기저기 메모를 써둬야겠다',
+    { no:2, day:3,
       lines:[
         '며칠 만에 다시 일지를 쓴다. 지금은 5시 46분..',
         '자꾸 기억이 흐릿해진다.',
@@ -7230,7 +7227,7 @@
         '여기저기 메모를 써둬야겠다.'
       ] },
 
-    { no:3, day:7, title:'최실장',
+    { no:3, day:7,
       lines:[
         '오전에 최실장과 이야기를 나누었다.',
         '최실장은 비밀을 알고 있을까?',
@@ -7318,10 +7315,12 @@
   function diaryFlowHtml(){
     var h = '';
     diaryOpenList().forEach(function(ep){
+      // 쪽 번호만 얹고 곧바로 본문이다. 편집자가 붙인 제목이 없어야
+      // 남이 타이핑해둔 파일을 그대로 열어본 것처럼 읽힌다
       h += '<div class="dyChap" data-no="' + ep.no + '">'
          + '<div class="dyHead">'
-         + '<div class="dyMeta">p.' + ep.no + (ep.when ? ' · ' + diaryEsc(ep.when) : '') + '</div>'
-         + '<h3 class="dyH">' + diaryEsc(ep.title) + '</h3>'
+         + '<div class="dyMeta" data-when="' + diaryEsc(ep.when || '') + '">p.' + ep.no
+         + (ep.when ? ' · ' + diaryEsc(ep.when) : '') + '</div>'
          + '</div>';
       (ep.lines || []).forEach(function(ln){
         var gap = ln.indexOf('__') === 0;
@@ -7388,7 +7387,9 @@
   function diaryStampPages(){
     Array.prototype.forEach.call(dyFlow.querySelectorAll('.dyChap'), function(el){
       var m = el.querySelector('.dyMeta');
-      if(m) m.textContent = 'p.' + (Math.round(el.offsetLeft / dyStep) + 1);
+      if(!m) return;
+      var when = m.getAttribute('data-when') || '';
+      m.textContent = 'p.' + (Math.round(el.offsetLeft / dyStep) + 1) + (when ? ' · ' + when : '');
     });
   }
   function diaryLayout(){
