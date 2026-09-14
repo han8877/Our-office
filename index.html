@@ -11271,26 +11271,38 @@
         item:'paper',  mode:'spot',   delay:'-1.7' }
     ];
 
-    // ---- 2층 이동 지점 ----
-    // 기존 캐릭터(윤안내 266,160 · 강안내 406,160 · 보안 85,700)와 겹치지 않는 자리만 쓴다
+    // ---- 2층 길 ----
+    // 가구를 타고 넘지 않도록, 가구 사이 빈 통로에만 길목을 두고 그 사이만 오간다.
+    // 모든 이음선은 가로 아니면 세로이고, 어느 것도 가구 위를 지나지 않는다.
+    //   x=85   왼쪽 복도          y=255  안내 카운터 앞 (카운터 아래끝 212)
+    //   x=675  라운지와 라운지바 사이 틈 (라운지 660 / 바 690)
+    //   y=415  라운지를 가로지르는 통로 (소파 밑끝 375 · 테이블 윗끝 429 사이)
+    //   y=509  라운지바와 독서코너 사이 틈 (바 498 / 독서 520)
+    //   y=528  가운데 테이블 아래 (테이블 501 · 아래 소파 555 사이)
     var F2_NODES = {
-      a1:{x:85, y:250},  a2:{x:400,y:250},  a3:{x:675,y:250},  a4:{x:830,y:252},
-      b1:{x:85, y:420},  b3:{x:675,y:420},
-      c1:{x:85, y:580},  c3:{x:675,y:580},  c4:{x:830,y:509}
+      e :{x:85, y:205}, h0:{x:85, y:255}, h1:{x:85, y:340}, h2:{x:85, y:415},
+      h3:{x:85, y:530}, h4:{x:85, y:620},
+      t1:{x:230,y:255}, t2:{x:400,y:255}, t3:{x:560,y:255}, t4:{x:675,y:255}, aw:{x:830,y:255},
+      g1:{x:675,y:340}, g2:{x:675,y:415}, g3:{x:675,y:509}, g4:{x:675,y:640},
+      b1:{x:770,y:509}, b2:{x:905,y:509},
+      l1:{x:180,y:415}, p1:{x:265,y:415}, l2:{x:325,y:415},
+      l3:{x:485,y:415}, p2:{x:525,y:415}, l4:{x:630,y:415},
+      m1:{x:325,y:528}, p3:{x:395,y:528}, m2:{x:485,y:528}
     };
     var F2_EDGES = {
-      a1:['a2','b1'], a2:['a1','a3'], a3:['a2','a4','b3'], a4:['a3'],
-      b1:['a1','c1'], b3:['a3','c3','c4'],
-      c1:['b1'], c3:['b3'], c4:['b3']
+      e :['h0'],             h0:['e','h1','t1'],   h1:['h0','h2'],
+      h2:['h1','h3','l1'],   h3:['h2','h4'],       h4:['h3'],
+      t1:['h0','t2'],        t2:['t1','t3'],       t3:['t2','t4'],
+      t4:['t3','aw','g1'],   aw:['t4'],
+      g1:['t4','g2'],        g2:['g1','g3','l4'],  g3:['g2','g4','b1'],  g4:['g3'],
+      b1:['g3','b2'],        b2:['b1'],
+      l1:['h2','p1'],        p1:['l1','l2'],       l2:['p1','l3','m1'],
+      l3:['l2','p2','m2'],   p2:['l3','l4'],       l4:['p2','g2'],
+      m1:['l2','p3'],        p3:['m1','m2'],       m2:['p3','l3']
     };
-    var F2_SPOTS = [
-      {x:230,y:255,n:'안내데스크 앞'}, {x:400,y:255,n:'안내데스크 앞'}, {x:560,y:255,n:'안내데스크 앞'},
-      {x:830,y:252,n:'아트 월'},       {x:675,y:330,n:'통로'},          {x:675,y:470,n:'통로'},
-      {x:770,y:509,n:'라운지 바'},     {x:905,y:509,n:'독서 코너'},     {x:675,y:640,n:'통로'},
-      {x:85, y:300,n:'복도'},          {x:85, y:470,n:'복도'},
-      {x:265,y:410,n:'라운지'},        {x:525,y:410,n:'라운지'},        {x:395,y:528,n:'라운지'}
-    ];
-    var F2_ELEV = {x:85, y:205};
+    // 머무를 만한 길목 (안내데스크 앞·아트 월·복도·통로·라운지 바·독서 코너·라운지)
+    var F2_SPOT_KEYS = ['t1','t2','t3','aw','h1','h3','g1','g2','g4','b1','b2','p1','p2','p3'];
+    var F2_ELEV = F2_NODES.e;
     var F2_SPEED = 46;   // px/초
     // 보안요원 근무시간. 2층에 사람이 있는 시간대이기도 해서 조명 기준으로도 쓴다
     var F2_GUARD_IN = 8*60, F2_GUARD_OUT = 21*60;
@@ -11418,6 +11430,38 @@
       clearTimeout(v._mv);
       v._mv = setTimeout(done, dur*1000 + 60);
     }
+    // 길목 사이 최단 경로 (너비 우선). 이음선만 따라가므로 가구를 가로지르지 않는다
+    function f2Path(from, to){
+      if(!F2_NODES[from] || !F2_NODES[to]) return null;
+      if(from === to) return [];
+      var prev = {}, seen = {}, q = [from];
+      seen[from] = true;
+      while(q.length){
+        var cur = q.shift(), nb = F2_EDGES[cur] || [];
+        for(var i=0;i<nb.length;i++){
+          var n = nb[i];
+          if(seen[n]) continue;
+          seen[n] = true; prev[n] = cur;
+          if(n === to){
+            var path = [n];
+            while(prev[path[0]] !== from) path.unshift(prev[path[0]]);
+            return path;
+          }
+          q.push(n);
+        }
+      }
+      return null;
+    }
+    // 경로를 한 구간씩 끊어 걷는다 (v.target은 최종 목적지를 그대로 둔다)
+    function f2Travel(v, path, done){
+      var i = 0;
+      (function hop(){
+        if(i >= path.length){ if(done) done(); return; }
+        var k = path[i++], n = F2_NODES[k];
+        v.prev = v.node; v.node = k;
+        moveTo(v, n.x, n.y, hop);
+      })();
+    }
     function stepWander(v){
       if(!f2Visible(v.id)) return;
       var opts = F2_EDGES[v.node].slice();
@@ -11447,15 +11491,18 @@
     }
     function stepSpot(v){
       if(!f2Visible(v.id)) return;
-      var free = F2_SPOTS.filter(function(sp){ return spotFree(sp, v); });
-      if(!free.length) free = F2_SPOTS;
-      var sp = free[Math.floor(Math.random()*free.length)];
-      v.target = {x:sp.x, y:sp.y};
-      moveTo(v, sp.x, sp.y, function(){
+      var free = F2_SPOT_KEYS.filter(function(k){ return spotFree(F2_NODES[k], v); });
+      if(!free.length) free = F2_SPOT_KEYS;
+      var k = free[Math.floor(Math.random()*free.length)];
+      var path = f2Path(v.node, k);
+      var rest = function(){
         clearTimeout(v._wait);
         // 자리에 도착하면 한참 머문다 (다 돌아다니지 않게)
         v._wait = setTimeout(function(){ stepSpot(v); }, 18000 + Math.random()*42000);
-      });
+      };
+      if(!path){ rest(); return; }
+      v.target = {x:F2_NODES[k].x, y:F2_NODES[k].y};
+      f2Travel(v, path, rest);
     }
     // 한 칸에서 다섯이 한꺼번에 쏟아지면 겹쳐 보인다. 2.2초 간격으로 한 명씩 내린다
     var F2_VIS_GAP = 2200;
@@ -11467,24 +11514,19 @@
     }
     // 접속한 순간은 이미 와 있던 거라 엘리베이터를 태우지 않고 제자리에 둔다
     function placeVisitor(v){
-      if(v.mode === 'wander'){
-        var keys = Object.keys(F2_NODES);
-        var k = keys[Math.floor(Math.random()*keys.length)];
-        v.node = k; v.prev = null; v.target = {x:F2_NODES[k].x, y:F2_NODES[k].y};
-        f2SetPos(v.id, F2_NODES[k].x, F2_NODES[k].y, 0);
-      } else {
-        var free = F2_SPOTS.filter(function(sp){ return spotFree(sp, v); });
-        if(!free.length) free = F2_SPOTS;
-        var sp = free[Math.floor(Math.random()*free.length)];
-        v.target = {x:sp.x, y:sp.y};
-        f2SetPos(v.id, sp.x, sp.y, 0);
-      }
+      var pool = v.mode === 'wander' ? Object.keys(F2_NODES) : F2_SPOT_KEYS;
+      var free = pool.filter(function(k){ return k !== 'e' && spotFree(F2_NODES[k], v); });
+      if(!free.length) free = pool;
+      var k = free[Math.floor(Math.random()*free.length)];
+      v.node = k; v.prev = null;
+      v.target = {x:F2_NODES[k].x, y:F2_NODES[k].y};
+      f2SetPos(v.id, F2_NODES[k].x, F2_NODES[k].y, 0);
       f2Show(v.id, true);
     }
     function startVisitor(v, ride, done){
       clearTimeout(v._wait); clearTimeout(v._mv); clearTimeout(v._ride);
       if(!ride){ placeVisitor(v); visitorRoam(v); if(done) done(); return; }
-      v.node = 'a1'; v.prev = null; v.target = {x:F2_ELEV.x, y:F2_ELEV.y};
+      v.node = 'e'; v.prev = null; v.target = {x:F2_ELEV.x, y:F2_ELEV.y};
       f2SetPos(v.id, F2_DOOR.x, F2_DOOR.y, 0);
       v._wait = setTimeout(function(){
         f2RideIn(v, function(){ visitorRoam(v); if(done) done(); });
@@ -11500,7 +11542,9 @@
         return;
       }
       v._wait = setTimeout(function(){
-        moveTo(v, F2_ELEV.x, F2_ELEV.y, function(){ f2RideOut(v, done); });
+        var path = f2Path(v.node, 'e') || ['e'];
+        v.target = {x:F2_ELEV.x, y:F2_ELEV.y};
+        f2Travel(v, path, function(){ f2RideOut(v, done); });
       }, VISITORS.indexOf(v) * F2_VIS_GAP);
     }
 
@@ -11600,7 +11644,7 @@
     });
 
     // ---- R-도우미 (3층과 같은 기능) ----
-    var rEl = byId('f2RHelper'), rNode = 'a2', rPrev = null;
+    var rEl = byId('f2RHelper'), rNode = 't2', rPrev = null;
     function rSet(x, y, dur){
       if(!rEl) return;
       rEl.style.transition = dur ? ('transform '+dur+'s linear') : 'none';
