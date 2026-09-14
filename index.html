@@ -11745,38 +11745,39 @@
     // 기준점은 앉는 면. 둘 다 몸통보다 먼저(뒤에) 그려 몸통 밑선이 허벅지 위를 덮게 한다.
     // A: 무릎에서 꺾여 정강이가 내려가고 발이 바닥을 딛는다
     // B: 다리를 앞으로 뻗어 발바닥이 이쪽을 본다 (미피 자세)
+    // 정면에서는 무릎과 발만 있으면 엉덩이는 가려진 걸로 읽힌다.
+    // 앉은 엉덩이를 따로 그리려 하면 반바지처럼 보이므로 그리지 않는다.
+    // 허벅지는 이쪽을 향해 줄어들어 사실상 무릎만 남는다
+    function f2SeatKnees(v){
+      return '<ellipse cx="-6" cy="9.6" rx="5.3" ry="5.6" fill="'+v.suitD+'"'+SIL+'/>'
+           + '<ellipse cx="6"  cy="9.6" rx="5.3" ry="5.6" fill="'+v.suitD+'"'+SIL+'/>';
+    }
     function f2SeatLegsA(v){
       var pants = v.suitD, shoe = F2_DARK;
-      // 앉은 티는 '무릎이 접힌 가로 덩어리' 하나로 낸다.
-      // 허벅지를 세로로 그리면(벌리든 모으든) 서 있는 다리로 읽힌다.
-      // 몸통 밑선 아래로 가로로 긴 무릎 덩어리를 두고, 그 앞쪽에서 정강이를 짧게 내린다
-      return '<rect x="-11.6" y="1.6" width="23.2" height="11.6" rx="5.4" fill="'+pants+'"'+SIL+'/>'
-           + '<path d="M 0 7.4 L 0 13" fill="none" stroke="'+F2_OUT+'" stroke-width="0.9"'
-           + ' stroke-linecap="round" opacity="0.45"/>'
-           // 정강이: 무릎 덩어리 앞쪽에서 안쪽으로 모아 내린다
-           + '<rect x="-8.6" y="11.4" width="5.2" height="8.6" rx="2.5" fill="'+pants+'"'+SIL+'/>'
-           + '<rect x="3.4"  y="11.4" width="5.2" height="8.6" rx="2.5" fill="'+pants+'"'+SIL+'/>'
-           // 구두
-           + '<path d="M -9 18.4 C -10 21.6 -8.6 23.4 -6 23.4 C -3.6 23.4 -2.8 21.6 -3 18.4 Z"'
-           + ' fill="'+shoe+'"'+SIL+'/>'
-           + '<path d="M 9 18.4 C 10 21.6 8.6 23.4 6 23.4 C 3.6 23.4 2.8 21.6 3 18.4 Z"'
-           + ' fill="'+shoe+'"'+SIL+'/>';
+      // 정강이와 구두를 먼저 그려 무릎이 그 앞에 오게 한다
+      function shin(sx){
+        return '<rect x="' + (sx > 0 ? 3.5 : -8.7) + '" y="8" width="5.2" height="11.4" rx="2.5"'
+             + ' fill="'+pants+'"'+SIL+'/>'
+             + '<path d="M ' + (sx*9.2) + ' 17.6'
+             + ' C ' + (sx*10.2) + ' 21.2 ' + (sx*8.8) + ' 23.2 ' + (sx*5.8) + ' 23.2'
+             + ' C ' + (sx*3.2) + ' 23.2 ' + (sx*2.6) + ' 21.2 ' + (sx*2.8) + ' 17.6 Z"'
+             + ' fill="'+shoe+'"'+SIL+'/>';
+      }
+      return shin(-1) + shin(1) + f2SeatKnees(v);
     }
     function f2SeatLegsB(v){
-      var pants = v.suitD, shoe = F2_DARK;
-      // 미피 자세: 다리를 앞으로 뻗어 거의 안 보이고 발바닥 두 개만 나란히 이쪽을 본다
-      return '<rect x="-10.4" y="1.2" width="20.8" height="10.4" rx="5" fill="'+pants+'"'+SIL+'/>'
-           + '<path d="M 0 6.8 L 0 11.4" fill="none" stroke="'+F2_OUT+'" stroke-width="0.9"'
-           + ' stroke-linecap="round" opacity="0.45"/>'
-           + '<ellipse cx="-5.6" cy="14.8" rx="5.3" ry="4.8" fill="'+shoe+'"'+SIL+'/>'
-           + '<ellipse cx="5.6"  cy="14.8" rx="5.3" ry="4.8" fill="'+shoe+'"'+SIL+'/>'
-           + '<ellipse cx="-5.6" cy="15.8" rx="3.1" ry="2.5" fill="#5c5045" stroke="none" opacity="0.5"/>'
-           + '<ellipse cx="5.6"  cy="15.8" rx="3.1" ry="2.5" fill="#5c5045" stroke="none" opacity="0.5"/>';
+      var shoe = F2_DARK;
+      // 발바닥이 이쪽을 본다. 무릎 바로 아래 나란히 두 개
+      function sole(sx){
+        return '<ellipse cx="'+(sx*6)+'" cy="16.2" rx="5.4" ry="4.8" fill="'+shoe+'"'+SIL+'/>'
+             + '<ellipse cx="'+(sx*6)+'" cy="17.2" rx="3.2" ry="2.5" fill="#5c5045" stroke="none" opacity="0.5"/>';
+      }
+      return sole(-1) + sole(1) + f2SeatKnees(v);
     }
     function f2Body(v, seated){
       var suit = v.suit, suitD = v.suitD, fur = v.fur, furL = v.furL;
       // 앉으면 그림자는 발밑으로 내려가고 명패도 그만큼 따라 내려간다
-      var h = '<ellipse cx="0" cy="' + (seated ? (seated === 'b' ? 19 : 24.6) : 9)
+      var h = '<ellipse cx="0" cy="' + (seated ? (seated === 'b' ? 20.4 : 24.4) : 9)
             + '" rx="' + (seated ? 12 : 13) + '" ry="2.4"'
             + ' fill="'+F2_DARK+'" opacity="0.13" stroke="none"/>'
             + '<g class="charBody" style="animation-delay:'+v.delay+'s">'
@@ -11822,8 +11823,8 @@
          + f2Face()
          + f2Item(v.item)
          + '</g>'
-         + '<g stroke="none"><rect x="-26" y="' + (seated ? (seated === 'b' ? 23 : 28) : 14) + '" width="52" height="13" rx="0" fill="#fffdf8" stroke="'+F2_OUT+'" stroke-width="0.8" shape-rendering="crispEdges"/>'
-         + '<text x="0" y="' + (seated ? (seated === 'b' ? 32.5 : 37.5) : 23.5) + '" font-size="6.8" text-anchor="middle" fill="'+F2_OUT+'" stroke="none">'+v.name+'</text></g>';
+         + '<g stroke="none"><rect x="-26" y="' + (seated ? (seated === 'b' ? 24 : 28) : 14) + '" width="52" height="13" rx="0" fill="#fffdf8" stroke="'+F2_OUT+'" stroke-width="0.8" shape-rendering="crispEdges"/>'
+         + '<text x="0" y="' + (seated ? (seated === 'b' ? 33.5 : 37.5) : 23.5) + '" font-size="6.8" text-anchor="middle" fill="'+F2_OUT+'" stroke="none">'+v.name+'</text></g>';
       return h;
     }
 
