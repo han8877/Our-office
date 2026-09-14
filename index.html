@@ -7341,8 +7341,9 @@
   // 앞으로 무슨 이야기가 나오는지는 미리 알려주지 않는다. 차례를 두지 않는 이유다
   function diaryCover(){
     diaryBody.innerHTML = diaryFrame(
-      '<p class="dyNote2">표지에도 안쪽에도 이름이 없는 근무일지입니다. '
-      + '옛날 문서프로그램으로 쓰여진 오래된 근무일지이며, 시간이 지날 수록 페이지가 늘어납니다.</p>',
+      '<p class="dyNote2">이 파일을 발견했다면 계속 읽어주세요. '
+      + '오래된 파일이어서 호환이 어려울 수 있습니다. '
+      + '확장자 자동 변환 프로그램이 작동하는 한 페이지는 계속 다운받아질겁니다. 그럼.</p>',
       '<button class="dyCoverBtn" id="dyStartBtn">읽기</button>');
     diaryBody.scrollTop = 0;
     diaryMode = 'cover';
