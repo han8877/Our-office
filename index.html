@@ -11186,7 +11186,7 @@
   var AI_ENDPOINT   = 'https://our-office-ai.awakening8drawing.workers.dev/';
   // 워커가 Gemini 를 부르고, 실패하면 다른 모델로 한 번 더 부른다.
   // 7초로는 그 두 번을 못 기다려 늘 기존 답장으로 넘어갔다
-  var AI_TIMEOUT_MS = 20000;
+  var AI_TIMEOUT_MS = 35000;   // 워커가 제미나이까지 다녀오는 데 실측 16초 — 넉넉히 둔다
   var AI_MAX_LEN    = 200;     // 채팅 말풍선에 들어갈 만한 길이로 자른다
   var aiFailCount = 0, aiOffUntil = 0;
   // 휴대폰에서도 원인을 볼 수 있게 시도한 내용을 남겨둔다 (최근 12건)
@@ -11468,8 +11468,13 @@
     // AI 답장을 먼저 시도하고, 못 받으면 기존 pickContextualReply 로 돌아간다.
     // 기다린 시간만큼 '읽는 시간'을 깎아 전체 체감 속도는 그대로 둔다
     function withReply(ctx, fallbackParts, send){
-      var t0 = Date.now();
+      var t0 = Date.now(), held = false;
+      // 답이 늦으면 '읽는 시간'이 끝나는 순간부터 입력 중 표시를 띄워 둔다.
+      // 제때 오면 이 타이머는 돌기 전에 꺼지므로 지금까지의 느낌 그대로다
+      var hold = setTimeout(function(){ held = true; setTyping(key, ctx.name); }, readWait);
       aiReply(text, ctx, function(ai){
+        clearTimeout(hold);
+        if(held){ held = false; clearTyping(key); }
         var left = Math.max(0, readWait - (Date.now() - t0));
         send(ai ? aiParts(ai) : fallbackParts(), left);
       });
