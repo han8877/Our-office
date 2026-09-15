@@ -52,6 +52,19 @@
     #doorLeafLeft, #doorLeafRight,
     #f2DoorLeafLeft, #f2DoorLeafRight{ transition:none; }
   }
+  /* ===== AI 연결 진단 (휴대폰에서 원인을 보려고 만든 화면) ===== */
+  #aiDiagBody{ background:#fbf9f4; }
+  .adBtns{ display:flex; gap:6px; margin-bottom:10px; }
+  .adBtns .btn{ flex:1; justify-content:center; height:32px; font-size:12px; }
+  .adCard{ border:1px solid #e3ddcd; border-radius:8px; background:#fff; padding:9px 10px; margin-bottom:8px; }
+  .adWhen{ font-size:10.5px; color:#9a8a72; }
+  .adStep{ font-size:12px; color:#4a3f33; line-height:1.65; margin-top:3px; word-break:break-all; }
+  .adOK{ color:#3f7a46; font-weight:700; }
+  .adNG{ color:#b23b3b; font-weight:700; }
+  .adRaw{ margin-top:5px; padding:7px 8px; background:#f4f1e8; border-radius:6px;
+          font-size:11px; line-height:1.55; color:#3a352c; white-space:pre-wrap; word-break:break-all;
+          max-height:170px; overflow:auto; -webkit-user-select:text; user-select:text; }
+  .adHint{ font-size:11.5px; color:#8a7a63; line-height:1.7; margin:2px 0 10px; }
   /* ===== 오래된 근무일지 — 옛날 문서 프로그램 창 =====
      이 게임 안의 물건이 아니라 '남이 쓰던 파일을 열어본 것'처럼 보여야 한다.
      그래서 창틀·메뉴줄·상태줄을 갖춘 90년대 워드프로세서 모양으로 짰다.
@@ -4467,6 +4480,13 @@
   </div>
 </div>
 
+<div class="mail-overlay" id="aiDiagOverlay">
+  <div class="mail-window" style="max-width:380px;">
+    <div class="mail-head"><span>AI 연결 진단</span><button id="aiDiagCloseX">×</button></div>
+    <div class="mail-body" id="aiDiagBody" style="max-height:66vh; overflow-y:auto; padding:10px;"></div>
+  </div>
+</div>
+
 <div class="mail-overlay" id="messengerOverlay">
   <div class="mail-window" style="max-width:340px;">
     <div class="mail-head" style="flex-direction:column; align-items:stretch; gap:6px;">
@@ -4641,6 +4661,9 @@
     </div>
     <div class="hubRow" style="margin-top:8px;">
       <button class="btn" id="hubPreviewBtn">전체 직원 미리보기</button>
+    </div>
+    <div class="hubRow" style="margin-top:8px;">
+      <button class="btn" id="hubAiDiagBtn">AI 연결 진단</button>
     </div>
     <div class="hubRow" style="margin-top:8px;">
       <button class="btn" id="hubResetBtn">초기화</button>
@@ -11166,6 +11189,13 @@
   var AI_TIMEOUT_MS = 20000;
   var AI_MAX_LEN    = 200;     // 채팅 말풍선에 들어갈 만한 길이로 자른다
   var aiFailCount = 0, aiOffUntil = 0;
+  // 휴대폰에서도 원인을 볼 수 있게 시도한 내용을 남겨둔다 (최근 12건)
+  var aiLog = [];
+  function aiRec(rec){
+    rec.at = new Date();
+    aiLog.unshift(rec);
+    if(aiLog.length > 12) aiLog.pop();
+  }
 
   function aiEnabled(){
     return typeof fetch === 'function' && Date.now() >= aiOffUntil;
@@ -11249,6 +11279,9 @@
     if(ctrl) opt.signal = ctrl.signal;
 
     try{ console.log('AI 요청 시작', AI_ENDPOINT, body); }catch(e){}
+    var t0 = Date.now();
+    var rec = { sent:true, url:AI_ENDPOINT, req:JSON.stringify(body) };
+    aiRec(rec);
 
     fetch(AI_ENDPOINT, opt)
       .then(function(r){
@@ -11256,23 +11289,29 @@
       })
       .then(function(res){
         clearTimeout(timer);
+        rec.ms = Date.now() - t0; rec.status = res.status; rec.raw = res.raw;
         try{ console.log('Worker 응답 수신:', res.status, res.raw.slice(0, 400)); }catch(e){}
-        if(!res.ok){ aiNoteFail('HTTP ' + res.status); finish(null); return; }
-        var data; try{ data = JSON.parse(res.raw); }catch(e){ data = res.raw; }
+        if(!res.ok){ rec.why = 'HTTP ' + res.status; aiNoteFail(rec.why); finish(null); return; }
+        var data; try{ data = JSON.parse(res.raw); rec.json = true; }
+                  catch(e){ data = res.raw; rec.json = false; }
         var out = aiTidy(aiExtractText(data, 0));
         if(out){
-          aiFailCount = 0;
+          aiFailCount = 0; rec.used = out;
           try{ console.log('Gemini 답변 적용:', out); }catch(e){}
           finish(out);
         } else {
-          aiNoteFail('응답에서 글을 못 찾음');
+          rec.why = '응답은 왔지만 글을 못 뽑음';
+          aiNoteFail(rec.why);
           finish(null);
         }
       })
       .catch(function(err){
         clearTimeout(timer);
         // CORS 차단·망 끊김·주소 오류는 모두 여기로 온다
-        aiNoteFail((err && err.message) || '요청 실패');
+        rec.ms = Date.now() - t0;
+        rec.netErr = (err && (err.name + ': ' + err.message)) || '요청 실패';
+        rec.why = rec.netErr;
+        aiNoteFail(rec.netErr);
         finish(null);
       });
   }
@@ -11281,6 +11320,129 @@
   function aiParts(t){
     return splitLongReply(t).filter(function(x){ return x && x.length; }).slice(0, 2);
   }
+
+  // ===== AI 연결 진단 화면 =====
+  // 휴대폰에서 개발자도구를 못 여니, 같은 내용을 게임 안에서 보여준다
+  var aiDiagOverlay = byId('aiDiagOverlay');
+  function adEsc(t){
+    return String(t == null ? '' : t)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function adTime(d){
+    return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2)+':'+('0'+d.getSeconds()).slice(-2);
+  }
+  function adCard(r, i){
+    var h = '<div class="adCard"><div class="adWhen">' + (i+1) + '. ' + adTime(r.at)
+          + (r.ms != null ? '  ·  ' + (r.ms/1000).toFixed(1) + '초' : '') + '</div>';
+    h += '<div class="adStep">① POST 보냄 <span class="adOK">예</span></div>';
+    h += '<div class="adRaw">' + adEsc(r.req) + '</div>';
+    if(r.netErr){
+      h += '<div class="adStep">② 응답 <span class="adNG">못 받음</span> — ' + adEsc(r.netErr) + '</div>'
+         + '<div class="adStep">상태코드를 볼 수 없습니다. 브라우저가 막았거나(CORS) 서버에 닿지 못한 것입니다.</div>';
+    } else if(r.status != null){
+      var ok2 = (r.status >= 200 && r.status < 300);
+      h += '<div class="adStep">② HTTP <span class="' + (ok2?'adOK':'adNG') + '">' + r.status + '</span></div>'
+         + '<div class="adStep">③ 받은 본문' + (r.json === false ? ' (JSON 아님)' : '') + '</div>'
+         + '<div class="adRaw">' + adEsc(r.raw && r.raw.length ? r.raw : '(비어 있음)') + '</div>';
+      if(r.used) h += '<div class="adStep">④ 글 뽑기 <span class="adOK">성공</span> → ' + adEsc(r.used) + '</div>';
+      else if(ok2) h += '<div class="adStep">④ 글 뽑기 <span class="adNG">실패</span> — 위 본문에서 답글을 찾지 못했습니다</div>';
+    } else {
+      h += '<div class="adStep">② <span class="adNG">아직 응답 없음</span> (또는 ' + (AI_TIMEOUT_MS/1000) + '초 초과)</div>';
+    }
+    return h + '</div>';
+  }
+  function aiDiagRender(extra){
+    var b = byId('aiDiagBody');
+    var h = '<div class="adBtns">'
+          + '<button class="btn" id="adTestBtn">지금 시험</button>'
+          + '<button class="btn" id="adCopyBtn">전체 복사</button>'
+          + '<button class="btn" id="adClearBtn">지우기</button>'
+          + '</div>'
+          + '<div class="adHint">주소 ' + adEsc(AI_ENDPOINT) + '<br>'
+          + '채팅을 한 줄 보낸 뒤 여기를 다시 열면 그 시도가 위에 쌓입니다.</div>';
+    if(extra) h += extra;
+    if(!aiLog.length) h += '<div class="adHint">아직 기록이 없습니다. <b>지금 시험</b>을 누르거나 채팅을 한 줄 보내보세요.</div>';
+    aiLog.forEach(function(r, i){ h += adCard(r, i); });
+    b.innerHTML = h;
+    b.scrollTop = 0;
+    byId('adClearBtn').addEventListener('click', function(){ aiLog = []; aiDiagRender(); });
+    byId('adCopyBtn').addEventListener('click', function(){
+      var t = aiDiagText();
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t).then(function(){ toast('진단 내용을 복사했습니다'); },
+                                             function(){ toast('복사가 막혔습니다. 길게 눌러 선택해주세요'); });
+      } else toast('복사가 안 됩니다. 길게 눌러 선택해주세요');
+    });
+    byId('adTestBtn').addEventListener('click', aiDiagProbe);
+  }
+  function aiDiagText(){
+    var out = ['AI 연결 진단', '주소: ' + AI_ENDPOINT];
+    aiLog.forEach(function(r, i){
+      out.push('--- ' + (i+1) + ' ' + adTime(r.at) + (r.ms!=null ? ' ('+r.ms+'ms)' : ''));
+      out.push('보낸 것: ' + r.req);
+      if(r.netErr) out.push('응답: 못 받음 — ' + r.netErr);
+      else if(r.status != null){ out.push('HTTP ' + r.status); out.push('본문: ' + (r.raw||'(비어 있음)')); }
+      else out.push('응답: 아직 없음');
+      if(r.used) out.push('뽑은 글: ' + r.used);
+      else if(r.why) out.push('실패 이유: ' + r.why);
+    });
+    return out.join('\n');
+  }
+  // 세 가지로 갈라 본다: ① 평소대로 POST ② 예비요청이 없는 POST ③ 닿기만 하는지
+  function aiDiagProbe(){
+    var body = JSON.stringify({ message:'연결 시험입니다' });
+    var lines = [];
+    function show(){
+      aiDiagRender('<div class="adCard"><div class="adWhen">지금 시험</div>' + lines.join('') + '</div>');
+    }
+    lines.push('<div class="adStep">시험 중…</div>'); show();
+    lines = [];
+    function step(label, opt, next){
+      var t0 = Date.now();
+      fetch(AI_ENDPOINT, opt)
+        .then(function(r){ return r.text().then(function(x){ return {s:r.status, x:x, t:r.type}; }); })
+        .then(function(z){
+          lines.push('<div class="adStep">' + label + ' <span class="'
+            + (z.s>=200&&z.s<300?'adOK':'adNG') + '">HTTP ' + z.s + '</span> · '
+            + ((Date.now()-t0)/1000).toFixed(1) + '초</div>'
+            + '<div class="adRaw">' + adEsc(z.x.slice(0, 600) || '(본문 못 읽음 — ' + z.t + ')') + '</div>');
+          show(); next();
+        })
+        .catch(function(e){
+          lines.push('<div class="adStep">' + label + ' <span class="adNG">실패</span> — '
+            + adEsc((e && e.name+': '+e.message) || '') + '</div>');
+          show(); next();
+        });
+    }
+    step('① 평소 방식 (JSON POST)',
+      { method:'POST', headers:{'Content-Type':'application/json'}, body:body },
+    function(){
+      step('② 예비요청 없는 POST (text/plain)',
+        { method:'POST', headers:{'Content-Type':'text/plain'}, body:body },
+      function(){
+        var t0 = Date.now();
+        fetch(AI_ENDPOINT, { mode:'no-cors' }).then(function(){
+          lines.push('<div class="adStep">③ 서버에 닿기 <span class="adOK">됨</span> · '
+            + ((Date.now()-t0)/1000).toFixed(1) + '초 (내용은 못 읽는 방식)</div>'
+            + '<div class="adHint">①이 실패했는데 ③이 됐다면 서버는 살아 있고 <b>CORS 설정</b> 문제입니다.'
+            + ' ②만 됐다면 <b>OPTIONS 예비요청</b> 처리가 빠진 것입니다.</div>');
+          show();
+        }).catch(function(e){
+          lines.push('<div class="adStep">③ 서버에 닿기 <span class="adNG">안 됨</span> — '
+            + adEsc((e && e.message) || '') + '</div>'
+            + '<div class="adHint">주소가 틀렸거나 망이 끊겼거나 서버가 꺼져 있습니다.</div>');
+          show();
+        });
+      });
+    });
+  }
+  byId('hubAiDiagBtn').addEventListener('click', function(){
+    settingsHub.classList.remove('show');
+    aiDiagRender();
+    aiDiagOverlay.classList.add('show');
+  });
+  byId('aiDiagCloseX').addEventListener('click', function(){ aiDiagOverlay.classList.remove('show'); });
+  aiDiagOverlay.addEventListener('click', function(e){ if(e.target===aiDiagOverlay) aiDiagOverlay.classList.remove('show'); });
 
   function sendChatMessage(){
     var input = byId('chatInput');
