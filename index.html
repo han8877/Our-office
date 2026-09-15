@@ -11161,8 +11161,10 @@
   // 열쇠는 워커의 Secret 에만 있다. 게임 코드에는 주소만 둔다.
   // 워커가 답을 못 주면 아래 pickContextualReply(기존 답장 엔진)로 그대로 돌아간다
   var AI_ENDPOINT   = 'https://our-office-ai.awakening8drawing.workers.dev/';
-  var AI_TIMEOUT_MS = 7000;    // 이보다 늦으면 기다리지 않고 기존 답장을 쓴다
-  var AI_MAX_LEN    = 120;     // 채팅 말풍선에 들어갈 만한 길이로 자른다
+  // 워커가 Gemini 를 부르고, 실패하면 다른 모델로 한 번 더 부른다.
+  // 7초로는 그 두 번을 못 기다려 늘 기존 답장으로 넘어갔다
+  var AI_TIMEOUT_MS = 20000;
+  var AI_MAX_LEN    = 200;     // 채팅 말풍선에 들어갈 만한 길이로 자른다
   var aiFailCount = 0, aiOffUntil = 0;
 
   function aiEnabled(){
@@ -11185,15 +11187,15 @@
     if(data == null) return '';
     if(typeof data === 'string') return data.trim();
     if(typeof data !== 'object') return '';
-    var flat = ['reply','text','message','answer','output','result','content','response','completion'];
-    for(var i=0;i<flat.length;i++){
-      if(typeof data[flat[i]] === 'string' && data[flat[i]].trim()) return data[flat[i]].trim();
-    }
-    // Gemini 원본 응답이 그대로 올 때
+    // Gemini 원본 모양을 가장 먼저 본다 — candidates[0].content.parts[*].text
     var c = data.candidates;
     if(c && c.length && c[0] && c[0].content && c[0].content.parts){
       var joined = c[0].content.parts.map(function(q){ return (q && q.text) || ''; }).join('').trim();
       if(joined) return joined;
+    }
+    var flat = ['reply','text','message','answer','output','result','content','response','completion'];
+    for(var i=0;i<flat.length;i++){
+      if(typeof data[flat[i]] === 'string' && data[flat[i]].trim()) return data[flat[i]].trim();
     }
     if((depth || 0) < 3){
       var nest = ['data','result','body','payload','response','choices'];
@@ -11222,7 +11224,11 @@
 
   // 답을 받으면 done(문자열), 못 받으면 done(null). 어떤 경우에도 예외를 던지지 않는다
   function aiReply(text, ctx, done){
-    if(!aiEnabled()){ done(null); return; }
+    if(!aiEnabled()){
+      try{ console.warn('[AI] 앞서 연달아 실패해 지금은 워커를 건너뜁니다 (남은 시간 '
+        + Math.ceil((aiOffUntil - Date.now())/1000) + '초)'); }catch(e){}
+      done(null); return;
+    }
     var settled = false;
     function finish(v){ if(settled) return; settled = true; done(v); }
     var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
@@ -11242,17 +11248,26 @@
     var opt = { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) };
     if(ctrl) opt.signal = ctrl.signal;
 
+    try{ console.log('AI 요청 시작', AI_ENDPOINT, body); }catch(e){}
+
     fetch(AI_ENDPOINT, opt)
       .then(function(r){
-        if(!r.ok) throw new Error('HTTP ' + r.status);
-        return r.text();
+        return r.text().then(function(raw){ return { ok:r.ok, status:r.status, raw:raw }; });
       })
-      .then(function(raw){
+      .then(function(res){
         clearTimeout(timer);
-        var data; try{ data = JSON.parse(raw); }catch(e){ data = raw; }
+        try{ console.log('Worker 응답 수신:', res.status, res.raw.slice(0, 400)); }catch(e){}
+        if(!res.ok){ aiNoteFail('HTTP ' + res.status); finish(null); return; }
+        var data; try{ data = JSON.parse(res.raw); }catch(e){ data = res.raw; }
         var out = aiTidy(aiExtractText(data, 0));
-        if(out){ aiFailCount = 0; finish(out); }
-        else { aiNoteFail('응답에서 글을 못 찾음: ' + raw.slice(0, 120)); finish(null); }
+        if(out){
+          aiFailCount = 0;
+          try{ console.log('Gemini 답변 적용:', out); }catch(e){}
+          finish(out);
+        } else {
+          aiNoteFail('응답에서 글을 못 찾음');
+          finish(null);
+        }
       })
       .catch(function(err){
         clearTimeout(timer);
