@@ -11375,8 +11375,11 @@
     });
     byId('adTestBtn').addEventListener('click', aiDiagProbe);
   }
+  var aiProbeText = [];          // 지금 시험 결과를 글로도 남긴다 (전체 복사에 들어가게)
   function aiDiagText(){
     var out = ['AI 연결 진단', '주소: ' + AI_ENDPOINT];
+    if(aiProbeText.length){ out.push(''); out.push('[지금 시험]'); out = out.concat(aiProbeText); }
+    if(aiLog.length) out.push('');
     aiLog.forEach(function(r, i){
       out.push('--- ' + (i+1) + ' ' + adTime(r.at) + (r.ms!=null ? ' ('+r.ms+'ms)' : ''));
       out.push('보낸 것: ' + r.req);
@@ -11392,6 +11395,7 @@
   function aiDiagProbe(){
     var body = JSON.stringify({ message:'연결 시험입니다' });
     var lines = [];
+    aiProbeText = [];
     function show(){
       aiDiagRender('<div class="adCard"><div class="adWhen">지금 시험</div>' + lines.join('') + '</div>');
     }
@@ -11406,11 +11410,14 @@
             + (z.s>=200&&z.s<300?'adOK':'adNG') + '">HTTP ' + z.s + '</span> · '
             + ((Date.now()-t0)/1000).toFixed(1) + '초</div>'
             + '<div class="adRaw">' + adEsc(z.x.slice(0, 600) || '(본문 못 읽음 — ' + z.t + ')') + '</div>');
+          aiProbeText.push(label + ' HTTP ' + z.s + ' (' + ((Date.now()-t0)/1000).toFixed(1) + '초)');
+          aiProbeText.push('  본문: ' + (z.x.slice(0, 600) || '(못 읽음 — ' + z.t + ')'));
           show(); next();
         })
         .catch(function(e){
           lines.push('<div class="adStep">' + label + ' <span class="adNG">실패</span> — '
             + adEsc((e && e.name+': '+e.message) || '') + '</div>');
+          aiProbeText.push(label + ' 실패 — ' + ((e && e.name+': '+e.message) || ''));
           show(); next();
         });
     }
@@ -11426,11 +11433,13 @@
             + ((Date.now()-t0)/1000).toFixed(1) + '초 (내용은 못 읽는 방식)</div>'
             + '<div class="adHint">①이 실패했는데 ③이 됐다면 서버는 살아 있고 <b>CORS 설정</b> 문제입니다.'
             + ' ②만 됐다면 <b>OPTIONS 예비요청</b> 처리가 빠진 것입니다.</div>');
+          aiProbeText.push('③ 서버에 닿기 됨 (' + ((Date.now()-t0)/1000).toFixed(1) + '초)');
           show();
         }).catch(function(e){
           lines.push('<div class="adStep">③ 서버에 닿기 <span class="adNG">안 됨</span> — '
             + adEsc((e && e.message) || '') + '</div>'
             + '<div class="adHint">주소가 틀렸거나 망이 끊겼거나 서버가 꺼져 있습니다.</div>');
+          aiProbeText.push('③ 서버에 닿기 안 됨 — ' + ((e && e.message) || ''));
           show();
         });
       });
