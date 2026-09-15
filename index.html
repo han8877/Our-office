@@ -4804,10 +4804,11 @@
     <p>매일 직원들이 <b>1~3건</b>을 올립니다. 휴가·비품·복리·시설·교육·인사 여섯 갈래이고, 누가 무엇을 올릴지는 날짜마다 정해져 있어 같은 날 다시 들어와도 같은 건이 기다리고 있어요. 이미 처리한 건은 도장이 찍힌 채로 남습니다.</p>
     <p>승인하면 <b>이번 달 결재 예산</b>에서 금액이 빠집니다. 예산은 매달 1억원이고 달이 바뀌면 다시 채워져요. 남은 예산보다 비싼 건은 승인 버튼이 잠깁니다.</p>
     <p>승인·반려 둘 다 신청자가 바로 반응합니다. 표정이 바뀌고 한마디 하고, 사무실 일지에도 남아요.</p>
-    <p><b>휴가</b> 결재를 승인하면 하루를 통째로 비우는 갈래는 <b>다음 근무일에</b> 자리를 비웁니다. 토·일·공휴일에는 잡히지 않고 근무일로 밀려요. <b>조퇴만 당일</b>에 일어납니다.</p>
+    <p><b>휴가</b> 결재는 갈래에 따라 <b>언제</b> 일어나는지가 다릅니다. 미리 잡아두는 갈래(연차·공가·출장)는 <b>다음 근무일</b>이고, 토·일·공휴일에는 잡히지 않고 근무일로 밀려요. 지금 당장의 일인 <b>병가와 조퇴는 당일</b>에 일어납니다.</p>
     <table class="helpTable">
       <thead><tr><th>휴가 갈래</th><th>승인하면</th></tr></thead>
-      <tr><td>연차 · 병가 · 공가</td><td><b>다음 근무일</b> 하루 종일 자리를 비웁니다 (상태에 각각 <b>연차·병가·공가</b>로 표시)</td></tr>
+      <tr><td>연차 · 공가</td><td><b>다음 근무일</b> 하루 종일 자리를 비웁니다 (상태에 각각 <b>연차·공가</b>로 표시)</td></tr>
+      <tr><td>병가</td><td><b>오늘</b> 하루 자리를 비웁니다. 승인한 순간 자리에 있으면 그 길로 퇴근해요</td></tr>
       <tr><td>출장</td><td><b>다음 근무일</b> 하루 종일 <b>출장</b>입니다</td></tr>
       <tr><td>조퇴</td><td><b>오늘</b> 신청서에 적힌 시각에 먼저 퇴근합니다. 몇 시부터인지가 결재 제목에 같이 적혀 있어요 (14:30~17:00 중 30분 단위). 이미 지난 시각에 승인하면 바로 일어섭니다</td></tr>
     </table>
@@ -5693,8 +5694,8 @@
     return staff[idx];
   }
   function isOnLeaveToday(id){
-    // 어제 결재로 승인한 연차가 있으면 그 사람이 오늘 연차다
-    if(typeof apprLeaveIdToday === 'function' && apprLeaveIdToday() === id) return true;
+    // 결재로 잡힌 연차·병가·공가가 있으면 그 사람이 오늘 부재다
+    if(typeof apprOutKindsToday === 'function' && APPR_OFF_ALLDAY[apprOutKindsToday()[id]]) return true;
     var s = getOnLeaveStaffToday();
     return !!s && s.id === id;
   }
@@ -5711,7 +5712,7 @@
     return pool[idx];
   }
   function isOnTripToday(id){
-    if(typeof apprTripIdToday === 'function' && apprTripIdToday() === id) return true;
+    if(typeof apprOutKindsToday === 'function' && apprOutKindsToday()[id] === 'trip') return true;
     var s = getOnTripStaffToday();
     return !!s && s.id === id;
   }
@@ -5728,9 +5729,9 @@
   // 결재로 생긴 연차·출장까지 포함한 목록 (결재함이 신청자를 고를 때는 위 함수를 쓴다)
   function getOutAllDayIdsAll(){
     var ids = getOutAllDayIds();
-    if(typeof apprLeaveIdToday === 'function'){
-      var al = apprLeaveIdToday(); if(al) ids[al] = 'leave';
-      var at = apprTripIdToday();  if(at) ids[at] = 'trip';
+    if(typeof apprOutKindsToday === 'function'){
+      var m = apprOutKindsToday();
+      for(var id in m) ids[id] = (m[id] === 'trip') ? 'trip' : 'leave';
     }
     return ids;
   }
@@ -5891,6 +5892,17 @@
     showBubble(s, '먼저 조퇴할게요.');
     toast(s.name+'님이 조퇴합니다');
     if(typeof logDayEvent === 'function') logDayEvent('🏃', s.name+' 조퇴');
+    setTimeout(function(){ walkOut(s, null, true); }, 1000);
+  }
+
+  // 병가를 승인한 순간 자리에 있으면 그 길로 퇴근한다
+  function triggerSickLeave(s){
+    if(!s || !charEl(s.id)) return;
+    if(!charEl(s.id).classList.contains('present')){ hideInstant(s.id); return; }
+    if(typeof setMood === 'function') setMood(s.id, 'tired', 6000);
+    showBubble(s, '오늘은 들어가 쉬겠습니다..');
+    toast(s.name + '님이 병가로 퇴근합니다');
+    if(typeof logDayEvent === 'function') logDayEvent('🤒', s.name + ' 병가');
     setTimeout(function(){ walkOut(s, null, true); }, 1000);
   }
 
@@ -9599,6 +9611,7 @@
     if(!raw.done || typeof raw.done !== 'object') raw.done = {};
     if(!raw.off || typeof raw.off !== 'object') raw.off = {};
     if(!raw.early || typeof raw.early !== 'object') raw.early = {};
+    if(!raw.sick || typeof raw.sick !== 'object') raw.sick = {};
     // 예전 구조(leave/trip 따로)에 남아 있던 예약을 옮긴다
     if(raw.leave){ Object.keys(raw.leave).forEach(function(d){ raw.off[d] = { id:raw.leave[d], kind:'leave' }; }); delete raw.leave; }
     if(raw.trip){  Object.keys(raw.trip).forEach(function(d){ raw.off[d] = { id:raw.trip[d],  kind:'trip'  }; }); delete raw.trip; }
@@ -9613,7 +9626,7 @@
   }
   function apprSave(st){
     // 지난 기록이 무한히 쌓이지 않게 최근 것만 남긴다
-    ['done','off','early'].forEach(function(f){
+    ['done','off','early','sick'].forEach(function(f){
       var keys = Object.keys(st[f]).sort();
       while(keys.length > 10){ delete st[f][keys.shift()]; }
     });
@@ -9627,18 +9640,28 @@
   var APPR_OFF_LABEL = { leave:'연차', sick:'병가', public:'공가', trip:'출장', early:'조퇴' };
   var APPR_OFF_ALLDAY = { leave:1, sick:1, public:1 };
   function apprOffToday(){ return (apprState && apprState.off[apprDayKey()]) || null; }
-  function apprOffKindOf(id){
+  function apprSickToday(){ return (apprState && apprState.sick && apprState.sick[apprDayKey()]) || null; }
+  // 오늘 결재 때문에 하루 종일 자리를 비우는 사람들 { id: kind }.
+  // 미리 잡아둔 건(연차·공가·출장)과 오늘 승인한 병가가 겹칠 수 있어서 합쳐서 본다
+  function apprOutKindsToday(){
+    var m = {};
     var o = apprOffToday();
-    return (o && o.id === id) ? o.kind : null;
+    if(o) m[o.id] = o.kind;
+    var k = apprSickToday();
+    if(k) m[k.id] = 'sick';
+    return m;
   }
+  function apprOffKindOf(id){ return apprOutKindsToday()[id] || null; }
   // 연차·병가·공가는 셋 다 '하루 종일 연차 자리'로 취급하고 이름표만 다르게 붙인다
   function apprLeaveIdToday(){
-    var o = apprOffToday();
-    return (o && APPR_OFF_ALLDAY[o.kind]) ? o.id : null;
+    var m = apprOutKindsToday();
+    for(var id in m) if(APPR_OFF_ALLDAY[m[id]]) return id;
+    return null;
   }
   function apprTripIdToday(){
-    var o = apprOffToday();
-    return (o && o.kind === 'trip') ? o.id : null;
+    var m = apprOutKindsToday();
+    for(var id in m) if(m[id] === 'trip') return id;
+    return null;
   }
   // 조퇴는 '승인한 그날' 일어난다. 그래서 하루 종일 부재와 달리 오늘 칸에 바로 적힌다
   function apprEarlyToday(){ return (apprState && apprState.early && apprState.early[apprDayKey()]) || null; }
@@ -9753,7 +9776,12 @@
     if(item.eff === 'cheer' || item.eff === 'snack') apprCheerIds[item.by.id] = true;
   }
   function apprApplyOnce(item){
-    if(item.eff === 'early'){
+    if(item.eff === 'sick'){
+      // 아픈 건 오늘 일이다. 승인해 놓고 멀쩡히 출근해 있으면 말이 안 된다
+      apprState.sick[apprDayKey()] = { id:item.by.id };
+      setTimeout(function(){ triggerSickLeave(staffMap[item.by.id]); }, 2200);
+    }
+    else if(item.eff === 'early'){
       // 오늘 그 시각에 나간다. 이미 지난 시각이면 다음 시계 틱에서 바로 나간다.
       // flagEarly는 '오늘 조퇴할 사람이 없다'로 굳어 있을 수 있어 반드시 풀어줘야 한다
       apprState.early[apprDayKey()] = { id:item.by.id, at:item.at };
@@ -11937,7 +11965,15 @@
       bondNote.textContent = '말을 ' + (BOND_TIERS[tier] - st.talks) + '번 더 걸면 새로운 혼잣말이 열려요.';
     }
     var leaveNote = byId('profileLeaveNote');
-    if(isOnLeaveToday(id)){
+    // 결재로 잡힌 건이면 갈래 이름을 그대로 쓴다 (연차·병가·공가)
+    var apprKind = (typeof apprOffKindOf === 'function') ? apprOffKindOf(id) : null;
+    if(apprKind === 'sick'){
+      leaveNote.textContent = '오늘은 병가예요 🤒';
+      leaveNote.style.display = 'block';
+    } else if(apprKind === 'public'){
+      leaveNote.textContent = '오늘은 공가예요 📋';
+      leaveNote.style.display = 'block';
+    } else if(isOnLeaveToday(id)){
       leaveNote.textContent = '오늘은 연차예요 🌴';
       leaveNote.style.display = 'block';
     } else if(isOnTripToday(id)){
