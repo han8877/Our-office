@@ -4720,7 +4720,7 @@
     <p>창밖 날씨는 대체적으로 화창한데 가끔 비가 옵니다. 사무실 양옆 서울 풍경의 하늘은 새벽·아침·낮·노을·저녁·밤 여섯 단계로 바뀌고, 해와 달이 하늘을 가로질러 움직입니다. 저녁(야근모드)부터 창밖만 어두워집니다.</p>
     <p>직원들의 표정도 상황에 따라 바뀝니다. 회의 중에는 집중한 얼굴, 탕비실에서는 웃는 얼굴이 돼요.</p>
     <p>표정이 바뀔 때나 혼잣말 대신, 말풍선에 <b>감정 이모지</b>가 뜨기도 합니다. 웃음·졸림·분노·슬픔·놀람·멋짐·무표정 일곱 가지이고, 야근 중에는 졸림·슬픔·분노가, 점심 무렵에는 졸림이 더 자주 나와요.</p>
-    <p>화면 위쪽에는 현재 시각, 오늘 주문량, 출근 일수가 표시됩니다. 주문량은 근무시간에만 조금씩 늘어나요.</p>
+    <p>화면 위쪽에는 현재 시각, 오늘 주문량, 출근 일수가 표시됩니다. 주문량은 근무시간에만 조금씩 늘어나요. <b>출근 일수</b>는 이 사무실에 나온 날을 모두 센 것이라, 며칠 쉬었다 와도 줄지 않고 이어집니다.</p>
 
     <h3>3. 어떤 회사이며, 직원 구성은 어떻게 되어있나요?</h3>
     <p>기본 설정되어 있는 회사는 '(주)끄적끄적문구'이며 총 15명이 근무하는 회사입니다.</p>
@@ -4839,7 +4839,7 @@
     <p>안 읽은 쪽이 있으면 <code>일지</code> 버튼에 초록 테두리가 켜지고, 전부 읽으면 사라집니다.</p>
 
     <h3>11. 실장님의 한마디</h3>
-    <p>휴대폰에서 <b>뒤로가기</b>를 누르면 열려 있던 창부터 하나씩 닫힙니다. 아무 창도 열려 있지 않을 때 누르면 <b>퇴근하시겠어요?</b>를 물어보고, 퇴근하기를 눌러야 사무실에서 나갑니다. 나가더라도 오늘 일지·사물함·설정·연속 출근은 그대로 남아 있어요.</p>
+    <p>휴대폰에서 <b>뒤로가기</b>를 누르면 열려 있던 창부터 하나씩 닫힙니다. 아무 창도 열려 있지 않을 때 누르면 <b>퇴근하시겠어요?</b>를 물어보고, 퇴근하기를 눌러야 사무실에서 나갑니다. 나가더라도 오늘 일지·사물함·설정·출근 일수는 그대로 남아 있어요.</p>
     <p>배경음은 <b>시간대 자동</b>으로 바뀝니다. 오전 근무(09~12시)는 02번, 점심·오후 근무(12~18시)는 03번, 야근(18시 이후 또는 야근모드)은 04번, 주말·공휴일은 05번, 그 밖의 시각은 01번이에요. 목록에서 음원을 직접 고르면 자동이 꺼지고 그 곡으로 계속 틉니다. 자동 버튼을 다시 누르면 지금 시간대에 맞는 곡으로 돌아갑니다.</p>
     <p>메신저 답장은 사람이 보내는 것처럼 옵니다. 내 말을 읽는 시간과 답을 쓰는 시간만큼 기다린 뒤 오고, 그동안 <b>입력 중</b> 표시가 뜹니다. 답이 길면 두 통으로 나눠 보내고, 대화가 이어지도록 가끔 되묻기도 해요. 성격에 따라 말끝도 조금씩 다릅니다.</p>
     <p>메신저에는 2층 사람들도 있습니다. <b>윤안내</b>·<b>강안내</b>는 친절하고 다정하게, <b>보안요원</b>은 씩씩한 군인 말투로 답해요. 접속 상태도 2층 근무표(안내 직원은 평일 9시~18시, 보안요원은 매일 8시~21시)를 그대로 따릅니다. 사무실 식구가 아니라서 전체채팅에는 끼지 않고 1:1 대화와 쪽지만 주고받아요.</p>
@@ -6958,17 +6958,20 @@
   function bumpTalk(id){ if(staffStats[id]){ staffStats[id].talks++; saveStats(); } }
   function bumpOvertime(id){ if(staffStats[id]){ staffStats[id].overtime++; saveStats(); } }
 
-  // ===== 출근 일수(연속 접속 스트릭) =====
-  var streakInfo = { lastDate:null, streak:0 };
+  // ===== 출근 일수 =====
+  // 화면에 띄우는 건 '이 사무실에 나온 날이 며칠인지'(totalDays)다.
+  // 하루 걸러 들어오는 사람이 영영 1일째로 남지 않도록, 연속이 끊겨도 줄지 않는다.
+  // streak(연속 며칠째)도 같이 세어 두지만 지금은 화면에 쓰지 않는다
+  var streakInfo = { lastDate:null, streak:0, totalDays:0 };
   try{
     var savedStreak = localStorage.getItem('ggj_office_streak_v1');
     if(savedStreak) streakInfo = JSON.parse(savedStreak) || streakInfo;
   }catch(e){}
   (function updateStreak(){
     var today = dateKey();
-    // 누적 접속일: 연속이 끊겨도 줄지 않는다. 지금 화면에 쓰이는 데는 없고,
-    // 나중에 오래 플레이한 사람을 알아보는 데 쓰려고 세어만 둔다
-    if(typeof streakInfo.totalDays !== 'number') streakInfo.totalDays = streakInfo.streak || 1;
+    // 예전 저장본에는 totalDays가 없다. 연속 일수를 아는 만큼만 물려받는다
+    if(typeof streakInfo.totalDays !== 'number')
+      streakInfo.totalDays = streakInfo.lastDate ? (streakInfo.streak || 1) : 0;
     if(streakInfo.lastDate === today){ /* 오늘 이미 반영됨 */ }
     else {
       var y = new Date(); y.setDate(y.getDate()-1);
@@ -6979,8 +6982,9 @@
     }
     try{ localStorage.setItem('ggj_office_streak_v1', JSON.stringify(streakInfo)); }catch(e){}
   })();
+  function workDays(){ return streakInfo.totalDays || 1; }
   var streakTextEl = byId('streakText');
-  if(streakTextEl) streakTextEl.textContent = streakInfo.streak || 1;
+  if(streakTextEl) streakTextEl.textContent = workDays();
 
   // ===== 일별 로그 (주간 리포트용: 최근 7일 주문량/완료 사업 수) =====
   var dailyLog = { date:dateKey(), orders:0, completions:0 };
@@ -12140,7 +12144,7 @@
       (day.entries || []).forEach(function(e){ if(VISITOR_ICONS[e.icon]) visitors++; });
       break;
     }
-    var days = streakInfo.streak || 1;
+    var days = workDays();
     if(!yLog && !visitors) return '<span class="introFirst">오늘이 첫 출근입니다</span>';
     return '<span class="introSumCard">'
       + '<span class="col"><span class="k">어제 주문</span><div class="v">' + ((yLog && yLog.orders) || 0) + '건</div></span>'
