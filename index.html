@@ -11157,6 +11157,110 @@
     return null;
   }
 
+  // ===== AI 답장 (Cloudflare Worker 경유) =====
+  // 열쇠는 워커의 Secret 에만 있다. 게임 코드에는 주소만 둔다.
+  // 워커가 답을 못 주면 아래 pickContextualReply(기존 답장 엔진)로 그대로 돌아간다
+  var AI_ENDPOINT   = 'https://our-office-ai.awakening8drawing.workers.dev/';
+  var AI_TIMEOUT_MS = 7000;    // 이보다 늦으면 기다리지 않고 기존 답장을 쓴다
+  var AI_MAX_LEN    = 120;     // 채팅 말풍선에 들어갈 만한 길이로 자른다
+  var aiFailCount = 0, aiOffUntil = 0;
+
+  function aiEnabled(){
+    return typeof fetch === 'function' && Date.now() >= aiOffUntil;
+  }
+  // 세 번 내리 실패하면 1분 쉬었다 다시 시도한다 (끊긴 망에서 매번 기다리지 않게)
+  function aiNoteFail(){
+    aiFailCount++;
+    if(aiFailCount >= 3){ aiFailCount = 0; aiOffUntil = Date.now() + 60000; }
+  }
+
+  // 워커가 돌려주는 모양이 여러 가지일 수 있어 흔한 자리를 차례로 뒤진다.
+  // (문자열 그대로 / {reply} / {text} / … / Gemini 원본 candidates / 한 겹 감싼 것)
+  function aiExtractText(data, depth){
+    if(data == null) return '';
+    if(typeof data === 'string') return data.trim();
+    if(typeof data !== 'object') return '';
+    var flat = ['reply','text','message','answer','output','result','content','response','completion'];
+    for(var i=0;i<flat.length;i++){
+      if(typeof data[flat[i]] === 'string' && data[flat[i]].trim()) return data[flat[i]].trim();
+    }
+    // Gemini 원본 응답이 그대로 올 때
+    var c = data.candidates;
+    if(c && c.length && c[0] && c[0].content && c[0].content.parts){
+      var joined = c[0].content.parts.map(function(q){ return (q && q.text) || ''; }).join('').trim();
+      if(joined) return joined;
+    }
+    if((depth || 0) < 3){
+      var nest = ['data','result','body','payload','response','choices'];
+      for(var j=0;j<nest.length;j++){
+        var v = data[nest[j]];
+        if(v && typeof v === 'object'){
+          var inner = aiExtractText(Array.isArray(v) ? v[0] : v, (depth||0)+1);
+          if(inner) return inner;
+        }
+      }
+    }
+    return '';
+  }
+
+  // 말풍선에 넣기 좋게 다듬는다. AI 가 준 말 자체는 바꾸지 않는다
+  function aiTidy(t){
+    t = String(t).replace(/\s+/g, ' ').trim();
+    if(t.length > AI_MAX_LEN){
+      var cut = t.slice(0, AI_MAX_LEN);
+      var m = cut.lastIndexOf('. '), n = Math.max(cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+      var at = Math.max(m, n);
+      t = (at > 20 ? cut.slice(0, at+1) : cut).trim();
+    }
+    return t;
+  }
+
+  // 답을 받으면 done(문자열), 못 받으면 done(null). 어떤 경우에도 예외를 던지지 않는다
+  function aiReply(text, ctx, done){
+    if(!aiEnabled()){ done(null); return; }
+    var settled = false;
+    function finish(v){ if(settled) return; settled = true; done(v); }
+    var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+    var timer = setTimeout(function(){
+      if(ctrl){ try{ ctrl.abort(); }catch(e){} }
+      aiNoteFail(); finish(null);
+    }, AI_TIMEOUT_MS);
+
+    var body = {
+      message: text,                      // 사용자가 입력한 말
+      speaker: (ctx && ctx.name) || '',   // 답할 사람
+      role:    (ctx && ctx.role) || '',
+      personality: (ctx && ctx.personality) || '',
+      room:    (ctx && ctx.room) || 'dm',
+      company: (typeof settings !== 'undefined' && settings.company) || '끄적끄적문구'
+    };
+    var opt = { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(body) };
+    if(ctrl) opt.signal = ctrl.signal;
+
+    fetch(AI_ENDPOINT, opt)
+      .then(function(r){
+        if(!r.ok) throw new Error('HTTP ' + r.status);
+        return r.text();
+      })
+      .then(function(raw){
+        clearTimeout(timer);
+        var data; try{ data = JSON.parse(raw); }catch(e){ data = raw; }
+        var out = aiTidy(aiExtractText(data, 0));
+        if(out){ aiFailCount = 0; finish(out); }
+        else { aiNoteFail(); finish(null); }   // 200 이어도 글이 없으면 실패로 친다
+      })
+      .catch(function(){
+        clearTimeout(timer);
+        aiNoteFail();
+        finish(null);
+      });
+  }
+
+  // AI 가 준 말은 말투를 덧씌우거나 덧말을 붙이지 않는다. 길면 두 통으로만 나눈다
+  function aiParts(t){
+    return splitLongReply(t).filter(function(x){ return x && x.length; }).slice(0, 2);
+  }
+
   function sendChatMessage(){
     var input = byId('chatInput');
     var text = input.value.trim();
@@ -11169,6 +11273,16 @@
 
     var readWait = readDelayFor(text);
 
+    // AI 답장을 먼저 시도하고, 못 받으면 기존 pickContextualReply 로 돌아간다.
+    // 기다린 시간만큼 '읽는 시간'을 깎아 전체 체감 속도는 그대로 둔다
+    function withReply(ctx, fallbackParts, send){
+      var t0 = Date.now();
+      aiReply(text, ctx, function(ai){
+        var left = Math.max(0, readWait - (Date.now() - t0));
+        send(ai ? aiParts(ai) : fallbackParts(), left);
+      });
+    }
+
     if(target && target.isRoom){
       var members = staff.filter(function(s){ return s.teamKey===target.teamKey && !isGoneForDay(s.id); });
       // 팀방에서도 이름을 부르면 그 팀원이 답한다
@@ -11177,9 +11291,14 @@
       var replier2 = mentionedInTeam || (members.length ? members[Math.floor(Math.random()*members.length)] : staff[Math.floor(Math.random()*staff.length)]);
       if(mentionedInTeam) bumpTalk(mentionedInTeam.id);
       var pal2 = kindPalette[replier2.palKey] || kindPalette[replier2.kind] || kindPalette.cat;
-      var reply2 = pickContextualReply(text, { personality: replier2.personality, key: key });
-      deliverReply({ key:key, name:replier2.name, avatar:pal2.base, readDelay:readWait,
-                     parts: buildReplyParts(reply2, key, replier2.personality, false) });
+      withReply({ name:replier2.name, role:replier2.role, personality:replier2.personality, room:'team' },
+        function(){
+          var reply2 = pickContextualReply(text, { personality: replier2.personality, key: key });
+          return buildReplyParts(reply2, key, replier2.personality, false);
+        },
+        function(parts2, wait2){
+          deliverReply({ key:key, name:replier2.name, avatar:pal2.base, readDelay:wait2, parts:parts2 });
+        });
     } else if(target){
       var staffObj = staffMap[target.id];
       if(staffObj) bumpTalk(staffObj.id);
@@ -11187,11 +11306,20 @@
       var voice1 = target.voice || null;
       var scripted = (target.isBoss && bossScriptedAnswer(text)) || voiceScriptedAnswer(voice1, text);
       var tone1 = voice1 || (staffObj ? staffObj.personality : null);
-      var reply1 = scripted || pickContextualReply(text, { isBoss: target.isBoss, voice: voice1, personality: tone1, key: key });
-      // 정해진 답은 그대로 한 통으로 보낸다
-      var parts1 = scripted ? [reply1]
-                 : buildReplyParts(reply1, key, tone1, !!target.isBoss, voice1);
-      deliverReply({ key:key, name:target.name, avatar:target.avatar, readDelay:readWait, parts:parts1 });
+      if(scripted){
+        // 정해진 답은 그대로 한 통으로 보낸다 (AI 를 거치지 않는다)
+        deliverReply({ key:key, name:target.name, avatar:target.avatar, readDelay:readWait, parts:[scripted] });
+      } else {
+        withReply({ name:target.name, role:(staffObj && staffObj.role) || '', personality:tone1,
+                    room: target.isBoss ? 'boss' : 'dm' },
+          function(){
+            var reply1 = pickContextualReply(text, { isBoss: target.isBoss, voice: voice1, personality: tone1, key: key });
+            return buildReplyParts(reply1, key, tone1, !!target.isBoss, voice1);
+          },
+          function(parts1, wait1){
+            deliverReply({ key:key, name:target.name, avatar:target.avatar, readDelay:wait1, parts:parts1 });
+          });
+      }
     } else {
       // 전체채팅 답장은 실무진만 — 사장님은 실무 대화에 끼지 않음
       var pool = messengerContacts.filter(function(c){ return !c.isBoss && !c.floor2; });
@@ -11200,9 +11328,16 @@
       var replier = (mentioned && !mentioned.isBoss && !mentioned.floor2) ? mentioned : pool[Math.floor(Math.random()*pool.length)];
       var replierStaff = staffMap[replier.id];
       if(mentioned && !mentioned.isBoss && staffMap[mentioned.id]) bumpTalk(mentioned.id);
-      var reply3 = pickContextualReply(text, { personality: replierStaff ? replierStaff.personality : null, key: CHAT_GROUP_KEY });
-      deliverReply({ key:CHAT_GROUP_KEY, name:replier.name, avatar:replier.avatar, readDelay:readWait,
-                     parts: buildReplyParts(reply3, CHAT_GROUP_KEY, replierStaff ? replierStaff.personality : null, false) });
+      var tone3 = replierStaff ? replierStaff.personality : null;
+      withReply({ name:replier.name, role:(replierStaff && replierStaff.role) || '', personality:tone3, room:'all' },
+        function(){
+          var reply3 = pickContextualReply(text, { personality: tone3, key: CHAT_GROUP_KEY });
+          return buildReplyParts(reply3, CHAT_GROUP_KEY, tone3, false);
+        },
+        function(parts3, wait3){
+          deliverReply({ key:CHAT_GROUP_KEY, name:replier.name, avatar:replier.avatar,
+                         readDelay:wait3, parts:parts3 });
+        });
     }
   }
   byId('chatSendBtn').addEventListener('click', sendChatMessage);
