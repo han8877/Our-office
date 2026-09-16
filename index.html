@@ -11192,7 +11192,7 @@
   var PERSONA = {
     boss: [
       '너는 (주)끄적끄적문구의 사장이다. 사무실과 다른 층에 있고 자리를 자주 비운다.',
-      '한 통, 한 줄로만 답한다. 두 문장을 넘기지 마라.',
+      '두 문장 정도로 답한다. 한 문장만 툭 던지지 말고, 네 문장을 넘기지도 마라.',
       '요청이나 질문을 받으면 하게체로 넘긴다. 예: "오늘은 일정이 있다네", "인사팀에 말하게".',
       '상대가 힘들다거나 피곤하다고 하면 해요체로 받는다. 예: "고생 많아요", "무리하지 말아요".',
       '개인 이름을 부르지 않는다. 여럿을 가리킬 때만 "다들"이라고 한다.',
@@ -11203,12 +11203,37 @@
       '상대의 이름과 직책은 모른다. 물으면 얼버무린다.'
     ].join('\n')
   };
-  // 지시문이 있는 사람은 지시문 + 상대의 말을 함께 보낸다
+  var AI_HISTORY_TURNS = 6;    // 최근 몇 통을 같이 보낼지
+  var AI_HISTORY_CUT   = 60;   // 한 통이 길면 잘라서 보낸다
+  // 지금까지 오간 말을 같이 보내지 않으면 매번 처음 만난 사람처럼 답한다
+  function aiHistory(key, speaker){
+    if(!key) return '';
+    var arr = loadChat(key);
+    if(!arr || arr.length < 2) return '';
+    // 방금 내가 친 말은 아래 [상대가 한 말] 로 따로 들어가므로 뺀다
+    var recent = arr.slice(Math.max(0, arr.length - 1 - AI_HISTORY_TURNS), arr.length - 1);
+    var lines = [];
+    recent.forEach(function(m){
+      var b = String((m && m.body) || '').replace(/\s+/g, ' ').trim();
+      if(!b) return;
+      if(b.length > AI_HISTORY_CUT) b = b.slice(0, AI_HISTORY_CUT) + '…';
+      var who = m.mine ? '상대' : ((speaker && m.from === speaker) ? '너' : (m.from || '누군가'));
+      lines.push(who + ': ' + b);
+    });
+    return lines.join('\n');
+  }
+  // 지시문 + 지금까지 오간 말 + 상대가 방금 한 말을 한 덩어리로 만든다
   function aiMessageFor(ctx, text){
-    var key = ctx && ctx.persona;
-    var p = key && PERSONA[key];
-    if(!p) return text;
-    return p + '\n\n[상대가 한 말]\n' + text + '\n\n[너의 답 — 위 지시를 지켜 한 줄로]';
+    var p = ctx && ctx.persona && PERSONA[ctx.persona];
+    var hist = aiHistory(ctx && ctx.key, ctx && ctx.name);
+    if(!p && !hist) return text;              // 예전과 똑같이 원문만 보낸다
+    var out = '';
+    if(p)    out += p + '\n\n';
+    if(hist) out += '[지금까지 오간 말]\n' + hist + '\n\n';
+    out += '[상대가 방금 한 말]\n' + text + '\n\n';
+    out += p ? '[너의 답 — 위 지시를 지키고, 흐름을 이어서]'
+             : '[너의 답 — 위 흐름을 이어서]';
+    return out;
   }
   // 지시문을 그대로 따라 읽는 경우가 드물게 있어 앞머리를 떼어낸다
   function aiUnwrap(t){
@@ -11545,6 +11570,7 @@
     // AI 답장을 먼저 시도하고, 못 받으면 기존 pickContextualReply 로 돌아간다.
     // 기다린 시간만큼 '읽는 시간'을 깎아 전체 체감 속도는 그대로 둔다
     function withReply(ctx, fallbackParts, send){
+      ctx.key = key;                 // 지금까지 오간 말을 찾아 보내려면 방을 알아야 한다
       var t0 = Date.now(), held = false;
       // 답이 늦으면 '읽는 시간'이 끝나는 순간부터 입력 중 표시를 띄워 둔다.
       // 제때 오면 이 타이머는 돌기 전에 꺼지므로 지금까지의 느낌 그대로다
