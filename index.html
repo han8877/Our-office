@@ -11186,6 +11186,38 @@
   var AI_ENDPOINT   = 'https://our-office-ai.awakening8drawing.workers.dev/';
   // 워커가 Gemini 를 부르고, 실패하면 다른 모델로 한 번 더 부른다.
   // 7초로는 그 두 번을 못 기다려 늘 기존 답장으로 넘어갔다
+  // ===== 캐릭터별 말투 지시문 =====
+  // 워커는 message 필드만 확실히 읽으므로, 지시문을 그 앞에 실어 보낸다.
+  // 여기 한 줄을 더 쓰면 그 사람의 말투가 바뀐다 — 다른 코드는 건드릴 필요 없다.
+  var PERSONA = {
+    boss: [
+      '너는 (주)끄적끄적문구의 사장이다. 사무실과 다른 층에 있고 자리를 자주 비운다.',
+      '한 통, 한 줄로만 답한다. 두 문장을 넘기지 마라.',
+      '요청이나 질문을 받으면 하게체로 넘긴다. 예: "오늘은 일정이 있다네", "인사팀에 말하게".',
+      '상대가 힘들다거나 피곤하다고 하면 해요체로 받는다. 예: "고생 많아요", "무리하지 말아요".',
+      '개인 이름을 부르지 않는다. 여럿을 가리킬 때만 "다들"이라고 한다.',
+      '직접 해결해주지 않는다. 확인해보겠다고만 한다.',
+      '물결(~), ㅋㅋ, ㅎㅎ, 이모티콘, 느낌표를 쓰지 마라.',
+      '상대는 사장이 아니다. 사장은 너다.',
+      '상대를 사장님·대표님·관리자님·고객님·자네라고 부르지 마라. 호칭 없이 말한다.',
+      '상대의 이름과 직책은 모른다. 물으면 얼버무린다.'
+    ].join('\n')
+  };
+  // 지시문이 있는 사람은 지시문 + 상대의 말을 함께 보낸다
+  function aiMessageFor(ctx, text){
+    var key = ctx && ctx.persona;
+    var p = key && PERSONA[key];
+    if(!p) return text;
+    return p + '\n\n[상대가 한 말]\n' + text + '\n\n[너의 답 — 위 지시를 지켜 한 줄로]';
+  }
+  // 지시문을 그대로 따라 읽는 경우가 드물게 있어 앞머리를 떼어낸다
+  function aiUnwrap(t){
+    return String(t == null ? '' : t)
+      .replace(/^\s*\[[^\]]{0,40}\]\s*/, '')
+      .replace(/^\s*(너의\s*답|답변|답)\s*[:：]\s*/, '')
+      .trim();
+  }
+
   var AI_TIMEOUT_MS = 35000;   // 워커가 제미나이까지 다녀오는 데 실측 16초 — 넉넉히 둔다
   var AI_MAX_LEN    = 200;     // 채팅 말풍선에 들어갈 만한 길이로 자른다
   var aiFailCount = 0, aiOffUntil = 0;
@@ -11268,7 +11300,7 @@
     }, AI_TIMEOUT_MS);
 
     var body = {
-      message: text,                      // 사용자가 입력한 말
+      message: aiMessageFor(ctx, text),   // 캐릭터 지시문 + 사용자가 입력한 말
       speaker: (ctx && ctx.name) || '',   // 답할 사람
       role:    (ctx && ctx.role) || '',
       personality: (ctx && ctx.personality) || '',
@@ -11294,7 +11326,7 @@
         if(!res.ok){ rec.why = 'HTTP ' + res.status; aiNoteFail(rec.why); finish(null); return; }
         var data; try{ data = JSON.parse(res.raw); rec.json = true; }
                   catch(e){ data = res.raw; rec.json = false; }
-        var out = aiTidy(aiExtractText(data, 0));
+        var out = aiTidy(aiUnwrap(aiExtractText(data, 0)));
         if(out){
           aiFailCount = 0; rec.used = out;
           try{ console.log('Gemini 답변 적용:', out); }catch(e){}
@@ -11556,7 +11588,8 @@
         deliverReply({ key:key, name:target.name, avatar:target.avatar, readDelay:readWait, parts:[scripted] });
       } else {
         withReply({ name:target.name, role:(staffObj && staffObj.role) || '', personality:tone1,
-                    room: target.isBoss ? 'boss' : 'dm' },
+                    room: target.isBoss ? 'boss' : 'dm',
+                    persona: target.isBoss ? 'boss' : null },
           function(){
             var reply1 = pickContextualReply(text, { isBoss: target.isBoss, voice: voice1, personality: tone1, key: key });
             return buildReplyParts(reply1, key, tone1, !!target.isBoss, voice1);
