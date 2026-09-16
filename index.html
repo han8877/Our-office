@@ -11317,6 +11317,51 @@
   }
 
   // AI 가 준 말은 말투를 덧씌우거나 덧말을 붙이지 않는다. 길면 두 통으로만 나눈다
+  // ===== 아무도 나를 뭐라고 부를지 모른다 =====
+  // 호칭 자리에서만 멈칫하고, 아주 가끔은 대놓고 묻는다.
+  // 표지에도 안쪽에도 이름이 없던 그 근무일지와 같은 결이다.
+  var NAMELESS_KEY = 'ggj_office_nameless_v1';
+  // 호칭 자리에서 멈칫하는 말 — 다정함은 그대로 두고 부르는 대목만 흐린다
+  var NAMELESS_HESITATE = ['저...', '아, 그...', '어... 저기,', '음... 그,'];
+  // 하루에 한 번쯤, 누군가 대놓고 묻는다
+  var NAMELESS_ASK = [
+    '근데 저희 언제부터 같이 일했죠?',
+    '성함이... 죄송해요, 제가 왜 기억이 안 나지.',
+    '어? 방금 뭐라고 부르려다 말았네요. 이상하다.',
+    '이상하게 들리겠지만, 어느 팀 소속이셨죠?',
+    '명단을 봤는데 그쪽 칸만 비어 있더라고요. 전산 오류겠죠?',
+    '저기... 제가 입사했을 때부터 계셨던 것 같기도 하고.'
+  ];
+  function namelessPick(a){ return a[Math.floor(Math.random() * a.length)]; }
+  function namelessAskedToday(){
+    try{ return localStorage.getItem(NAMELESS_KEY) === dateKey(); }catch(e){ return false; }
+  }
+  function namelessMarkAsked(){
+    try{ localStorage.setItem(NAMELESS_KEY, dateKey()); }catch(e){}
+  }
+  // 이용자를 부르는 호칭만 걷어낸다.
+  // '사장님이 다녀가셨어요' 처럼 그 사람 이야기를 할 땐 조사가 붙으므로 그대로 둔다
+  function namelessStripCall(t){
+    var re = /\s*,?\s*(?:사장|대표|관리자|오너|보스)\s*님(?!\s*(?:이|가|은|는|을|를|과|와|도|의|께|한테|에게|밖에|처럼|보다))\s*[,!~.?]*\s*/g;
+    return String(t == null ? '' : t)
+      .replace(re, ' ')
+      .replace(/\s{2,}/g, ' ')
+      .replace(/^[\s,.!~?]+/, '')
+      .trim();
+  }
+  // 답장 통들에 '못 부르는 기색'을 입힌다
+  function namelessTouch(parts){
+    if(!parts || !parts.length) return parts;
+    if(Math.random() < 0.12 && !/^(저|아|어|음|네|예)[.,\u2026\s]/.test(parts[0])){
+      parts[0] = namelessPick(NAMELESS_HESITATE) + ' ' + parts[0];
+    }
+    if(parts.length < 2 && !namelessAskedToday() && Math.random() < 0.15){
+      parts.push(namelessPick(NAMELESS_ASK));
+      namelessMarkAsked();
+    }
+    return parts;
+  }
+
   function aiParts(t){
     return splitLongReply(t).filter(function(x){ return x && x.length; }).slice(0, 2);
   }
@@ -11476,7 +11521,10 @@
         clearTimeout(hold);
         if(held){ held = false; clearTyping(key); }
         var left = Math.max(0, readWait - (Date.now() - t0));
-        send(ai ? aiParts(ai) : fallbackParts(), left);
+        // 호칭을 걷어내고 나면 빈 글이 되는 경우가 있다 (답이 "사장님!" 뿐일 때)
+        var parts = ai ? aiParts(namelessStripCall(ai)) : null;
+        if(!parts || !parts.length) parts = fallbackParts();
+        send(namelessTouch(parts), left);
       });
     }
 
