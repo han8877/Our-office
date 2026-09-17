@@ -9510,7 +9510,7 @@
   // 같은 날 다시 들어와도 같은 건이고, 이미 처리한 건은 처리한 대로 남는다.
   // 승인하면 이번 달 예산에서 돈이 빠지고, 건마다 사무실에 실제 효과가 생긴다.
   var APPR_KEY = 'ggj_office_appr_v1';
-  var APPR_MONTH_BUDGET = 100000000;
+  var APPR_MONTH_BUDGET = 300000000;   // 하루 1~10건이 올라오므로 한 달치를 그만큼 잡는다
 
   // by를 적어 둔 건은 그 담당자만 올린다. 두 명이면 날짜에 따라 번갈아 올린다.
   // by가 없는 건(휴가류·공통 비품)은 그날 출근한 아무나 올린다.
@@ -9760,6 +9760,14 @@
     return cands[Math.abs(apprDayNumber(key)) % cands.length];
   }
 
+  // 결재는 직원이 출근한 뒤에 올라온다. 9시부터 17시 30분 사이로 흩뿌린다
+  var APPR_UP_FROM = 9 * 60;
+  var APPR_UP_TO   = 17 * 60 + 30;
+  function apprUpMinute(key, i){
+    return APPR_UP_FROM + (apprMix(key + '-apprUp' + i) % (APPR_UP_TO - APPR_UP_FROM));
+  }
+  function apprNowMinute(){ var d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
+
   // 조퇴를 몇 시부터 할지. 30분 단위로 14:30~17:00 중 하나를 날짜 시드로 고른다
   var APPR_EARLY_SLOTS = [14*60+30, 15*60, 15*60+30, 16*60, 16*60+30, 17*60];
   function apprEarlySlot(key){
@@ -9770,7 +9778,9 @@
   // ---- 오늘 올라온 결재 (날짜 시드로 고정) ----
   function apprTodayItems(){
     var key = apprDayKey();
-    var n = 1 + (apprMix(key + '-apprN') % 3);
+    // 쉬는 날은 아무도 출근을 안 하니 올라오는 결재도 없다
+    if(isNonWorkingDay()) return [];
+    var n = 1 + (apprMix(key + '-apprN') % 10);
     // 연차/출장으로 자리를 비운 사람은 결재를 올리지 않는다 (결재로 생긴 연차는 여기 안 본다)
     var outIds = getOutAllDayIds();
     var who = staff.filter(function(x){ return !outIds[x.id]; });
@@ -9807,10 +9817,14 @@
         icon: item.icon, kind: item.kind, cost: item.cost, eff: item.eff,
         title: (at != null) ? (item.title + ' (' + apprHhmm(at) + '부터)') : item.title,
         at: at,
+        upAt: apprUpMinute(key, i),           // 오늘 몇 시에 올라오는지
         why: item.why[apprMix(key + '-apprY' + i) % item.why.length]
       });
     }
-    return items;
+    // 아직 그 시각이 안 됐으면 결재함에 없다. 이른 것부터 차례로 쌓인다
+    var now = apprNowMinute();
+    return items.filter(function(it){ return it.upAt <= now; })
+                .sort(function(a, b){ return a.upAt - b.upAt; });
   }
 
   function apprDecisionOf(id){
@@ -9910,16 +9924,17 @@
     top.className = 'apprTop';
     top.innerHTML = '<span class="apprIcon">' + item.icon + '</span>'
                   + '<span class="apprKind">' + item.kind + '</span>';
+    // 올린 사람은 처리한 뒤에도 그대로 둔다
+    var who = document.createElement('span');
+    who.className = 'apprWho';
+    who.textContent = item.by.name + ' · ' + item.by.role
+                    + (item.upAt != null ? '  ·  ' + apprHhmm(item.upAt) : '');
+    top.appendChild(who);
     if(decision){
       var stamp = document.createElement('span');
       stamp.className = 'apprStamp ' + (decision === 'ok' ? 'ok' : 'no');
       stamp.textContent = decision === 'ok' ? '승인' : '반려';
       top.appendChild(stamp);
-    } else {
-      var who = document.createElement('span');
-      who.className = 'apprWho';
-      who.textContent = item.by.name + ' · ' + item.by.role;
-      top.appendChild(who);
     }
     wrap.appendChild(top);
 
@@ -9927,9 +9942,10 @@
     t.className = 'apprTitle'; t.textContent = item.title;
     wrap.appendChild(t);
 
+    // 무슨 사유로 올린 건이었는지는 처리한 뒤에도 남아 있어야 한다
     var why = document.createElement('div');
     why.className = 'apprWhy';
-    why.textContent = decision ? (item.by.name + ' · ' + item.by.role) : ('"' + item.why + '"');
+    why.textContent = '"' + item.why + '"';
     wrap.appendChild(why);
 
     var cost = document.createElement('div');
@@ -9983,7 +9999,10 @@
     } else {
       var empty = document.createElement('div');
       empty.className = 'apprEmpty';
-      empty.textContent = done.length ? '오늘 올라온 결재를 모두 처리했어요' : '오늘 올라온 결재가 없어요';
+      empty.textContent = done.length ? '지금까지 올라온 결재를 모두 처리했어요'
+                        : isNonWorkingDay() ? '쉬는 날이라 올라온 결재가 없어요'
+                        : (apprNowMinute() < APPR_UP_FROM) ? '아직 아무도 출근하지 않았어요'
+                        : '지금은 올라온 결재가 없어요';
       body.appendChild(empty);
     }
 
