@@ -410,6 +410,41 @@ function pBookshelf(seed){ return obj(64,80,function(g){ var w='#a8764a';
       R(g,x,y+20-bh,bw,bh,c); R(g,x,y+20-bh,bw,1,sh(c,0.4)); R(g,x+bw-1,y+20-bh,1,bh,sh(c,-0.22)); if(bh>15) R(g,x,y+20-bh+4,bw,1,sh(c,0.3)); x+=bw;
       if(rnd(x+y+seed)>0.86) x+=3; }
     R(g,4,y+20,56,2,sh(w,0.18)); }); }); }
+// ---- 제품 쇼룸: 끄적끄적 노트·스티커·마스킹테이프 진열 ----
+var PROD=['#f28a8a','#8ac2f2','#f2d06a','#9ad89a','#c8a8ec','#f5b890','#6fc4b8','#f7a8c8','#fbf6ea','#5a7ab8'];
+function notebookFace(g,x,y,w,h,c){       // 표지가 보이게 세운 노트
+  R(g,x,y,w,h,c); R(g,x,y,w,1,sh(c,0.4)); R(g,x,y,2,h,sh(c,-0.25)); R(g,x+w-1,y,1,h,sh(c,-0.15));
+  R(g,x+4,y+4,w-7,4,'#fffdf6'); R(g,x+5,y+5,w-10,1,sh(c,-0.3));
+  if(h>14){ disc(g,x+(w>>1)+1,y+h-6,2,sh(c,0.45)); } }
+function tapeRoll(g,x,y,c){ disc(g,x,y,4,c); disc(g,x,y,2,'#fbf8f2'); P(g,x-2,y-3,sh(c,0.5)); }
+function pDisplayShelf(seed){ return obj(96,80,function(g){     // 흰 진열장: 칸마다 제품을 표지가 보이게
+  var w='#f7f3ec', lo='#dcd4c6';
+  R(g,0,0,96,6,'#fffdf8'); R(g,0,0,96,1,'#ffffff'); R(g,0,6,96,74,w); R(g,0,6,3,74,'#fffdf8'); R(g,93,6,3,74,lo);
+  [8,32,56].forEach(function(y,row){ R(g,4,y,88,20,'#ebe4d8'); R(g,4,y,88,2,'#ded6c8');
+    if(row===0){ for(var i=0;i<5;i++) notebookFace(g,6+i*17,y+3,15,17,PROD[(seed+i)%PROD.length]); }
+    else if(row===1){ for(var j=0;j<4;j++){ var c=PROD[(seed*3+j)%PROD.length]; R(g,7+j*22,y+4,18,15,'#fffdf8'); R(g,7+j*22,y+4,18,1,'#ffffff');
+        disc(g,12+j*22,y+10,2,c); disc(g,18+j*22,y+9,2,PROD[(seed+j+4)%PROD.length]); R(g,10+j*22,y+14,10,2,sh(c,0.2)); P(g,21+j*22,y+13,c); } }
+    else { for(var k=0;k<7;k++) tapeRoll(g,11+k*12,y+13,PROD[(seed+k*2)%PROD.length]); }
+    R(g,4,y+20,88,2,'#fffdf8'); R(g,4,y+21,88,1,lo); });
+  R(g,0,78,96,2,lo); }); }
+function pIsland(){ return obj(128,56,function(g){                // 가운데 진열대: 신제품을 펼쳐 놓았다
+  var top='#fffdf8', fr='#f1ebe0', wood='#d9b07a';
+  R(g,0,6,128,24,top); R(g,0,6,128,2,'#ffffff'); R(g,0,29,128,1,'#e2dacb');
+  R(g,0,30,128,20,fr); R(g,0,30,128,1,'#d8cfbf'); R(g,4,50,120,6,wood); R(g,4,50,120,1,sh(wood,0.3));
+  for(var i=0;i<4;i++){ var c=PROD[(i*3+1)%PROD.length]; R(g,8+i*12,8+(i%2)*2,14,18,sh(c,-0.2)); notebookFace(g,7+i*12,7+(i%2)*2,14,18,c); }  // 겹쳐 펼친 노트
+  R(g,62,10,22,16,'#ffffff'); disc(g,68,16,3,'#f28a8a'); disc(g,76,15,3,'#f2d06a'); disc(g,72,21,2,'#8ac2f2'); R(g,62,10,22,1,'#f0ece4');   // 스티커 시트
+  for(var k=0;k<3;k++) tapeRoll(g,94+k*10,20,PROD[k*3%PROD.length]);
+  R(g,112,2,12,14,'#e8f2f6'); R(g,113,3,10,5,'#fff3b0'); R(g,114,10,8,1,'#8a9aa6'); R(g,116,16,4,4,'#c9d2d8');                 // 아크릴 가격표
+  R(g,0,0,4,6,'#f1ebe0'); R(g,34,34,60,12,'#fffaf0'); R(g,36,38,56,1,'#d8b884'); R(g,40,41,46,1,'#d8b884'); }); }
+function pSpinner(seed){ return obj(32,72,function(g){           // 회전 스티커 진열대
+  R(g,15,4,3,62,'#b8bec4'); R(g,15,4,1,62,'#e6e9ec'); ell(g,16,68,12,3,'#9aa2a8'); ell(g,16,67,11,2,'#c9cfd4');
+  for(var r=0;r<4;r++) for(var c=0;c<3;c++){ var x=2+c*10, y=6+r*15, col=PROD[(seed+r*3+c)%PROD.length];
+    R(g,x,y,9,13,'#fffdf8'); R(g,x,y,9,1,'#ffffff'); R(g,x+3,y-1,3,2,'#9aa2a8'); disc(g,x+4,y+6,2,col); R(g,x+1,y+10,7,1,sh(col,0.1)); }
+  R(g,10,0,13,4,'#f28a8a'); R(g,10,0,13,1,'#f8b4b4'); }); }
+function pShowSign(){ return obj(150,30,function(g){              // 쇼룸 간판
+  R(g,0,0,150,30,'#f6ede0'); R(g,0,0,150,2,'#fffaf2'); R(g,0,28,150,2,'#d8c8b0'); R(g,2,2,146,26,'#fbf4ea');
+  for(var i=0;i<5;i++) R(g,6+i*6,6,4,18,PROD[i]); for(var j=0;j<5;j++) R(g,114+j*6,6,4,18,PROD[j+4]); }); }
+
 function pSculpture(){ return obj(32,72,function(g){
   R(g,4,36,24,36,'#f3f1ec'); R(g,2,32,28,6,'#fbfaf7'); R(g,2,32,28,1,'#ffffff'); R(g,24,38,4,34,'#d8d4cb'); R(g,4,70,24,2,'#c9c5bc');
   disc(g,16,16,12,'#f07a4a'); disc(g,16,16,8,'#fbf6ee'); disc(g,18,16,6,'#2f9bb0'); disc(g,18,16,3,'#fbf6ee'); disc(g,19,16,1,'#f5c542');
@@ -713,7 +748,7 @@ var BALLOONS=(function(){
 //  사람들
 // =====================================================================
 var STAFF = [
-  {id:'kobujang',  name:'최실장', kind:'fox',     shirt:'#d98f7a', acc:'glasses', desk:[28,6],  team:'lead'},
+  {id:'kobujang',  name:'최실장', kind:'fox',     shirt:'#d98f7a', acc:'glasses', desk:[30,6],  team:'lead'},
   {id:'kimnote',   name:'김팀장', kind:'dog',     shirt:'#f0c46a', desk:[2,8],   team:'note'},
   {id:'leenote',   name:'이노트', kind:'tiger',   shirt:'#a48ad0', desk:[6,8],   team:'note'},
   {id:'jungnote',  name:'정노트', kind:'giraffe', shirt:'#e89a78', desk:[2,12],  team:'note'},
@@ -764,7 +799,8 @@ function onTile(img,c0,r0,c1,r1,lift){ var w=img.width-2, h=img.height-2, x=c0*T
 
 // ---- 바닥 (파스텔) ----
 paintWoodFloor(bgc);
-carpet(bgc,23,4,34,10);   // 실장실
+stoneFloor(bgc,23,3,28,10);   // 제품 쇼룸
+carpet(bgc,29,3,34,10);   // 디자인실장실
 carpet(bgc,1,5,11,14);   // 노트 디자인팀
 carpet(bgc,13,6,21,11);   // 다목적실
 carpet(bgc,23,13,34,15);   // 라운지
@@ -779,7 +815,7 @@ paintOuterWalls(bgc);
 block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0,ROWS-1,COLS-1,ROWS-1);
 
 // 팻말 자리: 가구·사람과 겹치지 않는 칸
-zones.push(['노트 디자인팀',1,5],['다목적실',13,6],['디자인실장실',23,4],['라운지',23,13],['경영지원팀',1,16,12],
+zones.push(['노트 디자인팀',1,5],['다목적실',13,6],['디자인실장실',29,4],['제품 쇼룸',23,10,-4],['라운지',23,13],['경영지원팀',1,16,12],
            ['스티커 디자인팀',13,16,12],['재고창고',26,22],['홍보팀',6,24,12],['회의실',16,28],['탕비실',31,27],['아트코너',17,13]);
 
 // ---- 벽에 거는 것 ----
@@ -787,13 +823,15 @@ function wallItem(img,x,y){ bgc.drawImage(img,x-1,y-1); }
 wallItem(pLogoBoard(),40,32); SIGNS.push(['끄적끄적문구',40+84,32+17]);
 wallItem(pAC(),220,30);
 wallItem(pPainting(),21*T+16,30);
-wallItem(pWhiteboard(),28*T,28);
-wallItem(pSwitch(),33*T+20,40);
+wallItem(pWhiteboard(),30*T,28);
+wallItem(pShowSign(),23*T+24,34); SIGNS.push(['끄적끄적 쇼룸',23*T+24+75,34+15]);
+wallItem(pSwitch(),29*T+4,44);
 
 // ---- 칸막이 ----
 // 실장실: 왼쪽 세로벽(22열), 아래 가로벽(11행, 27~28열은 문)
 put(vWall(8*T+4,false),22*T+11,3*T,11*T+4); block(22,3,22,10);
-put(hWall(5*T),22*T,11*T+2,11*T+48); put(hWall(6*T),29*T,11*T+2,11*T+48); block(22,11,26,11); block(29,11,34,11);
+put(hWall(3*T),22*T,11*T+2,11*T+48); put(hWall(6*T),27*T,11*T+2,11*T+48); put(hWall(1*T),34*T,11*T+2,11*T+48);   // 문: 쇼룸 25~26열, 실장실 33열
+block(22,11,24,11); block(27,11,32,11); block(34,11,34,11);
 // 회의실: 유리 (23행, 18~19열은 문)
 put(glassWall(2*T),15*T,23*T+2,23*T+48); put(glassWall(5*T),20*T,23*T+2,23*T+48); block(15,23,17,23); block(20,23,24,23);
 put(vWall(6*T,true),15*T+11,23*T+4,29*T); block(15,24,15,28);
@@ -812,9 +850,12 @@ onTile(pCooler(),11,3,11,4);
 onTile(pTrash(),12,4,12,4);
 onTile(pLockers(),14,3,20,4);
 onTile(pCabinet(),33,3,34,4);
-onTile(pRoundTable(),24,6,26,7);
-onTile(pChairN('#e08a7a'),24,5,24,5,-4); onTile(pChairN('#e08a7a'),26,5,26,5,-4); onTile(pChairS('#e08a7a'),25,8,25,8);
-onTile(pPlant('monstera','#f4f1ea'),32,9,32,9); onTile(pTrash(),33,9,33,9);
+// 제품 쇼룸
+onTile(pDisplayShelf(0),23,3,25,4); onTile(pDisplayShelf(5),26,3,28,4);
+onTile(pIsland(),24,7,27,8); onTile(pSpinner(1),23,9,23,9); onTile(pSpinner(6),28,9,28,9); onTile(pPlant('monstera','#f4f1ea'),23,6,23,6);
+// 디자인실장실: 책상, 작은 원탁, 캐비닛
+onTile(pRoundTable(),30,8,32,9); onTile(pChairS('#b89478'),30,10,30,10); onTile(pChairS('#b89478'),32,10,32,10);
+onTile(pPlant('monstera','#f4f1ea'),34,6,34,6); onTile(pTrash(),34,9,34,9);
 // 노트팀
 onTile(pDrawers(),10,7,10,8); onTile(pPlant('bush','#9fd4c0'),10,12,10,12);
 // 다목적실
@@ -858,6 +899,8 @@ hFrost(1,11,16,[4,5]); hFrost(5,11,22); vFrost(12,16,22);
 hFrost(13,24,16,[18,19]); vFrost(13,16,23); vFrost(25,16,23); hFrost(13,14,23);
 // 홍보팀: 위 벽(10~11열 문), 왼쪽 벽 (오른쪽은 회의실 벽)
 hFrost(6,14,24,[10,11]); vFrost(6,24,29,[],-5);
+// 제품 쇼룸 | 디자인실장실
+vFrost(29,3,11,[],4);
 
 // ---- 사람 ----
 var people=STAFF.map(function(p){
