@@ -124,16 +124,21 @@ function paintWoodFloor(g){
     }
   }
 }
-function carpet(g,c0,r0,c1,r1,base,motif){
-  var x=c0*T, y=r0*T, w=(c1-c0+1)*T, h=(r1-r0+1)*T, dk=mix(base,'#8a6a7a',0.22), lt=sh(base,0.45), md=mix(base,'#8a6a7a',0.1);
-  R(g,x,y,w,h,base);
-  for(var yy=12; yy<h-10; yy+=16) for(var xx=12+((yy>>4)%2)*8; xx<w-10; xx+=16){
-    if(motif==='flower'){ P(g,x+xx,y+yy,sh(base,0.7)); P(g,x+xx-1,y+yy,lt); P(g,x+xx+1,y+yy,lt); P(g,x+xx,y+yy-1,lt); P(g,x+xx,y+yy+1,lt); }
-    else { R(g,x+xx,y+yy,2,2,md); }
+// 사무실 타일카펫: 무채색 50cm 타일을 결 방향만 엇갈려 깐다 (구역마다 색을 바꾸지 않는다)
+var CARPET='#d3cfc8';
+function carpet(g,c0,r0,c1,r1,base){
+  base=base||CARPET;
+  var x=c0*T, y=r0*T, w=(c1-c0+1)*T, h=(r1-r0+1)*T, seam=mix(base,'#6e6660',0.12), fib=mix(base,'#6e6660',0.07), hi=sh(base,0.22);
+  for(var ty=0; ty<h; ty+=T) for(var tx=0; tx<w; tx+=T){
+    var i=(tx+ty)/T, b=mix(base, rnd(c0*7+tx*0.13+ty*0.29)>0.5?'#c8c3bb':'#dcd8d1', 0.35), X=x+tx, Y=y+ty, horiz=((tx/T)+(ty/T))%2===0;
+    R(g,X,Y,T,T,b);
+    for(var k=2;k<T;k+=3){ if(horiz) R(g,X+1,Y+k,T-2,1,mix(b,fib,0.8)); else R(g,X+k,Y+1,1,T-2,mix(b,fib,0.8)); }
+    for(var n=0;n<14;n++) P(g,X+Math.floor(rnd(i*31+n)*T),Y+Math.floor(rnd(i*17+n*3)*T),rnd(n+i)>0.5?hi:seam);
+    R(g,X,Y,T,1,seam); R(g,X,Y,1,T,seam);
   }
-  R(g,x,y,w,3,dk); R(g,x,y+h-3,w,3,dk); R(g,x,y,3,h,dk); R(g,x+w-3,y,3,h,dk);
-  R(g,x+6,y+6,w-12,1,lt); R(g,x+6,y+h-7,w-12,1,lt); R(g,x+6,y+6,1,h-12,lt); R(g,x+w-7,y+6,1,h-12,lt);
-  g.fillStyle='rgba(120,80,90,0.14)'; g.fillRect(x+3,y+h,w-3,3);
+  // 나무 바닥과 만나는 곳: 금속 몰딩
+  R(g,x,y,w,2,'#b9b6b0'); R(g,x,y+h-2,w,2,'#b9b6b0'); R(g,x,y,2,h,'#b9b6b0'); R(g,x+w-2,y,2,h,'#b9b6b0');
+  R(g,x,y,w,1,'#e4e2de'); R(g,x,y,1,h,'#e4e2de');
 }
 function kitchenTiles(g,c0,r0,c1,r1){
   var x0=c0*T, y0=r0*T, w=(c1-c0+1)*T, h=(r1-r0+1)*T;
@@ -350,9 +355,12 @@ function pChairN(c){ c=c||'#4aa3a0'; return obj(28,36,function(g){ var w='#b98a5
 function pChairS(c){ c=c||'#4aa3a0'; return obj(28,36,function(g){ var w='#b98a5c';
   R(g,0,12,28,10,sh(c,0.18)); R(g,2,29,4,7,w); R(g,22,29,4,7,w);
   R(g,2,6,24,24,c); R(g,2,6,24,2,sh(c,0.36)); R(g,4,12,20,1,sh(c,-0.14)); R(g,4,19,20,1,sh(c,-0.14)); R(g,24,8,2,22,sh(c,-0.22)); R(g,2,8,2,20,sh(c,0.14)); }); }
-function pStool(c){ return obj(28,28,function(g){
-  R(g,4,12,3,16,'#9aa2a8'); R(g,21,12,3,16,'#9aa2a8'); R(g,12,14,4,14,'#b8bec4'); R(g,6,22,16,2,'#aab1b7');
-  ell(g,14,9,13,7,sh(c,-0.22)); ell(g,14,7,13,6,c); ell(g,11,5,6,2,sh(c,0.45)); }); }
+function pWhiteChair(){ return obj(28,36,function(g){      // 흰 플라스틱 쉘 의자, 크롬 다리
+  var c='#f7f6f3', sd='#dcdad4', lo='#c4c1ba', m='#b8bec4', mh='#e6e9ec';
+  R(g,2,33,3,3,m); R(g,23,33,3,3,m); line(g,4,26,3,34,m); line(g,24,26,25,34,m); line(g,5,26,4,34,mh); line(g,23,26,24,34,mh);
+  R(g,3,1,22,16,c); R(g,1,3,26,12,c); R(g,3,1,22,2,'#ffffff'); R(g,24,3,2,12,sd); R(g,5,13,18,2,sd);
+  R(g,0,17,28,10,c); R(g,0,17,28,2,'#ffffff'); R(g,0,25,28,2,sd); R(g,1,27,26,1,lo); R(g,25,19,3,7,sd);
+  R(g,12,6,4,1,sd); }); }
 function pTV(){ return obj(64,72,function(g){
   R(g,0,0,64,40,'#1d2026'); R(g,2,2,60,34,'#262c36'); vgrad(g,3,3,58,32,'#2f3a4c','#1f2530',4);
   g.fillStyle='rgba(255,255,255,0.14)'; for(var k=0;k<18;k++) g.fillRect(8+k,30-k,1,1); for(var k2=0;k2<10;k2++) g.fillRect(14+k2,30-k2,1,1);
@@ -724,15 +732,15 @@ function onTile(img,c0,r0,c1,r1,lift){ var w=img.width-2, h=img.height-2, x=c0*T
 
 // ---- 바닥 (파스텔) ----
 paintWoodFloor(bgc);
-carpet(bgc,23,4,34,10,'#f8dccc','flower');     // 실장실: 피치
-carpet(bgc,1,5,11,14,'#cfeadb','flower');      // 노트 디자인팀: 민트
-carpet(bgc,13,6,21,11,'#e0e0f0','dot');        // 다목적실: 라벤더그레이
-carpet(bgc,23,13,34,15,'#e8dcf3','flower');    // 라운지: 라일락
-carpet(bgc,1,16,12,22,'#d5e6f5','dot');        // 경영지원팀: 베이비블루
-carpet(bgc,13,16,24,22,'#f9ebbf','flower');    // 스티커 디자인팀: 버터
+carpet(bgc,23,4,34,10);   // 실장실
+carpet(bgc,1,5,11,14);   // 노트 디자인팀
+carpet(bgc,13,6,21,11);   // 다목적실
+carpet(bgc,23,13,34,15);   // 라운지
+carpet(bgc,1,16,12,22);   // 경영지원팀
+carpet(bgc,13,16,24,22);   // 스티커 디자인팀
 concrete(bgc,26,17,34,22);                     // 재고창고
-carpet(bgc,5,24,14,28,'#f8d7e0','flower');     // 홍보팀: 블러시
-carpet(bgc,16,24,24,28,'#d3ebee','dot');       // 회의실: 아쿠아
+carpet(bgc,5,24,14,28);   // 홍보팀
+carpet(bgc,16,24,24,28);   // 회의실
 kitchenTiles(bgc,26,24,34,28);                 // 탕비실
 paintOuterWalls(bgc);
 block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0,ROWS-1,COLS-1,ROWS-1);
@@ -776,8 +784,7 @@ onTile(pPlant('monstera','#f4f1ea'),32,9,32,9); onTile(pTrash(),33,9,33,9);
 // 노트팀
 onTile(pDrawers(),10,7,10,8); onTile(pPlant('bush','#9fd4c0'),10,12,10,12);
 // 다목적실
-var STOOL=['#f5a0b4','#9fd4e8','#f7d070','#a8dca0','#c8b0ec','#f5b890'];
-[[14,8],[16,8],[18,8],[14,10],[16,10],[18,10]].forEach(function(p,i){ onTile(pStool(STOOL[i]),p[0],p[1],p[0],p[1]); });
+[[14,8],[16,8],[18,8],[14,10],[16,10],[18,10]].forEach(function(p,i){ onTile(pWhiteChair(),p[0],p[1],p[0],p[1]); });
 onTile(pTV(),20,7,21,8); onTile(pPlant('tall','#d9794a'),21,10,21,10);
 // 아트코너
 onTile(pImacDesk(),13,14,14,14); onTile(pSculpture(),16,13,16,14);
