@@ -2055,11 +2055,21 @@
 <defs>
 <!-- 바닥 그림자용 흐림 -->
 <filter id="softShade" x="-70%" y="-70%" width="240%" height="240%"><feGaussianBlur stdDeviation="1.6"/></filter>
+<!-- 종이 결: 거친 낟알과 은은한 섬유. 화면 전체에 아주 옅게 얹는다 -->
+<filter id="paperGrain" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="3" seed="17" result="grain"/>
+  <feColorMatrix in="grain" type="saturate" values="0"/>
+</filter>
+<!-- 연필로 그은 듯 선이 아주 살짝 떨린다. 글씨가 뭉개지지 않게 약하게만 -->
+<filter id="pencilEdge" x="-3%" y="-3%" width="106%" height="106%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.028" numOctaves="3" seed="11" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="1.7" xChannelSelector="R" yChannelSelector="G"/>
+</filter>
 <!-- 방 바닥재: 옅은 나무결. 창이 왼쪽 위에 있으니 빛도 그쪽에서 온다 -->
 <pattern id="roomFloor" width="64" height="64" patternUnits="userSpaceOnUse">
   <rect width="64" height="64" fill="#f6efe0"/>
-  <path d="M0 16 H64 M0 32 H64 M0 48 H64" stroke="#efe5d1" stroke-width="0.8" fill="none"/>
-  <path d="M16 0 V16 M44 16 V32 M24 32 V48 M52 48 V64" stroke="#efe5d1" stroke-width="0.8" fill="none"/>
+  <path d="M0 16 H64 M0 32 H64 M0 48 H64" stroke="#f1e8d6" stroke-width="0.7" fill="none"/>
+  <path d="M16 0 V16 M44 16 V32 M24 32 V48 M52 48 V64" stroke="#f3ebda" stroke-width="0.5" fill="none"/>
 </pattern>
 <!-- 벽지: 바닥보다 한 톤 밝고 결이 세로다 -->
 <pattern id="roomWall" width="10" height="10" patternUnits="userSpaceOnUse">
@@ -2143,7 +2153,7 @@
 </g>
 <rect x="20" y="20" width="960" height="800" rx="16" fill="none" stroke="#5c4a3a" stroke-width="1.6"/>
 
-<g fill="none" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
+<g id="roomDrawing" filter="url(#pencilEdge)" fill="none" stroke="#5c4a3a" stroke-linecap="round" stroke-linejoin="round">
 
 <!-- 로고 (아래 어항과 간격을 두려고 14만큼 위로 올렸다) -->
 <rect x="40" y="36" width="150" height="40" rx="10" stroke-width="1.4" fill="#fffdf8"/>
@@ -3377,6 +3387,11 @@
 <!-- 시간대 색조: 아침엔 노랗고 노을엔 주황, 밤엔 푸르게. 아주 옅게만 얹는다 -->
 <rect id="roomSkyVeil" x="20" y="20" width="960" height="800" rx="16" fill="#ffffff" opacity="0"
       style="transition:opacity .8s ease, fill .8s ease; pointer-events:none; mix-blend-mode:multiply;"/>
+<!-- 종이 낟알: 그림 위에 얹혀 전체가 한 장의 종이 위에 그려진 것처럼 보이게 한다 -->
+<g id="paperLayer" style="pointer-events:none;" clip-path="url(#roomClip)">
+  <rect x="20" y="20" width="960" height="800" filter="url(#paperGrain)" opacity="0.13"
+        style="mix-blend-mode:multiply;"/>
+</g>
 <g id="floaters"></g>
 <g id="bubbleLayer"></g>
 </svg>
