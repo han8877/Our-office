@@ -243,6 +243,24 @@ function pDesk(seed){
   });
 }
 var TEAM_CHAIR = { note:'#3aa58c', biz:'#4d78c0', sticker:'#e4a53a', pr:'#dc6485', lead:'#9c4f64' };
+// 불투명(간유리) 파티션: 알루미늄 틀 + 뿌옇게 비치는 유리
+var FROST='rgba(236,242,246,0.66)', FROST_HI='rgba(255,255,255,0.55)', ALU='#c9cfd4', ALU_HI='#eef1f3', ALU_LO='#98a0a8';
+function pGlassScreen(w){ return obj(w,24,function(g){          // 가로로 선 판 (앞에서 본 모습)
+  g.fillStyle='rgba(90,70,80,0.10)'; g.fillRect(2,21,w-4,3);        // 바닥 그림자
+  g.fillStyle=FROST; g.fillRect(2,3,w-4,16);
+  g.fillStyle=FROST_HI; g.fillRect(2,3,w-4,3);                       // 위쪽이 더 하얗게 흐리다
+  g.fillStyle='rgba(255,255,255,0.22)'; g.fillRect(2,11,w-4,2);      // 가운데 반투명 띠
+  g.fillStyle='rgba(255,255,255,0.6)'; for(var x=8;x<w-8;x+=26){ for(var k=0;k<7;k++) g.fillRect(x+k,17-k*2,1,2); for(var k2=0;k2<4;k2++) g.fillRect(x+5+k2,17-k2*2,1,2); }
+  R(g,0,0,w,3,ALU); R(g,0,0,w,1,ALU_HI); R(g,0,2,w,1,ALU_LO);        // 윗 프레임
+  R(g,0,3,2,17,ALU); R(g,w-2,3,2,17,ALU_LO); R(g,0,19,w,2,ALU_LO);    // 기둥과 아랫 프레임
+  R(g,3,21,4,2,'#8a9096'); R(g,w-7,21,4,2,'#8a9096'); }); }
+function pGlassDivider(h){ return obj(8,h,function(g,w,H){         // 세로로 선 판 (위에서 비스듬히 본 모습)
+  g.fillStyle='rgba(90,70,80,0.10)'; g.fillRect(6,4,3,H-4);
+  g.fillStyle=FROST; g.fillRect(2,2,4,H-4);
+  g.fillStyle=FROST_HI; g.fillRect(2,2,2,H-4);
+  R(g,0,0,8,2,ALU_HI); R(g,0,0,2,H,ALU); R(g,6,0,2,H,ALU_LO); R(g,0,H-3,8,3,ALU_LO); R(g,0,H-3,8,1,ALU);
+  for(var y=22;y<H-6;y+=32) R(g,1,y,6,2,ALU); }); }
+
 function pChairBack(c){ return obj(36,24,function(g){
   R(g,3,0,30,18,c); R(g,1,2,34,14,c); R(g,3,0,30,2,sh(c,0.35)); R(g,4,2,28,1,sh(c,0.18));
   R(g,3,16,30,2,sh(c,-0.28)); R(g,32,3,2,13,sh(c,-0.22)); R(g,1,3,2,12,sh(c,0.12));
@@ -724,6 +742,8 @@ var bg=cv(W,H), bgc=bg.getContext('2d');
 var things=[];            // 정렬해서 그릴 것들 {img,x,y,sy} 또는 {draw,sy} 또는 {person}
 var zones=[], SIGNS=[];
 var blocked=[]; for(var r=0;r<ROWS;r++){ blocked.push([]); for(var c=0;c<COLS;c++) blocked[r].push(0); }
+var noCross={};           // 칸과 칸 사이에 판이 서 있어서 못 지나가는 경계
+function wallEdge(c1,r1,c2,r2){ noCross[c1+','+r1+'>'+c2+','+r2]=noCross[c2+','+r2+'>'+c1+','+r1]=1; }
 function block(c0,r0,c1,r1){ for(var r=r0;r<=r1;r++) for(var c=c0;c<=c1;c++) if(r>=0&&r<ROWS&&c>=0&&c<COLS) blocked[r][c]=1; }
 function put(img,x,y,sy,fp){ things.push({img:img,x:x-1,y:y-1,sy:sy}); if(fp) block(fp[0],fp[1],fp[2],fp[3]); }
 // 칸(c0..c1, r0..r1)에 놓는 물건: 가로는 가운데, 그림 아래쪽이 (r1+1)*T 에 닿는다
@@ -747,7 +767,7 @@ block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0
 
 // 팻말 자리: 가구·사람과 겹치지 않는 칸
 zones.push(['노트 디자인팀',1,5],['다목적실',13,6],['디자인실장실',23,4],['라운지',23,13],['경영지원팀',1,16],
-           ['스티커 디자인팀',13,16],['재고창고',26,22],['홍보팀',5,24],['회의실',16,28],['탕비실',31,27],['아트코너',17,13]);
+           ['스티커 디자인팀',13,16,-18],['재고창고',26,22],['홍보팀',5,24,-12],['회의실',16,28],['탕비실',31,27],['아트코너',17,13]);
 
 // ---- 벽에 거는 것 ----
 function wallItem(img,x,y){ bgc.drawImage(img,x-1,y-1); }
@@ -806,6 +826,9 @@ onTile(pPlant('monstera','#f4f1ea'),16,24,16,24); onTile(pPlant('bush','#9fd4c0'
 onTile(pFridge(),27,24,28,25); onTile(pSink(),29,24,30,24); onTile(pVending(),31,24,32,25); onTile(pMicro(),33,24,33,24);
 onTile(pSmallTable(),29,27,30,27); onTile(pChairN('#f4c0a8'),29,26,29,26,-8); onTile(pChairS('#f4c0a8'),30,28,30,28);
 
+// ---- 팀 사이 간유리 칸막이 ----
+put(pGlassDivider(5*T+20),13*T-4,17*T-20,22*T); for(var rr=17; rr<=21; rr++) wallEdge(12,rr,13,rr);
+
 // ---- 사람 ----
 var people=STAFF.map(function(p){
   var cx=p.desk[0], dr=p.desk[1];
@@ -813,6 +836,9 @@ var people=STAFF.map(function(p){
   put(pDesk(hash(p.id)%97),cx*T,dr*T-16,dr*T+32,[cx,dr,cx+1,dr]);
   things.push({img:pChairBack(TEAM_CHAIR[p.team]),x:cx*T+13,y:seatFeet-32,sy:seatFeet-1});
   block(cx,dr-1,cx+1,dr-1);
+  if(p.team!=='lead'){                         // 의자 바로 뒤에 선 간유리 파티션. 앉은 머리 높이쯤 온다
+    put(pGlassScreen(72),cx*T-4,(dr-1)*T-18,(dr-1)*T+6);
+    wallEdge(cx,dr-2,cx,dr-1); wallEdge(cx+1,dr-2,cx+1,dr-1); }
   var o={p:p,spr:buildSprites(p),seat:{c:cx,r:dr-1},seatX:seatX,seatFeet:seatFeet,
          x:seatX,feet:seatFeet,dir:'down',frame:0,state:'sit',until:0,path:null,step:0,tile:null,
          blinkUntil:0,nextBlink:0,balloon:null,balloonUntil:0};
@@ -829,6 +855,7 @@ function bfs(start,goal){
     [[0,1],[1,0],[0,-1],[-1,0]].forEach(function(d){ var nc=cur.c+d[0], nr=cur.r+d[1], k2=key(nc,nr);
       if(nc<0||nr<0||nc>=COLS||nr>=ROWS||seen[k2]) return;
       if(blocked[nr][nc] && !(nc===goal.c&&nr===goal.r)) return;
+      if(noCross[cur.c+','+cur.r+'>'+nc+','+nr]) return;
       seen[k2]=1; prev[k2]=cur; q.push({c:nc,r:nr}); }); }
   return null;
 }
@@ -905,12 +932,12 @@ function relayout(){
 function placeLabels(){
   labels.innerHTML='';
   zones.forEach(function(z){ var el=document.createElement('div'); el.className='zone'; el.textContent=z[0];
-    el.style.left=((z[1]*T+8)*Z)+'px'; el.style.top=((z[2]*T+2)*Z)+'px'; labels.appendChild(el); });
+    el.style.left=((z[1]*T+8)*Z)+'px'; el.style.top=((z[2]*T+2+(z[3]||0))*Z)+'px'; labels.appendChild(el); });
   SIGNS.forEach(function(s){ var el=document.createElement('div'); el.className='sign'; el.textContent=s[0];
     if(s[0]==='엘리베이터'){ el.style.textShadow='1px 1px 0 #3a2a3a,-1px -1px 0 #3a2a3a,1px -1px 0 #3a2a3a,-1px 1px 0 #3a2a3a'; }
     el.style.left=(s[1]*Z)+'px'; el.style.top=(s[2]*Z)+'px'; labels.appendChild(el); });
   people.forEach(function(o){ var el=document.createElement('div'); el.className='plate'; el.textContent=o.p.name;
-    el.style.left=((o.seat.c*T+32)*Z)+'px'; el.style.top=(((o.seat.r+1)*T+38)*Z)+'px'; labels.appendChild(el); });
+    el.style.left=((o.seat.c*T+32)*Z)+'px'; el.style.top=(((o.seat.r+1)*T+20)*Z)+'px';   /* 책상 앞판에 붙인 명패 */ labels.appendChild(el); });
 }
 window.addEventListener('resize',relayout);
 
