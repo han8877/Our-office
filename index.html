@@ -14362,7 +14362,10 @@ var EMO_BAL={ happy:'heart', sleepy:'zzz', angry:'excl', sad:'sweat', surprised:
 function drawActor(g,a,now){
   var img=(a.sitting&&now<a.blinkUntil)?a.spr.blink:a.spr[a.dir][a.path?a.frame:0];
   var X=Math.round(a.x), Y=Math.round(a.feet)-48;
-  if(a.onFurn && !a.path){ g.drawImage(img,0,0,img.width,41,X,Y+6,img.width,41); return; }   // 소파·의자에 앉음: 다리를 감추고 조금 낮게
+  if(a.onFurn && !a.path){                                   // 소파·의자에 앉음: 몸을 낮추고 무릎·구두 끝만 보인다
+    var st=a.spr.sit&&a.spr.sit[a.dir];
+    if(st){ g.drawImage(a.dir==='down'&&now<a.blinkUntil&&a.spr.sitBlink?a.spr.sitBlink:st,X,Y); return; }
+    g.drawImage(img,0,0,img.width,41,X,Y+6,img.width,41); return; }
   if(!a.sitting) ell(g,X+17,Math.round(a.feet),9,2,'rgba(90,50,70,0.22)');
   g.drawImage(img,X,Y);
 }

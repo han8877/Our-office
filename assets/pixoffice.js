@@ -583,7 +583,7 @@ var clockFace=obj(38,38,function(g){ disc(g,19,19,18,'#8a6048'); disc(g,19,19,16
 // =====================================================================
 //  캐릭터 — 2등신, 32 × 44 (윗쪽에 귀 자리 4px). 동물마다 귀·무늬가 다르다
 // =====================================================================
-var SPR_W=34, SPR_H=50, SPR_TOP=5;          // 캔버스 크기와 머리 위 여백. 발바닥은 캔버스 y=48
+var SPR_W=34, SPR_H=50, SPR_TOP=5, SIT_DROP=4;          // 캔버스 크기와 머리 위 여백. 발바닥은 캔버스 y=48
 var KIND = {
   fox:     {f:'#f08a42',F:'#fff4e4',d:'#c8642a',ears:'pointed',mark:'fox'},
   fox2:    {f:'#e67a3c',F:'#fff0de',d:'#b85a24',ears:'pointed',mark:'fox'},
@@ -666,7 +666,7 @@ function drawHead(g,K,p,dir,blink){
     if(K.mark==='horse') R(g,cx-2,cy-10,4,16,d);
     if(K.mark==='raccoon'){ R(g,cx-8,cy+3,16,2,d); }
     if(K.mark==='calico'){ ell(g,cx-5,cy-4,4,3,'#e89a4a'); ell(g,cx+5,cy-2,4,3,'#3a302c'); }
-    drawEarsFront(g,K,dir,cx); return;
+    drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return;
   }
   if(dir==='left'){                                 // 옆얼굴 (오른쪽은 좌우 반전)
     var mx = cx-9, my = cy+4;
@@ -688,7 +688,7 @@ function drawHead(g,K,p,dir,blink){
     P(g,mx-2,my+2,nose); P(g,mx-1,my+3,nose);
     if(p.acc==='glasses'){ ring(g,cx-5,cy-1,3,'#3a3040'); R(g,cx-2,cy-1,6,1,'#3a3040'); }
     if(p.acc==='shades'){ R(g,cx-9,cy-3,7,3,'#1d1f24'); R(g,cx-2,cy-2,7,1,'#1d1f24'); P(g,cx-8,cy-3,'#6a7a8a'); }
-    drawEarsFront(g,K,dir,cx); return;
+    drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return;
   }
   // 정면
   if(K.mark==='monkey') ell(g,cx,cy+2,8,6,F);
@@ -722,17 +722,18 @@ function drawHat(g,p,dir,cx,cy,rx,ry){
   if(!p.hat) return;
   var c=p.hat, dk=sh(c,-0.3), lt=sh(c,0.3), top=cy-ry-2;
   ell(g,cx,top+4,rx-1,4,c); R(g,cx-rx+1,top+4,rx*2-1,3,c); R(g,cx-rx+3,top+1,rx*2-5,1,lt);
-  if(p.hatBadge) R(g,cx-1,top+2,3,3,'#e8c46a');
+  if(p.hatBadge&&dir!=='up') R(g,dir==='left'?cx-4:cx-1,top+2,3,3,'#e8c46a');
   if(dir==='up'){ R(g,cx-rx+1,top+6,rx*2-1,1,dk); return; }
   if(dir==='left'){ R(g,cx-rx-3,top+6,rx+3,2,dk); return; }
   R(g,cx-rx,top+6,rx*2+1,2,dk);
 }
-function drawBody(g,K,p,dir,frame){
+function drawBody(g,K,p,dir,frame,sit){
   var s=p.shirt, sD=sh(s,-0.22), sL=sh(s,0.28), pa=p.pantsC, pD=sh(pa,-0.28), sho='#5a4034', shoL='#7e5e4c', hand=K.f;
   if(dir==='left'){
     var legA = frame===1 ? [-3,2] : frame===2 ? [2,-3] : [0,0];
-    R(g,17+legA[1],36,4,4,pD); R(g,16+legA[1],40,6,3,sh(sho,-0.1));
-    R(g,14+legA[0],36,4,4,pa); R(g,13+legA[0],40,6,3,sho); R(g,13+legA[0],40,6,1,shoL);
+    if(sit){ R(g,9,35,11,4,pa); R(g,9,35,11,1,sh(pa,0.2)); R(g,7,38,5,3,sho); R(g,7,38,5,1,shoL); }   // 앉음: 허벅지가 앞으로
+    else { R(g,17+legA[1],36,4,4,pD); R(g,16+legA[1],40,6,3,sh(sho,-0.1));
+    R(g,14+legA[0],36,4,4,pa); R(g,13+legA[0],40,6,3,sho); R(g,13+legA[0],40,6,1,shoL); }
     R(g,12,26,10,11,s); R(g,13,25,8,2,s); R(g,20,27,2,10,sD); R(g,12,36,10,1,sD); R(g,13,26,2,8,sL);
     var ax = frame===1 ? -2 : frame===2 ? 2 : 0;
     if(p.bag) R(g,19,27,5,10,p.bag);
@@ -742,9 +743,10 @@ function drawBody(g,K,p,dir,frame){
     return;
   }
   var L = frame===1 ? [1,-1] : frame===2 ? [-1,1] : [0,0];
-  R(g,11,36,4,4+L[0],pa); R(g,17,36,4,4+L[1],pa); R(g,14,36,1,4,pD); R(g,20,36,1,4,pD);
-  R(g,10,40+L[0],6,3,sho); R(g,10,40+L[0],6,1,shoL); R(g,16,40+L[1],6,3,sho); R(g,16,40+L[1],6,1,shoL);
+  if(!sit){ R(g,11,36,4,4+L[0],pa); R(g,17,36,4,4+L[1],pa); R(g,14,36,1,4,pD); R(g,20,36,1,4,pD);
+  R(g,10,40+L[0],6,3,sho); R(g,10,40+L[0],6,1,shoL); R(g,16,40+L[1],6,3,sho); R(g,16,40+L[1],6,1,shoL); }
   R(g,10,27,12,10,s); R(g,11,26,10,2,s); R(g,20,28,2,9,sD); R(g,10,36,12,1,sD); R(g,10,28,2,7,sL);
+  if(sit&&dir==='down'){ R(g,10,37,12,2,pa); R(g,15,37,2,2,pD); R(g,10,39,5,2,sho); R(g,17,39,5,2,sho); R(g,10,39,5,1,shoL); R(g,17,39,5,1,shoL); }   // 앉음: 무릎과 구두 끝
   if(dir==='down'){ R(g,13,26,6,2,sL); P(g,15,28,sL); P(g,16,28,sL); P(g,16,31,sD); P(g,16,34,sD); }   // 옷깃과 단추
   if(dir==='down'&&p.bow){ R(g,13,27,2,3,p.bow); R(g,17,27,2,3,p.bow); R(g,15,28,2,1,sh(p.bow,-0.3)); }  // 나비넥타이
   var aL = frame===1 ? -1 : frame===2 ? 1 : 0;
@@ -766,10 +768,10 @@ function drawCarry(g,p,dir,hx){
   else if(it==='file'){ R(g,hx-1,31,7,9,'#e8a040'); R(g,hx-1,31,7,1,'#f4c070'); }
   else if(it==='paper'){ R(g,hx-1,32,6,8,'#ffffff'); R(g,hx,34,4,1,'#b8b2a6'); R(g,hx,36,3,1,'#b8b2a6'); }
 }
-function buildChar(p, dir, frame, blink){
+function buildChar(p, dir, frame, blink, sit){
   var c=cv(SPR_W,SPR_H), g=c.getContext('2d'), K=KIND[p.kind], d=dir==='right'?'left':dir;
-  g.translate(1,SPR_TOP);
-  drawBody(g,K,p,d,frame); drawHead(g,K,p,d,blink);
+  g.translate(1,SPR_TOP+(sit?SIT_DROP:0));
+  drawBody(g,K,p,d,frame,sit); drawHead(g,K,p,d,blink);
   outline(c,'#3a2436');
   if(dir==='right'){ var m=cv(SPR_W,SPR_H), mg=m.getContext('2d'); mg.translate(SPR_W,0); mg.scale(-1,1); mg.drawImage(c,0,0); return m; }
   return c;
@@ -782,7 +784,10 @@ function buildHead(p){
 function buildSprites(p){
   p.pantsC = p.pants || PANTS[hash(p.id)%PANTS.length];
   var S={}; ['down','up','left','right'].forEach(function(d){ S[d]=[0,1,2].map(function(f){ return buildChar(p,d,f,false); }); });
-  S.blink = buildChar(p,'down',0,true); return S;
+  S.blink = buildChar(p,'down',0,true);
+  // 소파·의자에 앉은 모습: 몸이 SIT_DROP만큼 내려앉고 무릎·구두 끝이 보인다
+  S.sit={}; ['down','up','left','right'].forEach(function(d){ S.sit[d]=buildChar(p,d,0,false,true); }); S.sitBlink=buildChar(p,'down',0,true,true);
+  return S;
 }
 
 // 쯔꾸르식 말풍선 아이콘
