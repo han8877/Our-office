@@ -14372,9 +14372,12 @@ function drawActor(g,a,now){
 function drawUmbrellas(g){ var x=4*T+10, y=25*T+30;
   R(g,x,y-14,20,14,'#9aa2a8'); R(g,x,y-14,20,2,'#c9cfd4');
   [['#f2b8b5',x+3],['#b9d4e8',x+9],['#f5dfa8',x+15]].forEach(function(u,i){ R(g,u[1],y-30+i*2,3,18,u[0]); R(g,u[1]+1,y-33+i*2,1,3,'#8a8578'); }); }
-function drawLunchSign(g){ var x=5*T+2, y=25*T+31;
-  R(g,x+10,y-8,2,8,'#8a6048'); R(g,x+22,y-8,2,8,'#8a6048');
-  roundBox(g,x,y-30,34,22,'#fff6e6','#8a6048'); g.font='12px NeoDGM, sans-serif'; g.fillStyle='#8a4a30'; g.textBaseline='top'; g.fillText('점심',x+5,y-26); }
+function drawLunchSign(g){ var cx=2*T+22, y=26*T+14;               // 엘리베이터 앞에 세운 입간판 (오른쪽은 우산꽂이 자리)
+  ell(g,cx,y,22,3,'rgba(90,60,40,0.18)');
+  R(g,cx-20,y-8,3,8,'#8a6048'); R(g,cx+17,y-8,3,8,'#8a6048'); R(g,cx-17,y-3,34,2,'#a87a5c');
+  roundBox(g,cx-26,y-40,52,34,'#fff6e6','#8a6048'); R(g,cx-22,y-36,44,2,'#f2dcc0');
+  g.font='12px NeoDGM, sans-serif'; g.textAlign='center'; g.textBaseline='top';
+  g.fillStyle='#8a4a30'; g.fillText('점심시간',cx,y-33); g.font='10px NeoDGM, sans-serif'; g.fillStyle='#a07a5a'; g.fillText('12~13시',cx,y-19); g.textAlign='left'; }
 
 // ---- 한 프레임 ----
 function activeFloor(){
@@ -14414,7 +14417,7 @@ function frame(now){
   var list=M.things.slice();
   if(F.key==='3'){ list.push({sy:5*T+0.5, draw:function(gg){ PO.drawFish(gg,now,F.feeding); }});
     if(F.umbrellaOn) list.push({sy:25*T+30, draw:drawUmbrellas});
-    if(F.lunchOn) list.push({sy:25*T+31, draw:drawLunchSign}); }
+    if(F.lunchOn) list.push({sy:26*T+14, draw:drawLunchSign}); }
   else list.push({sy:28*T+0.5, draw:function(gg){ PO.drawBigTank(gg,now); }});
   for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:a.feet}); }
   if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
