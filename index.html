@@ -13544,6 +13544,7 @@
     }
     function stepWander(v, noSit){
       if(!f2Visible(v.id)) return;
+      if(!noSit && Math.random() < 0.12 && visitAct(v, function(){ stepWander(v, true); })) return;
       // 계속 돌아다니는 손님도 가끔은 한 자리에 앉아 쉰다
       if(!noSit && Math.random() < 0.15){
         var seat = pickSeat(v);
@@ -13623,8 +13624,48 @@
       });
     }
     // noSit이면 이번 차례는 앉지 않는다 (막 일어난 사람이 곧바로 다시 앉지 않게)
+    // ---- 방문객 행동: 로비 곳곳에서 뭔가를 하고 간다 ----
+    // at = 길목, reply = 안내 직원 대답, order = 라운지 바 주문(바텐더가 받는다)
+    var VISIT_ACTS = [
+      { at:'t1', who:'yun',  qa:[['안녕하세요, {사}에서 왔습니다', '어서 오세요, 방문증 여기 있습니다'],
+                                 ['3층 끄적끄적문구 가려는데요', '네, 엘리베이터로 3층 올라가시면 됩니다'],
+                                 ['방문 등록은 여기서 하나요?', '네, 성함만 적어 주세요~']] },
+      { at:'t2', who:'kang', qa:[['화장실은 어디인가요?', '엘리베이터 옆 복도 끝이에요'],
+                                 ['와이파이 비밀번호 있을까요?', '비밀번호는 안내문에 적혀 있어요'],
+                                 ['회의실 예약 확인 부탁드려요', '네, 예약 확인됐습니다']] },
+      { at:'aw', lines:['미디어아트 색이 계속 바뀌네', '청자 진짜 예쁘다', '이 조각은 누구 작품이지'], emo:'surprised' },
+      { at:'t4', lines:['진열장 제품들 귀엽다', '이 노트 {사}에도 들이고 싶다', '고양이 스티커 사고 싶다'], emo:'happy' },
+      { at:'s1', lines:['금빛 고양이 동상이다!', '사진 한 장 찍어야지', '찰칵!'], emo:'happy' },
+      { at:'p3', lines:['뒤에서 봐도 멋있네', '로고가 고양이였구나'] },
+      { at:'g4', lines:['물고기 진짜 많다', '저 주황색 귀엽다', '수조 청소는 누가 하지'], emo:'happy' },
+      { at:'l1', lines:['오늘 24도라네', '사이니지에 신제품 나오네', '지금 몇 시지'] },
+      { at:'b1', lines:['자몽 에이드 한 잔 주세요', '아이스 커피 한 잔 주세요', '시원한 거 한 잔 주세요'], order:true },
+      { at:'b2', lines:['메뉴판 좀 볼게요', '레몬 에이드 한 잔 주세요'], order:true },
+      { at:'r2', lines:['책이 꽤 많네', '전자책도 빌려주네', '이거 재밌어 보인다'] },
+      { at:'h1', lines:['네, 로비 도착했습니다', '잠시만요, 전화 좀', '{사} 팀장님, 곧 올라갑니다'], emo:'blank' },
+      { at:'h4', lines:['무인 보관함이 있네', '짐 좀 맡겨둘까'] }
+    ];
+    // 고를 수 있는 행동이 있으면 걸어가서 하고 true, 없으면 false
+    function visitAct(v, done){
+      var acts = VISIT_ACTS.filter(function(a){ return spotFree(F2_NODES[a.at], v) && f2Path(v.node, a.at) !== null; });
+      if(!acts.length) return false;
+      var a = acts[Math.floor(Math.random()*acts.length)];
+      v.target = {x:F2_NODES[a.at].x, y:F2_NODES[a.at].y};
+      f2Travel(v, f2Path(v.node, a.at) || [], function(){
+        if(!f2Visible(v.id)) return;
+        // 안내데스크에서는 물은 말에 맞는 대답이 돌아온다
+        var qa = a.qa ? pick(a.qa) : null;
+        f2Say(v.id, (qa ? qa[0] : pick(a.lines)).replace(/\{사\}/g, v.co || ''));
+        if(qa && f2Visible(a.who)) setTimeout(function(){ f2Say(a.who, qa[1]); }, 1900);
+        if(a.emo) setTimeout(function(){ if(f2Visible(v.id)) f2Emo(v.id, a.emo); }, 4800);
+        clearTimeout(v._wait);
+        v._wait = setTimeout(done, 7000 + Math.random()*6000);
+      });
+      return true;
+    }
     function stepSpot(v, noSit){
       if(!f2Visible(v.id)) return;
+      if(!noSit && Math.random() < 0.4 && visitAct(v, function(){ stepSpot(v, true); })) return;
       var st = noSit ? null : (Math.random() < 0.55 ? pickSeat(v) : null);
       if(st){
         stepSeat(v, st, function(){
@@ -14316,15 +14357,15 @@ var ANCH3 = anchors([
 var ANCH2 = anchors([
   // 엘리베이터 · 왼쪽 복도
   [85,166, 2,3,'down'], [85,205, 2,4,'down'], [148,176, 6,4,'right'],
-  [85,255, 2,6], [85,340, 2,10], [85,415, 2,13], [85,530, 2,17], [85,620, 2,20],
+  [85,255, 2,6], [85,340, 2,10], [85,415, 2,13], [85,530, 2,17], [85,620, 2,20,'right'],
   // 안내데스크 앞 · 아트 월 앞
-  [230,255, 8,8], [400,255, 13,8], [560,255, 18,8], [675,255, 21,8], [830,255, 28,8,'up'],
+  [230,255, 8,8,'up'], [400,255, 13,8,'up'], [560,255, 18,8], [675,255, 21,8], [830,255, 28,8,'up'],
   // 라운지 옆 · 바와 독서 코너 사이
-  [675,340, 21,11], [675,415, 21,13], [675,509, 21,16], [675,638, 21,20],
+  [675,340, 21,11], [675,415, 21,13], [675,509, 21,16], [675,638, 21,20,'left'],
   [770,509, 26,15,'up'], [905,509, 31,15,'up'],
-  [770,638, 26,20], [875,638, 31,20], [770,735, 26,26], [875,735, 31,26],
+  [770,638, 26,20], [875,638, 31,20,'up'], [770,735, 26,26], [875,735, 31,26],
   // 라운지 통로
-  [180,415, 7,13], [265,415, 9,12], [325,415, 10,12], [405,415, 12,12], [485,415, 15,12], [525,415, 16,12], [630,415, 19,13],
+  [180,415, 7,13,'left'], [265,415, 9,12], [325,415, 10,12], [405,415, 12,12,'down'], [485,415, 15,12], [525,415, 16,12], [630,415, 19,13],
   [325,528, 10,16], [395,528, 12,16], [485,528, 15,16],
   // 앉는 자리: 바 스툴 넷
   [743,459, 25,13,'up',1,{x:25*T+16-17, feet:13*T+28}], [797,459, 27,13,'up',1,{x:27*T+16-17, feet:13*T+28}],
@@ -14630,6 +14671,12 @@ function npcTick(F,now){
       else { sv.spr=sv.sprPlain; sv.phase='bar'; setGoal(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:SRV_BAR.face },now); }
     }
   }
+  // 라운지 바 앞에서 방문객이 주문하면 바텐더 박이 받는다
+  if(!bt.talkUntil && now>(bt.orderCool||0)){
+    for(var oid in A){ var o=A[oid]; if(!o.visible||o.npc||!o.bubble||!o.tile) continue;
+      if(o.tile.c>=23 && o.tile.c<=34 && o.tile.r>=13 && o.tile.r<=16 && /주세요|메뉴판/.test(o.bubble.join(' '))){
+        bt.bubble=[/메뉴판/.test(o.bubble.join(' '))?'여기 있습니다':'네, 금방 만들어 드릴게요']; bt.talkUntil=now+3000; bt.orderCool=now+15000;
+        bt.tx=Math.max(24*T-1, Math.min(32*T-1, o.x)); break; } } }
   [[bt,BAR_LINES],[sv,SRV_LINES]].forEach(function(p){ var a=p[0], L=p[1];
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; a.nextTalk=now+18000+Math.random()*30000; }
     else if(!a.talkUntil && now>a.nextTalk && !a.path){ a.bubble=L[Math.floor(Math.random()*L.length)]; a.talkUntil=now+3200; } });
