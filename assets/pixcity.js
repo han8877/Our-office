@@ -165,7 +165,7 @@ function Intro(){
   var c=document.createElement('canvas'); c.id='introPix'; c.setAttribute('aria-hidden','true');
   screen.insertBefore(c, screen.firstChild); screen.classList.add('pixIntro');
   var g=c.getContext('2d'), buf=cv(4,4), bg=buf.getContext('2d');
-  var boss=PO.buildSprites({ id:'introBoss', kind:'bossfox', shirt:'#96897a', pants:'#4a4038', acc:'glasses', tie:'#33547f' });
+  var boss=PO.buildSprites({ id:'introBoss', kind:'bosstiger', shirt:'#96897a', pants:'#4a4038', acc:'glasses', tie:'#33547f' });
   var plant=pottedPlant(), fac=null, facPh=null, blinkAt=0, lastDraw=-1e9;
   var signEl=document.querySelector('#introStage .introSign span');
   function frame(now){ requestAnimationFrame(frame); paint(now); }

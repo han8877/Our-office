@@ -601,7 +601,7 @@ var KIND = {
   hedgehog:{f:'#eed6b0',F:'#fbf0dc',d:'#7a5638',ears:'hedgehog'},
   frog:    {f:'#86c464',F:'#d8f0bc',d:'#5a9a42',ears:'frog'},
   // 방문객 (본편의 사장님·택배기사·업체직원·수리기사·연주자·경비)
-  bossfox: {f:'#f0973f',F:'#ffe6c8',d:'#c46a26',ears:'pointed',mark:'fox'},
+  bosstiger:{f:'#ec8f34',F:'#fff4e2',d:'#43291a',ears:'round',mark:'tiger',cheeks:true},   // 사장님: 호랑이 (이노트보다 짙은 호박색)
   pup:     {f:'#c9906a',F:'#f0d8bc',d:'#8e603f',ears:'floppy'},
   greycat: {f:'#b9b2a6',F:'#ebe6dc',d:'#8a847c',ears:'pointed',mark:'cat'},
   goat:    {f:'#c49a6c',F:'#ecd8bc',d:'#8a6a48',ears:'horns'},
@@ -672,7 +672,7 @@ function drawHead(g,K,p,dir,blink){
     var mx = cx-9, my = cy+4;
     if(K.mark==='monkey') ell(g,cx-3,cy+1,7,6,F);
     ell(g,mx,my,5,3,F); if(K.mark==='horse') ell(g,mx-1,my+1,6,4,F);
-    if(K.mark==='fox'||K.mark==='cat') ell(g,cx-4,cy+5,4,3,F);
+    if(K.mark==='fox'||K.mark==='cat'||K.cheeks) ell(g,cx-4,cy+5,4,3,F);
     if(K.mark==='tiger'){ R(g,cx+2,cy-8,2,4,d); R(g,cx+6,cy-6,2,4,d); R(g,cx+4,cy+2,4,1,d); R(g,cx+4,cy+4,4,1,d); }
     if(K.mark==='cow') ell(g,cx+4,cy-3,4,3,d);
     if(K.mark==='giraffe'){ ell(g,cx+5,cy-3,2,1,d); ell(g,cx+3,cy+4,2,1,d); }
@@ -692,7 +692,7 @@ function drawHead(g,K,p,dir,blink){
   }
   // 정면
   if(K.mark==='monkey') ell(g,cx,cy+2,8,6,F);
-  if(K.mark==='fox'||K.mark==='cat'){ ell(g,cx-5,cy+4,4,3,F); ell(g,cx+5,cy+4,4,3,F); }
+  if(K.mark==='fox'||K.mark==='cat'||K.cheeks){ ell(g,cx-5,cy+4,4,3,F); ell(g,cx+5,cy+4,4,3,F); }
   if(K.mark==='tiger'){ R(g,cx-1,cy-8,2,4,d); R(g,cx-5,cy-7,2,3,d); R(g,cx+4,cy-7,2,3,d); R(g,cx-11,cy+1,4,1,d); R(g,cx-11,cy+3,3,1,d); R(g,cx+8,cy+1,4,1,d); R(g,cx+9,cy+3,3,1,d); }
   if(K.mark==='cow'){ ell(g,cx+6,cy-3,4,4,d); ell(g,cx-7,cy-6,3,2,d); }
   if(K.mark==='giraffe'){ ell(g,cx-7,cy-4,2,1,d); ell(g,cx+7,cy-5,2,2,d); ell(g,cx+8,cy+4,1,1,d); }
@@ -821,7 +821,7 @@ var STAFF = [
 
 // ---- 방문객 생김새 (본편 방문객 id → 그림) ----
 var VISITORS={
-  visitorBoss:    {id:'visitorBoss',    kind:'bossfox', shirt:'#96897a', pants:'#4a4038'},
+  visitorBoss:    {id:'visitorBoss',    kind:'bosstiger', shirt:'#96897a', pants:'#4a4038'},
   visitorCourier: {id:'visitorCourier', kind:'pup',     shirt:'#3a7ac0', pants:'#2f4a6a', hat:'#3a7ac0', carry:'box'},
   visitorVendor:  {id:'visitorVendor',  kind:'greycat', shirt:'#5c8f5c', pants:'#3e4a44'},
   visitorFixer:   {id:'visitorFixer',   kind:'goat',    shirt:'#6f8196', pants:'#3e4c5c', hat:'#9aa2a8', carry:'tool'},
