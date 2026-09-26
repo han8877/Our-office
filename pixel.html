@@ -21,10 +21,6 @@
   .plate{ position:absolute; font-size:16px; line-height:16px; color:#fff; white-space:nowrap;
     background:rgba(58,44,62,.82); padding:2px 6px; border-radius:4px; transform:translate(-50%,0);
     box-shadow:0 0 0 1px rgba(40,26,40,.5); }
-  /* 구역 팻말: 나무판 */
-  .zone{ position:absolute; font-size:16px; line-height:16px; color:#fff6e6; white-space:nowrap;
-    background:#9a7258; border:2px solid #5e4232; padding:4px 8px; border-radius:3px;
-    box-shadow:inset 0 0 0 1px #c09a7c, 2px 2px 0 rgba(60,40,40,.25); }
   /* 벽 간판 글씨 */
   .sign{ position:absolute; font-size:16px; line-height:16px; color:#fff6e6; white-space:nowrap;
     transform:translate(-50%,-50%); text-shadow:1px 1px 0 #5e3a24; }
@@ -748,21 +744,21 @@ var BALLOONS=(function(){
 //  사람들
 // =====================================================================
 var STAFF = [
-  {id:'kobujang',  name:'최실장', kind:'fox',     shirt:'#d98f7a', acc:'glasses', desk:[30,6],  team:'lead'},
+  {id:'kobujang',  name:'최실장', kind:'fox',     shirt:'#d98f7a', acc:'glasses', desk:[33,6],  team:'lead'},
   {id:'kimnote',   name:'김팀장', kind:'dog',     shirt:'#f0c46a', desk:[2,8],   team:'note'},
   {id:'leenote',   name:'이노트', kind:'tiger',   shirt:'#a48ad0', desk:[6,8],   team:'note'},
   {id:'jungnote',  name:'정노트', kind:'giraffe', shirt:'#e89a78', desk:[2,12],  team:'note'},
   {id:'hannote',   name:'전노트', kind:'raccoon', shirt:'#6fc49a', desk:[6,12],  team:'note'},
-  {id:'nabujang',  name:'나팀장', kind:'bear',    shirt:'#6aaac4', desk:[2,19],  team:'biz'},
-  {id:'choiinsa',  name:'최인사', kind:'cat',     shirt:'#ec94ae', desk:[6,19],  team:'biz'},
-  {id:'parkhoegye',name:'박회계', kind:'rabbit',  shirt:'#a6c86a', desk:[10,19], team:'biz'},
+  {id:'nabujang',  name:'나팀장', kind:'bear',    shirt:'#6aaac4', desk:[2,20],  team:'biz'},
+  {id:'choiinsa',  name:'최인사', kind:'cat',     shirt:'#ec94ae', desk:[6,20],  team:'biz'},
+  {id:'parkhoegye',name:'박회계', kind:'rabbit',  shirt:'#a6c86a', desk:[10,20], team:'biz'},
   {id:'jungsti',   name:'정팀장', kind:'monkey',  shirt:'#5a8ac4', desk:[15,19], team:'sticker'},
   {id:'hansti',    name:'손스티', kind:'horse',   shirt:'#f08aa0', desk:[20,19], team:'sticker'},
   {id:'yoosti',    name:'유스티', kind:'cow',     shirt:'#8cc07a', desk:[15,22], team:'sticker'},
   {id:'chosti',    name:'조스티', kind:'frog',    shirt:'#f2b64a', desk:[20,22], team:'sticker'},
-  {id:'yoohongbo', name:'유팀장', kind:'hedgehog',shirt:'#e87a6a', desk:[6,27],  team:'pr'},
-  {id:'seohongbo', name:'서홍보', kind:'fox2',    shirt:'#7ab2dc', desk:[9,27],  team:'pr'},
-  {id:'minhongbo', name:'민홍보', kind:'bear2',   shirt:'#f4d06a', desk:[12,27], team:'pr'}
+  {id:'yoohongbo', name:'유팀장', kind:'hedgehog',shirt:'#e87a6a', desk:[8,27],  team:'pr'},
+  {id:'seohongbo', name:'서홍보', kind:'fox2',    shirt:'#7ab2dc', desk:[10,27],  team:'pr'},
+  {id:'minhongbo', name:'민홍보', kind:'bear2',   shirt:'#f4d06a', desk:[13,27], team:'pr'}
 ];
 var LINES = {
   kobujang:['여기서 보면 다 보여요. 별건 아니고요.','글쎄요. 그럴 수도 있죠.'],
@@ -815,8 +811,13 @@ paintOuterWalls(bgc);
 block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0,ROWS-1,COLS-1,ROWS-1);
 
 // 팻말 자리: 가구·사람과 겹치지 않는 칸
-zones.push(['노트 디자인팀',1,5],['다목적실',13,6],['디자인실장실',29,4],['제품 쇼룸',23,10,-4],['라운지',23,13],['경영지원팀',1,16,12],
-           ['스티커 디자인팀',13,16,12],['재고창고',26,22],['홍보팀',6,24,12],['회의실',16,28],['탕비실',31,27],['아트코너',17,13]);
+// 구역 이름: 팻말 대신 바닥에 옅게 새긴다. 자리 규칙은 하나 — 구역 바닥의 왼쪽 위 모서리.
+// (c, r) = 그 구역의 첫 바닥 칸. wall=true 면 위쪽에 벽이 서 있어서 벽면 아래부터 센다. dx 는 옆 벽 두께만큼 비킬 때
+function zone(name,c,r,wall,dx){ zones.push([name, c*T+6+(dx||0), wall ? r*T+18 : r*T+6]); }
+zone('노트 디자인팀',1,5); zone('다목적실',13,6); zone('디자인실',23,5); zone('디자인실장실',29,5,false,8);
+zone('아트코너',13,12); zone('라운지',23,13);
+zone('경영지원팀',1,17,true); zone('스티커 디자인팀',13,17,true,4); zone('재고창고',26,17);
+zone('엘리베이터 홀',1,25); zone('홍보팀',6,25,true,2); zone('회의실',16,24,true,4); zone('탕비실',26,24,true,4);
 
 // ---- 벽에 거는 것 ----
 function wallItem(img,x,y){ bgc.drawImage(img,x-1,y-1); }
@@ -824,7 +825,7 @@ wallItem(pLogoBoard(),40,32); SIGNS.push(['끄적끄적문구',40+84,32+17]);
 wallItem(pAC(),220,30);
 wallItem(pPainting(),21*T+16,30);
 wallItem(pWhiteboard(),30*T,28);
-wallItem(pShowSign(),23*T+24,34); SIGNS.push(['끄적끄적 쇼룸',23*T+24+75,34+15]);
+wallItem(pShowSign(),23*T+24,34); SIGNS.push(['디자인실',23*T+24+75,34+15]);
 wallItem(pSwitch(),29*T+4,44);
 
 // ---- 칸막이 ----
@@ -839,7 +840,7 @@ put(vWall(6*T,true),15*T+11,23*T+4,29*T); block(15,24,15,28);
 put(hWall(T),25*T,23*T+2,23*T+48); put(hWall(7*T),28*T,23*T+2,23*T+48); block(25,23,25,23); block(28,23,34,23);
 put(vWall(6*T,false),25*T+11,23*T+4,29*T); block(25,24,25,28);
 // 엘리베이터
-put(pElevator(),T,22*T,25*T); block(1,22,4,24); SIGNS.push(['엘리베이터',2*T+12,25*T+14]);
+put(pElevator(),T,22*T,25*T); block(1,22,4,24);
 onTile(pPlant('tall','#f4f1ea'),1,28,1,28); onTile(pPlant('monstera','#f4f1ea'),4,28,4,28);
 
 // ---- 가구 ----
@@ -852,10 +853,10 @@ onTile(pLockers(),14,3,20,4);
 onTile(pCabinet(),33,3,34,4);
 // 제품 쇼룸
 onTile(pDisplayShelf(0),23,3,25,4); onTile(pDisplayShelf(5),26,3,28,4);
-onTile(pIsland(),24,7,27,8); onTile(pSpinner(1),23,9,23,9); onTile(pSpinner(6),28,9,28,9); onTile(pPlant('monstera','#f4f1ea'),23,6,23,6);
+onTile(pIsland(),24,7,27,8); onTile(pSpinner(1),23,9,23,9); onTile(pSpinner(6),28,9,28,9); onTile(pPlant('monstera','#f4f1ea'),28,6,28,6);
 // 디자인실장실: 책상, 작은 원탁, 캐비닛
 onTile(pRoundTable(),30,8,32,9); onTile(pChairS('#b89478'),30,10,30,10); onTile(pChairS('#b89478'),32,10,32,10);
-onTile(pPlant('monstera','#f4f1ea'),34,6,34,6); onTile(pTrash(),34,9,34,9);
+onTile(pPlant('monstera','#f4f1ea'),29,9,29,9); onTile(pTrash(),34,9,34,9);
 // 노트팀
 onTile(pDrawers(),10,7,10,8); onTile(pPlant('bush','#9fd4c0'),10,12,10,12);
 // 다목적실
@@ -866,19 +867,19 @@ onTile(pImacDesk(),13,14,14,14); onTile(pSculpture(),16,13,16,14);
 // 라운지
 onTile(pLoungeSofa(),26,14,29,14); onTile(pBookshelf(3),31,13,32,14); onTile(pBookshelf(9),33,13,34,14); onTile(pPlant('monstera','#f5b8c8'),30,14,30,14);
 // 경영지원팀
-onTile(pDrawers(),1,17,1,18); onTile(pPlant('tall','#9fd4c0'),4,21,4,21); onTile(pCopier(),1,21,2,21);
+onTile(pDrawers(),11,17,11,18); onTile(pPlant('tall','#9fd4c0'),4,21,4,21); onTile(pCopier(),9,17,10,17);
 // 스티커팀
 onTile(pPlant('bush','#f5b8c8'),13,19,13,19); onTile(pDrawers(),23,18,23,19); onTile(pCopier(),23,21,24,21);
 // 재고창고
-onTile(pShelf(1),27,17,29,18); onTile(pShelf(5),31,17,33,18); onTile(pShelf(8),27,20,29,21); onTile(pShelf(12),31,20,33,21);
+onTile(pShelf(1),28,18,30,19); onTile(pShelf(5),32,18,34,19); onTile(pShelf(8),28,21,30,22); onTile(pShelf(12),32,21,34,22);
 // 홍보팀
-onTile(pDrawers(),14,25,14,26); onTile(pPlant('bush','#d9794a'),8,28,8,28); onTile(pPlant('tall','#f4f1ea'),14,28,14,28);
+onTile(pDrawers(),6,27,6,28); onTile(pPlant('bush','#d9794a'),7,28,7,28); onTile(pPlant('tall','#f4f1ea'),12,28,12,28);
 // 회의실
 onTile(pMeetTable(),18,25,22,26);
 [18,20,22].forEach(function(c){ onTile(pChairN('#4aa3a0'),c,24,c,24,-8); onTile(pChairS('#4aa3a0'),c,27,c,27); });
-onTile(pPlant('monstera','#f4f1ea'),16,24,16,24); onTile(pPlant('bush','#9fd4c0'),24,28,24,28);
+onTile(pPlant('monstera','#f4f1ea'),24,24,24,24); onTile(pPlant('bush','#9fd4c0'),24,28,24,28);
 // 탕비실
-onTile(pFridge(),27,24,28,25); onTile(pSink(),29,24,30,24); onTile(pVending(),31,24,32,25); onTile(pMicro(),33,24,33,24);
+onTile(pFridge(),28,24,29,25); onTile(pSink(),30,24,31,24); onTile(pVending(),32,24,33,25); onTile(pMicro(),34,24,34,24);
 onTile(pSmallTable(),29,27,30,27); onTile(pChairN('#f4c0a8'),29,26,29,26,-8); onTile(pChairS('#f4c0a8'),30,28,30,28);
 
 // ---- 팀 구역 간유리 벽 (실장실·회의실 벽처럼 방을 두른다) ----
@@ -999,12 +1000,18 @@ function relayout(){
   ['width','height'].forEach(function(k){ var v=(k==='width'?W:H)*Z+'px'; stage.style[k]=v; world.style[k]=v; labels.style[k]=v; });
   placeLabels();
 }
+// 바닥 글씨 레이어: 가구·사람 밑에 깔린다. 글꼴이 늦게 오면 한 번 더 그린다
+var floorText=cv(W,H);
+function paintFloorText(){
+  var g=floorText.getContext('2d'); g.clearRect(0,0,W,H); g.font='16px NeoDGM, monospace'; g.textBaseline='top';
+  zones.forEach(function(z){ var w=Math.round(g.measureText(z[0]).width);
+    g.fillStyle='rgba(255,253,248,0.75)'; g.fillText(z[0],z[1]+1,z[2]+1);
+    g.fillStyle='rgba(120,104,96,0.72)'; g.fillText(z[0],z[1],z[2]);
+    g.fillStyle='rgba(120,104,96,0.35)'; g.fillRect(z[1],z[2]+19,w,1); });
+}
 function placeLabels(){
   labels.innerHTML='';
-  zones.forEach(function(z){ var el=document.createElement('div'); el.className='zone'; el.textContent=z[0];
-    el.style.left=((z[1]*T+8)*Z)+'px'; el.style.top=((z[2]*T+2+(z[3]||0))*Z)+'px'; labels.appendChild(el); });
   SIGNS.forEach(function(s){ var el=document.createElement('div'); el.className='sign'; el.textContent=s[0];
-    if(s[0]==='엘리베이터'){ el.style.textShadow='1px 1px 0 #3a2a3a,-1px -1px 0 #3a2a3a,1px -1px 0 #3a2a3a,-1px 1px 0 #3a2a3a'; }
     el.style.left=(s[1]*Z)+'px'; el.style.top=(s[2]*Z)+'px'; labels.appendChild(el); });
   people.forEach(function(o){ var el=document.createElement('div'); el.className='plate'; el.textContent=o.p.name;
     el.style.left=((o.seat.c*T+32)*Z)+'px'; el.style.top=(((o.seat.r+1)*T+20)*Z)+'px';   /* 책상 앞판에 붙인 명패 */ labels.appendChild(el); });
@@ -1089,7 +1096,7 @@ function frame(now){
     if(so) showBalloon(so,['note','dots','bulb','sweat','heart','zzz'][Math.floor(Math.random()*6)],1900); }
   if(now-lastSay>9000&&!typing) say(people[Math.floor(Math.random()*people.length)]);
 
-  wc.drawImage(bg,0,0);
+  wc.drawImage(bg,0,0); wc.drawImage(floorText,0,0);
   drawWindow(wc,ph,now); drawClock(wc);
   var list=things.slice(); list.push({draw:function(g){ drawFish(g,now); },sy:5*T+0.5});
   list.sort(function(a,b){ return (a.person?a.person.feet:a.sy)-(b.person?b.person.feet:b.sy); });
@@ -1113,7 +1120,8 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 
-document.fonts&&document.fonts.load('16px NeoDGM').catch(function(){});
+paintFloorText();
+document.fonts&&document.fonts.load('16px NeoDGM').then(paintFloorText).catch(function(){});
 relayout();
 setTimeout(function(){ document.getElementById('mapName').style.opacity='0'; },4200);
 say(people[1]);
