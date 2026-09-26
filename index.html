@@ -45,6 +45,19 @@
   /* 3층 픽셀 화면: 게임은 지금처럼 SVG에서 돌고, 화면은 그 아래 캔버스(#pixOffice)가 그린다.
      SVG는 투명하게 남겨 두되 전원 패널만 보이게 한다. 누르는 것은 캔버스가 받아 원래 기능으로 넘긴다 */
   #pixOffice{ position:absolute; left:0; top:0; z-index:0; display:block; }
+  /* 메인(인트로) 화면과 사무실 뒤 도시 배경도 픽셀 그림(assets/pixcity.js)으로 그린다.
+     버튼·말풍선·요약 같은 글자 요소는 그대로 두고 그림 층만 캔버스로 바꾼다 */
+  #introPix{ position:absolute; left:0; top:0; z-index:1; display:block; pointer-events:none; }
+  #introScreen.pixIntro #introSceneBack, #introScreen.pixIntro #introSceneFore, #introScreen.pixIntro #introFacade,
+  #introScreen.pixIntro .introBoss, #introScreen.pixIntro #introGround, #introScreen.pixIntro .introSign span{ visibility:hidden; }
+  #introScreen.pixIntro .introSay span, #introScreen.pixIntro .introSumCard, #introScreen.pixIntro .introFirst,
+  #introScreen.pixIntro .enterBtn{ font-family:'NeoDGM', sans-serif; }
+  #introScreen.pixIntro .introSay span{ border-width:2px; border-radius:6px; }
+  #introScreen.pixIntro .enterBtn{ border-width:2px; border-radius:6px; box-shadow:0 3px 0 #5c4a3a; }
+  #introScreen.pixIntro .introSumCard, #introScreen.pixIntro .introFirst{ border-width:2px; border-radius:6px; }
+  body[data-sky="night"] #introScreen.pixIntro .introCopyright, body[data-sky="dusk"] #introScreen.pixIntro .introCopyright{ color:#e8e2f0; }
+  #cityPix{ position:absolute; left:0; top:0; display:block; }
+  #cityBg.pixCity svg{ visibility:hidden; }
   #officeSvg.pixMode, #floor2Svg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
   #officeSvg.pixMode, #officeSvg.pixMode *, #floor2Svg.pixMode, #floor2Svg.pixMode *{ pointer-events:none !important; }
   #officeSvg.pixMode > *, #floor2Svg.pixMode > *{ visibility:hidden; }
@@ -14427,6 +14440,11 @@ cvs.addEventListener('mousemove', function(e){ var F=activeFloor(); if(!F) retur
 requestAnimationFrame(frame);
 window.__pixOffice = { floors:FLOORS, actors:FLOORS['3'].actors, robot:FLOORS['3'].robot };
 })();
+</script>
+<script src="assets/pixcity.js"></script>
+<script>
+// 메인(인트로) 화면 · 사무실 뒤 도시 배경을 픽셀 그림으로
+try{ if(window.PixCity){ PixCity.Intro(); PixCity.CityBg(); } }catch(e){ if(window.console) console.warn('pixCity', e); }
 </script>
 
 </body>
