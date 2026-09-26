@@ -166,10 +166,10 @@ function Intro(){
   screen.insertBefore(c, screen.firstChild); screen.classList.add('pixIntro');
   var g=c.getContext('2d'), buf=cv(4,4), bg=buf.getContext('2d');
   var boss=PO.buildSprites({ id:'introBoss', kind:'bossfox', shirt:'#96897a', pants:'#4a4038', acc:'glasses', tie:'#33547f' });
-  var plant=pottedPlant(), fac=null, facPh=null, blinkAt=0, lastDraw=0;
+  var plant=pottedPlant(), fac=null, facPh=null, blinkAt=0, lastDraw=-1e9;
   var signEl=document.querySelector('#introStage .introSign span');
-  function frame(now){
-    requestAnimationFrame(frame);
+  function frame(now){ requestAnimationFrame(frame); paint(now); }
+  function paint(now){
     if(!screen.classList.contains('show')) return;
     if(now-lastDraw<66) return; lastDraw=now;
     var vw=screen.clientWidth, vh=screen.clientHeight; if(!vw||!vh) return;
@@ -214,6 +214,8 @@ function Intro(){
     g.clearRect(0,0,c.width,c.height);
     g.drawImage(buf,0,0,bw,bh,offX,offY,bw*unit*dpr,bh*unit*dpr);
   }
+  // 첫 장은 바로 그린다 (다음 프레임까지 빈 화면이 보이지 않게)
+  paint(performance.now());
   requestAnimationFrame(frame);
 }
 
@@ -222,9 +224,9 @@ function CityBg(){
   var host=document.getElementById('cityBg'); if(!host) return;
   var c=document.createElement('canvas'); c.id='cityPix'; c.setAttribute('aria-hidden','true');
   host.insertBefore(c, host.firstChild); host.classList.add('pixCity');
-  var g=c.getContext('2d'), buf=cv(4,4), bg=buf.getContext('2d'), key='', lastT=0;
-  function draw(now){
-    requestAnimationFrame(draw);
+  var g=c.getContext('2d'), buf=cv(4,4), bg=buf.getContext('2d'), key='', lastT=-1e9;
+  function draw(now){ requestAnimationFrame(draw); paint(now); }
+  function paint(now){
     if(now-lastT<1000) return; lastT=now;
     var vw=window.innerWidth, vh=window.innerHeight, ph=phaseNow(), k=vw+'x'+vh+ph+Math.floor(now/60000);
     if(k===key) return; key=k;
@@ -243,6 +245,7 @@ function CityBg(){
     c.width=Math.round(vw*dpr); c.height=Math.round(vh*dpr); c.style.width=vw+'px'; c.style.height=vh+'px';
     g.imageSmoothingEnabled=false; g.drawImage(buf,0,0,bw*unit*dpr,bh*unit*dpr);
   }
+  paint(performance.now());
   requestAnimationFrame(draw);
 }
 

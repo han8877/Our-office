@@ -56,6 +56,8 @@
   #introScreen.pixIntro .enterBtn{ border-width:2px; border-radius:6px; box-shadow:0 3px 0 #5c4a3a; }
   #introScreen.pixIntro .introSumCard, #introScreen.pixIntro .introFirst{ border-width:2px; border-radius:6px; }
   body[data-sky="night"] #introScreen.pixIntro .introCopyright, body[data-sky="dusk"] #introScreen.pixIntro .introCopyright{ color:#e8e2f0; }
+  /* 그림 모듈이 도착하기 전 잠깐 보이는 바탕 (하늘 · 인도) */
+  #introScreen.pixIntro{ background:linear-gradient(#b8c3d6 0%, #dcd8d8 62%, #ddd3c4 62%); }
   #cityPix{ position:absolute; left:0; top:0; display:block; }
   #cityBg.pixCity svg{ visibility:hidden; }
   #officeSvg.pixMode, #floor2Svg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
@@ -960,7 +962,7 @@
 </head>
 <body class="introOn">
 
-<div id="introScreen" class="show">
+<div id="introScreen" class="show pixIntro">
 <div id="introGround" aria-hidden="true"></div>
 <div id="introSceneBack" class="introScene" aria-hidden="true">
 <svg id="introSceneBackSvg" viewBox="-605 0 1600 800" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -1817,9 +1819,17 @@
 </svg>
 </div>
 </div>
+<!-- 인트로는 첫 화면부터 픽셀 그림으로: 그림 모듈을 무거운 본 스크립트보다 먼저 불러 바로 그린다 -->
+<script src="assets/pixoffice.js"></script>
+<script src="assets/pixcity.js"></script>
+<script>
+(function(){ var s=document.getElementById('introScreen');
+  try{ if(window.PixCity) PixCity.Intro(); else s.classList.remove('pixIntro'); }
+  catch(e){ s.classList.remove('pixIntro'); var c=document.getElementById('introPix'); if(c) c.remove(); if(window.console) console.warn('pixIntro', e); } })();
+</script>
 
 <!-- 배경: 서울 풍경. 사무실 카드 양옆으로 드러난다 -->
-<div id="cityBg" aria-hidden="true">
+<div id="cityBg" class="pixCity" aria-hidden="true">
 <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
 <defs>
   <linearGradient id="bgSkyGrad" x1="0" y1="0" x2="0" y2="1">
@@ -1982,6 +1992,12 @@
 <rect class="haze" x="0" y="612" width="1600" height="96"/>
 </svg>
 </div>
+<script>
+// 도시 배경도 옛 SVG 대신 바로 픽셀 그림으로. 실패하면 옛 그림을 다시 보인다
+(function(){ var h=document.getElementById('cityBg');
+  try{ if(window.PixCity) PixCity.CityBg(); else h.classList.remove('pixCity'); }
+  catch(e){ h.classList.remove('pixCity'); if(window.console) console.warn('pixCity', e); } })();
+</script>
 
 <div id="appShell">
 
@@ -14024,7 +14040,6 @@
 
 })();
 </script>
-<script src="assets/pixoffice.js"></script>
 <script>
 // =====================================================================
 //  3층·2층 픽셀 화면
@@ -14463,11 +14478,6 @@ cvs.addEventListener('mousemove', function(e){ var F=activeFloor(); if(!F) retur
 requestAnimationFrame(frame);
 window.__pixOffice = { floors:FLOORS, actors:FLOORS['3'].actors, robot:FLOORS['3'].robot };
 })();
-</script>
-<script src="assets/pixcity.js"></script>
-<script>
-// 메인(인트로) 화면 · 사무실 뒤 도시 배경을 픽셀 그림으로
-try{ if(window.PixCity){ PixCity.Intro(); PixCity.CityBg(); } }catch(e){ if(window.console) console.warn('pixCity', e); }
 </script>
 
 </body>
