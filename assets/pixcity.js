@@ -4,6 +4,7 @@
 'use strict';
 var PO = window.PixOffice; if(!PO) return;
 var R=PO.R, P=PO.P, ell=PO.ell, disc=PO.disc, tri=PO.tri, line=PO.line, mix=PO.mix, sh=PO.sh, rnd=PO.rnd, cv=PO.cv, obj=PO.obj;
+function vgrad(g,x,y,w,h,c0,c1,steps){ for(var i=0;i<h;i++) R(g,x,y+i,w,1,mix(c0,c1,Math.floor(i/h*steps)/Math.max(1,steps-1))); }
 
 // ---- 시간대 팔레트 ----
 var PAL = {
@@ -111,51 +112,69 @@ function lampPost(g,x,base,pal){
 
 // ---- 우리 건물 (파사드) ----
 // 폭 172, 지면선 y=290 기준. 가운데 아치 문 안에 사장님이 선다
-var FACADE={ x:12, w:172, top:94, ground:290, doorX:98 };
+var FACADE={ x:22, w:152, top:46, ground:290, doorX:98, signY:149 };   // 7층 건물: 그림 안 y 0 = 세계 46, 지면 = 그림 y 244
+// 도쿄풍 현대 오피스: 유리 커튼월 + 흰 세로 핀, 한쪽은 나무 루버, 맨 위층은 들여 짓고 테라스 녹지,
+// 1층은 층고 높은 유리 로비와 자동문, 그 위 짙은 캐노피에 금빛 간판 글씨(글씨는 Intro 에서 쓴다)
 function facade(pal){
-  var night=pal.glow>0.5;
-  var wall=night?'#c8c4cc':'#fffaf0', trim=night?'#aaa4b4':'#efe4d0', trimD=sh(trim,-0.2), roof=night?'#3e4658':'#8a96a4',
-      glass=night?'#ffd98a':'#cfe1ec', glassD=night?'#e8b860':'#a8c4d4', brown='#5c4a3a';
-  return obj(FACADE.w+8, 220, function(g){
-    var o=4, T0=0;   // 그림 안 좌표: x 0..w+8, y 0(=world 94)..220(=world 314)
-    // 지붕 + 지붕창
-    tri(g,o,24,o+FACADE.w,24,o+FACADE.w/2,24,roof);
-    R(g,o+8,10,FACADE.w-16,14,roof); tri(g,o,24,o+8,10,o+8,24,roof); tri(g,o+FACADE.w-8,10,o+FACADE.w,24,o+FACADE.w-8,24,roof);
-    for(var sx=o+14; sx<o+FACADE.w-10; sx+=12) R(g,sx,11,1,13,sh(roof,-0.15)); R(g,o+8,10,FACADE.w-16,1,sh(roof,0.25));
-    [o+50,o+122].forEach(function(dx){ ell(g,dx,8,8,9,trim); R(g,dx-8,8,17,8,trim); ell(g,dx,9,5,6,glass); R(g,dx-5,9,11,6,glass); R(g,dx,4,1,11,trimD); });
-    // 코니스
-    R(g,o-4,24,FACADE.w+8,7,trim); R(g,o-4,24,FACADE.w+8,1,'#ffffff'); R(g,o-4,30,FACADE.w+8,1,trimD);
-    for(var dx2=o; dx2<o+FACADE.w; dx2+=8) R(g,dx2+2,27,4,2,sh(trim,-0.08));
-    // 윗층 벽 + 아치 창 셋
-    R(g,o,31,FACADE.w,64,wall);
-    [36,86,136].forEach(function(cx){ cx+=o;
-      ell(g,cx,50,17,16,trim); R(g,cx-17,50,35,32,trim); ell(g,cx,51,13,12,glass); R(g,cx-13,51,27,27,glass);
-      R(g,cx,39,1,39,glassD); R(g,cx-13,60,27,1,glassD); R(g,cx-2,34,5,5,sh(trim,-0.1));
-      if(!night){ R(g,cx-10,44,2,20,'#e6f2f8'); R(g,cx-7,42,1,12,'#e6f2f8'); }
-      R(g,cx-18,80,37,3,trim); R(g,cx-18,80,37,1,'#ffffff');
-      R(g,cx-16,83,33,8,'rgba(0,0,0,0)'); for(var bx=cx-15; bx<cx+17; bx+=5) R(g,bx,83,1,8,brown); R(g,cx-16,83,33,1,brown); R(g,cx-16,90,33,1,brown); });
-    // 간판 띠
-    R(g,o,95,FACADE.w,4,trim); R(g,o,95,FACADE.w,1,'#ffffff');
-    R(g,o,99,FACADE.w,32,night?'#bcb6c4':'#f6efe0');
-    R(g,o+36,103,FACADE.w-72,24,brown); R(g,o+37,104,FACADE.w-74,22,night?'#d8d0c4':'#efe6d4'); R(g,o+38,105,FACADE.w-76,1,'#ffffff');
-    R(g,o,131,FACADE.w,4,trim); R(g,o,134,FACADE.w,1,trimD);
-    // 1층: 가로 줄눈 벽, 기둥, 아치 문
-    R(g,o,135,FACADE.w,61,wall);
-    for(var ly=141; ly<196; ly+=8) R(g,o,ly,FACADE.w,1,sh(wall,-0.06));
-    [o+2,o+FACADE.w-12].forEach(function(px){ R(g,px,135,10,61,trim); R(g,px,135,10,4,'#ffffff'); R(g,px-1,192,12,4,trimD); R(g,px+2,141,1,50,sh(trim,-0.12)); R(g,px+7,141,1,50,sh(trim,-0.12)); });
-    var dx0=o+60, dw=52;
-    ell(g,dx0+dw/2,152,dw/2+4,18,trim); R(g,dx0-4,152,dw+8,44,trim);
-    ell(g,dx0+dw/2,153,dw/2,15,night?'#f6e0a8':'#dcecf4'); R(g,dx0,153,dw,43,night?'#f6e0a8':'#dcecf4');
-    if(!night){ line(g,dx0+8,190,dx0+18,160,'#f4fafc'); line(g,dx0+14,190,dx0+24,160,'#f4fafc'); }
-    R(g,dx0+dw/2-3,136,7,6,sh(trim,-0.12)); R(g,dx0+dw/2,153,1,43,sh(glass,-0.2));
-    // 벽등 둘
-    [o+30,o+FACADE.w-30].forEach(function(lx){ R(g,lx-1,148,3,3,'#3a3f46'); R(g,lx-4,151,9,11,'#3a3f46'); R(g,lx-3,152,7,9,night?'#ffe8a0':'#e8eef2'); R(g,lx-5,150,11,2,'#3a3f46'); R(g,lx-1,162,3,2,'#3a3f46'); });
-    // 계단 셋
-    R(g,dx0-8,196,dw+16,4,'#f4ecdc'); R(g,dx0-12,200,dw+24,4,'#ece2d0'); R(g,dx0-16,204,dw+32,5,'#e2d6c2');
-    R(g,dx0-8,196,dw+16,1,'#ffffff'); R(g,dx0-12,200,dw+24,1,'#fbf6ea'); R(g,dx0-16,204,dw+32,1,'#f4ecdc');
+  var night=pal.glow>0.5, W=FACADE.w, o=4;
+  var slab=night?'#8a90a4':'#f2f3f4', slabD=night?'#5e6478':'#c9ced3', fin=night?'#9aa0b4':'#fbfcfc', finD=night?'#4a5068':'#b4c2cf',
+      g0=night?'#2c3450':mix(pal.sky[1],'#c6d8e4',0.5), g1=night?'#1e2640':mix(pal.sky[0],'#9ab4c8',0.55),
+      lit=night?'#ffdca0':'#fff4d8', wood=night?'#8a6a50':'#c99a66', woodD=night?'#6a4e3a':'#a87a4a', granite='#474b53', graniteL='#5d626b';
+  return obj(W+8, 258, function(g){
+    // 옥상 설비 가림막 + 안테나
+    R(g,o+30,1,W-60,8,night?'#6a7084':'#d4d8dc'); for(var lx=o+32; lx<o+W-30; lx+=3) R(g,lx,2,1,7,night?'#565c70':'#bcc2c8');
+    R(g,o+W-40,0,1,2,'#8a929a');
+    // 한 층 그리기 (y0 부터 22칸)
+    function floor(xa,xb,y0,fl){
+      R(g,xa,y0,xb-xa,3,slab); R(g,xa,y0+3,xb-xa,1,slabD);
+      vgrad(g,xa,y0+4,xb-xa,18,g0,g1,4);
+      for(var x=xa; x<xb; x+=8){ var k=Math.floor((x-xa)/8), on=night ? rnd(fl*13.7+k*3.1) < 0.55 : rnd(fl*7.3+k*5.9) < pal.lit;
+        if(on){ R(g,x+1,y0+5,7,16,lit); R(g,x+1,y0+18,7,3,sh(lit,-0.1)); }
+        else if(!night && (k+fl)%3===0){ R(g,x+2,y0+6,1,10,'#eef6fa'); }
+        R(g,x,y0+4,1,18,night?'#3a4260':'#dfe7ec'); }
+    }
+    // 7층 (들여 지은 맨 위층) + 옥상 테두리 조명
+    floor(o+12,o+W-12,8,7); R(g,o+10,8,W-20,2,slab); if(night) R(g,o+10,8,W-20,1,'#ffe6a8');
+    // 6~2층
+    for(var f=0; f<5; f++) floor(o,o+W,30+f*22,6-f);
+    R(g,o-1,30,W+2,3,slab); if(night) R(g,o-1,30,W+2,1,'#ffe6a8');
+    // 6층 지붕 테라스 녹지
+    [[o,o+12],[o+W-12,o+W]].forEach(function(t){ for(var x=t[0]; x<t[1]; x+=3){ disc(g,x+1,28,2,night?'#3a5a4a':'#6aa86e'); P(g,x,26,night?'#4a6a58':'#9ad89a'); } });
+    // 세로 핀 (유리면 위, 나무 루버 오른쪽부터)
+    for(var fx=o+30; fx<o+W-2; fx+=6){ R(g,fx,10,1,130,fin); R(g,fx+1,10,1,130,finD); }
+    // 왼쪽 나무 루버 기둥
+    R(g,o,30,26,110,woodD); for(var wx=o+1; wx<o+26; wx+=3){ R(g,wx,30,2,110,wood); R(g,wx,30,1,110,sh(wood,0.2)); }
+    for(var wy=30; wy<140; wy+=22) R(g,o,wy,26,2,slab);
+    // 오른쪽 끝 화강석 기둥
+    R(g,o+W-4,30,4,110,granite); R(g,o+W-4,30,1,110,graniteL);
+    // 캐노피 + 간판 띠
+    R(g,o-4,138,W+8,22,'#34383f'); R(g,o-4,138,W+8,1,'#50555e'); R(g,o-4,158,W+8,2,'#c9a25c'); R(g,o-4,158,W+8,1,'#f0d070');
+    for(var dl=o+10; dl<o+W; dl+=18){ R(g,dl,160,4,1,night?'#ffe8b0':'#e8e0cc'); if(night){ g.fillStyle='rgba(255,230,170,0.18)'; g.fillRect(dl-3,161,10,12); } }
+    // 1층 로비: 층고 높은 유리, 안에 따뜻한 나무 벽 · 안내데스크 · 펜던트 조명
+    var ly=160, lh=84;
+    R(g,o,ly,W,lh,night?'#f2dcb0':'#efe6d6');
+    R(g,o,ly+10,W,30,night?'#c89a66':'#d8b88a'); for(var px=o+4; px<o+W; px+=5) R(g,px,ly+10,1,30,night?'#b0845a':'#c9a47a');
+    R(g,o+16,ly+52,34,12,night?'#e8d8bc':'#f6f1ea'); R(g,o+16,ly+52,34,2,'#ffffff'); R(g,o+W-50,ly+52,34,12,night?'#e8d8bc':'#f6f1ea'); R(g,o+W-50,ly+52,34,2,'#ffffff');
+    [o+30,o+W-34].forEach(function(px2){ R(g,px2,ly,1,8,'#6a6f76'); disc(g,px2,ly+9,2,night?'#fff0c0':'#fbf4dc'); });
+    disc(g,o+W-10,ly+60,5,'#5a9a5e'); R(g,o+W-12,ly+64,5,6,'#b8b0a4');
+    g.fillStyle=night?'rgba(255,220,150,0.12)':'rgba(190,214,230,0.38)'; g.fillRect(o,ly,W,lh);
+    for(var mx=o; mx<=o+W; mx+=19) R(g,mx,ly,1,lh,night?'#8a8474':'#c9d2d8');
+    R(g,o,ly+40,W,1,night?'#8a8474':'#c9d2d8');
+    if(!night){ line(g,o+8,ly+38,o+20,ly+4,'#f8fbfd'); line(g,o+W-40,ly+80,o+W-26,ly+44,'#f8fbfd'); }
+    // 자동문
+    var dx0=FACADE.doorX-18-20, dw=40;
+    R(g,dx0-2,ly+34,dw+4,50,'#c9cfd4'); R(g,dx0,ly+36,dw,48,night?'#f6e2b4':'#dcebf2');
+    R(g,dx0+dw/2,ly+36,1,48,'#9aa2a8'); R(g,dx0+dw/2-4,ly+56,2,10,'#8a929a'); R(g,dx0+dw/2+3,ly+56,2,10,'#8a929a');
+    if(!night){ line(g,dx0+4,ly+80,dx0+12,ly+44,'#f8fbfd'); line(g,dx0+24,ly+80,dx0+32,ly+44,'#f8fbfd'); }
+    R(g,dx0-2,ly+34,dw+4,2,'#8a929a');
+    // 양 끝 화강석 기둥
+    R(g,o,ly,6,lh,granite); R(g,o,ly,1,lh,graniteL); R(g,o+W-6,ly,6,lh,granite); R(g,o+W-6,ly,1,lh,graniteL);
+    // 화강석 계단
+    R(g,dx0-10,244,dw+20,4,'#9aa0a8'); R(g,dx0-14,248,dw+28,4,'#8a9098'); R(g,dx0-18,252,dw+36,5,'#7a8088');
+    R(g,dx0-10,244,dw+20,1,'#c9ced3'); R(g,dx0-14,248,dw+28,1,'#b8bec4'); R(g,dx0-18,252,dw+36,1,'#aab0b6');
   });
 }
-function pottedPlant(){ return obj(18,30,function(g){ R(g,3,16,12,14,'#d9905a'); R(g,2,14,14,3,'#e6a470'); R(g,12,17,2,13,'#b8733a');
+function pottedPlant(){ return obj(18,30,function(g){ R(g,2,15,14,15,'#4a4e56'); R(g,2,15,14,2,'#6a6f78'); R(g,13,17,3,13,'#3a3e44'); R(g,2,28,14,2,'#34383f');   // 짙은 회색 사각 화분
   tri(g,5,15,8,0,10,15,'#5a9a52'); tri(g,8,15,12,2,13,15,'#6fb060'); tri(g,3,15,4,5,7,15,'#4a8a48'); }); }
 
 // ---- 인트로 화면 ----
@@ -185,10 +204,10 @@ function Intro(){
     var ox=Math.round(vw/2/unit-97.5), oy=Math.round(vh/2/unit-200), gy=oy+290;
     sky(bg,bw,bh,pal,gy); stars(bg,bw,bh,now,pal);
     sunMoon(bg,ox+212,oy+58,ph,now); clouds(bg,bw,now,ph,oy+20);
-    range(bg,0,bw,gy-40,70,ox*0.012+1.3,pal.far); tower(bg,ox+123,oy+140,mix(pal.far,'#7a8a9a',0.3));
+    range(bg,0,bw,gy-40,70,ox*0.012+1.3,pal.far); tower(bg,ox+4,oy+168,mix(pal.far,'#7a8a9a',0.3));
     range(bg,0,bw,gy-10,56,ox*0.012+4.1,pal.near);
     farCity(bg,0,bw,gy,pal,7);
-    apartment(bg,ox-190,oy+92,92,gy,pal,1); apartment(bg,ox-78,oy+80,74,gy,pal,2); apartment(bg,ox-300,oy+120,80,gy,pal,3);
+    apartment(bg,ox-190,oy+92,92,gy,pal,1); apartment(bg,ox-100,oy+80,74,gy,pal,2); apartment(bg,ox-300,oy+120,80,gy,pal,3);
     apartment(bg,ox+188,oy+72,78,gy,pal,4); apartment(bg,ox+278,oy+88,66,gy,pal,5); apartment(bg,ox+360,oy+110,90,gy,pal,6);
     tree(bg,ox-55,gy,1,pal); tree(bg,ox+252,gy,1,pal); tree(bg,ox-130,gy,1,pal); tree(bg,ox+330,gy,1,pal);
     // 인도
@@ -198,11 +217,11 @@ function Intro(){
     for(var r=0; gy+r*12<bh; r++) for(var px=(r%2)*14 - (ox%28); px<bw; px+=28) R(bg,px,gy+2+r*12,1,10,pl);
     tree(bg,ox-2,gy,1,pal); tree(bg,ox+198,gy,1,pal);
     bg.drawImage(fac,ox+FACADE.x-5,oy+FACADE.top-1);
-    if(signEl){ bg.font='16px NeoDGM, sans-serif'; bg.textAlign='center'; bg.textBaseline='middle'; bg.fillStyle='#5c4a3a';
-      var tx=signEl.textContent||'', tw=bg.measureText(tx).width, sc=Math.min(1,(FACADE.w-80)/Math.max(1,tw));
-      bg.save(); bg.translate(ox+FACADE.x+FACADE.w/2, oy+FACADE.top+115); bg.scale(sc,1); bg.fillText(tx,0,0); bg.restore(); bg.textAlign='left'; }
+    if(signEl){ bg.font='16px NeoDGM, sans-serif'; bg.textAlign='center'; bg.textBaseline='middle'; bg.fillStyle=pal.glow>0.5?'#ffe6a0':'#e8cf8a';
+      var tx=signEl.textContent||'', tw=bg.measureText(tx).width, sc=Math.min(1,(FACADE.w-50)/Math.max(1,tw));
+      bg.save(); bg.translate(ox+FACADE.x+FACADE.w/2, oy+FACADE.top+FACADE.signY); bg.scale(sc,1); bg.fillText(tx,0,0); bg.restore(); bg.textAlign='left'; }
     lampPost(bg,ox+4,gy+8,pal); lampPost(bg,ox+192,gy+8,pal);
-    bg.drawImage(plant,ox+28,gy-14); bg.drawImage(plant,ox+150,gy-14);
+    bg.drawImage(plant,ox+56,gy-14); bg.drawImage(plant,ox+124,gy-14);
     // 사장님 (가끔 눈을 깜빡인다)
     if(now>blinkAt+3600) blinkAt=now+Math.random()*1500;
     var bimg=(now>blinkAt&&now<blinkAt+150)?boss.blink:boss.down[0];
