@@ -14858,13 +14858,17 @@ function hitProfile(F,p){
   return null;
 }
 function onSwitch(F,p){ var s=F.switchRect; return p.x>=s.x-6&&p.x<=s.x+s.w+6&&p.y>=s.y-6&&p.y<=s.y+s.h+6; }
+// 엘리베이터를 누르면 메뉴의 '엘리베이터'와 같이 층 고르는 창이 뜬다 (3층은 왼쪽 아래 홀, 2층은 왼쪽 위)
+var ELEV_RECT={ '3':{x:32,y:22*T,w:128,h:96}, '2':{x:32,y:0,w:128,h:96} };
+function onElevator(F,p){ var r=ELEV_RECT[F.key]; return !!r && p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h; }
 cvs.addEventListener('click', function(e){
   var F=activeFloor(); if(!F) return;
   var p=artXY(e);
   if(onSwitch(F,p)){ e.stopPropagation(); var sw=byId(F.switchEl); if(sw) sw.dispatchEvent(new MouseEvent('click',{bubbles:true})); return; }
+  if(onElevator(F,p)){ e.stopPropagation(); var eb=byId('elevBtn'); if(eb && !eb.disabled) eb.click(); return; }
   var id=hitProfile(F,p); if(id) B.openProfile(id);
 });
-cvs.addEventListener('mousemove', function(e){ var F=activeFloor(); if(!F) return; var p=artXY(e); cvs.style.cursor=(onSwitch(F,p)||hitProfile(F,p))?'pointer':'default'; });
+cvs.addEventListener('mousemove', function(e){ var F=activeFloor(); if(!F) return; var p=artXY(e); cvs.style.cursor=(onSwitch(F,p)||onElevator(F,p)||hitProfile(F,p))?'pointer':'default'; });
 
 requestAnimationFrame(frame);
 window.__pixOffice = { floors:FLOORS, actors:FLOORS['3'].actors, robot:FLOORS['3'].robot };
