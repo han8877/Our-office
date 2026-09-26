@@ -589,9 +589,27 @@ function pElevator(open,floor){ return obj(128,96,function(g){
 // ---- 벽에 거는 것 ----
 function pLogoBoard(){ return obj(168,34,function(g){ R(g,0,0,168,34,'#8a6048'); R(g,2,2,164,30,'#a87a5c'); R(g,4,4,160,1,'#c49a7c'); R(g,4,29,160,1,'#6e4a36'); disc(g,8,8,1,'#e8c46a'); disc(g,159,8,1,'#e8c46a'); disc(g,8,25,1,'#e8c46a'); disc(g,159,25,1,'#e8c46a'); }); }
 function pAC(){ return obj(88,24,function(g){ R(g,0,0,88,24,'#fbfbf9'); R(g,0,0,88,2,'#ffffff'); R(g,0,16,88,6,'#eceeea'); R(g,4,18,80,1,'#b9c2c8'); R(g,4,20,80,1,'#b9c2c8'); R(g,0,22,88,2,'#d4d7d2'); P(g,80,6,'#5ad07a'); R(g,6,6,20,2,'#e2e5e1'); }); }
-function pPainting(){ return obj(56,40,function(g){ R(g,0,0,56,40,'#d9a64a'); R(g,0,0,56,2,'#f2cc72'); R(g,2,2,52,36,'#c08a36'); R(g,4,4,48,32,'#bfe6f7');
-  for(var x=0;x<48;x++){ var h1=Math.round(12+7*Math.sin(x*0.18)), h2=Math.round(6+4*Math.sin(x*0.33+1)); R(g,4+x,36-h1,1,h1,'#8ab8a8'); R(g,4+x,36-h1,1,1,'#ffffff'); R(g,4+x,36-h2,1,h2,'#6aa870'); }
-  disc(g,40,11,4,'#ffe58a'); R(g,10,9,8,2,'#ffffff'); R(g,8,11,12,2,'#ffffff'); R(g,4,34,48,2,'#f28aa8'); }); }
+function pPainting(kind){ return obj(56,40,function(g){ R(g,0,0,56,40,'#d9a64a'); R(g,0,0,56,2,'#f2cc72'); R(g,2,2,52,36,'#c08a36');
+  if(kind==='seoul'){                                              // 남산 서울타워: 노을 하늘, 남산, 도심, 한강
+    vgrad(g,4,4,48,32,'#f7cdb8','#c8e2f2',6);
+    disc(g,12,11,3,'#fff0c8'); R(g,34,8,8,1,'#ffffff'); R(g,32,9,12,1,'#ffffff');
+    for(var x=0;x<48;x++){ var h=Math.round(15-Math.pow((x-22)/9,2)); if(h>3) R(g,4+x,31-h,1,h,'#7aa878'); }
+    for(var x2=0;x2<48;x2++){ var h2=Math.round(9-Math.pow((x2-22)/14,2)); if(h2>2) R(g,4+x2,31-h2,1,h2,'#5a9060'); }
+    R(g,25,5,1,5,'#e8e4dc'); P(g,25,4,'#e05a5a'); R(g,23,10,5,3,'#f4f1ea'); R(g,23,12,5,1,'#b8b2a6'); R(g,24,13,3,5,'#fbfaf6'); R(g,23,18,5,1,'#d8d2c6');
+    var bc=['#a8b4c8','#8e9cb4','#b8c2d4','#98a6be'];
+    for(var b2=0;b2<10;b2++){ var bw=3+(b2%3), bh=4+Math.floor(rnd(b2*3.1)*6), bx=4+b2*5; R(g,bx,31-bh,bw,bh,bc[b2%4]); P(g,bx+1,31-bh+2,'#fff2c0'); }
+    R(g,4,31,48,5,'#9ac8e0'); R(g,8,33,10,1,'#d8eef8'); R(g,30,34,12,1,'#d8eef8'); }
+  else if(kind==='tokyo'){                                         // 도쿄타워: 파란 하늘, 후지산, 빨강·흰 철탑
+    vgrad(g,4,4,48,32,'#a8d4f0','#e4f2fa',6); R(g,8,8,9,1,'#ffffff'); R(g,6,9,13,1,'#ffffff');
+    tri(g,4,32,17,14,32,32,'#9aaec8'); tri(g,13,19,17,14,21,19,'#ffffff'); P(g,15,20,'#ffffff'); P(g,19,20,'#ffffff');
+    for(var y=5;y<32;y++){ var w=1+Math.round((y-5)*0.38), c=(y===9||y===10||y===18||y===27||y===28)?'#fbfaf6':'#e8503a'; R(g,40-(w>>1),y,w,1,c);
+      if(w>4){ P(g,40,y,(y%2)?c:'#c8402a'); } }
+    R(g,37,13,7,2,'#fbfaf6'); R(g,33,21,15,3,'#fbfaf6'); R(g,33,23,15,1,'#c8c2b8'); P(g,40,4,'#e8503a');
+    var bc2=['#b8c2d4','#a0acc2','#c8d0de'];
+    for(var b3=0;b3<9;b3++){ var bw2=3+(b3%2), bh2=3+Math.floor(rnd(b3*5.3)*5), bx2=4+b3*5; if(bx2>31&&bx2<46) bh2=Math.min(bh2,3); R(g,bx2,36-bh2,bw2,bh2,bc2[b3%3]); P(g,bx2+1,36-bh2+1,'#fff2c0'); } }
+  else { R(g,4,4,48,32,'#bfe6f7');
+    for(var x3=0;x3<48;x3++){ var h1=Math.round(12+7*Math.sin(x3*0.18)), h3=Math.round(6+4*Math.sin(x3*0.33+1)); R(g,4+x3,36-h1,1,h1,'#8ab8a8'); R(g,4+x3,36-h1,1,1,'#ffffff'); R(g,4+x3,36-h3,1,h3,'#6aa870'); }
+    disc(g,40,11,4,'#ffe58a'); R(g,10,9,8,2,'#ffffff'); R(g,8,11,12,2,'#ffffff'); R(g,4,34,48,2,'#f28aa8'); } }); }
 function pWhiteboard(){ return obj(132,52,function(g){ R(g,0,0,132,44,'#c3c9ce'); R(g,0,0,132,2,'#eef1f3'); R(g,3,3,126,38,'#ffffff');
   R(g,10,10,40,2,'#3a6fd0'); R(g,10,16,56,2,'#3a6fd0'); R(g,10,22,32,2,'#e05050'); R(g,10,28,48,2,'#3a3a3a'); R(g,10,34,24,2,'#2fa060');
   R(g,84,8,34,26,'#fff3a0'); R(g,84,8,34,3,'#ffe46a'); R(g,88,15,26,1,'#c9a830'); R(g,88,20,22,1,'#c9a830'); R(g,88,25,24,1,'#c9a830');
@@ -915,9 +933,9 @@ block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0
 function wallItem(img,x,y){ bgc.drawImage(img,x-1,y-1); }
 wallItem(pLogoBoard(),40,32); SIGNS.push(['끄적끄적문구',40+84,32+17]);
 wallItem(pAC(),220,30);
-wallItem(pPainting(),21*T+16,30);
+wallItem(pPainting('seoul'),21*T+16,30);
 wallItem(pWhiteboard(),29*T+10,28);
-wallItem(pPainting(),24*T+4,30);
+wallItem(pPainting('tokyo'),24*T+4,30);
 wallItem(pSwitch(),SWITCH.x,SWITCH.y);
 
 // ---- 칸막이 ----
