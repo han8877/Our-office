@@ -10233,7 +10233,7 @@
 
       var avatar = document.createElement('div');
       avatar.className = 'rosterAvatar';
-      avatar.innerHTML = avatarSVG(false);
+      avatar.innerHTML = faceAvatar(c);
 
       var name = document.createElement('span');
       name.className = 'rosterName';
@@ -10433,6 +10433,42 @@
     return { id:'team_'+tk, name:teamRoomLabels[tk], isRoom:true, teamKey:tk, avatar:'#c9c2b0' };
   });
 
+  // 프로필 사진: 사무실 픽셀 그림의 얼굴 (사람을 못 찾으면 기본 실루엣)
+  // 얼굴은 4배로 크게 그려 두고 브라우저가 줄여 보여주게 해서 38px·30px 어디서나 또렷하다
+  var faceCache = {};
+  function faceLookFor(c){
+    var PO = window.PixOffice; if(!PO || !c) return null;
+    if(c.isBoss || c.id === 'boss') return { id:'faceBoss', kind:'bosstiger', shirt:'#96897a', acc:'glasses' };
+    if(c.floor2){ if(c.f2id === 'guard') return /표/.test(c.name) ? PO.F2LOOK.guardLeo : PO.F2LOOK.guard; return PO.F2LOOK[c.f2id]; }
+    for(var i = 0; i < PO.STAFF.length; i++) if(PO.STAFF[i].id === c.id) return PO.STAFF[i];
+    return null;
+  }
+  function faceURL(look){
+    if(faceCache[look.id]) return faceCache[look.id];
+    var PO = window.PixOffice, cp = {}; for(var k in look) cp[k] = look[k];
+    var head = PO.buildHead(cp), hg = head.getContext('2d'), d = hg.getImageData(0,0,head.width,head.height).data;
+    var x0 = 99, y0 = 99, x1 = 0, y1 = 0;
+    for(var y = 0; y < head.height; y++) for(var x = 0; x < head.width; x++) if(d[(y*head.width+x)*4+3] > 0){ if(x<x0)x0=x; if(y<y0)y0=y; if(x>x1)x1=x; if(y>y1)y1=y; }
+    var S = 34, Z = 4, c = document.createElement('canvas'); c.width = c.height = S*Z;
+    var g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+    g.fillStyle = PO.mix(look.scarf || look.shirt || '#c9c2b4', '#ffffff', 0.72); g.fillRect(0, 0, S*Z, S*Z);   // 바탕: 옷 색 (흰 셔츠인 안내 직원은 스카프 색)
+    var w = x1-x0+1, h = y1-y0+1, ox = Math.round((S-w)/2), oy = S-h+1;   // 가운데, 턱은 아래 가장자리에 살짝 걸친다
+    g.drawImage(head, x0, y0, w, h, ox*Z, oy*Z, w*Z, h*Z);
+    return (faceCache[look.id] = c.toDataURL());
+  }
+  function faceAvatar(c){
+    var look = faceLookFor(c);
+    if(!look) return avatarSVG(false);
+    try{ return '<img src="'+faceURL(look)+'" alt="" style="width:100%;height:100%;display:block;border-radius:50%;">'; }
+    catch(e){ return avatarSVG(false); }
+  }
+  // 대화 속 보낸 사람 이름 → 연락처 (이름은 바뀔 수 있어서 그때그때 찾는다)
+  function faceAvatarByName(name){
+    for(var i = 0; i < messengerContacts.length; i++) if(messengerContacts[i].name === name) return faceAvatar(messengerContacts[i]);
+    if(name === '보안요원') return faceAvatar({ floor2:true, f2id:'guard', name:name });
+    return avatarSVG(false);
+  }
+
   // 프로필: 회색 원 + 사람 실루엣 (그룹방은 사람 여럿 아이콘)
   function avatarSVG(isRoom){
     if(isRoom){
@@ -10470,7 +10506,7 @@
 
     var avatar = document.createElement('div');
     avatar.className = 'chatListAvatar';
-    avatar.innerHTML = avatarSVG(!!target.isRoom);
+    avatar.innerHTML = target.isRoom ? avatarSVG(true) : faceAvatar(target);
 
     var mid = document.createElement('div');
     mid.className = 'chatListMid';
@@ -10580,7 +10616,7 @@
         if(!m.mine){
           var av = document.createElement('div');
           av.className = 'chatAvatar';
-          av.innerHTML = avatarSVG(false);
+          av.innerHTML = faceAvatarByName(m.from);
           row.appendChild(av);
         }
         var bwrap = document.createElement('div');
@@ -10612,7 +10648,7 @@
       tRow.className = 'chatMsgRow';
       var tAv = document.createElement('div');
       tAv.className = 'chatAvatar';
-      tAv.innerHTML = avatarSVG(false);
+      tAv.innerHTML = faceAvatarByName(tp.name);
       tRow.appendChild(tAv);
       var tWrap = document.createElement('div');
       tWrap.className = 'chatBubbleWrap';
