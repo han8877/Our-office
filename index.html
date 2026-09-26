@@ -546,6 +546,9 @@
   #dayLogOverlay .dayLogRow{ color:#22333f; border-bottom:0.5px solid #e3ecf3; background:#fff; border-radius:8px; padding:7px 9px; }
   .noteItem{ border:0.5px solid #e3ecf3; border-radius:10px; padding:10px 11px; font-size:12.5px; color:#22333f; background:#fff; line-height:1.5; }
   .noteItem .noteMeta{ font-size:10.5px; color:#8fa6b6; margin-bottom:4px; }
+  .noteItem{ display:flex; gap:10px; align-items:flex-start; }
+  .noteAvatar{ width:34px; height:34px; border-radius:50%; flex-shrink:0; overflow:hidden; }
+  .noteText{ flex:1; min-width:0; word-break:break-all; }
   #noteBoxOverlay .mail-head, #noteComposeOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
   #noteBoxOverlay .mail-head button, #noteComposeOverlay .mail-head button{ color:#fff; }
   #noteBoxOverlay .mail-head #noteBoxCloseX, #noteComposeOverlay .mail-head #noteComposeCloseX{ color:#cfe6f5; }
@@ -10366,13 +10369,20 @@
       arr.forEach(function(n){
         var item = document.createElement('div');
         item.className = 'noteItem';
+        var av = document.createElement('div');
+        av.className = 'noteAvatar';
+        av.innerHTML = faceAvatarByName(type==='inbox' ? n.from : n.to);   // 받은 쪽지는 보낸 사람, 보낸 쪽지는 받는 사람 얼굴
+        var txt = document.createElement('div');
+        txt.className = 'noteText';
         var meta = document.createElement('div');
         meta.className = 'noteMeta';
         meta.textContent = type==='inbox' ? (n.from+' 보냄') : (n.to+'에게 보냄');
         var body = document.createElement('div');
         body.textContent = n.body;
-        item.appendChild(meta);
-        item.appendChild(body);
+        txt.appendChild(meta);
+        txt.appendChild(body);
+        item.appendChild(av);
+        item.appendChild(txt);
         list.appendChild(item);
       });
     }
@@ -10469,6 +10479,25 @@
     return avatarSVG(false);
   }
 
+  // 팀 채팅방 아이콘: 노트팀 노트 · 스티커팀 스티커 · 경영지원팀 돈 · 홍보팀 마이크 (팀마다 연한 바탕색)
+  var ROOM_ICON = {
+    note:   { bg:'#E4F2E7', fg:'#3E8A5A', d:'<rect x="12.5" y="9" width="15" height="20" rx="2" fill="#fff"/>'
+              + '<circle cx="12.5" cy="12.5" r="1.3"/><circle cx="12.5" cy="17" r="1.3"/><circle cx="12.5" cy="21.5" r="1.3"/><circle cx="12.5" cy="26" r="1.3"/>'
+              + '<path d="M16.5 14.5 h7 M16.5 18.5 h7 M16.5 22.5 h4.5"/>' },
+    sticker:{ bg:'#FBE7EE', fg:'#C4507A', d:'<path d="M11 12 a3 3 0 0 1 3 -3 h11 a3 3 0 0 1 3 3 v8 l-8 8 h-6 a3 3 0 0 1 -3 -3 z" fill="#fff"/>'
+              + '<path d="M28 20 h-5 a3 3 0 0 0 -3 3 v5" fill="#F7C9D8"/>'
+              + '<path d="M19 12.5 l1.3 2.7 3 .4 -2.2 2.1 .5 3 -2.6 -1.4 -2.6 1.4 .5 -3 -2.2 -2.1 3 -.4 z" stroke-width="1.3" stroke-linejoin="round"/>' },
+    biz:    { bg:'#FBF1DA', fg:'#A8741C', d:'<rect x="8" y="12" width="17" height="11" rx="1.8" fill="#fff"/><circle cx="16.5" cy="17.5" r="2.4"/>'
+              + '<circle cx="25.5" cy="23.5" r="6.3" fill="#FCE3A4"/><path d="M22.4 20.8 l1.4 5.2 1.7 -4 1.7 4 1.4 -5.2 M22 22.9 h7 M22.3 24.5 h6.4" stroke-width="1.2" stroke-linejoin="round"/>' },
+    pr:     { bg:'#EEE8F8', fg:'#6E56B0', d:'<rect x="15" y="7.5" width="8" height="14" rx="4" fill="#fff"/><path d="M15 12.5 h3 M15 16 h3"/>'
+              + '<path d="M11.5 17 a7.5 7.5 0 0 0 15 0 M19 24.5 v4 M15 29 h8"/>' }
+  };
+  function roomAvatarSVG(teamKey){
+    var ic = ROOM_ICON[teamKey]; if(!ic) return avatarSVG(true);
+    return '<svg viewBox="0 0 38 38" width="100%" height="100%"><circle cx="19" cy="19" r="19" fill="'+ic.bg+'"/>'
+      + '<g fill="none" stroke="'+ic.fg+'" stroke-width="1.6" stroke-linecap="round">'+ic.d.replace(/<circle cx="12\.5"/g,'<circle fill="'+ic.fg+'" stroke="none" cx="12.5"')+'</g></svg>';
+  }
+
   // 프로필: 회색 원 + 사람 실루엣 (그룹방은 사람 여럿 아이콘)
   function avatarSVG(isRoom){
     if(isRoom){
@@ -10506,7 +10535,7 @@
 
     var avatar = document.createElement('div');
     avatar.className = 'chatListAvatar';
-    avatar.innerHTML = target.isRoom ? avatarSVG(true) : faceAvatar(target);
+    avatar.innerHTML = target.isRoom ? roomAvatarSVG(target.teamKey) : faceAvatar(target);
 
     var mid = document.createElement('div');
     mid.className = 'chatListMid';
