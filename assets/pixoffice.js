@@ -774,6 +774,11 @@ function buildChar(p, dir, frame, blink){
   if(dir==='right'){ var m=cv(SPR_W,SPR_H), mg=m.getContext('2d'); mg.translate(SPR_W,0); mg.scale(-1,1); mg.drawImage(c,0,0); return m; }
   return c;
 }
+// 머리만 (앱 아이콘 등에 쓴다)
+function buildHead(p){
+  var c=cv(SPR_W,SPR_W), g=c.getContext('2d'), K=KIND[p.kind]; g.translate(1,SPR_TOP);
+  drawHead(g,K,p,'down',false); outline(c,'#3a2436'); return c;
+}
 function buildSprites(p){
   p.pantsC = p.pants || PANTS[hash(p.id)%PANTS.length];
   var S={}; ['down','up','left','right'].forEach(function(d){ S[d]=[0,1,2].map(function(f){ return buildChar(p,d,f,false); }); });
@@ -1237,7 +1242,7 @@ window.PixOffice={
   bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, F2LOOK:F2LOOK,
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
-  buildSprites:buildSprites, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
+  buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
   phase:phase, SKY:SKY, TINT:TINT, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();

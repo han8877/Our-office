@@ -14206,14 +14206,26 @@ function fixGoal(F,a,g){
 }
 function setGoal(F,a,g,now){
   if(sameGoal(a.goal,g)) return;
-  fixGoal(F,a,g); a.goal=g;
+  fixGoal(F,a,g);
   var target = g.seat ? { c:a.seat.c, r:a.seat.r } : { c:g.c, r:g.r };
-  var from = a.sitting ? { c:a.seat.c, r:a.seat.r } : currentTile(a);
+  var walking = !!a.path, from;
+  if(a.sitting) from = { c:a.seat.c, r:a.seat.r };
+  else if(walking) from = a.path[Math.min(a.step+1, a.path.length-1)];     // 가던 칸에서 이어 간다
+  else from = currentTile(a);
   var path = PO.bfs({c:from.c,r:from.r}, target, F.map);
-  if(!path || path.length<2){ arrive(a); return; }
-  a.path=path; a.step=0; a.stepStart=now; a.fromSeat=a.sitting; a.sitting=false; a.onFurn=false;
+  if(!path){ return; }                                                     // 길이 없으면 제자리에서 다음 판단을 기다린다
+  a.goal=g;
+  if(walking) path.unshift({c:from.c,r:from.r});                           // 첫 걸음은 지금 자리 → 가던 칸
+  if(path.length<2 && !walking && !a.sitting){ var p=goalPos(a,g), d=Math.abs(p.x-a.x)+Math.abs(p.feet-a.feet); if(d<2){ arrive(a); return; } path=[from,from]; }
+  if(path.length<2) path=[from,from];
+  // 지금 서 있는 곳(픽셀 좌표)에서 첫 칸까지 한 걸음 걷고, 그다음부터 칸을 따라간다
+  a.segA = a.sitting ? { x:a.seat.seatX, feet:a.seat.seatFeet } : { x:a.x, feet:a.feet };
+  var first = tilePos(a, path[1]); if(path.length===2) first = goalPos(a,g);
+  var dist = Math.abs(first.x-a.segA.x)+Math.abs(first.feet-a.segA.feet);
+  a.firstMs = Math.max(60, Math.min(a.stepMs*1.5, a.stepMs*dist/T));
+  a.path=path; a.step=0; a.stepStart=now; a.sitting=false; a.onFurn=false;
 }
-function placeAt(F,a,g){ fixGoal(F,a,g); a.goal=g; a.path=null; arrive(a); }
+function placeAt(F,a,g){ fixGoal(F,a,g); a.goal=g; a.path=null; a.pend=null; arrive(a); }
 function arrive(a){
   var g=a.goal; a.path=null; a.frame=0;
   if(!g) return;
@@ -14225,16 +14237,27 @@ function arrive(a){
 function step(a,now){
   if(now>a.nextBlink){ a.blinkUntil=now+150; a.nextBlink=now+2400+Math.random()*3600; }
   if(!a.path) return;
-  var k=(now-a.stepStart)/a.stepMs;
-  while(k>=1&&a.step<a.path.length-1){ a.step++; a.stepStart+=a.stepMs; k-=1; }
+  var dur=(a.step===0)?a.firstMs:a.stepMs, k=(now-a.stepStart)/dur;
+  while(k>=1&&a.step<a.path.length-1){ a.stepStart+=dur; a.step++; dur=a.stepMs; k=(now-a.stepStart)/dur; }
   if(a.step>=a.path.length-1){ arrive(a); return; }
   var t0=a.path[a.step], t1=a.path[a.step+1], A=tilePos(a,t0), Bp=tilePos(a,t1);
-  if(a.step===0 && a.fromSeat) A={ x:a.seat.seatX, feet:a.seat.seatFeet };
+  if(a.step===0 && a.segA) A=a.segA;
   if(a.step===a.path.length-2) Bp=goalPos(a,a.goal);
   a.x=A.x+(Bp.x-A.x)*k; a.feet=A.feet+(Bp.feet-A.feet)*k;
-  a.dir = t1.c>t0.c?'right' : t1.c<t0.c?'left' : t1.r<t0.r?'up' : 'down';
+  var ddx=Bp.x-A.x, ddy=Bp.feet-A.feet;
+  if(Math.abs(ddx)+Math.abs(ddy)>1) a.dir = Math.abs(ddx)>=Math.abs(ddy) ? (ddx>0?'right':'left') : (ddy<0?'up':'down');
   a.frame=[1,0,2,0][Math.floor(now/a.stepMs*2)%4]; a.tile={c:t0.c,r:t0.r};
   if(a.leaveUntil && now>a.leaveUntil && a.leaving){ a.visible=false; a.leaving=false; a.path=null; }
+}
+
+// 같은 목적지가 두 번 연달아 읽혀야 받아들인다
+function goalKey(g){ return g.seat ? 'seat' : g.c+','+g.r; }
+function stable(a,g){
+  var k=goalKey(g);
+  if(a.goal && !a.goal.seat && !g.seat && a.goal.wantC===g.c && a.goal.wantR===g.r){ a.pend=null; return false; }
+  if(a.goal && a.goal.seat && g.seat){ a.pend=null; return false; }
+  if(a.pend===k){ a.pend=null; return true; }
+  a.pend=k; return false;
 }
 
 // ---- SVG 상태 읽기 (초당 여러 번) ----
@@ -14260,21 +14283,21 @@ function poll(F,now){
     var wasAway=a.svgAway; a.svgAway = present && away;
     if(present && p){
       var g=mapGoal(F,a,p.x,p.y);
-      a.stepMs=300;
-      if(!a.visible){ a.visible=true; a.leaving=false; placeAt(F,a,g); }
-      else { a.leaving=false; setGoal(F,a,g,now); }
+      if(a.leaving){ a.stepMs=300; }
+      if(!a.visible){ a.visible=true; a.leaving=false; a.stepMs=300; placeAt(F,a,g); }
+      else if(stable(a,g)){ a.leaving=false; a.stepMs=300; setGoal(F,a,g,now); }
     } else if(a.visible && !a.leaving){
       // 자리에서 바로 사라진 것과 걸어 나가다 사라진 것을 구분한다.
       // 걸어 나가던 중이면 엘리베이터까지 마저 걸어가서 사라진다
       var walkOff = a.staff ? wasAway : !!a.path;
       if(!walkOff){ a.visible=false; a.goal=null; }
-      else { a.leaving=true; a.stepMs=200; a.leaveUntil=now+14000; setGoal(F,a,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now); }
+      else { a.leaving=true; a.stepMs=170; a.leaveUntil=now+24000; a.pend=null; setGoal(F,a,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now); }
     }
     readBubble(a, F.bubble(id));
   }
   var rh=byId(F.robotEl);
   if(rh){ var rp=B.currentXY(rh);
-    if(rp){ var rg=mapGoal(F,F.robot,rp.x,rp.y); if(!F.robot.goal) placeAt(F,F.robot,rg); else setGoal(F,F.robot,rg,now); }
+    if(rp){ var rg=mapGoal(F,F.robot,rp.x,rp.y); if(!F.robot.goal) placeAt(F,F.robot,rg); else if(stable(F.robot,rg)) setGoal(F,F.robot,rg,now); }
     readBubble(F.robot, byId(F.robotBub)); }
   var lo=byId(F.light); F.lightDim = lo ? (parseFloat(getComputedStyle(lo).opacity)||0) : 0;
   if(F.key==='3'){
