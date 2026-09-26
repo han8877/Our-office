@@ -1008,6 +1008,7 @@ onTile(pPlant('monstera','#f4f1ea'),24,25,24,25); onTile(pPlant('bush','#9fd4c0'
 // 탕비실
 onTile(pFridge(),28,24,29,25); onTile(pSink(),30,24,31,24); onTile(pVending(),32,24,33,25); onTile(pMicro(),34,24,34,24);
 onTile(pSmallTable(),29,27,30,27); onTile(pCoffeeBar(),26,28,27,28); onTile(pRecycle(),32,28,34,28); onTile(pPlant('tall','#f4f1ea'),34,26,34,26); onTile(pChairN('#e8d4bf'),29,26,29,26,-8); onTile(pChairS('#e8d4bf'),30,28,30,28);
+blocked[26][29]=0;   // 탕비실 위쪽 의자 칸은 비켜 지나갈 수 있게 (안 그러면 자판기·분리수거 쪽이 막힌다)
 // ---- 일반 사무실 소품 ----
 wallItem(pCorkBoard(),26*T+4,26);
 // 노트팀: 공용 프린터, 서류 캐비닛

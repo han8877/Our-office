@@ -6593,7 +6593,7 @@
       lines:['뭐 마시지', '당 충전!', '어 품절이네'] },
     { key:'plotter', idleAfter: 200000, spot:{x:520,y:472}, stay:4000, label:'플로터',
       lines:['스티커 시안 뽑는 중', '칼선 잘 나왔나', '색감 괜찮네'] },
-    { key:'board',   idleAfter: 225000, spot:{x:760,y:90},  stay:4000, label:'게시판',
+    { key:'board',   idleAfter: 225000, spot:{x:735,y:160},  stay:4000, label:'게시판',
       lines:['공지 뭐 새로 붙었나', '다음 주 일정 확인', '쇼룸 신상 진열 좋다'] },
     { key:'fridge',  idleAfter: 240000, spot:{x:800,y:700}, stay:3400, label:'냉장고',
       lines:['내 요거트 어디 갔지', '이름 써놨는데..', '시원하다'] },
@@ -7041,6 +7041,85 @@
     showBubble(a, pair[0]);
     setTimeout(function(){ showBubble(b, pair[1]); }, 1300);
   }, 20000);
+
+  // ===== 둘이 같이 걸으며 나누는 대화 =====
+  // 한 명이 말을 걸고 둘이 함께 사무실 어딘가로 가서 이야기를 나눈 뒤 각자 자리로 돌아간다.
+  // go = 걸어가며, at = 도착해서, back = 헤어지며 ([0]=말 건 사람, [1]=따라간 사람)
+  var WALK_TALKS = [
+    { spot:{x:800,y:755}, go:['커피 한 잔 하러 갈래요?', '좋아요, 마침 졸렸어요'],
+      at:[['원두 바뀐 거 알아요?', '어쩐지 더 고소하더라'], ['오후엔 샷 추가 필수죠', '저는 오늘 두 샷이요']], back:['자, 다시 달려봅시다', '파이팅!'] },
+    { spot:{x:760,y:320}, go:['잠깐 라운지에서 얘기 좀 해요', '네, 신제품 건이죠?'],
+      at:[['고양이 라인 반응 좋대요', '다음은 강아지 버전 어때요?'], ['오 그거 괜찮다', '시안 한번 잡아볼게요']], back:['정리해서 공유할게요', '네 좋아요'] },
+    { spot:{x:345,y:160}, go:['바람 좀 쐬러 가요', '좋죠, 눈이 뻑뻑해서'],
+      at:[['오늘 하늘 진짜 맑다', '퇴근하고 산책해야겠어요'], ['점심은 뭐 먹을까요?', '국밥 어때요?']], back:['오케이 국밥 콜', '들어가요~'] },
+    { spot:{x:880,y:420}, go:['창고 재고 같이 봐줄래요?', '네, 뭐 부족해요?'],
+      at:[['스티커 원지가 좀 모자라요', '다음 주 발주 넣을게요'], ['포장 박스도요', '메모해둘게요']], back:['덕분에 살았어요', '별말씀을요'] },
+    { spot:{x:735,y:160}, go:['쇼룸 진열 좀 봐주실래요?', '가요 가요'],
+      at:[['이 노트 여기 두는 게 나아요?', '눈높이가 더 좋겠네요'], ['가격표도 새로 뽑을까요', '네, 그게 깔끔하겠어요']], back:['역시 보는 눈이 있어', 'ㅎㅎ 들어가요'] },
+    { spot:{x:455,y:545}, go:['출력하러 가는 김에 같이 가요', '저도 뽑을 거 있어요'],
+      at:[['색이 화면이랑 좀 다르네', '프린터 프로필 바꿔봐요'], ['아 그러네, 훨씬 낫다', '역시 설정 문제였어']], back:['고마워요!', '천만에요'] },
+    { spot:{x:348,y:275}, go:['물 마시러 가요', '저도 목말랐어요'],
+      at:[['주말에 뭐 했어요?', '집에서 푹 잤어요'], ['저는 이사했어요', '헉, 고생했겠다']], back:['다음엔 같이 놀러가요', '좋아요!'] },
+    { spot:{x:590,y:715}, go:['회의실에서 잠깐 맞춰봐요', '네, 자료 챙겨갈게요'],
+      at:[['일정 이대로 가능할까요?', '조금 빠듯하긴 해요'], ['그럼 하루만 늦춰요', '네, 그게 좋겠어요']], back:['정리 감사해요', '고생하셨어요'] }
+  ];
+  var walkTalkOn = false;
+  function startWalkTalk(){
+    if(walkTalkOn || wanderOn) return;
+    var pool = staff.filter(function(s){
+      if(!charEl(s.id) || !charEl(s.id).classList.contains('present')) return false;
+      if(isBusy(s.id) || stretchIds[s.id] || errandActive[s.id] || (inMeeting && inMeeting[s.id])) return false;
+      if(overtimeMode) return !!overtimeStaffIds[s.id];
+      return true;
+    });
+    if(pool.length < 2) return;
+    pool.sort(function(){ return Math.random()-0.5; });
+    // 대개는 같은 팀 동료에게 말을 건다
+    var a = pool[0], mates = pool.slice(1).filter(function(s){ return s.teamKey && s.teamKey === a.teamKey; });
+    var b = (mates.length && Math.random() < 0.7) ? mates[0] : pool[1];
+    var t = WALK_TALKS[Math.floor(Math.random()*WALK_TALKS.length)];
+    walkTalkOn = true;
+    [a, b].forEach(function(s){ markBusy(s.id); raiseChar(s); });
+    var arrived = 0, T0 = [];
+    function later(fn, ms){ T0.push(setTimeout(fn, ms)); }
+    // 말 건 사람이 먼저 상대 자리로 가서 부르고, 둘이 같이 출발한다
+    travelTo(a, {x:b.x, y:b.y}, 62, function(){
+      showBubble(a, t.go[0]);
+      later(function(){ showBubble(b, t.go[1]); }, 1600);
+      later(function(){
+        travelTo(b, t.spot, 62, bothThere);
+        later(function(){ travelTo(a, t.spot, 62, bothThere); }, 450);
+      }, 3200);
+    });
+    function bothThere(){
+      if(++arrived !== 2) return;   // 둘 다 닿았을 때 한 번만
+      // 도착하면 번갈아 서너 마디
+      var k = 0;
+      t.at.forEach(function(pair){
+        later(function(){ showBubble(a, pair[0]); }, 900 + k*2600); k++;
+        later(function(){ showBubble(b, pair[1]); }, 900 + k*2600); k++;
+      });
+      later(function(){
+        showBubble(a, t.back[0]);
+        later(function(){ showBubble(b, t.back[1]); }, 1300);
+        later(function(){
+          [a, b].forEach(function(s, i){
+            later(function(){
+              travelTo(s, {x:s.x, y:s.y}, 62, function(){
+                lowerChar(s);
+                if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y};
+                clearBusy(s.id);
+                if(i === 1) walkTalkOn = false;
+              });
+            }, i*500);
+          });
+        }, 2600);
+      }, 900 + k*2600 + 600);
+    }
+    // 혹시 길이 막혀 한 명이 못 닿아도 1분 30초 뒤엔 풀어준다
+    later(function(){ if(arrived < 2){ arrived = 1; bothThere(); } }, 90000);
+  }
+  setInterval(function(){ if(Math.random() < 0.4) startWalkTalk(); }, 40000);
 
   // ===== 명령어 입력: /이름(또는 직책) 메시지 =====
   byId('cmdBtn').addEventListener('click', runCommand);
@@ -8614,9 +8693,9 @@
     { p:{x:345,y:160}, lines:['창문 잠겼나 확인', '주말 거리 한산하네', '햇볕 좋다'] },
     { p:{x:604,y:150}, lines:['사물함 잠금 확인', '누가 우산 두고 갔네', '분실물은 없고'] },
     { p:{x:575,y:300}, lines:['TV 전원 꺼져 있고', '의자 줄 맞춰두자', '월요일 회의 준비 끝'] },
-    { p:{x:760,y:90},  lines:['진열 상품 먼지 털기', '신상 샘플 정리', '가격표가 삐뚤었네'] },
+    { p:{x:735,y:160}, lines:['진열 상품 먼지 털기', '신상 샘플 정리', '가격표가 삐뚤었네'] },
     { p:{x:700,y:200}, lines:['실장님 화이트보드는 그대로', '서류는 건드리면 안 되지', '원탁 정리 끝'] },
-    { p:{x:560,y:730}, lines:['회의실 모니터 끄고', '의자 원위치', '회의실 이상 없음'] },
+    { p:{x:590,y:715}, lines:['회의실 모니터 끄고', '의자 원위치', '회의실 이상 없음'] },
     { p:{x:348,y:275}, lines:['물통 갈 때 됐네', '컵 채워두기', '물 한 잔 마시고'] },
     { p:{x:200,y:520}, lines:['금고 잠김 확인', '세단기 비워야겠다', '서류함도 잠겼고'] },
     { p:{x:520,y:472}, lines:['플로터 칼날 점검', '재단 매트 정리', '출력물 수거 완료'] }
@@ -14350,6 +14429,7 @@ var ANCH3 = anchors([
   [558,700, 18,25,'down',1,{x:18*T, feet:26*T+1}], [615,682, 20,25,'down',1,{x:20*T, feet:26*T+1}], [672,700, 22,25,'down',1,{x:22*T, feet:26*T+1}],
   [558,750, 18,28,'up',1], [615,768, 20,28,'up',1], [672,750, 22,28,'up',1], [560,730, 17,25], [560,700, 17,25],
   // 탕비실
+  [735,160, 25,9,'up'], [590,715, 19,25,'down'],   // 쇼룸 진열대 앞 · 회의실 문 안쪽 (둘 다 걸어서 닿는 자리)
   [747,745, 27,26], [800,700, 28,26,'up'], [800,755, 27,27], [900,700, 31,26], [920,755, 31,27],
   [900,755, 29,26,'down',1,{x:29*T, feet:27*T+1}], [950,755, 30,28,'up',1], [815,690, 30,25,'up'], [873,685, 32,26,'up'],
   [752,700, 28,26,'up'], [925,690, 34,25,'up']
