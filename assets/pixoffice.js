@@ -182,7 +182,7 @@ function pDesk(seed){
     R(g,left?40:18,26,5,5,['#fff09a','#ffc2d4','#bfe8ff'][seed%3]);
   });
 }
-var TEAM_CHAIR = { note:'#3aa58c', biz:'#4d78c0', sticker:'#e4a53a', pr:'#dc6485', lead:'#9c4f64' };
+var TEAM_CHAIR = { note:'#d6d0b4', biz:'#cdc8bc', sticker:'#e4d2ae', pr:'#e0c9bc', lead:'#c8b39c' };   // 모두 베이지 계열: 노트 세이지 · 경영 그레이지 · 스티커 허니 · 홍보 로즈 · 실장 라테
 // 팀 구역을 두르는 간유리 벽: 알루미늄 틀 + 뿌옇게 비치는 유리 (회의실 유리벽과 같은 높이)
 var ALU='#bcc3ca', ALU_HI='#e6eaee', ALU_LO='#8e979f';
 function frostWall(len){ return obj(len,48,function(g,w){          // 가로 벽: 앞에서 본 면
@@ -992,7 +992,7 @@ onTile(pTV(),19,7,20,8); onTile(pPlant('tall','#d9794a'),21,10,21,10);
 // 아트코너
 onTile(pImacDesk(),13,14,14,14); onTile(pSculpture(),16,13,16,14); onTile(pSofa('#9cbcd0'),18,14,21,14);
 // 라운지
-onTile(pLoungeSofa(),26,14,29,14); onTile(pBookshelf(3),31,13,32,14); onTile(pBookshelf(9),33,13,34,14); onTile(pPlant('monstera','#f5b8c8'),25,14,25,14); onTile(pFloorLamp(),23,14,23,14); onTile(pChairN('#e3b04e'),24,14,24,14);
+onTile(pLoungeSofa(),26,14,29,14); onTile(pBookshelf(3),31,13,32,14); onTile(pBookshelf(9),33,13,34,14); onTile(pPlant('monstera','#f5b8c8'),25,14,25,14); onTile(pFloorLamp(),23,14,23,14); onTile(pChairN('#e2cfa6'),24,14,24,14);
 // 경영지원팀
 onTile(pDrawers(),11,17,11,18); onTile(pPlant('tall','#9fd4c0'),1,21,1,21); onTile(pCopier(),9,17,10,17);
 // 스티커팀
@@ -1003,11 +1003,11 @@ onTile(pShelf(1),28,18,30,19); onTile(pShelf(5),32,18,34,19); onTile(pShelf(8),2
 onTile(pPlant('bush','#d9794a'),3,28,3,28);   // 홍보팀은 책상 셋으로 꽉 차서 화분은 엘리베이터 홀로
 // 회의실
 onTile(pMeetTable(),18,26,22,27); onTile(pRollMonitor(),16,26,17,27);
-[18,20,22].forEach(function(c){ onTile(pChairN('#4aa3a0'),c,25,c,25,-8); onTile(pChairS('#4aa3a0'),c,28,c,28); });
+[18,20,22].forEach(function(c){ onTile(pChairN('#d2cbb8'),c,25,c,25,-8); onTile(pChairS('#d2cbb8'),c,28,c,28); });
 onTile(pPlant('monstera','#f4f1ea'),24,25,24,25); onTile(pPlant('bush','#9fd4c0'),24,28,24,28);
 // 탕비실
 onTile(pFridge(),28,24,29,25); onTile(pSink(),30,24,31,24); onTile(pVending(),32,24,33,25); onTile(pMicro(),34,24,34,24);
-onTile(pSmallTable(),29,27,30,27); onTile(pCoffeeBar(),26,28,27,28); onTile(pRecycle(),32,28,34,28); onTile(pPlant('tall','#f4f1ea'),34,26,34,26); onTile(pChairN('#f4c0a8'),29,26,29,26,-8); onTile(pChairS('#f4c0a8'),30,28,30,28);
+onTile(pSmallTable(),29,27,30,27); onTile(pCoffeeBar(),26,28,27,28); onTile(pRecycle(),32,28,34,28); onTile(pPlant('tall','#f4f1ea'),34,26,34,26); onTile(pChairN('#e8d4bf'),29,26,29,26,-8); onTile(pChairS('#e8d4bf'),30,28,30,28);
 // ---- 일반 사무실 소품 ----
 wallItem(pCorkBoard(),26*T+4,26);
 // 노트팀: 공용 프린터, 서류 캐비닛
