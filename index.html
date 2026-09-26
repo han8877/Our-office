@@ -45,9 +45,9 @@
   /* 3층 픽셀 화면: 게임은 지금처럼 SVG에서 돌고, 화면은 그 아래 캔버스(#pixOffice)가 그린다.
      SVG는 투명하게 남겨 두되 전원 패널만 보이게 한다. 누르는 것은 캔버스가 받아 원래 기능으로 넘긴다 */
   #pixOffice{ position:absolute; left:0; top:0; z-index:0; display:block; }
-  #officeSvg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
-  #officeSvg.pixMode, #officeSvg.pixMode *{ pointer-events:none !important; }
-  #officeSvg.pixMode > *{ visibility:hidden; }
+  #officeSvg.pixMode, #floor2Svg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
+  #officeSvg.pixMode, #officeSvg.pixMode *, #floor2Svg.pixMode, #floor2Svg.pixMode *{ pointer-events:none !important; }
+  #officeSvg.pixMode > *, #floor2Svg.pixMode > *{ visibility:hidden; }
   #officeSvg.pixMode > #powerSubPanel{ visibility:visible; }
   #officeSvg.pixMode #powerSubPanel, #officeSvg.pixMode #powerSubPanel *{ pointer-events:auto !important; }
   .office-char{ transition:opacity .9s ease; opacity:0; }
@@ -14014,38 +14014,33 @@
 <script src="assets/pixoffice.js"></script>
 <script>
 // =====================================================================
-//  3층 픽셀 화면
-//  게임은 지금까지처럼 SVG(#officeSvg) 위에서 돌아간다 — 출퇴근·산책·회의·방문객·이벤트 코드는 그대로다.
+//  3층·2층 픽셀 화면
+//  게임은 지금까지처럼 SVG(#officeSvg, #floor2Svg) 위에서 돌아간다 — 출퇴근·산책·회의·방문객·이벤트 코드는 그대로다.
 //  SVG는 투명하게 두고, 이 화면이 그 상태(누가 있는지·어디쯤인지·무슨 말을 하는지)를 읽어서
-//  픽셀 사무실(assets/pixoffice.js) 위에 다시 그린다. 누르는 것도 원래 기능으로 넘겨준다.
+//  픽셀 지도(assets/pixoffice.js) 위에 다시 그린다. 누르는 것도 원래 기능으로 넘겨준다.
 // =====================================================================
 (function(){
 'use strict';
-var PO = window.PixOffice, B = window.__officeBridge;
-var svg = document.getElementById('officeSvg'), stage = document.getElementById('stage');
-if(!PO || !B || !svg || !stage) return;
-
+var PO = window.PixOffice, B = window.__officeBridge, stage = document.getElementById('stage');
+if(!PO || !B || !stage) return;
 var T=PO.T, W=PO.W, H=PO.H, COLS=PO.COLS, ROWS=PO.ROWS, R=PO.R, ell=PO.ell;
-var blocked=PO.blocked, SEATS=PO.SEATS;
 function byId(id){ return document.getElementById(id); }
 
-// ---- 화면 준비: SVG는 투명하게, 캔버스는 그 자리에 ----
+// ---- 화면 준비: 캔버스 하나를 지금 보이는 층의 SVG 자리에 겹친다 ----
 var cvs = document.createElement('canvas');
 cvs.id = 'pixOffice';
 cvs.setAttribute('role','img');
-cvs.setAttribute('aria-label','끄적끄적문구 3층 사무실');
 stage.insertBefore(cvs, stage.firstChild);
 var ctx = cvs.getContext('2d');
 var fbuf = PO.cv(W,H), fb = fbuf.getContext('2d');
-svg.classList.add('pixMode');
-svg.setAttribute('preserveAspectRatio','none');
 if(document.fonts && document.fonts.load) document.fonts.load('16px NeoDGM').catch(function(){});
 
-// ---- 본편 SVG 좌표 → 픽셀 지도 칸 ----
+// ---- SVG 좌표 → 픽셀 지도 칸 ----
 // SVG의 자리(책상·복도·소파·창고…)마다 픽셀 지도에서 같은 역할을 하는 칸을 짝지어 둔다.
 // 캐릭터가 SVG에서 어디에 있든 가장 가까운 자리로 옮겨 그린다.
-// [svgX, svgY, 칸X, 칸Y, 바라보는 쪽, 앉는 자리(가구 위 칸이어도 됨), 발 위치 보정]
-var ANCH = [
+// [svgX, svgY, 칸X, 칸Y, 바라보는 쪽, 가구에 앉는 자리인지, 발 위치 보정]
+function anchors(list){ return list.map(function(a){ return { sx:a[0], sy:a[1], c:a[2], r:a[3], face:a[4]||'down', sit:!!a[5], pt:a[6]||null }; }); }
+var ANCH3 = anchors([
   // 엘리베이터 홀
   [78,770, 3,26,'down'], [150,770, 4,27,'down'], [137,768, 2,27,'down'], [67,700, 4,25,'down'],
   // 위쪽 복도 줄
@@ -14057,7 +14052,8 @@ var ANCH = [
   // 왼쪽 세로 복도 · 라운지 아래 · 회의실과 탕비실 사이
   [67,330, 1,7], [67,540, 1,19], [809,359, 25,13], [930,359, 31,16], [709,720, 26,22],
   // 응접 공간 · 수조 · 정수기 · 창가 · 사물함
-  [115,160, 2,5,'up'], [188,224, 3,5,'up'], [225,196, 7,4,'down',1], [265,196, 8,4,'down',1], [250,175, 8,5,'up'], [250,196, 8,5,'up'],
+  [115,160, 2,5,'up'], [188,224, 3,5,'up'], [225,196, 7,4,'down',1,{x:7*T+16-17, feet:5*T+1}], [265,196, 8,4,'down',1,{x:8*T+16-17, feet:5*T+1}],
+  [250,175, 8,5,'up'], [250,196, 8,5,'up'],
   [348,214, 11,5,'up'], [348,275, 11,5,'up'], [345,160, 14,5,'up'], [400,175, 15,5,'up'], [604,150, 17,5,'up'], [566,180, 16,5,'up'],
   // 노트팀 안
   [300,270, 9,7], [64,300, 1,6],
@@ -14070,7 +14066,8 @@ var ANCH = [
   // 디자인실장실 · 디자인실
   [711,154, 31,10,'up'], [711,210, 33,10,'up'], [700,200, 30,7], [760,90, 27,6],
   // 라운지 소파 (앉는다)
-  [760,320, 25,15,'up'], [778,322, 26,14,'down',1], [815,322, 27,14,'down',1], [851,322, 28,14,'down',1], [910,315, 32,15,'up'],
+  [760,320, 25,15,'up'], [778,322, 26,14,'down',1,{x:26*T+16-17, feet:15*T+1}], [815,322, 27,14,'down',1,{x:27*T+16-17, feet:15*T+1}],
+  [851,322, 28,14,'down',1,{x:28*T+16-17, feet:15*T+1}], [910,315, 32,15,'up'],
   // 재고창고
   [880,420, 31,17,'up'], [900,412, 33,17,'up'], [880,500, 31,20,'up'], [903,500, 27,20,'up'], [890,500, 31,20,'up'],
   [888,528, 31,21,'right'], [880,530, 31,21,'right'], [880,600, 31,22],
@@ -14087,85 +14084,129 @@ var ANCH = [
   [747,745, 27,26], [800,700, 28,26,'up'], [800,755, 27,27], [900,700, 31,26], [920,755, 31,27],
   [900,755, 29,26,'down',1,{x:29*T, feet:27*T+1}], [950,755, 30,28,'up',1], [815,690, 30,25,'up'], [873,685, 32,26,'up'],
   [752,700, 28,26,'up'], [925,690, 34,25,'up']
-].map(function(a){ return { sx:a[0], sy:a[1], c:a[2], r:a[3], face:a[4]||'down', sit:!!a[5], pt:a[6]||null }; });
-B.staff.forEach(function(s){ ANCH.push({ sx:s.x, sy:s.y, desk:s.id }); });
-var LOBBY = { c:3, r:26 };
+]);
+var ANCH2 = anchors([
+  // 엘리베이터 · 왼쪽 복도
+  [85,166, 2,3,'down'], [85,205, 2,4,'down'], [148,176, 6,4,'right'],
+  [85,255, 2,6], [85,340, 2,10], [85,415, 2,13], [85,530, 2,17], [85,620, 2,20],
+  // 안내데스크 앞 · 아트 월 앞
+  [230,255, 8,8], [400,255, 13,8], [560,255, 18,8], [675,255, 21,8], [830,255, 28,8,'up'],
+  // 라운지 옆 · 바와 독서 코너 사이
+  [675,340, 21,11], [675,415, 21,13], [675,509, 21,16], [675,638, 21,20],
+  [770,509, 26,15,'up'], [905,509, 31,15,'up'],
+  [770,638, 26,20], [875,638, 31,20], [770,735, 26,26], [875,735, 31,26],
+  // 라운지 통로
+  [180,415, 7,13], [265,415, 9,12], [325,415, 10,12], [405,415, 12,12], [485,415, 15,12], [525,415, 16,12], [630,415, 19,13],
+  [325,528, 10,16], [395,528, 12,16], [485,528, 15,16],
+  // 앉는 자리: 바 스툴 넷
+  [743,459, 25,13,'up',1,{x:25*T+16-17, feet:13*T+28}], [797,459, 27,13,'up',1,{x:27*T+16-17, feet:13*T+28}],
+  [851,459, 29,13,'up',1,{x:29*T+16-17, feet:13*T+28}], [905,459, 31,13,'up',1,{x:31*T+16-17, feet:13*T+28}],
+  // 독서 코너 암체어 넷
+  [722,661, 24,21,'down',1,{x:24*T+16-17, feet:22*T+1}], [722,757, 24,25,'down',1,{x:24*T+16-17, feet:26*T+1}],
+  [928,661, 33,21,'down',1,{x:33*T+16-17, feet:22*T+1}], [928,757, 33,25,'down',1,{x:33*T+16-17, feet:26*T+1}],
+  // 라운지 소파 (위 3인 · 아래 3인) · 암체어 둘
+  [363,358, 11,10,'down',1,{x:11*T+32-17, feet:11*T+1}], [405,358, 12,10,'down',1,{x:11*T+64-17, feet:11*T+1}], [447,358, 13,10,'down',1,{x:11*T+96-17, feet:11*T+1}],
+  [363,571, 11,18,'up',1,{x:11*T+32-17, feet:18*T+26}], [405,571, 12,18,'up',1,{x:11*T+64-17, feet:18*T+26}], [447,571, 13,18,'up',1,{x:11*T+96-17, feet:18*T+26}],
+  [278,455, 8,14,'down',1,{x:8*T+16-17, feet:15*T+1}], [532,455, 17,14,'down',1,{x:17*T+16-17, feet:15*T+1}]
+]);
 
 // 먼지 같은 바닥 장식은 방 전체를 비례로 옮긴다
 function svgToArt(x,y){ return { x:32+(x-20)*1088/960, y:96+(y-20)*832/800 }; }
 
-// ---- 캐릭터 ----
+// ---- 층 ----
 var STAFFLOOK = {}; PO.STAFF.forEach(function(p){ STAFFLOOK[p.id]=p; });
-var actors = {};
-function makeActor(id){
-  var look = STAFFLOOK[id] || PO.VISITORS[id];
-  if(!look) return null;
-  var copy = {}; for(var k in look) copy[k]=look[k];
-  return actors[id] = { id:id, spr:PO.buildSprites(copy), staff:!!STAFFLOOK[id], seat:SEATS[id]||null,
-    visible:false, leaving:false, sitting:false, x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null,
-    dir:'down', frame:0, blinkUntil:0, nextBlink:performance.now()+Math.random()*3000, bubble:null, emo:null, stepMs:300 };
-}
-var robot = { id:'rHelper', robot:true, spr:PO.pRobot(false,0), roll:PO.pRobot(false,1), blink:PO.pRobot(true,0),
-  visible:true, leaving:false, sitting:false, x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null,
-  dir:'down', frame:0, blinkUntil:0, nextBlink:0, bubble:null, emo:null, stepMs:560 };
+var M2 = PO.MAP2, POSTS2 = M2.POSTS;
+var F2_HOME = { yun:{x:266,y:160}, kang:{x:406,y:160}, guard:{x:85,y:700} };
+function postSeat(P){ return { c:P.c, r:P.r, seatX:P.x, seatFeet:P.feet, plateX:P.plateX, plateY:P.plateY }; }
+var FLOORS = {
+  '3': { key:'3', svg:byId('officeSvg'), map:PO.MAP3, anch:ANCH3, lobby:{c:3,r:26},
+    query:'.office-char', idOf:function(el){ return el.id.replace(/^char-/,''); },
+    present:function(el){ return el.classList.contains('present'); },
+    look:function(id){ return STAFFLOOK[id] || PO.VISITORS[id]; },
+    home:function(id){ var s=B.staffMap[id]; return s ? {x:s.x,y:s.y} : null; },
+    seat:function(id){ return PO.SEATS[id] || null; },
+    bubble:function(id){ var l=byId('bubbleLayer'); return l && l.querySelector('[data-bubble-for="'+id+'"]'); },
+    robotEl:'rHelper', robotBub:'rHelperBubbleHolder', light:'roomLightOverlay', switchEl:'lightSwitch', switchRect:PO.SWITCH },
+  '2': { key:'2', svg:byId('floor2Svg'), map:M2, anch:ANCH2, lobby:{c:2,r:4},
+    query:'[id^="f2c-"]', idOf:function(el){ return el.id.slice(4); },
+    present:function(el){ return el._on===true || (el._on===undefined && parseFloat(el.style.opacity||'1')>0.5); },
+    look:function(id){ if(id==='guard'){ var g=byId('f2c-guard'), leo=g&&g.querySelector('.gLeo'); return (leo && leo.style.display!=='none') ? PO.F2LOOK.guardLeo : PO.F2LOOK.guard; } return PO.F2LOOK[id]; },
+    home:function(id){ return F2_HOME[id] || null; },
+    seat:function(id){ return POSTS2[id] ? postSeat(POSTS2[id]) : null; },
+    bubble:function(id){ var l=byId('f2BubbleLayer'); return l && l.querySelector('[data-f2-for="'+id+'"]'); },
+    robotEl:'f2RHelper', robotBub:'f2RHelperBubbleHolder', light:'f2LightOverlay', switchEl:'f2LightSwitch', switchRect:M2.SWITCH }
+};
+Object.keys(FLOORS).forEach(function(k){
+  var F=FLOORS[k]; if(!F.svg) return;
+  F.svg.classList.add('pixMode'); F.svg.setAttribute('preserveAspectRatio','none');
+  F.actors={};
+  F.robot={ id:'robot'+k, robot:true, spr:PO.pRobot(false,0), roll:PO.pRobot(false,1), blink:PO.pRobot(true,0),
+    visible:true, x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null, dir:'down', frame:0, blinkUntil:0, nextBlink:0, stepMs:560 };
+  F.dust=[]; F.lightDim=0;
+});
 
+function makeActor(F,id){
+  var look=F.look(id); if(!look) return null;
+  var copy={}; for(var k in look) copy[k]=look[k];
+  return F.actors[id] = { id:id, lookId:look.id, spr:PO.buildSprites(copy), staff:!!F.seat(id), seat:F.seat(id),
+    visible:false, leaving:false, sitting:false, onFurn:false, x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null,
+    dir:'down', frame:0, blinkUntil:0, nextBlink:performance.now()+Math.random()*3000, bubble:null, emo:null, stepMs:300, name:null };
+}
 function tilePos(a,t){ return a.robot ? { x:t.c*T+1, feet:t.r*T+24 } : { x:t.c*T-1, feet:t.r*T+29 }; }
 function goalPos(a,g){
   if(g.seat) return { x:a.seat.seatX, feet:a.seat.seatFeet };
   if(g.pt && !a.robot) return g.pt;
   return tilePos(a,g);
 }
-function walkable(c,r){ return c>0&&r>2&&c<COLS-1&&r<ROWS-1&&!blocked[r][c]; }
+function walkable(F,c,r){ return c>0&&r>2&&c<COLS-1&&r<ROWS-1&&!F.map.blocked[r][c]; }
 // 다른 사람이 이미 가기로 한 칸이면 가까운 빈칸을 찾는다
-function claim(a,c,r,sit){
-  var taken = {};
+function claim(F,a,c,r,sit){
+  var taken={};
   function mark(o){ if(o!==a && o.visible && o.goal && !o.goal.seat) taken[o.goal.c+','+o.goal.r]=1; }
-  for(var id in actors) mark(actors[id]); mark(robot);
-  if(!taken[c+','+r] && (sit || walkable(c,r))) return { c:c, r:r, same:true };
+  for(var id in F.actors) mark(F.actors[id]); mark(F.robot);
+  if(!taken[c+','+r] && (sit || walkable(F,c,r))) return { c:c, r:r, same:true };
   var q=[{c:c,r:r}], seen={}; seen[c+','+r]=1;
-  while(q.length){ var cur=q.shift();
-    var n=[[1,0],[-1,0],[0,1],[0,-1]];
+  while(q.length){ var cur=q.shift(), n=[[1,0],[-1,0],[0,1],[0,-1]];
     for(var i=0;i<4;i++){ var nc=cur.c+n[i][0], nr=cur.r+n[i][1], k=nc+','+nr;
       if(seen[k]||nc<1||nr<3||nc>=COLS-1||nr>=ROWS-1) continue; seen[k]=1;
-      if(walkable(nc,nr) && !taken[k]) return { c:nc, r:nr, same:false };
+      if(walkable(F,nc,nr) && !taken[k]) return { c:nc, r:nr, same:false };
       if(Math.abs(nc-c)+Math.abs(nr-r)<6) q.push({c:nc,r:nr}); } }
   return { c:c, r:r, same:true };
 }
-function mapGoal(a,sx,sy){
-  if(a.staff){ var s=B.staffMap[a.id]; if(s && Math.abs(sx-s.x)<6 && Math.abs(sy-s.y)<6) return { seat:true }; }
+function mapGoal(F,a,sx,sy){
+  if(a.staff){ var h=F.home(a.id); if(h && Math.abs(sx-h.x)<6 && Math.abs(sy-h.y)<6) return { seat:true }; }
   var best=null, bd=Infinity;
-  for(var i=0;i<ANCH.length;i++){ var k=ANCH[i]; if(a.robot&&k.desk) continue; var d=(k.sx-sx)*(k.sx-sx)+(k.sy-sy)*(k.sy-sy); if(d<bd){ bd=d; best=k; } }
-  if(!best) return { c:LOBBY.c, r:LOBBY.r, face:'down' };
+  for(var i=0;i<F.anch.length;i++){ var k=F.anch[i]; if(a.robot&&(k.desk||k.sit)) continue; var d=(k.sx-sx)*(k.sx-sx)+(k.sy-sy)*(k.sy-sy); if(d<bd){ bd=d; best=k; } }
+  if(!best) return { c:F.lobby.c, r:F.lobby.r, face:'down' };
   if(best.desk){
     if(best.desk===a.id) return { seat:true };
-    var S=SEATS[best.desk]; if(!S) return { c:LOBBY.c, r:LOBBY.r, face:'down' };
+    var S=F.seat(best.desk); if(!S) return { c:F.lobby.c, r:F.lobby.r, face:'down' };
     return { c:S.c-1, r:S.r, face:'right' };
   }
   return { c:best.c, r:best.r, face:best.face, sit:best.sit, pt:best.pt };
 }
 function sameGoal(g1,g2){ if(!g1||!g2) return false; if(g1.seat||g2.seat) return !!g1.seat===!!g2.seat; return g1.wantC===g2.c&&g1.wantR===g2.r; }
 function currentTile(a){ return a.tile || { c:Math.round((a.x+1)/T), r:Math.round((a.feet-29)/T) }; }
-function setGoal(a,g,now){
+function fixGoal(F,a,g){
+  if(g.seat) return;
+  var cl=claim(F,a,g.c,g.r,g.sit); g.wantC=g.c; g.wantR=g.r; g.c=cl.c; g.r=cl.r; if(!cl.same){ g.pt=null; g.sit=false; }
+}
+function setGoal(F,a,g,now){
   if(sameGoal(a.goal,g)) return;
-  var want = { c:g.c, r:g.r };
-  if(!g.seat){ var cl=claim(a,g.c,g.r,g.sit); g.wantC=want.c; g.wantR=want.r; g.c=cl.c; g.r=cl.r; if(!cl.same){ g.pt=null; g.sit=false; } }
-  a.goal=g;
+  fixGoal(F,a,g); a.goal=g;
   var target = g.seat ? { c:a.seat.c, r:a.seat.r } : { c:g.c, r:g.r };
   var from = a.sitting ? { c:a.seat.c, r:a.seat.r } : currentTile(a);
-  var path = PO.bfs({c:from.c,r:from.r}, target);
+  var path = PO.bfs({c:from.c,r:from.r}, target, F.map);
   if(!path || path.length<2){ arrive(a); return; }
-  a.path=path; a.step=0; a.stepStart=now; a.fromSeat=a.sitting; a.sitting=false;
+  a.path=path; a.step=0; a.stepStart=now; a.fromSeat=a.sitting; a.sitting=false; a.onFurn=false;
 }
-function placeAt(a,g){
-  if(!g.seat){ var cl=claim(a,g.c,g.r,g.sit); g.wantC=g.c; g.wantR=g.r; g.c=cl.c; g.r=cl.r; if(!cl.same){ g.pt=null; } }
-  a.goal=g; a.path=null; arrive(a);
-}
+function placeAt(F,a,g){ fixGoal(F,a,g); a.goal=g; a.path=null; arrive(a); }
 function arrive(a){
   var g=a.goal; a.path=null; a.frame=0;
-  if(!g){ return; }
+  if(!g) return;
   var p=goalPos(a,g); a.x=p.x; a.feet=p.feet;
-  if(g.seat){ a.sitting=true; a.tile={c:a.seat.c,r:a.seat.r}; a.dir='down'; }
-  else { a.sitting=false; a.tile={c:g.c,r:g.r}; a.dir=g.face||'down'; }
+  if(g.seat){ a.sitting=true; a.onFurn=false; a.tile={c:a.seat.c,r:a.seat.r}; a.dir='down'; }
+  else { a.sitting=false; a.onFurn=!!g.sit; a.tile={c:g.c,r:g.r}; a.dir=g.face||'down'; }
   if(a.leaving){ a.visible=false; a.leaving=false; }
 }
 function step(a,now){
@@ -14174,8 +14215,7 @@ function step(a,now){
   var k=(now-a.stepStart)/a.stepMs;
   while(k>=1&&a.step<a.path.length-1){ a.step++; a.stepStart+=a.stepMs; k-=1; }
   if(a.step>=a.path.length-1){ arrive(a); return; }
-  var t0=a.path[a.step], t1=a.path[a.step+1];
-  var A=tilePos(a,t0), Bp=tilePos(a,t1);
+  var t0=a.path[a.step], t1=a.path[a.step+1], A=tilePos(a,t0), Bp=tilePos(a,t1);
   if(a.step===0 && a.fromSeat) A={ x:a.seat.seatX, feet:a.seat.seatFeet };
   if(a.step===a.path.length-2) Bp=goalPos(a,a.goal);
   a.x=A.x+(Bp.x-A.x)*k; a.feet=A.feet+(Bp.feet-A.feet)*k;
@@ -14185,61 +14225,64 @@ function step(a,now){
 }
 
 // ---- SVG 상태 읽기 (초당 여러 번) ----
-var bubbleLayer = byId('bubbleLayer');
 function readBubble(a, holder){
   a.bubble=null; a.emo=null;
   if(!holder || !holder.firstChild) return;
-  var texts = holder.querySelectorAll('text');
+  var texts=holder.querySelectorAll('text');
   if(texts.length){ var s=[]; for(var i=0;i<texts.length;i++) s.push(texts[i].textContent); a.bubble=s; return; }
-  var e = holder.querySelector('[data-emo]');
+  var e=holder.querySelector('[data-emo]');
   a.emo = e ? e.getAttribute('data-emo') : 'blank';
 }
-function poll(now){
-  var els = svg.querySelectorAll('.office-char');
+function poll(F,now){
+  var els=F.svg.querySelectorAll(F.query);
   for(var i=0;i<els.length;i++){
-    var el=els[i], id=el.id.replace(/^char-/,''), a=actors[id]||makeActor(id);
+    var el=els[i], id=F.idOf(el), a=F.actors[id]||makeActor(F,id);
     if(!a) continue;
-    var present = el.classList.contains('present');
-    var p = B.currentXY(el);
-    var away = !!(p && a.staff && B.staffMap[a.id] && (Math.abs(p.x-B.staffMap[a.id].x)>6 || Math.abs(p.y-B.staffMap[a.id].y)>6));
-    var wasAway = a.svgAway; a.svgAway = present && away;
+    // 2층 보안요원은 날마다 교대한다: 오늘 근무자 얼굴로 바꿔 끼운다
+    var lk=F.look(id); if(lk && lk.id!==a.lookId){ var cp={}; for(var kk in lk) cp[kk]=lk[kk]; a.spr=PO.buildSprites(cp); a.lookId=lk.id; }
+    if(a.name===null){ var nt=F.key==='2' && !a.staff ? el.querySelector('text') : null; a.name = nt ? nt.textContent : ''; }
+    var present=F.present(el), p=B.currentXY(el);
+    var h=a.staff ? F.home(id) : null;
+    var away=!!(p && h && (Math.abs(p.x-h.x)>6 || Math.abs(p.y-h.y)>6));
+    var wasAway=a.svgAway; a.svgAway = present && away;
     if(present && p){
-      var g = mapGoal(a,p.x,p.y);
+      var g=mapGoal(F,a,p.x,p.y);
       a.stepMs=300;
-      if(!a.visible){ a.visible=true; a.leaving=false; placeAt(a,g); }
-      else { a.leaving=false; setGoal(a,g,now); }
+      if(!a.visible){ a.visible=true; a.leaving=false; placeAt(F,a,g); }
+      else { a.leaving=false; setGoal(F,a,g,now); }
     } else if(a.visible && !a.leaving){
-      // 자리에서 바로 사라진 것(점심·퇴근 정리)과 걸어 나가다 사라진 것(퇴근·외출)을 구분한다.
+      // 자리에서 바로 사라진 것과 걸어 나가다 사라진 것을 구분한다.
       // 걸어 나가던 중이면 엘리베이터까지 마저 걸어가서 사라진다
       var walkOff = a.staff ? wasAway : !!a.path;
       if(!walkOff){ a.visible=false; a.goal=null; }
-      else { a.leaving=true; a.stepMs=200; a.leaveUntil=now+14000; setGoal(a,{ c:LOBBY.c, r:LOBBY.r, face:'down' },now); }
+      else { a.leaving=true; a.stepMs=200; a.leaveUntil=now+14000; setGoal(F,a,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now); }
     }
-    readBubble(a, bubbleLayer && bubbleLayer.querySelector('[data-bubble-for="'+id+'"]'));
+    readBubble(a, F.bubble(id));
   }
-  // R-도우미
-  var rh = byId('rHelper');
+  var rh=byId(F.robotEl);
   if(rh){ var rp=B.currentXY(rh);
-    if(rp){ var rg=mapGoal(robot,rp.x,rp.y); if(!robot.goal) placeAt(robot,rg); else setGoal(robot,rg,now); }
-    readBubble(robot, byId('rHelperBubbleHolder')); }
-  // 먼지
-  var dl = byId('dustLayer'); dust.length=0;
-  if(dl){ var ds=dl.querySelectorAll('.dustPiece');
-    for(var j=0;j<ds.length;j++){ var m=/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(ds[j].style.transform||''); if(!m) continue;
-      var op=parseFloat(getComputedStyle(ds[j]).opacity); if(op<0.05) continue;
-      var inner=ds[j].firstChild, heavy=inner && inner.getAttribute && inner.getAttribute('opacity')==='0.6';
-      var q=svgToArt(parseFloat(m[1]),parseFloat(m[2])), c=Math.round(q.x/T), r=Math.round(q.y/T);
-      if(!walkable(c,r)){ var cl=claim({},c,r,false); c=cl.c; r=cl.r; }
-      var hsh=PO.hash(ds[j].getAttribute('data-dust-id')||String(j));
-      dust.push({ x:c*T+6+(hsh%18), y:r*T+14+((hsh>>5)%12), heavy:heavy, op:op }); } }
-  PO.STATE.elevOpen = !!B.doorOpen();
-  lightDim = parseFloat(getComputedStyle(byId('roomLightOverlay')).opacity)||0;
-  feeding = !!(byId('tankFeed') && byId('tankFeed').classList.contains('on'));
-  lunchOn = parseFloat((byId('lunchSign')||{style:{}}).style.opacity||0) > 0.5;
-  umbrellaOn = parseFloat((byId('umbrellaSet')||{style:{}}).style.opacity||0) > 0.5;
-  var sign = byId('officeSignText'); company = sign ? sign.textContent : company;
+    if(rp){ var rg=mapGoal(F,F.robot,rp.x,rp.y); if(!F.robot.goal) placeAt(F,F.robot,rg); else setGoal(F,F.robot,rg,now); }
+    readBubble(F.robot, byId(F.robotBub)); }
+  var lo=byId(F.light); F.lightDim = lo ? (parseFloat(getComputedStyle(lo).opacity)||0) : 0;
+  if(F.key==='3'){
+    var dl=byId('dustLayer'); F.dust.length=0;
+    if(dl){ var ds=dl.querySelectorAll('.dustPiece');
+      for(var j=0;j<ds.length;j++){ var m=/translate\(([-\d.]+)px,\s*([-\d.]+)px\)/.exec(ds[j].style.transform||''); if(!m) continue;
+        var op=parseFloat(getComputedStyle(ds[j]).opacity); if(op<0.05) continue;
+        var inner=ds[j].firstChild, heavy=inner && inner.getAttribute && inner.getAttribute('opacity')==='0.6';
+        var q=svgToArt(parseFloat(m[1]),parseFloat(m[2])), c=Math.round(q.x/T), r=Math.round(q.y/T);
+        if(!walkable(F,c,r)){ var cl=claim(F,{},c,r,false); c=cl.c; r=cl.r; }
+        var hsh=PO.hash(ds[j].getAttribute('data-dust-id')||String(j));
+        F.dust.push({ x:c*T+6+(hsh%18), y:r*T+14+((hsh>>5)%12), heavy:heavy, op:op }); } }
+    PO.STATE.elevOpen = !!B.doorOpen();
+    F.feeding = !!(byId('tankFeed') && byId('tankFeed').classList.contains('on'));
+    F.lunchOn = parseFloat((byId('lunchSign')||{style:{}}).style.opacity||0) > 0.5;
+    F.umbrellaOn = parseFloat((byId('umbrellaSet')||{style:{}}).style.opacity||0) > 0.5;
+    var sign=byId('officeSignText'); if(sign) F.company=sign.textContent;
+  } else {
+    var dl2=byId('f2DoorLeafLeft'); PO.STATE.elev2Open = !!(dl2 && dl2.classList.contains('open'));
+  }
 }
-var dust=[], lightDim=0, feeding=false, lunchOn=false, umbrellaOn=false, company='끄적끄적문구';
 
 // ---- 그리기 도구: 말풍선·명패 ----
 var FONT='16px NeoDGM, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif';
@@ -14249,7 +14292,7 @@ function roundBox(g,x,y,w,h,fill,stroke){
 }
 function drawBubble(g,cx,bottom,lines,border){
   g.font=FONT; var w=0; lines.forEach(function(s){ w=Math.max(w,g.measureText(s).width); });
-  w=Math.ceil(w)+16; var h=lines.length*18+10, x=Math.round(Math.max(4,Math.min(W-w-4,cx-w/2))), y=Math.round(bottom-h-6);
+  w=Math.ceil(w)+16; var h=lines.length*18+10, x=Math.round(Math.max(4,Math.min(W-w-4,cx-w/2))), y=Math.round(Math.max(2,bottom-h-6));
   roundBox(g,x,y,w,h,'#ffffff',border);
   var tx=Math.round(Math.max(x+8,Math.min(x+w-8,cx)));
   g.fillStyle=border; g.fillRect(tx-4,y+h-1,8,2); g.fillRect(tx-3,y+h+1,6,2); g.fillRect(tx-2,y+h+3,4,2); g.fillRect(tx-1,y+h+5,2,1);
@@ -14258,81 +14301,19 @@ function drawBubble(g,cx,bottom,lines,border){
   lines.forEach(function(s,i){ g.fillText(s, x+w/2, y+5+i*18); });
   g.textAlign='left';
 }
-function drawPlate(g,cx,y,name){
-  g.font=FONT; var w=Math.ceil(g.measureText(name).width)+12; var x=Math.round(cx-w/2);
-  g.fillStyle='rgba(40,26,40,0.55)'; g.fillRect(x-1,y-1,w+2,22);
-  g.fillStyle='rgba(58,44,62,0.88)'; g.fillRect(x,y,w,20);
-  g.fillStyle='#ffffff'; g.textBaseline='top'; g.fillText(name,x+6,y+2);
+function drawPlate(g,cx,y,name,small){
+  g.font=small?'12px NeoDGM, sans-serif':FONT; var w=Math.ceil(g.measureText(name).width)+(small?8:12), hh=small?16:20, x=Math.round(cx-w/2);
+  g.fillStyle='rgba(40,26,40,0.55)'; g.fillRect(x-1,y-1,w+2,hh+2);
+  g.fillStyle='rgba(58,44,62,0.88)'; g.fillRect(x,y,w,hh);
+  g.fillStyle='#ffffff'; g.textBaseline='top'; g.fillText(name,x+(small?4:6),y+2);
 }
 var EMO_BAL={ happy:'heart', sleepy:'zzz', angry:'excl', sad:'sweat', surprised:'excl', cool:'note', blank:'dots' };
-
-// ---- 한 프레임 ----
-var lastPoll=0;
-function frame(now){
-  requestAnimationFrame(frame);
-  if(getComputedStyle(svg).display==='none'){ cvs.style.display='none'; return; }
-  cvs.style.display='block';
-  // 캔버스 크기를 SVG 상자에 맞춘다
-  var cw=svg.clientWidth||svg.getBoundingClientRect().width, ch=svg.clientHeight||svg.getBoundingClientRect().height;
-  if(!cw||!ch) return;
-  var dpr=Math.min(3,window.devicePixelRatio||1), pw=Math.round(cw*dpr), ph2=Math.round(ch*dpr);
-  if(cvs.width!==pw||cvs.height!==ph2){ cvs.width=pw; cvs.height=ph2; }
-  cvs.style.width=cw+'px'; cvs.style.height=ch+'px'; cvs.style.left=svg.offsetLeft+'px'; cvs.style.top=svg.offsetTop+'px';
-
-  if(now-lastPoll>140){ lastPoll=now; try{ poll(now); }catch(e){ if(window.console) console.warn('pixOffice poll', e); } }
-  for(var id in actors){ if(actors[id].visible) step(actors[id],now); }
-  step(robot,now);
-
-  var d=new Date(), hm={h:d.getHours(), m:d.getMinutes()}, ph=PO.phase(hm.h);
-  var g=fb;
-  g.drawImage(PO.bg,0,0);
-  dust.forEach(function(p){ g.globalAlpha=(p.heavy?0.75:0.4)*Math.min(1,p.op*1.4);
-    if(p.heavy){ ell(g,p.x,p.y,6,2,'#c9c2b0'); PO.disc(g,p.x-3,p.y-2,2,'#dcd6c6'); PO.disc(g,p.x+3,p.y-2,1,'#dcd6c6'); }
-    else { ell(g,p.x,p.y,8,3,'#c2bba8'); ell(g,p.x,p.y,4,1,'#b3ab97'); } g.globalAlpha=1; });
-  PO.drawWindow(g,ph,now,hm,B.weather());
-  PO.drawClock(g,hm);
-  var list=PO.things.slice();
-  list.push({sy:5*T+0.5, draw:function(gg){ PO.drawFish(gg,now,feeding); }});
-  for(var aid in actors){ var a=actors[aid]; if(a.visible) list.push({actor:a, sy:a.feet}); }
-  if(robot.goal) list.push({robot:true, sy:robot.feet});
-  if(umbrellaOn) list.push({sy:25*T+30, draw:drawUmbrellas});
-  if(lunchOn) list.push({sy:25*T+31, draw:drawLunchSign});
-  list.sort(function(p,q){ return p.sy-q.sy; });
-  list.forEach(function(it){
-    if(it.actor){ var a=it.actor, img=(a.sitting&&now<a.blinkUntil)?a.spr.blink:a.spr[a.dir][a.path?a.frame:0];
-      var X=Math.round(a.x), Y=Math.round(a.feet)-48;
-      if(!a.sitting) ell(g,X+17,Math.round(a.feet),9,2,'rgba(90,50,70,0.22)');
-      g.drawImage(img,X,Y); }
-    else if(it.robot){ var X2=Math.round(robot.x), F=Math.round(robot.feet);
-      var rimg=now<robot.blinkUntil?robot.blink:(robot.path&&Math.floor(now/140)%2?robot.roll:robot.spr);
-      ell(g,X2+16,F,12,2,'rgba(60,70,90,0.2)'); g.drawImage(rimg,X2,F-36); }
-    else if(it.draw) it.draw(g);
-    else g.drawImage(it.img,it.x,it.y);
-  });
-  // 회사 간판 · 명패
-  var sg=PO.SIGNS[0];
-  if(sg){ g.font=FONT; g.textBaseline='middle'; g.textAlign='center'; var nm=company||sg[0];
-    var sc=Math.min(1,150/Math.max(1,g.measureText(nm).width)); g.save(); g.translate(sg[1],sg[2]); g.scale(sc,1);
-    g.fillStyle='#5e3a24'; g.fillText(nm,1,1); g.fillStyle='#fff6e6'; g.fillText(nm,0,0); g.restore(); g.textAlign='left'; }
-  B.staff.forEach(function(s){ var S=SEATS[s.id]; if(S) drawPlate(g,S.plateX,S.plateY,s.name); });
-  // 말풍선 · 감정
-  var talkers=[]; for(var tid in actors){ var ta=actors[tid]; if(ta.visible&&(ta.bubble||ta.emo)) talkers.push(ta); }
-  talkers.sort(function(p,q){ return p.feet-q.feet; });
-  talkers.forEach(function(a){ var cx=Math.round(a.x)+17, top=Math.round(a.feet)-48;
-    if(a.bubble) drawBubble(g,cx,top+4,a.bubble,'#6f5a4a');
-    else { var b=PO.BALLOONS[EMO_BAL[a.emo]||'dots']; if(b) g.drawImage(b,Math.round(a.x)+2,top-22+Math.round(Math.sin(now*0.012)*1.5)); } });
-  if(robot.bubble) drawBubble(g,Math.round(robot.x)+16,Math.round(robot.feet)-36,robot.bubble,'#6f9aa6');
-  // 시간대 색 · 조명
-  var tint=PO.TINT[ph];
-  if(tint){ g.save(); g.globalCompositeOperation='multiply'; g.globalAlpha=tint[1]*(lightDim>0.1?0.55:1); g.fillStyle=tint[0]; g.fillRect(0,0,W,H); g.restore(); }
-  if(lightDim>0.01){ g.save(); g.globalAlpha=lightDim; g.fillStyle='#1c1c2e'; g.fillRect(0,0,W,H); g.restore(); }
-  if((ph==='night'||ph==='dusk') && lightDim<0.3){ g.save(); g.globalCompositeOperation='lighter';
-    for(var sid in actors){ var sa=actors[sid]; if(!sa.visible||!sa.sitting) continue; var mx=sa.seat.c*T+32, my=(sa.seat.r+1)*T;
-      g.fillStyle='rgba(130,150,200,0.08)'; g.fillRect(mx-30,my-24,60,40); } g.restore(); }
-  // 화면으로
-  ctx.imageSmoothingEnabled = (pw/W) < 1.9;
-  if(ctx.imageSmoothingEnabled) ctx.imageSmoothingQuality='high';
-  ctx.drawImage(fbuf,0,0,pw,ph2);
+function drawActor(g,a,now){
+  var img=(a.sitting&&now<a.blinkUntil)?a.spr.blink:a.spr[a.dir][a.path?a.frame:0];
+  var X=Math.round(a.x), Y=Math.round(a.feet)-48;
+  if(a.onFurn && !a.path){ g.drawImage(img,0,0,img.width,41,X,Y+6,img.width,41); return; }   // 소파·의자에 앉음: 다리를 감추고 조금 낮게
+  if(!a.sitting) ell(g,X+17,Math.round(a.feet),9,2,'rgba(90,50,70,0.22)');
+  g.drawImage(img,X,Y);
 }
 function drawUmbrellas(g){ var x=4*T+10, y=25*T+30;
   R(g,x,y-14,20,14,'#9aa2a8'); R(g,x,y-14,20,2,'#c9cfd4');
@@ -14341,26 +14322,110 @@ function drawLunchSign(g){ var x=5*T+2, y=25*T+31;
   R(g,x+10,y-8,2,8,'#8a6048'); R(g,x+22,y-8,2,8,'#8a6048');
   roundBox(g,x,y-30,34,22,'#fff6e6','#8a6048'); g.font='12px NeoDGM, sans-serif'; g.fillStyle='#8a4a30'; g.textBaseline='top'; g.fillText('점심',x+5,y-26); }
 
-// ---- 누르기: 명패·직원 → 프로필, 전원 스위치 → 전원 패널 ----
-function artXY(e){ var rc=cvs.getBoundingClientRect(); return { x:(e.clientX-rc.left)*W/rc.width, y:(e.clientY-rc.top)*H/rc.height }; }
-function hitProfile(p){
-  var hit=null;
-  for(var id in actors){ var a=actors[id]; if(!a.visible||!a.staff) continue;
-    if(p.x>=a.x+4&&p.x<=a.x+30&&p.y>=a.feet-44&&p.y<=a.feet+2){ if(!hit||a.feet>hit.feet) hit=a; } }
-  if(hit) return hit.id;
-  for(var i=0;i<B.staff.length;i++){ var S=SEATS[B.staff[i].id]; if(S&&p.x>=S.plateX-32&&p.x<=S.plateX+32&&p.y>=S.plateY-2&&p.y<=S.plateY+22) return B.staff[i].id; }
+// ---- 한 프레임 ----
+function activeFloor(){
+  for(var k in FLOORS){ var F=FLOORS[k]; if(F.svg && getComputedStyle(F.svg).display!=='none') return F; }
   return null;
 }
-function onSwitch(p){ var s=PO.SWITCH; return p.x>=s.x-6&&p.x<=s.x+s.w+6&&p.y>=s.y-6&&p.y<=s.y+s.h+6; }
+var lastPoll=0;
+function frame(now){
+  requestAnimationFrame(frame);
+  var F=activeFloor();
+  if(!F){ cvs.style.display='none'; return; }
+  cvs.style.display='block';
+  var svg=F.svg, cw=svg.clientWidth||svg.getBoundingClientRect().width, ch=svg.clientHeight||svg.getBoundingClientRect().height;
+  if(!cw||!ch) return;
+  var dpr=Math.min(3,window.devicePixelRatio||1), pw=Math.round(cw*dpr), ph2=Math.round(ch*dpr);
+  if(cvs.width!==pw||cvs.height!==ph2){ cvs.width=pw; cvs.height=ph2; }
+  cvs.style.width=cw+'px'; cvs.style.height=ch+'px'; cvs.style.left=svg.offsetLeft+'px'; cvs.style.top=svg.offsetTop+'px';
+  cvs.setAttribute('aria-label', F.key==='2' ? '2층 로비' : '끄적끄적문구 3층 사무실');
+
+  if(now-lastPoll>140){ lastPoll=now; for(var fk in FLOORS){ var FF=FLOORS[fk]; if(FF.svg) try{ poll(FF,now); }catch(e){ if(window.console) console.warn('pixOffice poll', e); } } }
+  for(var id in F.actors){ if(F.actors[id].visible) step(F.actors[id],now); }
+  step(F.robot,now);
+
+  var d=new Date(), hm={h:d.getHours(), m:d.getMinutes()}, ph=PO.phase(hm.h), g=fb, M=F.map;
+  g.drawImage(M.bg,0,0);
+  if(F.key==='3'){
+    F.dust.forEach(function(p){ g.globalAlpha=(p.heavy?0.75:0.4)*Math.min(1,p.op*1.4);
+      if(p.heavy){ ell(g,p.x,p.y,6,2,'#c9c2b0'); PO.disc(g,p.x-3,p.y-2,2,'#dcd6c6'); PO.disc(g,p.x+3,p.y-2,1,'#dcd6c6'); }
+      else { ell(g,p.x,p.y,8,3,'#c2bba8'); ell(g,p.x,p.y,4,1,'#b3ab97'); } g.globalAlpha=1; });
+    PO.drawWindow(g,ph,now,hm,B.weather());
+    PO.drawClock(g,hm);
+  } else {
+    PO.drawClock(g,hm,M.CLOCK);
+    g.font=FONT; g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#5a3a2a';
+    g.fillText('있을 땐 겸손, 없을 땐 당당 - 호암', M.SIGN.x+M.SIGN.w/2, M.SIGN.y+17); g.textAlign='left';
+  }
+  var list=M.things.slice();
+  if(F.key==='3'){ list.push({sy:5*T+0.5, draw:function(gg){ PO.drawFish(gg,now,F.feeding); }});
+    if(F.umbrellaOn) list.push({sy:25*T+30, draw:drawUmbrellas});
+    if(F.lunchOn) list.push({sy:25*T+31, draw:drawLunchSign}); }
+  else list.push({sy:28*T+0.5, draw:function(gg){ PO.drawBigTank(gg,now); }});
+  for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:a.feet}); }
+  if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
+  list.sort(function(p,q){ return p.sy-q.sy; });
+  list.forEach(function(it){
+    if(it.actor) drawActor(g,it.actor,now);
+    else if(it.robot){ var rb=F.robot, X2=Math.round(rb.x), Fe=Math.round(rb.feet);
+      var rimg=now<rb.blinkUntil?rb.blink:(rb.path&&Math.floor(now/140)%2?rb.roll:rb.spr);
+      ell(g,X2+16,Fe,12,2,'rgba(60,70,90,0.2)'); g.drawImage(rimg,X2,Fe-36); }
+    else if(it.draw) it.draw(g);
+    else g.drawImage(it.img,it.x,it.y);
+  });
+  // 간판 · 명패
+  if(F.key==='3'){
+    var sg=PO.SIGNS[0];
+    if(sg){ g.font=FONT; g.textBaseline='middle'; g.textAlign='center'; var nm=F.company||sg[0];
+      var sc=Math.min(1,150/Math.max(1,g.measureText(nm).width)); g.save(); g.translate(sg[1],sg[2]); g.scale(sc,1);
+      g.fillStyle='#5e3a24'; g.fillText(nm,1,1); g.fillStyle='#fff6e6'; g.fillText(nm,0,0); g.restore(); g.textAlign='left'; }
+    B.staff.forEach(function(s){ var S=PO.SEATS[s.id]; if(S) drawPlate(g,S.plateX,S.plateY,s.name); });
+  } else {
+    drawPlate(g,POSTS2.yun.plateX,POSTS2.yun.plateY,'윤안내'); drawPlate(g,POSTS2.kang.plateX,POSTS2.kang.plateY,'강안내');
+    drawPlate(g,POSTS2.guard.plateX,POSTS2.guard.plateY,'보안');
+    for(var vid in F.actors){ var va=F.actors[vid]; if(va.visible&&va.name) drawPlate(g,Math.round(va.x)+17,Math.round(va.feet)+(va.onFurn&&!va.path?6:3),va.name,true); }
+  }
+  // 말풍선 · 감정
+  var talkers=[]; for(var tid in F.actors){ var ta=F.actors[tid]; if(ta.visible&&(ta.bubble||ta.emo)) talkers.push(ta); }
+  talkers.sort(function(p,q){ return p.feet-q.feet; });
+  talkers.forEach(function(a){ var cx=Math.round(a.x)+17, top=Math.round(a.feet)-48+(a.onFurn&&!a.path?6:0);
+    if(a.bubble) drawBubble(g,cx,top+4,a.bubble,'#6f5a4a');
+    else { var b=PO.BALLOONS[EMO_BAL[a.emo]||'dots']; if(b) g.drawImage(b,Math.round(a.x)+2,top-22+Math.round(Math.sin(now*0.012)*1.5)); } });
+  if(F.robot.bubble) drawBubble(g,Math.round(F.robot.x)+16,Math.round(F.robot.feet)-36,F.robot.bubble,'#6f9aa6');
+  // 시간대 색 · 조명
+  var tint=PO.TINT[ph];
+  if(tint){ g.save(); g.globalCompositeOperation='multiply'; g.globalAlpha=tint[1]*(F.lightDim>0.1?0.55:(F.key==='2'?0.6:1)); g.fillStyle=tint[0]; g.fillRect(0,0,W,H); g.restore(); }
+  if(F.lightDim>0.01){ g.save(); g.globalAlpha=F.lightDim; g.fillStyle='#1c1c2e'; g.fillRect(0,0,W,H); g.restore(); }
+  if(F.key==='3' && (ph==='night'||ph==='dusk') && F.lightDim<0.3){ g.save(); g.globalCompositeOperation='lighter';
+    for(var sid in F.actors){ var sa=F.actors[sid]; if(!sa.visible||!sa.sitting) continue; var mx=sa.seat.c*T+32, my=(sa.seat.r+1)*T;
+      g.fillStyle='rgba(130,150,200,0.08)'; g.fillRect(mx-30,my-24,60,40); } g.restore(); }
+  ctx.imageSmoothingEnabled = (pw/W) < 1.9;
+  if(ctx.imageSmoothingEnabled) ctx.imageSmoothingQuality='high';
+  ctx.drawImage(fbuf,0,0,pw,ph2);
+}
+
+// ---- 누르기: 3층 명패·직원 → 프로필, 전원/조명 스위치 → 원래 스위치 ----
+function artXY(e){ var rc=cvs.getBoundingClientRect(); return { x:(e.clientX-rc.left)*W/rc.width, y:(e.clientY-rc.top)*H/rc.height }; }
+function hitProfile(F,p){
+  if(F.key!=='3') return null;
+  var hit=null;
+  for(var id in F.actors){ var a=F.actors[id]; if(!a.visible||!a.staff) continue;
+    if(p.x>=a.x+4&&p.x<=a.x+30&&p.y>=a.feet-44&&p.y<=a.feet+2){ if(!hit||a.feet>hit.feet) hit=a; } }
+  if(hit) return hit.id;
+  for(var i=0;i<B.staff.length;i++){ var S=PO.SEATS[B.staff[i].id]; if(S&&p.x>=S.plateX-32&&p.x<=S.plateX+32&&p.y>=S.plateY-2&&p.y<=S.plateY+22) return B.staff[i].id; }
+  return null;
+}
+function onSwitch(F,p){ var s=F.switchRect; return p.x>=s.x-6&&p.x<=s.x+s.w+6&&p.y>=s.y-6&&p.y<=s.y+s.h+6; }
 cvs.addEventListener('click', function(e){
+  var F=activeFloor(); if(!F) return;
   var p=artXY(e);
-  if(onSwitch(p)){ e.stopPropagation(); var sw=byId('lightSwitch'); if(sw) sw.dispatchEvent(new MouseEvent('click',{bubbles:true})); return; }
-  var id=hitProfile(p); if(id){ B.openProfile(id); }
+  if(onSwitch(F,p)){ e.stopPropagation(); var sw=byId(F.switchEl); if(sw) sw.dispatchEvent(new MouseEvent('click',{bubbles:true})); return; }
+  var id=hitProfile(F,p); if(id) B.openProfile(id);
 });
-cvs.addEventListener('mousemove', function(e){ var p=artXY(e); cvs.style.cursor=(onSwitch(p)||hitProfile(p))?'pointer':'default'; });
+cvs.addEventListener('mousemove', function(e){ var F=activeFloor(); if(!F) return; var p=artXY(e); cvs.style.cursor=(onSwitch(F,p)||hitProfile(F,p))?'pointer':'default'; });
 
 requestAnimationFrame(frame);
-window.__pixOffice = { actors:actors, robot:robot, anchors:ANCH };
+window.__pixOffice = { floors:FLOORS, actors:FLOORS['3'].actors, robot:FLOORS['3'].robot };
 })();
 </script>
 
