@@ -6581,7 +6581,26 @@
     { key:'window',  idleAfter: 165000, spot:{x:345,y:160}, stay:4200, label:'창가',
       lines:['잠깐 바람 좀 쐬야지', '밖에 날씨 좋네', '눈이 좀 침침하네'] },
     { key:'plant',   idleAfter: 260000, spot:{x:420,y:420}, stay:3600, label:'화분',
-      lines:['물 줘야겠다', '잎이 새로 났네?', '얘 잘 자라네'] }
+      lines:['물 줘야겠다', '잎이 새로 났네?', '얘 잘 자라네'] },
+    // 사무실 물건들을 쓰러 가는 심부름
+    { key:'coffee',  idleAfter: 100000, spot:{x:800,y:755}, stay:3800, label:'커피머신',
+      lines:['커피 수혈 시간', '원두 향 좋다', '샷 추가해야겠다'] },
+    { key:'shelf',   idleAfter: 130000, spot:{x:910,y:315}, stay:4200, label:'책장',
+      lines:['참고할 책이 있었는데', '자료집 잠깐 빌려갈게요', '이 책 재밌어 보이네'] },
+    { key:'files',   idleAfter: 150000, spot:{x:200,y:520}, stay:3800, label:'서류함',
+      lines:['작년 서류 어디 있더라', '파쇄할 거 챙겨왔어요', '결재 서류 철해두고'] },
+    { key:'vending', idleAfter: 180000, spot:{x:873,y:685}, stay:3600, label:'자판기',
+      lines:['뭐 마시지', '당 충전!', '어 품절이네'] },
+    { key:'plotter', idleAfter: 200000, spot:{x:520,y:472}, stay:4000, label:'플로터',
+      lines:['스티커 시안 뽑는 중', '칼선 잘 나왔나', '색감 괜찮네'] },
+    { key:'board',   idleAfter: 225000, spot:{x:760,y:90},  stay:4000, label:'게시판',
+      lines:['공지 뭐 새로 붙었나', '다음 주 일정 확인', '쇼룸 신상 진열 좋다'] },
+    { key:'fridge',  idleAfter: 240000, spot:{x:800,y:700}, stay:3400, label:'냉장고',
+      lines:['내 요거트 어디 갔지', '이름 써놨는데..', '시원하다'] },
+    { key:'storage', idleAfter: 285000, spot:{x:880,y:420}, stay:4200, label:'재고창고',
+      lines:['재고 한 번 세볼까', '박스 테이프 어딨지', '샘플 몇 개 가져가야지'] },
+    { key:'recycle', idleAfter: 320000, spot:{x:920,y:755}, stay:3200, label:'분리수거',
+      lines:['분리수거는 제대로', '페트병은 라벨 떼고', '종이는 종이끼리'] }
   ];
   var MAX_ERRAND_AT_ONCE = 2;
   var errandTimers = {};
@@ -6858,7 +6877,12 @@
   var idleLines = [
     '졸리다', '헉 실수했다', '야근확정', '그 파일 어디갔지', '이건 쉽네',
     '오 됐다!', '나 좀 천재인듯', '그러고보니...', '내일 연차쓸까',
-    '드디어 다했다.', '이걸 내가 왜…', '어깨아파', '오예!', '음..어떡하지'
+    '드디어 다했다.', '이걸 내가 왜…', '어깨아파', '오예!', '음..어떡하지',
+    // 업무 혼잣말
+    '견적서 다시 뽑아야겠다', '메일 답장 밀렸네', '시안 3번이 제일 낫다', '결재 올려야 하는데', '엑셀 함수 뭐였더라',
+    '재고 숫자가 안 맞네', '샘플 언제 오지', '회의록 정리해야지', '인쇄 감리 가야 하나', '거래처 전화 기다리는 중',
+    '폰트 라이선스 확인했나', '마감이 코앞이다', '색 교정 한 번 더', '택배 송장 출력해야지', '신제품 이름 뭐로 하지',
+    '보고서 한 장만 더', '파일명 규칙 지키자', '백업은 했겠지?', '오늘 할 일 절반 끝', '메일 제목부터 고민이네'
   ];
 
   // ===== 친밀도: 말을 많이 걸수록 그 사람만의 혼잣말이 열린다 =====
@@ -8584,8 +8608,34 @@
     { p:{x:441,y:437}, lines:['조각품 먼지 좀 털고', '주말엔 여기가 제일 조용하네', '오늘도 잘 있구나'] },
     { p:{x:815,y:322}, lines:['소파 정리 끝', '잠깐만 앉아볼까', '주말 라운지는 내 거지'] },
     { p:{x:890,y:500}, lines:['재고 이상 없음', '박스가 좀 삐뚤었네', '스티커는 넉넉하다'] },
-    { p:{x:920,y:755}, lines:['커피 한 잔 해야지', '간식 채워둬야겠다', '물 끓는 소리뿐이네'] }
+    { p:{x:920,y:755}, lines:['커피 한 잔 해야지', '간식 채워둬야겠다', '물 끓는 소리뿐이네'] },
+    // 사무실 곳곳의 물건을 하나씩 챙긴다
+    { p:{x:455,y:545}, lines:['복합기 전원 확인', '용지 채워둬야지', '토너는 넉넉하네'] },
+    { p:{x:345,y:160}, lines:['창문 잠겼나 확인', '주말 거리 한산하네', '햇볕 좋다'] },
+    { p:{x:604,y:150}, lines:['사물함 잠금 확인', '누가 우산 두고 갔네', '분실물은 없고'] },
+    { p:{x:575,y:300}, lines:['TV 전원 꺼져 있고', '의자 줄 맞춰두자', '월요일 회의 준비 끝'] },
+    { p:{x:760,y:90},  lines:['진열 상품 먼지 털기', '신상 샘플 정리', '가격표가 삐뚤었네'] },
+    { p:{x:700,y:200}, lines:['실장님 화이트보드는 그대로', '서류는 건드리면 안 되지', '원탁 정리 끝'] },
+    { p:{x:560,y:730}, lines:['회의실 모니터 끄고', '의자 원위치', '회의실 이상 없음'] },
+    { p:{x:348,y:275}, lines:['물통 갈 때 됐네', '컵 채워두기', '물 한 잔 마시고'] },
+    { p:{x:200,y:520}, lines:['금고 잠김 확인', '세단기 비워야겠다', '서류함도 잠겼고'] },
+    { p:{x:520,y:472}, lines:['플로터 칼날 점검', '재단 매트 정리', '출력물 수거 완료'] }
   ];
+  // 당직 중 혼잣말 (순회 사이사이)
+  var DUTY_MUTTER = [
+    '주말 사무실은 넓어 보이네', '당직 일지 써야지', '전화 올 일은 없겠지', '택배 오면 받아둬야 하는데',
+    '불 꺼진 자리 보니 이상하다', '당직비 나오겠지?', '점심은 뭐 시켜먹지', '보안 점검 완료',
+    '다음 당직은 누구더라', '아무도 없으니 노래라도', '조용해서 일이 잘 되네', '월요일 되면 또 북적이겠지'
+  ];
+  // 같은 곳을 연달아 가지 않게, 최근 들른 곳 몇 개를 빼고 무작위로 고른다
+  var dutyRecent = [];
+  function pickDutyStop(){
+    var idxs = [];
+    for(var i = 0; i < DUTY_STOPS.length; i++) if(dutyRecent.indexOf(i) < 0) idxs.push(i);
+    var k = idxs[Math.floor(Math.random()*idxs.length)];
+    dutyRecent.push(k); if(dutyRecent.length > 5) dutyRecent.shift();
+    return DUTY_STOPS[k];
+  }
   var DUTY_PLANTS = [
     { p:{x:96,y:556},  lines:['물 주는 건 잊으면 안 되지', '잎이 잘 자랐네'] },
     { p:{x:520,y:472}, lines:['너도 목말랐지', '새 잎이 났다'] },
@@ -8596,7 +8646,11 @@
     '밥 먹자~', '한 꼬집만 줄게', '많이 주면 물이 탁해져',
     '다들 잘 있었네', '너희는 주말도 없구나', '오늘도 잘 먹네'
   ] };
-  var DUTY_GUARD_LINES = ['이상 없습니다', '조용하네요', '한 바퀴 더 돌고', '문은 잘 잠겼고'];
+  var DUTY_GUARD_LINES = ['이상 없습니다', '조용하네요', '한 바퀴 더 돌고', '문은 잘 잠겼고',
+                          '소화기 점검 완료', '비상구 이상 무', '창문 잠김 확인', '콘센트 정리하고'];
+  // 주말 경비가 더 도는 복도 지점 (평일 방문 경로 GUARD_ROUTE 에 더해서)
+  var DUTY_GUARD_EXTRA = [ {p:{x:67,y:451}}, {p:{x:350,y:451}}, {p:{x:650,y:451}}, {p:{x:200,y:639}},
+                           {p:{x:709,y:720}}, {p:{x:809,y:221}}, {p:{x:479,y:221}} ];
   var DUTY_GUARD_TANK_LINES = ['밥은 챙겨줘야지', '한 꼬집이면 되겠지', '물고기도 주말 근무네'];
   // 순회 계획: 네 공간을 돌면서 사이사이 화분 물주기와 어항 밥주기를 끼운다
   var DUTY_PLAN = ['stop','stop','plant','stop','tank','stop','plant','stop','tank','stop'];
@@ -8627,7 +8681,7 @@
     var spot;
     if(kind === 'plant'){ spot = DUTY_PLANTS[dutyPlantIdx % DUTY_PLANTS.length]; dutyPlantIdx++; }
     else if(kind === 'tank'){ spot = DUTY_TANK; }
-    else { spot = DUTY_STOPS[dutyStopIdx % DUTY_STOPS.length]; dutyStopIdx++; }
+    else { spot = pickDutyStop(); dutyStopIdx++; }
 
     raiseChar(s);
     travelTo(s, spot.p, 58, function(){
@@ -8644,6 +8698,14 @@
         dutyFeedLogged = true;
         if(typeof logDayEvent === 'function') logDayEvent('🐟', s.name+'가 어항에 밥을 줬습니다');
       }
+      // 가끔은 다음 곳으로 가기 전에 혼잣말이나 표정을 한 번 더
+      if(Math.random() < 0.45){
+        setTimeout(function(){
+          if(!dutyActive) return;
+          if(Math.random() < 0.3) showEmoji(s, ['happy','sleepy','cool','blank'][Math.floor(Math.random()*4)]);
+          else showBubble(s, DUTY_MUTTER[Math.floor(Math.random()*DUTY_MUTTER.length)]);
+        }, 5200);
+      }
       dutyTimer = setTimeout(dutyGo, 11000 + Math.random()*7000);
     });
   }
@@ -8656,7 +8718,9 @@
     if(!dutyActive) return;
     var obj = dutyGuardObj();
     var route = dutyGuardRoute();
-    var stop = route[dutyGuardIdx % route.length];
+    // 한 바퀴는 순서대로 돌되, 사이사이 다른 복도 지점을 무작위로 끼운다
+    var stop = (Math.random() < 0.45) ? DUTY_GUARD_EXTRA[Math.floor(Math.random()*DUTY_GUARD_EXTRA.length)]
+                                      : route[dutyGuardIdx % route.length];
     dutyGuardIdx++;
     travelTo(obj, stop.p, 78, function(){
       if(!dutyActive) return;
@@ -13836,6 +13900,72 @@
     var f2Booted = false;   // 첫 틱인지 (첫 틱은 걷는 과정 없이 자리부터 잡는다)
     f2Tick();
     setInterval(f2Tick, 1000);
+
+    // ---- 보안요원 순찰 · 라운지 바에서 몰래 한 잔 ----
+    // 근무 중 가끔 경비석을 비우고 로비 길목 두세 곳을 돌아본다.
+    // 가끔은(저녁엔 더 자주) 라운지 바 스툴에 앉아 몰래 한 잔 하고 슬쩍 돌아온다
+    var GUARD_PATROL_LINES = ['순찰 중입니다', '이상 없습니다', '로비 이상 무', '출입문 확인',
+                              '소화기 위치 확인', '어항 물고기도 이상 무', '엘리베이터 정상', '비상구 확인 완료'];
+    var GUARD_DRINK_LINES  = ['딱 한 잔만...', '근무 중엔 원래 안 되는데', '쉿, 비밀입니다', '캬~',
+                              '이건 물이야, 물', '장부엔 적지 말아줘요', '오늘 하루도 고생했다, 나'];
+    var GUARD_BACK_LINES   = ['아무도 못 봤겠지', '자, 다시 근무!', '흠흠, 순찰 계속'];
+    var gPatrol = { busy:false };
+    function guardAtPost(){
+      var q = f2pos.guard, h = F2_HOME.guard;
+      return !!q && Math.abs(q.x-h.x) < 3 && Math.abs(q.y-h.y) < 3;
+    }
+    function guardBackToPost(w){
+      var path = f2Path(w.node || 'h4', 'h4') || [];
+      w.target = {x:F2_NODES.h4.x, y:F2_NODES.h4.y};
+      f2Travel(w, path, function(){
+        moveTo(w, F2_HOME.guard.x, F2_HOME.guard.y, function(){ w.target = null; w.node = null; gPatrol.busy = false; });
+      });
+    }
+    function guardRound(){
+      var w = f2Walker.guard;
+      if(gPatrol.busy){ if(!w._on){ gPatrol.busy = false; if(w.seat) leaveSeat(w); } return; }
+      if(!w._on || !f2Visible('guard') || !guardAtPost()) return;
+      gPatrol.busy = true; w.node = 'h4'; w.prev = null;
+      var evening = new Date().getHours() >= 18;
+      var bar = F2_SEATS.filter(function(st){ return /^bar/.test(st.id) && !f2SeatBy[st.id]; });
+      var drink = bar.length && Math.random() < (evening ? 0.45 : 0.2);
+      moveTo(w, F2_NODES.h4.x, F2_NODES.h4.y, function(){
+        if(drink){
+          var st = bar[Math.floor(Math.random()*bar.length)];
+          f2SeatBy[st.id] = w.id; w.seat = st;
+          w.target = {x:st.x, y:st.y};
+          f2Travel(w, f2Path('h4', st.via) || [], function(){
+            moveTo(w, st.x, st.y, function(){
+              f2Sit(w.id, true);
+              f2Say('guard', pick(GUARD_DRINK_LINES));
+              clearTimeout(w._wait);
+              w._wait = setTimeout(function(){ f2Emo('guard', Math.random() < 0.5 ? 'happy' : 'cool'); }, 6000);
+              setTimeout(function(){
+                if(!w._on) return;
+                riseFromSeat(w, function(){ f2Say('guard', pick(GUARD_BACK_LINES)); guardBackToPost(w); });
+              }, 13000 + Math.random()*9000);
+            });
+          });
+          if(typeof logDayEvent === 'function' && evening) logDayEvent('🍸', f2GuardToday().name+'가 라운지 바에서 몰래 한 잔 했습니다');
+          return;
+        }
+        // 순찰: 길목 두세 곳
+        var n = 2 + Math.floor(Math.random()*2), stops = F2_SPOT_KEYS.slice().sort(function(){ return Math.random()-0.5; }).slice(0, n);
+        (function next(){
+          if(!w._on) { gPatrol.busy = false; return; }
+          if(!stops.length){ guardBackToPost(w); return; }
+          var k = stops.shift(), path = f2Path(w.node, k);
+          if(!path){ next(); return; }
+          w.target = {x:F2_NODES[k].x, y:F2_NODES[k].y};
+          f2Travel(w, path, function(){
+            if(Math.random() < 0.55) f2Say('guard', pick(GUARD_PATROL_LINES));
+            clearTimeout(w._wait);
+            w._wait = setTimeout(next, 3500 + Math.random()*3500);
+          });
+        })();
+      });
+    }
+    setInterval(function(){ if(Math.random() < 0.35) guardRound(); }, 30000);
 
     // ---- 혼잣말과 이모지 (3층 직원과 같은 비율: 7초마다 30% 발동, 그중 30%는 이모지) ----
     setInterval(function(){
