@@ -14384,6 +14384,46 @@ function activeFloor(){
   for(var k in FLOORS){ var F=FLOORS[k]; if(F.svg && getComputedStyle(F.svg).display!=='none') return F; }
   return null;
 }
+// ---- 2층 라운지 바 직원 (게임 기록에는 없고 그림에만 있는 사람): 바텐더 레서판다 · 홀서빙 오소리 ----
+// 안내 직원이 근무하는 동안 나와 있다. 바텐더는 카운터 뒤를 오가고, 서버는 바에서 쟁반을 받아 테이블을 돈다
+var BAR_LINES=[['어서 오세요'],['오늘의 추천은','자몽 에이드예요'],['얼음 넉넉히','넣어드릴게요'],['잔 닦는 중이에요']];
+var SRV_LINES=[['주문하신 음료','나왔습니다'],['필요하신 거 있으면','불러주세요'],['천천히 쉬다 가세요']];
+var SRV_BAR={ c:28, r:14, face:'up' };
+var SRV_SPOTS=[{c:9,r:11,face:'left'},{c:16,r:11,face:'right'},{c:9,r:17,face:'left'},{c:16,r:17,face:'right'},
+  {c:26,r:22,face:'up'},{c:31,r:22,face:'up'},{c:26,r:25,face:'down'},{c:31,r:25,face:'down'}];
+function npcActor(F,id,look,name){
+  if(F.actors[id]) return F.actors[id];
+  return F.actors[id]={ id:id, npc:true, spr:PO.buildSprites(look), staff:false, seat:null, visible:false, leaving:false, sitting:false, onFurn:false,
+    x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null, dir:'down', frame:0, blinkUntil:0, nextBlink:performance.now()+2000,
+    bubble:null, emo:null, stepMs:280, name:name, until:0, arrived:0, talkUntil:0, nextTalk:0 };
+}
+function npcTick(F,now){
+  var A=F.actors, open=!!((A.yun&&A.yun.visible)||(A.kang&&A.kang.visible));
+  var bt=npcActor(F,'npcBartender',PO.F2LOOK.bartender,'바텐더'), sv=npcActor(F,'npcServer',PO.F2LOOK.server,'홀서빙');
+  if(!sv.sprTray){ sv.sprPlain=sv.spr; sv.sprTray=PO.buildSprites(PO.F2LOOK.serverTray); }
+  if(!open){ bt.visible=sv.visible=false; bt.goal=sv.goal=null; sv.path=null; bt.bubble=sv.bubble=null; return; }
+  if(!bt.visible){ bt.visible=true; bt.x=bt.tx=28*T-1; bt.feet=12*T-14; bt.dir='down'; bt.until=now+3000; bt.nextTalk=now+6000+Math.random()*9000; }
+  if(now>bt.until && Math.abs(bt.x-bt.tx)<1){ bt.tx=(24+Math.floor(Math.random()*9))*T-1; bt.until=now+4000+Math.random()*6000; }
+  if(!sv.visible){ sv.visible=true; sv.spr=sv.sprPlain; sv.phase='bar'; sv.arrived=0; placeAt(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:'up' }); sv.nextTalk=now+12000+Math.random()*12000; }
+  if(!sv.path){
+    if(!sv.arrived) sv.arrived=now;
+    if(now-sv.arrived > (sv.phase==='bar'?3500:2500)){
+      sv.arrived=0;
+      if(sv.phase==='bar'){ sv.spr=sv.sprTray; sv.phase='spot'; var sp=SRV_SPOTS[Math.floor(Math.random()*SRV_SPOTS.length)]; setGoal(F,sv,{ c:sp.c, r:sp.r, face:sp.face },now); }
+      else { sv.spr=sv.sprPlain; sv.phase='bar'; setGoal(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:'up' },now); }
+    }
+  }
+  [[bt,BAR_LINES],[sv,SRV_LINES]].forEach(function(p){ var a=p[0], L=p[1];
+    if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; a.nextTalk=now+18000+Math.random()*30000; }
+    else if(!a.talkUntil && now>a.nextTalk && !a.path){ a.bubble=L[Math.floor(Math.random()*L.length)]; a.talkUntil=now+3200; } });
+}
+function barStep(a,now){                                          // 바텐더: 카운터 뒤를 옆으로만 오간다
+  if(!a||!a.visible) return;
+  var dt=Math.min(100,now-(a.lastT||now)), dx=a.tx-a.x; a.lastT=now;
+  if(Math.abs(dx)>0.5){ a.x+=(dx>0?1:-1)*Math.min(Math.abs(dx),0.05*dt); a.dir=dx>0?'right':'left'; a.frame=[1,0,2,0][Math.floor(now/150)%4]; a.until=Math.max(a.until,now+3000); }
+  else { a.x=a.tx; a.frame=0; a.dir='down'; }
+}
+
 var lastPoll=0;
 function frame(now){
   requestAnimationFrame(frame);
@@ -14398,6 +14438,7 @@ function frame(now){
   cvs.setAttribute('aria-label', F.key==='2' ? '2층 로비' : '끄적끄적문구 3층 사무실');
 
   if(now-lastPoll>140){ lastPoll=now; for(var fk in FLOORS){ var FF=FLOORS[fk]; if(FF.svg) try{ poll(FF,now); }catch(e){ if(window.console) console.warn('pixOffice poll', e); } } }
+  if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
   for(var id in F.actors){ if(F.actors[id].visible) step(F.actors[id],now); }
   step(F.robot,now);
 

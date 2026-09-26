@@ -667,6 +667,9 @@ var KIND = {
   goat:    {f:'#c49a6c',F:'#ecd8bc',d:'#8a6a48',ears:'horns'},
   camel:   {f:'#d9b98a',F:'#f2e2c6',d:'#a8875a',ears:'round'},
   guardmk: {f:'#a9765a',F:'#f0d2b0',d:'#744a30',ears:'side',mark:'monkey'},
+  // 2층 라운지 바 (바텐더 레서판다 · 홀서빙 오소리)
+  redpanda:{f:'#c8643a',F:'#fbf2e6',d:'#4a2418',i:'#fbf2e6',ears:'round',mark:'redpanda'},
+  badger:  {f:'#8e8c88',F:'#fbfaf6',d:'#2c2a2e',i:'#5a5856',ears:'round',mark:'badger'},
   // 2층 (안내 직원·보안요원·방문객)
   rabbit2: {f:'#e8d9bd',F:'#fbf3e6',d:'#cbb08c',i:'#f4b8c0',ears:'long'},
   cat2:    {f:'#cbb08c',F:'#f4ead8',d:'#9c8060',ears:'pointed',mark:'cat'},
@@ -724,6 +727,7 @@ function drawHead(g,K,p,dir,blink){
     if(K.mark==='cow'){ ell(g,cx-5,cy-3,4,3,d); ell(g,cx+6,cy+3,3,2,d); }
     if(K.mark==='giraffe'){ ell(g,cx-5,cy-4,2,1,d); ell(g,cx+4,cy-1,2,2,d); ell(g,cx-2,cy+4,2,1,d); }
     if(K.mark==='horse') R(g,cx-2,cy-10,4,16,d);
+    if(K.mark==='badger') R(g,cx-2,cy-9,4,11,F);
     if(K.mark==='raccoon'){ R(g,cx-8,cy+3,16,2,d); }
     if(K.mark==='calico'){ ell(g,cx-5,cy-4,4,3,'#e89a4a'); ell(g,cx+5,cy-2,4,3,'#3a302c'); }
     drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return;
@@ -738,6 +742,8 @@ function drawHead(g,K,p,dir,blink){
     if(K.mark==='giraffe'){ ell(g,cx+5,cy-3,2,1,d); ell(g,cx+3,cy+4,2,1,d); }
     if(K.mark==='horse'){ R(g,cx+3,cy-10,4,12,d); R(g,cx+5,cy-7,4,10,d); }
     if(K.mark==='raccoon') R(g,cx-8,cy-2,10,5,d);
+    if(K.mark==='redpanda'){ ell(g,cx-4,cy+5,5,3,F); P(g,cx-5,cy-5,F); P(g,cx-4,cy-5,F); R(g,cx-6,cy+1,1,4,d); }
+    if(K.mark==='badger'){ R(g,cx-7,cy-9,9,2,F); R(g,cx-8,cy-5,10,4,d); ell(g,cx-6,cy+4,4,2,F); }
     if(K.mark==='calico'){ ell(g,cx+4,cy-5,4,3,'#e89a4a'); ell(g,cx+6,cy+2,2,2,'#3a302c'); }
     R(g,mx-5,my-2,3,2,nose); P(g,mx-5,my-2,sh(nose,0.4));
     if(K.ears==='frog'){ disc(g,cx-4,cy-9,4,f); disc(g,cx-4,cy-9,3,'#ffffff'); if(blink) R(g,cx-6,cy-9,3,1,eye); else R(g,cx-6,cy-10,2,3,eye); R(g,mx-4,my+1,8,1,d); }
@@ -758,6 +764,8 @@ function drawHead(g,K,p,dir,blink){
   if(K.mark==='giraffe'){ ell(g,cx-7,cy-4,2,1,d); ell(g,cx+7,cy-5,2,2,d); ell(g,cx+8,cy+4,1,1,d); }
   if(K.mark==='horse'){ R(g,cx-3,cy-10,6,5,d); R(g,cx-1,cy-6,3,3,d); }
   if(K.mark==='raccoon'){ ell(g,cx-5,cy,4,3,d); ell(g,cx+5,cy,4,3,d); R(g,cx-5,cy-1,10,2,d); }
+  if(K.mark==='redpanda'){ ell(g,cx-6,cy+4,4,3,F); ell(g,cx+6,cy+4,4,3,F); ell(g,cx-5,cy-5,2,1,F); ell(g,cx+5,cy-5,2,1,F); R(g,cx-6,cy+2,1,4,d); R(g,cx+5,cy+2,1,4,d); }
+  if(K.mark==='badger'){ R(g,cx-2,cy-9,4,13,F); R(g,cx-7,cy-8,4,10,d); R(g,cx+4,cy-8,4,10,d); ell(g,cx-9,cy+3,2,2,F); ell(g,cx+9,cy+3,2,2,F); }
   if(K.mark==='calico'){ ell(g,cx-6,cy-5,4,3,'#e89a4a'); ell(g,cx+6,cy-6,3,2,'#3a302c'); }
   ell(g,cx,cy+5,K.mark==='horse'?6:5,K.mark==='horse'?4:3,F);
   if(K.ears==='frog'){
@@ -799,6 +807,7 @@ function drawBody(g,K,p,dir,frame,sit){
     if(p.bag) R(g,19,27,5,10,p.bag);
     R(g,14+ax,28,4,7,sD); R(g,14+ax,35,4,3,hand); R(g,14+ax,35,4,1,sh(hand,0.25));
     if(p.scarf) R(g,12,25,9,3,p.scarf);
+    if(p.apron){ R(g,11,32,9,8,p.apron); R(g,11,32,9,1,sh(p.apron,0.3)); }
     drawCarry(g,p,'left',14+ax);
     return;
   }
@@ -808,6 +817,7 @@ function drawBody(g,K,p,dir,frame,sit){
   R(g,10,27,12,10,s); R(g,11,26,10,2,s); R(g,20,28,2,9,sD); R(g,10,36,12,1,sD); R(g,10,28,2,7,sL);
   if(sit&&dir==='down'){ R(g,10,37,12,2,pa); R(g,15,37,2,2,pD); R(g,10,39,5,2,sho); R(g,17,39,5,2,sho); R(g,10,39,5,1,shoL); R(g,17,39,5,1,shoL); }   // 앉음: 무릎과 구두 끝
   if(dir==='down'){ R(g,13,26,6,2,sL); P(g,15,28,sL); P(g,16,28,sL); P(g,16,31,sD); P(g,16,34,sD); }   // 옷깃과 단추
+  if(p.apron&&dir!=='up'){ R(g,11,32,10,8,p.apron); R(g,11,32,10,1,sh(p.apron,0.3)); R(g,10,31,12,1,sh(p.apron,-0.2)); }
   if(dir==='down'&&p.bow){ R(g,13,27,2,3,p.bow); R(g,17,27,2,3,p.bow); R(g,15,28,2,1,sh(p.bow,-0.3)); }  // 나비넥타이
   var aL = frame===1 ? -1 : frame===2 ? 1 : 0;
   R(g,7,28+aL,3,7,s); R(g,7,28+aL,1,7,sL); R(g,22,28-aL,3,7,sD);
@@ -826,6 +836,8 @@ function drawCarry(g,p,dir,hx){
   if(it==='case'){ R(g,hx-1,36,9,7,'#7a4a2a'); R(g,hx-1,36,9,1,'#9a6a44'); R(g,hx+2,34,3,2,'#5a3420'); }
   else if(it==='laptop'){ R(g,dir==='down'?5:hx+3,29,3,10,'#aeb6bf'); R(g,dir==='down'?5:hx+3,29,1,10,'#d8dde2'); }
   else if(it==='file'){ R(g,hx-1,31,7,9,'#e8a040'); R(g,hx-1,31,7,1,'#f4c070'); }
+  else if(it==='tray'){ var tx=dir==='down'?hx+1:hx; R(g,tx+1,29,2,7,sh(p.shirt,-0.2));                      // 어깨높이로 든 은쟁반과 잔
+    ell(g,tx+2,28,7,2,'#c9cfd4'); ell(g,tx+2,27,6,1,'#eef1f3'); R(g,tx-2,22,3,5,'#f2d06a'); R(g,tx-2,22,3,1,'#ffffff'); R(g,tx+3,21,3,6,'#e8a0b0'); R(g,tx+3,21,3,1,'#ffffff'); }
   else if(it==='paper'){ R(g,hx-1,32,6,8,'#ffffff'); R(g,hx,34,4,1,'#b8b2a6'); R(g,hx,36,3,1,'#b8b2a6'); }
 }
 function buildChar(p, dir, frame, blink, sit){
@@ -1559,6 +1571,9 @@ var F2LOOK={
   v2:{id:'v2', kind:'dog3',    shirt:'#9aa0a6', pants:'#6f757c', tie:'#4a5f7a', item:'laptop'},
   v3:{id:'v3', kind:'bear3',   shirt:'#3c4450', pants:'#2c333d', tie:'#8f3f3f', item:'file'},
   v4:{id:'v4', kind:'rabbit3', shirt:'#e0cfab', pants:'#9c8a66', scarf:'#c98a7a', bag:'#7a6a58'},
+  bartender:{id:'bartender', kind:'redpanda', shirt:'#2c2a30', pants:'#26242a', bow:'#8a2434'},
+  server:   {id:'server',    kind:'badger',   shirt:'#fbf7ef', pants:'#2c2a30', tie:'#2c2a30', apron:'#3a3438'},
+  serverTray:{id:'server',   kind:'badger',   shirt:'#fbf7ef', pants:'#2c2a30', tie:'#2c2a30', apron:'#3a3438', item:'tray'},
   v5:{id:'v5', kind:'calico',  shirt:'#f2efe6', pants:'#b8b2a4', scarf:'#a8bfa0', item:'paper'}
 };
 MAP2.SWITCH=SWITCH2; MAP2.SIGN=SIGN2; MAP2.CLOCK=CLOCK2; MAP2.TANK=TANK2;
