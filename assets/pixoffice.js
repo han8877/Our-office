@@ -1594,12 +1594,211 @@ function drawBigTank(g,t){
   var bt=Math.floor(t/70); for(var i=0;i<10;i++){ var bx=X+30+i*44, by=Y+120-((bt+i*11)%110); P(g,bx,by,'#e6f8ff'); if(i%2) P(g,bx+1,by-2,'#e6f8ff'); }
 }
 
+// =====================================================================
+//  옥상 정원 (L층) — 서울이 한눈에 보이는 도심 속 정원
+//  위쪽 띠(0~200px)는 비워 두고 엔진이 하늘·서울 풍경을 먼저 그린다 (PixCity.roofSky).
+//  유리 난간 · 데크 · 차양 아래 라운지 · 파라솔 테이블 · 잔디와 연못 · 텃밭 · 벤치 · 전구 줄 · 새들 · 밤 부엉이
+// =====================================================================
+var ROOF_H=200;                                            // 풍경 띠 높이
+function deck(g,x0,y0,x1,y1){                              // 나무 데크: 세로 널, 널마다 이음새
+  var tones=['#caa27a','#bf966c','#d3ae86','#c49c72'];
+  for(var x=x0;x<x1;x+=16){ var c=tones[Math.floor(rnd(x*0.37)*4)];
+    R(g,x,y0,15,y1-y0,c); R(g,x,y0,1,y1-y0,sh(c,0.18)); R(g,x+15,y0,1,y1-y0,'#8a6a4a');
+    for(var y=y0+Math.floor(rnd(x)*120);y<y1;y+=120+Math.floor(rnd(x+y)*80)){ R(g,x,y,15,1,'#9a7650'); }
+    for(var k=0;k<(y1-y0)/40;k++) P(g,x+4+Math.floor(rnd(x+k*7)*8),y0+Math.floor(rnd(x*3+k)*(y1-y0)),sh(c,-0.12)); }
+}
+function pGlassRail(w){ return obj(w,34,function(g){       // 유리 난간: 나무 손잡이 · 스틸 기둥
+  g.fillStyle='rgba(206,228,238,0.42)'; g.fillRect(0,6,w,24);
+  for(var x=0;x<w;x+=48){ R(g,x,6,1,24,'rgba(255,255,255,0.7)'); line(g,x+10,28,x+22,8,'rgba(255,255,255,0.5)'); }
+  for(var p=0;p<w;p+=96){ R(g,p,4,4,30,'#8a929a'); R(g,p,4,1,30,'#c9cfd4'); }
+  R(g,0,0,w,6,'#b98a5c'); R(g,0,0,w,2,'#d8b088'); R(g,0,5,w,1,'#8a6444'); R(g,0,30,w,4,'#9aa2a8'); }, true); }
+function pPenthouse(){ return obj(128,160,function(g){     // 엘리베이터 탑: 크림 벽 · 평지붕 화단 · 문
+  R(g,0,0,128,10,'#b8b2a6'); R(g,0,0,128,2,'#d8d2c6'); for(var x=6;x<124;x+=9){ disc(g,x,2,4,'#5f9e5c'); disc(g,x+3,0,3,'#7ab870'); }
+  R(g,0,10,128,150,'#efe8dc'); R(g,0,10,128,2,'#fbf6ee'); R(g,122,12,6,148,'#d8cfc0');
+  for(var y=24;y<150;y+=14) R(g,0,y,122,1,'#e2d8c8');
+  R(g,30,76,64,84,'#8a929a'); R(g,34,80,56,80,'#c9cfd4'); R(g,61,80,2,80,'#9aa2a8'); R(g,34,80,56,2,'#e2e5e8');
+  R(g,52,60,20,10,'#2a2e34'); R(g,55,62,6,6,'#f0c060'); R(g,63,63,6,4,'#6fd0c0');
+  R(g,100,100,6,12,'#c9cfd4'); disc(g,103,104,1,'#8a929a'); disc(g,103,109,1,'#8a929a');
+  R(g,8,40,16,20,'#b8d4e2'); R(g,8,40,16,2,'#e2eef4'); R(g,15,40,1,20,'#8aa0ae'); }); }
+function pOutSofa(){ return obj(128,50,function(g){       // 라탄 야외 소파 + 크림 쿠션
+  var r='#a8845c', rd='#86663f';
+  R(g,0,6,128,40,r); for(var x=2;x<126;x+=4) R(g,x,8,2,36,rd); R(g,0,6,128,2,'#c49e74');
+  R(g,10,0,108,22,'#f4ecdc'); R(g,10,0,108,2,'#fffaf0'); R(g,46,2,1,20,'#ddd2be'); R(g,82,2,1,20,'#ddd2be');
+  R(g,10,22,108,16,'#fbf6ea'); R(g,10,22,108,2,'#ffffff'); R(g,46,22,1,16,'#ddd2be'); R(g,82,22,1,16,'#ddd2be');
+  R(g,16,4,16,14,'#a9c9b4'); R(g,96,4,16,14,'#f2c1a8'); R(g,4,46,6,4,rd); R(g,118,46,6,4,rd); }); }
+function pRattanChair(){ return obj(40,44,function(g){
+  var r='#a8845c', rd='#86663f'; R(g,2,4,36,34,r); for(var x=4;x<36;x+=4) R(g,x,6,2,30,rd);
+  R(g,6,0,28,16,'#f4ecdc'); R(g,8,16,24,14,'#fbf6ea'); R(g,8,16,24,2,'#ffffff'); R(g,4,38,4,6,rd); R(g,32,38,4,6,rd); }); }
+function pOutTable(){ return obj(64,34,function(g){        // 티크 낮은 테이블 + 찻잔 · 화분
+  R(g,2,8,60,14,'#b98a5c'); R(g,2,8,60,2,'#d2a878'); R(g,2,22,60,4,'#8a6444'); R(g,6,26,4,8,'#7a5436'); R(g,54,26,4,8,'#7a5436');
+  disc(g,18,12,3,'#ffffff'); disc(g,18,12,2,'#c98a5a'); R(g,36,4,10,8,'#e8e2d6'); disc(g,41,3,4,'#6ab86e'); disc(g,38,1,2,'#f7a8c8'); }); }
+function pOutRug(w,h){ return obj(w,h,function(g){          // 야외 러그: 줄무늬
+  R(g,0,0,w,h,'#efe4cc'); for(var y=6;y<h;y+=14){ R(g,0,y,w,4,'#d8c4a0'); R(g,0,y+6,w,1,'#c9a27a'); } R(g,0,0,w,2,'#c9a27a'); R(g,0,h-2,w,2,'#c9a27a'); }, true); }
+function pBistro(){ return obj(64,50,function(g){           // 둥근 비스트로 테이블 + 의자 둘
+  [[4,20],[46,20]].forEach(function(c){ R(g,c[0],c[1],14,16,'#3a3f46'); R(g,c[0],c[1],14,2,'#5a616b'); R(g,c[0]+2,c[1]+16,2,12,'#3a3f46'); R(g,c[0]+10,c[1]+16,2,12,'#3a3f46'); ell(g,c[0]+7,c[1]+14,8,3,'#4a5058'); });
+  R(g,30,24,4,24,'#3a3f46'); ell(g,32,48,9,2,'#3a3f46'); ell(g,32,22,17,7,'#fbfaf6'); ell(g,32,21,16,6,'#ffffff');
+  disc(g,26,20,2,'#c98a5a'); R(g,34,17,6,5,'#f2d06a'); }); }
+function pParasol(c){ return obj(96,70,function(g){        // 줄무늬 파라솔 (위에서 덮는 차양)
+  R(g,46,30,4,40,'#e8e2d6'); R(g,46,30,1,40,'#ffffff');
+  for(var i=0;i<8;i++){ var a0=Math.PI+i*Math.PI/8, a1=a0+Math.PI/8; tri(g,48,6,48+Math.round(Math.cos(a0)*48),32+Math.round(Math.sin(a0)*6+12),48+Math.round(Math.cos(a1)*48),32+Math.round(Math.sin(a1)*6+12),i%2?c:'#fbf6ea'); }
+  ell(g,48,40,48,6,'rgba(0,0,0,0)'); disc(g,48,5,3,'#e8e2d6'); R(g,0,43,96,2,sh(c,-0.2)); }); }
+function pShadeSail(w,h){ return obj(w,h,function(g){      // 삼각 차양 둘 (반투명)
+  g.fillStyle='rgba(250,244,230,0.5)'; g.beginPath(); g.moveTo(0,0); g.lineTo(w,8); g.lineTo(w*0.45,h); g.closePath(); g.fill();
+  g.fillStyle='rgba(232,168,140,0.34)'; g.beginPath(); g.moveTo(w,0); g.lineTo(w*0.2,h*0.15); g.lineTo(w*0.75,h); g.closePath(); g.fill();
+  g.strokeStyle='rgba(160,130,100,0.8)'; g.lineWidth=1; g.beginPath(); g.moveTo(0,0); g.lineTo(w,8); g.lineTo(w*0.45,h); g.closePath(); g.stroke(); }, true); }
+function pPost(){ return obj(8,120,function(g){ R(g,2,4,4,116,'#6a6f76'); R(g,2,4,1,116,'#9aa2a8'); R(g,0,0,8,5,'#4a5058'); ell(g,4,118,4,2,'#4a5058'); }); }
+function pGardenBed(w,kind){ return obj(w,44,function(g){  // 나무 화단/텃밭
+  R(g,0,16,w,28,'#a8764a'); R(g,0,16,w,3,'#c49a6c'); for(var x=0;x<w;x+=20) R(g,x,19,1,25,'#86582f'); R(g,0,40,w,4,'#86582f');
+  R(g,3,12,w-6,8,'#6a4a36');
+  for(var i=0;i<w/7;i++){ var x2=4+i*7+Math.floor(rnd(i+w)*3);
+    if(kind==='veg'){ disc(g,x2,10,4,i%2?'#7ac070':'#5aa85a'); disc(g,x2+1,8,2,'#a8e0a0'); if(i%3===0){ disc(g,x2,6,2,'#e05a4a'); } }
+    else if(kind==='herb'){ for(var k=0;k<4;k++) R(g,x2+k-1,4+k,1,10-k,'#5a9a52'); P(g,x2,3,'#9ad89a'); }
+    else { var fc=['#f7a8c8','#fbe98a','#c8a8ec','#ffffff','#f5a050'][i%5]; R(g,x2,6,1,8,'#5a9a52'); disc(g,x2,5,2,fc); P(g,x2,5,'#f5c542'); disc(g,x2+3,10,2,'#6ab86e'); } } }); }
+function pLavender(){ return obj(34,40,function(g){ R(g,6,24,22,16,'#e8e2d6'); R(g,6,24,22,2,'#ffffff'); R(g,24,26,4,14,'#cfc8ba');
+  for(var i=0;i<9;i++){ var x=8+i*2; R(g,x,8+(i%3)*2,1,16,'#6a8a5a'); R(g,x-1,6+(i%3)*2,2,6,'#a88ad0'); P(g,x,5+(i%3)*2,'#c8b0ec'); } }); }
+function pLawn(w,h){ return obj(w,h,function(g){             // 잔디 + 징검돌
+  R(g,0,0,w,h,'#8cc47a'); for(var i=0;i<w*h/60;i++){ var x=Math.floor(rnd(i*1.7)*w), y=Math.floor(rnd(i*2.9)*h); R(g,x,y,1,2,i%2?'#a8d890':'#6aa85e'); }
+  R(g,0,0,w,2,'#6aa85e'); R(g,0,h-2,w,2,'#6aa85e'); R(g,0,0,2,h,'#6aa85e'); R(g,w-2,0,2,h,'#6aa85e');
+  for(var s=0;s<7;s++){ var sx=18+s*((w-36)/6), sy=h-24-Math.round(Math.sin(s*0.9)*14); ell(g,sx,sy,9,5,'#d8d2c6'); ell(g,sx,sy-1,8,4,'#ece8e0'); } }, true); }
+function pPond(){ return obj(128,70,function(g){           // 작은 연못: 돌 테두리 · 수련
+  ell(g,64,36,62,32,'#b8b2a6'); ell(g,64,35,56,27,'#6fb3d8'); ell(g,60,32,44,20,'#8ac8e8'); ell(g,50,26,16,4,'#c8ecfa');
+  [[40,40],[82,30],[92,46]].forEach(function(l){ disc(g,l[0],l[1],6,'#5aa85a'); tri(g,l[0],l[1],l[0]+6,l[1]-3,l[0]+6,l[1]+2,'#8ac8e8'); });
+  disc(g,82,28,3,'#f7c8d8'); disc(g,82,28,1,'#f5c542');
+  for(var i=0;i<14;i++){ var a=i/14*Math.PI*2; disc(g,64+Math.round(Math.cos(a)*60),36+Math.round(Math.sin(a)*30),4,i%2?'#cfc8ba':'#b8b2a6'); } }); }
+function pBirdBath(){ return obj(30,40,function(g){ R(g,12,14,6,24,'#d8d2c6'); ell(g,15,38,9,3,'#c9c2b4'); ell(g,15,12,14,5,'#e8e2d6'); ell(g,15,11,11,3,'#8ac8e8'); }); }
+function pOutBench(){ return obj(96,40,function(g){         // 나무 벤치 (등받이 없이)
+  for(var y=10;y<24;y+=5){ R(g,0,y,96,4,'#c49a6c'); R(g,0,y,96,1,'#dcb88a'); }
+  R(g,0,24,96,3,'#8a6444'); R(g,6,27,5,13,'#3a3f46'); R(g,85,27,5,13,'#3a3f46'); R(g,6,27,84,2,'#3a3f46'); }); }
+function pLounger(){ return obj(40,72,function(g){         // 선베드 (세로)
+  R(g,4,0,32,26,'#fbf6ea'); R(g,4,0,32,2,'#ffffff'); for(var y=4;y<26;y+=6) R(g,6,y,28,1,'#e8dcc6');
+  R(g,2,24,36,44,'#fbf6ea'); R(g,2,24,36,2,'#ffffff'); for(var y2=30;y2<68;y2+=8) R(g,4,y2,32,1,'#e8dcc6');
+  R(g,0,20,40,4,'#b98a5c'); R(g,0,64,40,4,'#b98a5c'); R(g,2,68,4,4,'#8a6444'); R(g,34,68,4,4,'#8a6444'); R(g,10,6,20,10,'#a9c9b4'); }); }
+function pPicnic(){ return obj(128,64,function(g){         // 피크닉 테이블 + 긴 의자 둘
+  [0,50].forEach(function(y){ R(g,4,y+2,120,8,'#b98a5c'); R(g,4,y+2,120,2,'#d2a878'); R(g,8,y+10,4,4,'#7a5436'); R(g,116,y+10,4,4,'#7a5436'); });
+  R(g,0,16,128,26,'#c49a6c'); R(g,0,16,128,3,'#dcb88a'); for(var x=0;x<128;x+=32) R(g,x,19,1,23,'#9a7650'); R(g,0,40,128,3,'#8a6444');
+  R(g,20,22,20,12,'#fbfaf6'); R(g,22,24,16,8,'#f2d06a'); R(g,70,24,12,8,'#e8a0b0'); disc(g,100,28,4,'#ffffff'); disc(g,100,28,2,'#8aa86a'); }); }
+function pSwingChair(){ return obj(48,96,function(g){      // 흔들 의자 (행잉 체어)
+  R(g,4,0,40,4,'#6a4a36'); R(g,6,4,3,92,'#6a4a36'); R(g,39,4,3,92,'#6a4a36'); ell(g,24,94,22,3,'#6a4a36');
+  line(g,24,4,24,30,'#8a6444'); ell(g,24,52,16,20,'#c49a6c'); ell(g,24,52,13,17,'#a8764a'); for(var y=38;y<70;y+=4) R(g,12,y,24,1,'#d8b88a');
+  ell(g,24,60,11,8,'#fbf6ea'); R(g,17,54,10,8,'#f2c1a8'); }); }
+function pZelkova(){ return obj(120,150,function(g){        // 커다란 느티나무 (부엉이 자리)
+  R(g,40,110,40,40,'#e8e2d6'); R(g,38,106,44,6,'#d8d2c6'); R(g,40,110,6,40,'#fbf8f2'); R(g,74,110,6,40,'#cfc8ba');
+  R(g,56,60,8,52,'#7a5a3e'); R(g,56,60,3,52,'#9a7652'); line(g,60,76,32,56,'#7a5a3e'); line(g,60,74,33,55,'#7a5a3e'); line(g,60,70,90,52,'#7a5a3e'); line(g,61,70,91,53,'#7a5a3e');
+  var cs=['#4f8e56','#5fa062','#3f7a48','#72b26e'];
+  [[60,36,44,30],[28,48,24,18],[92,44,24,20],[40,20,22,16],[80,18,22,16],[60,58,30,12]].forEach(function(c,k){ ell(g,c[0],c[1],c[2],c[3],cs[k%4]); });
+  for(var i=0;i<90;i++){ var x=16+Math.floor(rnd(i*2.3)*88), y=6+Math.floor(rnd(i*3.9)*58); R(g,x,y,2,1,cs[i%4]); } }); }
+function pMaple(){ return obj(56,96,function(g){
+  R(g,16,72,24,24,'#e8e2d6'); R(g,16,72,24,3,'#ffffff'); R(g,26,44,4,30,'#7a5a3e');
+  var cs=['#e0704a','#f0905a','#c85a3a','#f5b060']; [[28,30,22,18],[16,40,12,10],[40,38,12,10],[28,14,14,11]].forEach(function(c,k){ ell(g,c[0],c[1],c[2],c[3],cs[k%4]); });
+  for(var i=0;i<40;i++) R(g,8+Math.floor(rnd(i*1.9)*40),6+Math.floor(rnd(i*2.7)*44),2,1,cs[i%4]); }); }
+function pGrassPot(){ return obj(34,56,function(g){ R(g,6,38,22,18,'#4a4e56'); R(g,6,38,22,2,'#6a6f78');
+  for(var i=0;i<12;i++){ var x=8+i*1.6|0; line(g,17,38,x+Math.round(Math.sin(i)*6),6+(i%4)*4,i%2?'#a8b87a':'#c8c890'); } }); }
+function pLantern2(){ return obj(20,44,function(g){ R(g,8,20,4,24,'#3a3f46'); R(g,3,4,14,18,'#3a3f46'); R(g,5,6,10,14,'#fbe8b0'); R(g,2,2,16,3,'#2a2e34'); }); }
+
+function pBeanBag(c){ return obj(40,34,function(g){ ell(g,20,22,18,11,sh(c,-0.15)); ell(g,20,19,17,10,c); ell(g,14,14,7,4,sh(c,0.3)); ell(g,20,28,14,3,sh(c,-0.3)); }); }
+function pLowTable(){ return obj(48,26,function(g){ ell(g,24,12,22,8,'#b98a5c'); ell(g,24,11,21,7,'#d2a878'); R(g,22,16,4,10,'#8a6444'); disc(g,18,9,3,'#ffffff'); disc(g,18,9,2,'#c98a5a'); R(g,26,6,8,6,'#f2d06a'); }); }
+function pOlivePot(){ return obj(40,72,function(g){ R(g,10,50,20,22,'#e8e2d6'); R(g,8,48,24,4,'#c9a25c'); R(g,18,30,4,20,'#7a6450');
+  [[20,22,14,12],[10,30,8,7],[30,28,8,7],[20,12,9,8]].forEach(function(c,k){ ell(g,c[0],c[1],c[2],c[3],k%2?'#8fa88a':'#6f8a6a'); });
+  for(var i=0;i<24;i++) R(g,6+Math.floor(rnd(i*2.1)*28),6+Math.floor(rnd(i*3.3)*30),2,1,'#a8bea0'); }); }
+function pWateringCan(){ return obj(24,18,function(g){ R(g,4,6,12,12,'#6fb3b8'); R(g,4,6,12,2,'#9ad0d4'); line(g,16,10,22,4,'#6fb3b8'); R(g,6,2,8,2,'#4a8a90'); }); }
+var MAPR=newMap(); useMap(MAPR);
+// 데크 · 난간 벽
+deck(bgc,32,ROOF_H+24,W-32,H-32);
+R(bgc,0,ROOF_H,32,H-ROOF_H,'#d8d2c6'); R(bgc,W-32,ROOF_H,32,H-ROOF_H,'#d8d2c6'); R(bgc,0,H-32,W,32,'#d8d2c6');
+R(bgc,24,ROOF_H,8,H-ROOF_H,'#c9c2b4'); R(bgc,W-32,ROOF_H,8,H-ROOF_H,'#c9c2b4'); R(bgc,0,H-32,W,6,'#c9c2b4');
+R(bgc,0,ROOF_H,32,4,'#ece8e0'); R(bgc,W-32,ROOF_H,32,4,'#ece8e0');
+bgc.drawImage(pGlassRail(W-64),31,ROOF_H-10);
+block(0,0,COLS-1,6); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0,ROWS-1,COLS-1,ROWS-1);
+// 엘리베이터 탑 (왼쪽 위, 문은 아래로)
+put(pPenthouse(),32,8*T+32-160,9*T,[1,7,4,8]);
+var ROOF_ELEV={ x:32, y:9*T-160, w:128, h:160 };
+// 난간 따라 라벤더와 억새 화분
+[6,8,24,26,30,33].forEach(function(c){ onTile(pLavender(),c,7,c,7); });
+[10,22].forEach(function(c){ onTile(pGrassPot(),c,7,c,7); });
+// 라운지: 러그 · 야외 소파 · 라탄 의자 · 낮은 테이블 · 차양
+bgc.drawImage(pOutRug(10*T,5*T),11*T,9*T);
+onTile(pOutSofa(),13,9,16,9); onTile(pRattanChair(),11,11,11,11); onTile(pRattanChair(),20,11,20,11); onTile(pOutTable(),14,11,15,11);
+[[11,8],[21,8],[11,14],[21,14]].forEach(function(p){ put(pPost(),p[0]*T+12,p[1]*T+32-120,p[1]*T+32,[p[0],p[1],p[0],p[1]]); });
+things.push({img:pShadeSail(10*T+8,5*T-8),x:11*T+12,y:8*T-70,sy:9990});
+// 파라솔 테이블 셋
+[[24,10],[28,10],[26,13]].forEach(function(p){ onTile(pBistro(),p[0],p[1],p[0]+1,p[1]); things.push({img:pParasol(p[0]===26?'#8fae96':'#e8a88c'),x:p[0]*T-16,y:p[1]*T-58,sy:9989}); });
+// 느티나무 (밤엔 부엉이) · 단풍
+onTile(pZelkova(),31,14,33,17); var OWL={ x:31*T+22, y:14*T+2 };
+onTile(pMaple(),22,16,23,17);
+// 텃밭 · 허브 · 꽃 화단 (왼쪽)
+onTile(pGardenBed(96,'veg'),2,11,4,11); onTile(pGardenBed(96,'herb'),2,14,4,14); onTile(pGardenBed(96,'flower'),2,17,4,17); onTile(pGardenBed(64,'flower'),6,20,7,20);
+// 잔디 · 징검돌 · 연못 · 새 물그릇
+bgc.drawImage(pLawn(12*T,7*T),9*T,16*T);
+onTile(pPond(),13,18,16,19); onTile(pBirdBath(),19,17,19,17);
+onTile(pGardenBed(64,'flower'),9,23,10,23); onTile(pGardenBed(64,'flower'),19,23,20,23);
+// 쉬는 자리: 선베드 · 벤치 · 피크닉 테이블 · 흔들 의자 · 등
+onTile(pLounger(),24,20,24,21); onTile(pLounger(),26,20,26,21); onTile(pLounger(),28,20,28,21);
+onTile(pOutBench(),3,26,5,26); onTile(pOutBench(),12,26,14,26); onTile(pOutBench(),30,26,32,26);
+onTile(pPicnic(),17,25,20,26); onTile(pSwingChair(),34,20,34,22);
+[[7,26],[22,26],[27,26],[34,26]].forEach(function(p){ onTile(pLantern2(),p[0],p[1],p[0],p[1]); });
+onTile(pPlant('tall','#4a4e56'),1,23,1,23);
+// 빈 곳 채우기: 빈백과 낮은 탁자 · 올리브 화분 · 텃밭 옆 벤치 · 물뿌리개
+onTile(pBeanBag('#e8a88c'),25,16,25,16); onTile(pBeanBag('#a9c9b4'),28,16,28,16); onTile(pBeanBag('#f2d06a'),26,18,26,18); onTile(pLowTable(),26,16,27,16);
+onTile(pOlivePot(),7,12,7,12); onTile(pOlivePot(),7,15,7,15); onTile(pOutBench(),5,17,7,17); put(pWateringCan(),5*T+8,11*T+20,11*T+38);
+onTile(pGrassPot(),22,21,22,21); onTile(pLavender(),29,24,29,24); onTile(pLavender(),10,21,10,21); onTile(pPlant('monstera','#e8e2d6'),8,11,8,11); onTile(pGrassPot(),1,28,1,28); onTile(pPlant('bush','#e8e2d6'),34,28,34,28);
+// 전구 줄: 기둥 사이로 늘어진 줄 (밤이 되면 불이 들어온다)
+var BULB_LINES=[[[11*T+16,8*T-84],[21*T+16,8*T-84]],[[11*T+16,14*T-84],[21*T+16,14*T-84]],[[11*T+16,8*T-84],[11*T+16,14*T-84]],[[21*T+16,8*T-84],[21*T+16,14*T-84]],
+  [[21*T+16,8*T-84],[34*T,8*T-60]],[[21*T+16,14*T-84],[34*T,11*T-40]]];
+var BULBS=[]; BULB_LINES.forEach(function(L){ var a=L[0], b=L[1], n=Math.max(4,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/18));
+  for(var i=0;i<=n;i++){ var t=i/n; BULBS.push({ x:Math.round(a[0]+(b[0]-a[0])*t), y:Math.round(a[1]+(b[1]-a[1])*t+Math.sin(t*Math.PI)*16), c:['#ffe8a0','#ffd0a0','#fff4c8'][i%3] }); } });
+function drawBulbWires(g){ BULB_LINES.forEach(function(L){ var a=L[0], b=L[1]; g.strokeStyle='rgba(60,50,40,0.7)'; g.lineWidth=1; g.beginPath(); g.moveTo(a[0],a[1]);
+  g.quadraticCurveTo((a[0]+b[0])/2,(a[1]+b[1])/2+32,b[0],b[1]); g.stroke(); }); BULBS.forEach(function(b){ R(g,b.x-1,b.y,3,4,'#e8e2d6'); P(g,b.x,b.y-1,'#6a6f76'); }); }
+things.push({sy:9995, draw:drawBulbWires});
+
+// ---- 새들 (낮) · 부엉이 (밤) ----
+function roofPhase(){ var p=document.body.getAttribute('data-sky'); return (p && TINT.hasOwnProperty(p)) ? p : phase(new Date().getHours()); }
+function isNight(ph){ return ph==='night' || ph==='dusk'; }
+function sparrow(g,x,y,f,peck){ ell(g,x,y,4,3,'#a8764a'); ell(g,x-1,y+1,3,2,'#e8d8c0'); disc(g,x+3,y-2-(peck?-2:0),2,'#8a5a3a'); P(g,x+4,y-2+(peck?2:0),'#2a2020'); P(g,x+6,y-1+(peck?2:0),'#3a3030'); R(g,x-5,y-1,2,2,'#6a4a2e'); R(g,x-1,y+3,1,1+f,'#6a4a2e'); R(g,x+1,y+3,1,1+(1-f),'#6a4a2e'); }
+function pigeon(g,x,y,f){ ell(g,x,y,6,4,'#9aa2ae'); ell(g,x-1,y-1,4,2,'#b8c0cc'); disc(g,x+5,y-4+f,3,'#7a8494'); P(g,x+6,y-4+f,'#e0a040'); R(g,x+4,y-2,3,2,'#6aa89a'); R(g,x+8,y-4+f,2,1,'#c8a0a0'); R(g,x-8,y-1,3,2,'#5a6270'); R(g,x-1,y+4,1,2,'#d06a6a'); R(g,x+2,y+4,1,2,'#d06a6a'); }
+function magpie(g,x,y,t){ var up=Math.floor(t/600)%2; ell(g,x,y,5,4,'#1e2228'); ell(g,x,y+1,3,2,'#ffffff'); disc(g,x+5,y-3,3,'#1e2228'); P(g,x+8,y-3,'#2a2e34'); R(g,x-12,y-2-up*2,8,2,'#2a3a5a'); R(g,x-4,y-3,4,2,'#ffffff'); R(g,x,y+4,1,2,'#2a2020'); R(g,x+2,y+4,1,2,'#2a2020'); }
+function azure(g,x,y,t){ var up=Math.floor(t/500)%2; ell(g,x,y,4,3,'#c8c0b8'); disc(g,x+4,y-2,3,'#1e2228'); P(g,x+5,y-1,'#ffffff'); R(g,x-11,y-1+up,8,2,'#6a9ad0'); R(g,x-3,y-2,4,2,'#7aa8d8'); P(g,x+7,y-2,'#2a2e34'); }
+function owl(g,x,y,t){ var bob=Math.round(Math.sin(t*0.0016)*1.5), yy=y+bob, peek=(t%9000)<700;
+  ell(g,x,yy,8,10,'#8a6a4a'); ell(g,x,yy+3,6,6,'#d8c0a0'); for(var i=0;i<4;i++) P(g,x-3+i*2,yy+2+(i%2),'#a8845c');
+  tri(g,x-7,yy-7,x-5,yy-13,x-3,yy-8,'#6a4a2e'); tri(g,x+7,yy-7,x+5,yy-13,x+3,yy-8,'#6a4a2e');
+  disc(g,x-3,yy-4,3,'#e8d8b8'); disc(g,x+3,yy-4,3,'#e8d8b8');
+  if(peek){ disc(g,x-3,yy-4,1,'#f0c040'); P(g,x-3,yy-4,'#1e1a18'); R(g,x+1,yy-4,4,1,'#3a2a1e'); } else { R(g,x-5,yy-4,4,1,'#3a2a1e'); R(g,x+1,yy-4,4,1,'#3a2a1e'); }
+  tri(g,x-1,yy-2,x+1,yy-2,x,yy,'#c89040'); R(g,x-3,yy+10,2,2,'#c89040'); R(g,x+1,yy+10,2,2,'#c89040');
+  var zt=(t/1200)%3; g.fillStyle='rgba(90,110,170,'+(0.9-zt*0.28).toFixed(2)+')'; g.font='bold 8px NeoDGM, sans-serif'; g.fillText('z',x+9+zt*4,yy-10-zt*6); if(zt>1) g.fillText('z',x+12+(zt-1)*4,yy-18-(zt-1)*6); }
+// 낮 새들: 자리 몇 곳을 오가며 콕콕
+var BIRD_SPOTS={ lawn:[[11*T,19*T],[12*T+10,21*T],[18*T,20*T],[20*T,18*T+16],[10*T+20,17*T+12]], deck:[[23*T,24*T],[26*T,24*T+10],[16*T,23*T+20],[29*T,23*T]] };
+function roofBirds(g,t){
+  var ph=roofPhase(); if(isNight(ph)) return;
+  for(var i=0;i<4;i++){ var sp=BIRD_SPOTS.lawn, k=Math.floor(t/5200+i*1.7)%sp.length, s=sp[(k+i)%sp.length], hop=((t/260)+i)%10<1?-3:0;
+    sparrow(g,s[0]+i*9,s[1]+hop+(i%2)*6,Math.floor(t/180+i)%2,((t/400)+i)%5<1); }
+  for(var j=0;j<2;j++){ var dp=BIRD_SPOTS.deck, s2=dp[(Math.floor(t/9000)+j*2)%dp.length], wx=Math.round(Math.sin(t*0.0007+j)*14); pigeon(g,s2[0]+wx,s2[1]+j*10,Math.floor(t/220+j)%2?0:1); }
+  magpie(g,15*T+8,17*T+22,t);                                   // 연못가 까치
+  azure(g,26*T+6,ROOF_H-8,t); azure(g,30*T+4,ROOF_H-7,t+700);   // 난간 위 물까치 둘
+  azure(g,33*T+2,14*T+30,t+300);                                // 느티나무 가지에 하나 더
+  if(t%24000<5200){ var fx=((t%24000)/5200)*(W+80)-40, fy=60+Math.round(Math.sin(t*0.004)*6), wing=Math.floor(t/140)%2;   // 하늘을 가로지르는 새
+    R(g,fx,fy,4,2,'#2a2e34'); if(wing){ R(g,fx-3,fy-3,3,2,'#2a2e34'); R(g,fx+4,fy-3,3,2,'#2a2e34'); } else { R(g,fx-3,fy+2,3,2,'#2a2e34'); R(g,fx+4,fy+2,3,2,'#2a2e34'); } }
+}
+things.push({sy:ROOF_H+1, draw:function(g){ roofBirds(g,performance.now()); }});
+things.push({sy:18*T, draw:function(g){ var ph=roofPhase(); if(isNight(ph)) owl(g,OWL.x,OWL.y+10,performance.now()); }});
+// 밤 전구 불빛 (시간대 색을 입힌 뒤에 더한다)
+function drawRoofGlow(g,t){
+  var ph=roofPhase(), a=ph==='night'?1:ph==='dusk'?0.85:ph==='sunset'?0.45:0; if(!a) return;
+  g.save(); g.globalCompositeOperation='lighter';
+  BULBS.forEach(function(b,i){ var fl=0.85+0.15*Math.sin(t*0.003+i); g.globalAlpha=0.22*a*fl; g.fillStyle='#ffcf7a'; g.beginPath(); g.arc(b.x,b.y+2,9,0,Math.PI*2); g.fill();
+    g.globalAlpha=0.9*a; g.fillStyle=b.c; g.fillRect(b.x-1,b.y,3,4); });
+  [[7,26],[22,26],[27,26],[34,26]].forEach(function(p){ var x=p[0]*T+16, y=p[1]*T+32-44+12; g.globalAlpha=0.25*a; g.fillStyle='#ffd88a'; g.beginPath(); g.arc(x,y,16,0,Math.PI*2); g.fill(); });
+  g.restore();
+}
+// 점심시간에 쉬러 올라온 직원이 앉는 자리 (앉는 방향 · 발 위치)
+var ROOF_SEATS=[ {x:13*T+32-17, feet:10*T+2, dir:'down'}, {x:14*T+32-17, feet:10*T+2, dir:'down'}, {x:15*T+32-17, feet:10*T+2, dir:'down'},
+  {x:4*T-17, feet:27*T+6, dir:'down'}, {x:13*T-17, feet:27*T+6, dir:'down'}, {x:31*T-17, feet:27*T+6, dir:'down'}, {x:6*T+16-17, feet:18*T+6, dir:'down'}, {x:18*T+16-17, feet:26*T+10, dir:'up'} ];
+MAPR.ELEV=ROOF_ELEV; MAPR.SEATS=ROOF_SEATS; MAPR.ROOF_H=ROOF_H;
+
 useMap(MAP3);
 
 window.PixOffice={
   T:T, COLS:COLS, ROWS:ROWS, W:W, H:H, STATE:STATE,
   h2r:h2r, mix:mix, sh:sh, rnd:rnd, hash:hash, cv:cv, R:R, P:P, ell:ell, disc:disc, ring:ring, line:line, tri:tri, obj:obj, outline:outline,
-  bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, F2LOOK:F2LOOK,
+  bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, MAPR:MAPR, drawRoofGlow:drawRoofGlow, F2LOOK:F2LOOK,
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,

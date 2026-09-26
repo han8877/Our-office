@@ -42,6 +42,10 @@
   input[type=text]{ font-size:12.5px; padding:8px 10px; border-radius:8px; border:1.3px solid #5c4a3a; flex:1; min-width:120px; height:34px; box-sizing:border-box; }
   #stage{ width:100%; max-width:1000px; overflow:hidden; border-radius:12px; background:#fffdf8; position:relative; }
   #officeSvg, #floor2Svg{ display:block; width:100%; height:auto; }
+  /* 옥상 정원(L층): 그림은 전부 캔버스가 그리고 SVG는 자리만 잡는다 */
+  #roofSvg{ display:block; width:100%; height:auto; }
+  #roofSvg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
+  #roofSvg.pixMode, #roofSvg.pixMode *{ pointer-events:none !important; }
   /* 3층 픽셀 화면: 게임은 지금처럼 SVG에서 돌고, 화면은 그 아래 캔버스(#pixOffice)가 그린다.
      SVG는 투명하게 남겨 두되 전원 패널만 보이게 한다. 누르는 것은 캔버스가 받아 원래 기능으로 넘긴다 */
   #pixOffice{ position:absolute; left:0; top:0; z-index:0; display:block; }
@@ -953,7 +957,7 @@
     #stage{ overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
             overscroll-behavior-x:contain; scrollbar-width:none; -ms-overflow-style:none; }
     #stage::-webkit-scrollbar{ display:none; }
-    #officeSvg, #floor2Svg{ height:var(--officeH,56vh); width:auto; max-width:none; }
+    #officeSvg, #floor2Svg, #roofSvg{ height:var(--officeH,56vh); width:auto; max-width:none; }
     /* 사무실이 화면을 꽉 채우니 세로 탭은 가로 알약으로 바꿔 구석에 둔다 */
     #logTab{ top:auto; bottom:12px; right:10px; transform:none; flex-direction:row;
              border-right:1.3px solid #5c4a3a; border-radius:999px; padding:8px 13px; gap:6px;
@@ -4553,6 +4557,7 @@
   <text x="220" y="104" font-size="5.2" font-weight="700" text-anchor="middle" fill="#7d6b54" stroke="none" style="pointer-events:none;">조명</text>
 </g>
 </svg>
+<svg id="roofSvg" viewBox="0 0 1000 850" xmlns="http://www.w3.org/2000/svg" role="img" style="display:none;"><title>옥상 정원</title><desc>서울 풍경이 내려다보이는 옥상 정원. 그림은 캔버스가 그린다</desc><rect width="1000" height="850" fill="none"/></svg>
 </div>
 
 <div class="row">
@@ -13166,12 +13171,13 @@
   var stageEl = byId('stage');
   var officeSvgEl = byId('officeSvg');
   var floor2SvgEl = byId('floor2Svg');
+  var roofSvgEl = byId('roofSvg');
   var curFloor = '3';                 // 사무실이 3층
   function isNarrowView(){
     return !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches);
   }
   function floorSvgs(){
-    return [officeSvgEl, floor2SvgEl].filter(Boolean);
+    return [officeSvgEl, floor2SvgEl, roofSvgEl].filter(Boolean);
   }
   function fitOfficeStage(){
     if(!stageEl || !officeSvgEl) return;
@@ -14152,7 +14158,7 @@
   })();
 
   // ===== 엘리베이터: 층을 오간다 =====
-  // 지금 열려 있는 층은 2층(안내·휴게)과 3층(사무실) 둘뿐이고,
+  // 지금 열려 있는 층은 2층(안내·휴게) · 3층(사무실) · 옥상 정원(L)이고,
   // 나머지는 눌러도 '관계자 외 출입금지'만 뜬다.
   var FLOORS = [
     { k:'B1', name:'구내식당' },
@@ -14165,7 +14171,7 @@
     { k:'7',  name:'건물주' },
     { k:'L',  name:'옥상정원' }
   ];
-  var OPEN_FLOORS = ['2', '3'];
+  var OPEN_FLOORS = ['2', '3', 'L'];
   var elevOverlay = byId('elevOverlay');
   var elevGrid = byId('elevGrid');
   var elevNow = byId('elevNow');
@@ -14196,6 +14202,7 @@
     curFloor = k;
     if(officeSvgEl) officeSvgEl.style.display = (k === '3') ? 'block' : 'none';
     if(floor2SvgEl) floor2SvgEl.style.display = (k === '2') ? 'block' : 'none';
+    if(roofSvgEl) roofSvgEl.style.display = (k === 'L') ? 'block' : 'none';
     syncElevUI();
     fitOfficeStage();
   }
@@ -14208,7 +14215,7 @@
     }
     showFloor(k);
     elevOverlay.classList.remove('show');
-    toast(k === '2' ? '2층 안내·휴게 공간에 도착했어요' : '3층 사무실로 돌아왔어요');
+    toast(k === '2' ? '2층 안내·휴게 공간에 도착했어요' : k === 'L' ? '옥상 정원에 올라왔어요' : '3층 사무실로 돌아왔어요');
   }
   if(elevOverlay){
     byId('elevBtn').addEventListener('click', function(){
@@ -14483,7 +14490,12 @@ var FLOORS = {
     home:function(id){ return F2_HOME[id] || null; },
     seat:function(id){ return POSTS2[id] ? postSeat(POSTS2[id]) : null; },
     bubble:function(id){ var l=byId('f2BubbleLayer'); return l && l.querySelector('[data-f2-for="'+id+'"]'); },
-    robotEl:'f2RHelper', robotBub:'f2RHelperBubbleHolder', light:'f2LightOverlay', switchEl:'f2LightSwitch', switchRect:M2.SWITCH }
+    robotEl:'f2RHelper', robotBub:'f2RHelperBubbleHolder', light:'f2LightOverlay', switchEl:'f2LightSwitch', switchRect:M2.SWITCH },
+  // 옥상 정원: SVG 속 사람이 없다. 점심시간에 쉬러 올라온 직원만 그림에서 따로 둔다 (roofTick)
+  'L': { key:'L', svg:byId('roofSvg'), map:PO.MAPR, anch:[], lobby:{c:3,r:9},
+    query:'.roof-nobody', idOf:function(el){ return el.id; }, present:function(){ return false; }, look:function(){ return null; },
+    home:function(){ return null; }, seat:function(){ return null; }, bubble:function(){ return null; },
+    robotEl:null, robotBub:null, light:null, switchEl:null, switchRect:{x:-99,y:-99,w:0,h:0} }
 };
 Object.keys(FLOORS).forEach(function(k){
   var F=FLOORS[k]; if(!F.svg) return;
@@ -14651,7 +14663,7 @@ function poll(F,now){
     F.lunchOn = parseFloat((byId('lunchSign')||{style:{}}).style.opacity||0) > 0.5;
     F.umbrellaOn = parseFloat((byId('umbrellaSet')||{style:{}}).style.opacity||0) > 0.5;
     var sign=byId('officeSignText'); if(sign) F.company=sign.textContent;
-  } else {
+  } else if(F.key==='2') {
     var dl2=byId('f2DoorLeafLeft'); PO.STATE.elev2Open = !!(dl2 && dl2.classList.contains('open'));
   }
 }
@@ -14768,6 +14780,22 @@ function barStep(a,now){                                          // 바텐더: 
   else { a.x=a.tx; a.frame=0; a.dir='down'; }
 }
 
+// ---- 옥상 정원: 평일 점심시간(12시)엔 직원 몇 명이 올라와 벤치·소파에서 쉰다 ----
+var ROOF_LINES=[['도시락 맛있다'],['바람 좋다~'],['여기가 명당이네'],['하늘 좀 봐요'],['참새 귀엽다'],['남산타워 보인다'],['오후도 힘내자'],['커피 한 모금'],['졸리다..'],['꽃 예쁘게 폈네']];
+function roofTick(F,now){
+  var d=new Date(), wd=d.getDay(), on=wd>=1&&wd<=5&&d.getHours()===12;
+  var key=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
+  if(!on){ for(var k in F.actors) F.actors[k].visible=false; return; }
+  if(F.roofDay!==key){ F.roofDay=key; F.actors={};
+    var pool=PO.STAFF.slice(), seats=PO.MAPR.SEATS.slice(), h=PO.hash(key);
+    for(var i=0;i<3;i++){ var p=pool.splice((h>>(i*3))%pool.length,1)[0], st=seats.splice((h>>(i*4+1))%seats.length,1)[0], cp={}; for(var kk in p) cp[kk]=p[kk];
+      F.actors['roof'+i]={ id:'roof'+i, npc:true, spr:PO.buildSprites(cp), name:p.name, visible:true, onFurn:true, sitting:false, path:null, x:st.x, feet:st.feet, dir:st.dir,
+        frame:0, blinkUntil:0, nextBlink:now+Math.random()*3000, bubble:null, emo:null, stepMs:300, talkUntil:0, nextTalk:now+4000+Math.random()*12000, tile:null, goal:null }; } }
+  for(var id in F.actors){ var a=F.actors[id]; a.visible=true;
+    if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; a.nextTalk=now+15000+Math.random()*25000; }
+    else if(!a.talkUntil && now>a.nextTalk){ a.bubble=ROOF_LINES[Math.floor(Math.random()*ROOF_LINES.length)]; a.talkUntil=now+3200; } }
+}
+
 var lastPoll=0;
 function frame(now){
   requestAnimationFrame(frame);
@@ -14779,14 +14807,16 @@ function frame(now){
   var dpr=Math.min(3,window.devicePixelRatio||1), pw=Math.round(cw*dpr), ph2=Math.round(ch*dpr);
   if(cvs.width!==pw||cvs.height!==ph2){ cvs.width=pw; cvs.height=ph2; }
   cvs.style.width=cw+'px'; cvs.style.height=ch+'px'; cvs.style.left=svg.offsetLeft+'px'; cvs.style.top=svg.offsetTop+'px';
-  cvs.setAttribute('aria-label', F.key==='2' ? '2층 로비' : '끄적끄적문구 3층 사무실');
+  cvs.setAttribute('aria-label', F.key==='2' ? '2층 로비' : F.key==='L' ? '옥상 정원' : '끄적끄적문구 3층 사무실');
 
   if(now-lastPoll>140){ lastPoll=now; for(var fk in FLOORS){ var FF=FLOORS[fk]; if(FF.svg) try{ poll(FF,now); }catch(e){ if(window.console) console.warn('pixOffice poll', e); } } }
+  if(FLOORS.L && FLOORS.L.svg){ try{ roofTick(FLOORS.L,now); }catch(e){ if(window.console) console.warn('pixOffice roof', e); } }
   if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
   for(var id in F.actors){ if(F.actors[id].visible) step(F.actors[id],now); }
   step(F.robot,now);
 
   var d=new Date(), hm={h:d.getHours(), m:d.getMinutes()}, ph=PO.phase(hm.h), g=fb, M=F.map;
+  if(F.key==='L'){ g.clearRect(0,0,W,M.ROOF_H+40); if(window.PixCity && PixCity.roofSky) PixCity.roofSky(g,W,M.ROOF_H,now); }   // 옥상: 하늘과 서울 풍경을 먼저
   g.drawImage(M.bg,0,0);
   if(F.key==='3'){
     F.dust.forEach(function(p){ g.globalAlpha=(p.heavy?0.75:0.4)*Math.min(1,p.op*1.4);
@@ -14794,7 +14824,7 @@ function frame(now){
       else { ell(g,p.x,p.y,8,3,'#c2bba8'); ell(g,p.x,p.y,4,1,'#b3ab97'); } g.globalAlpha=1; });
     PO.drawWindow(g,ph,now,hm,B.weather());
     PO.drawClock(g,hm);
-  } else {
+  } else if(F.key==='2') {
     PO.drawClock(g,hm,M.CLOCK);
     g.font=FONT; g.textAlign='center'; g.textBaseline='middle'; g.fillStyle='#5a3a2a';
     g.fillText('있을 땐 겸손, 없을 땐 당당 - 호암', M.SIGN.x+M.SIGN.w/2, M.SIGN.y+17); g.textAlign='left';
@@ -14803,7 +14833,7 @@ function frame(now){
   if(F.key==='3'){ list.push({sy:5*T+0.5, draw:function(gg){ PO.drawFish(gg,now,F.feeding); }});
     if(F.umbrellaOn) list.push({sy:25*T+30, draw:drawUmbrellas});
     if(F.lunchOn) list.push({sy:26*T+14, draw:drawLunchSign}); }
-  else list.push({sy:28*T+0.5, draw:function(gg){ PO.drawBigTank(gg,now); }});
+  else if(F.key==='2') list.push({sy:28*T+0.5, draw:function(gg){ PO.drawBigTank(gg,now); }});
   for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:a.feet}); }
   if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
   list.sort(function(p,q){ return p.sy-q.sy; });
@@ -14822,6 +14852,8 @@ function frame(now){
       var sc=Math.min(1,150/Math.max(1,g.measureText(nm).width)); g.save(); g.translate(sg[1],sg[2]); g.scale(sc,1);
       g.fillStyle='#5e3a24'; g.fillText(nm,1,1); g.fillStyle='#fff6e6'; g.fillText(nm,0,0); g.restore(); g.textAlign='left'; }
     B.staff.forEach(function(s){ var S=PO.SEATS[s.id]; if(S) drawPlate(g,S.plateX,S.plateY,s.name); });
+  } else if(F.key==='L') {
+    for(var rid in F.actors){ var ra=F.actors[rid]; if(ra.visible&&ra.name) drawPlate(g,Math.round(ra.x)+17,Math.round(ra.feet)+6-sitLift(ra),ra.name,true); }
   } else {
     drawPlate(g,POSTS2.yun.plateX,POSTS2.yun.plateY,'윤안내'); drawPlate(g,POSTS2.kang.plateX,POSTS2.kang.plateY,'강안내');
     drawPlate(g,POSTS2.guard.plateX,POSTS2.guard.plateY,'보안');
@@ -14838,6 +14870,7 @@ function frame(now){
   var tint=PO.TINT[ph];
   if(tint){ g.save(); g.globalCompositeOperation='multiply'; g.globalAlpha=tint[1]*(F.lightDim>0.1?0.55:(F.key==='2'?0.6:1)); g.fillStyle=tint[0]; g.fillRect(0,0,W,H); g.restore(); }
   if(F.lightDim>0.01){ g.save(); g.globalAlpha=F.lightDim; g.fillStyle='#1c1c2e'; g.fillRect(0,0,W,H); g.restore(); }
+  if(F.key==='L') PO.drawRoofGlow(g,now);   // 옥상 전구·등불 불빛
   if(F.key==='3' && (ph==='night'||ph==='dusk') && F.lightDim<0.3){ g.save(); g.globalCompositeOperation='lighter';
     for(var sid in F.actors){ var sa=F.actors[sid]; if(!sa.visible||!sa.sitting) continue; var mx=sa.seat.c*T+32, my=(sa.seat.r+1)*T;
       g.fillStyle='rgba(130,150,200,0.08)'; g.fillRect(mx-30,my-24,60,40); } g.restore(); }
@@ -14859,7 +14892,7 @@ function hitProfile(F,p){
 }
 function onSwitch(F,p){ var s=F.switchRect; return p.x>=s.x-6&&p.x<=s.x+s.w+6&&p.y>=s.y-6&&p.y<=s.y+s.h+6; }
 // 엘리베이터를 누르면 메뉴의 '엘리베이터'와 같이 층 고르는 창이 뜬다 (3층은 왼쪽 아래 홀, 2층은 왼쪽 위)
-var ELEV_RECT={ '3':{x:32,y:22*T,w:128,h:96}, '2':{x:32,y:0,w:128,h:96} };
+var ELEV_RECT={ '3':{x:32,y:22*T,w:128,h:96}, '2':{x:32,y:0,w:128,h:96}, 'L':PO.MAPR.ELEV };
 function onElevator(F,p){ var r=ELEV_RECT[F.key]; return !!r && p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h; }
 cvs.addEventListener('click', function(e){
   var F=activeFloor(); if(!F) return;

@@ -268,5 +268,26 @@ function CityBg(){
   requestAnimationFrame(draw);
 }
 
-window.PixCity={ Intro:Intro, CityBg:CityBg, facade:facade, PAL:PAL };
+// ---- 옥상 정원에서 보이는 서울 (L층 위쪽 띠) ----
+// 하늘·해와 달·구름·별은 매 프레임, 산·남산타워·빌딩 숲은 시간대가 바뀔 때만 다시 그린다
+var roofCache={ ph:null, w:0, c:null };
+function roofSky(g,w,h,now){
+  var ph=phaseNow(), pal=PAL[ph];
+  sky(g,w,h,pal,h); stars(g,w,h,now,pal); sunMoon(g,Math.round(w*0.84),44,ph,now); clouds(g,w,now,ph,10);
+  if(roofCache.ph!==ph || roofCache.w!==w){
+    var c=cv(w,h), cg=c.getContext('2d'), night=pal.glow>0.5;
+    range(cg,0,w,h-46,74,1.7,pal.far); tower(cg,Math.round(w*0.6),h-60,mix(pal.far,'#7a8a9a',0.3));
+    range(cg,0,w,h-24,48,5.2,pal.near);
+    // 롯데타워처럼 가늘고 높은 탑 하나
+    var lx=Math.round(w*0.9), lc=mix(pal.city,'#8a98b0',0.25);
+    for(var y=0;y<170;y++){ var hw=Math.round(3+y*0.055); R(cg,lx-hw,h-170+y,hw*2,1,lc); if(night && y%7===0 && y>20) R(cg,lx-hw+2,h-170+y,hw*2-4,1,'#ffe4a0'); }
+    R(cg,lx-1,h-182,2,12,lc); if(night) P(cg,lx,h-183,'#ff6a5a');
+    farCity(cg,0,w,h,pal,11);
+    [[30,76,54,1],[110,58,44,2],[180,86,62,3],[290,62,40,4],[350,96,52,5],[440,54,44,6],[520,72,50,7],[800,82,56,8],[880,58,44,9],[950,92,60,10],[1060,64,50,11]]
+      .forEach(function(a){ if(a[0]<w) apartment(cg,a[0],h-a[1],a[2],h,pal,a[3]); });
+    roofCache={ ph:ph, w:w, c:c };
+  }
+  g.drawImage(roofCache.c,0,0);
+}
+window.PixCity={ Intro:Intro, CityBg:CityBg, facade:facade, PAL:PAL, roofSky:roofSky };
 })();
