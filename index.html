@@ -14384,13 +14384,13 @@ function activeFloor(){
   for(var k in FLOORS){ var F=FLOORS[k]; if(F.svg && getComputedStyle(F.svg).display!=='none') return F; }
   return null;
 }
-// ---- 2층 라운지 바 직원 (게임 기록에는 없고 그림에만 있는 사람): 바텐더 레서판다 · 홀서빙 오소리 ----
-// 안내 직원이 근무하는 동안 나와 있다. 바텐더는 카운터 뒤를 오가고, 서버는 바에서 쟁반을 받아 테이블을 돈다
+// ---- 2층 라운지 바 직원 (게임 기록에는 없고 그림에만 있는 사람): 바텐더 박(레서판다) · 강서빙(오소리) ----
+// 안내 직원이 근무하는 동안 나와 있다. 바텐더 박은 카운터 뒤를 오가고,
+// 강서빙은 출퇴근 때만 엘리베이터를 오가고 근무 중에는 라운지 바 난간 안에서만 쟁반을 나른다
 var BAR_LINES=[['어서 오세요'],['오늘의 추천은','자몽 에이드예요'],['얼음 넉넉히','넣어드릴게요'],['잔 닦는 중이에요']];
 var SRV_LINES=[['주문하신 음료','나왔습니다'],['필요하신 거 있으면','불러주세요'],['천천히 쉬다 가세요']];
-var SRV_BAR={ c:28, r:14, face:'up' };
-var SRV_SPOTS=[{c:9,r:11,face:'left'},{c:16,r:11,face:'right'},{c:9,r:17,face:'left'},{c:16,r:17,face:'right'},
-  {c:26,r:22,face:'up'},{c:31,r:22,face:'up'},{c:26,r:25,face:'down'},{c:31,r:25,face:'down'}];
+var SRV_BAR={ c:33, r:13, face:'up' };                                     // 카운터 끝: 음료를 받는 자리
+var SRV_SPOTS=[{c:25,r:14,face:'up'},{c:27,r:14,face:'up'},{c:29,r:14,face:'up'},{c:31,r:14,face:'up'},{c:24,r:13,face:'up'}];   // 바 의자 뒤
 function npcActor(F,id,look,name){
   if(F.actors[id]) return F.actors[id];
   return F.actors[id]={ id:id, npc:true, spr:PO.buildSprites(look), staff:false, seat:null, visible:false, leaving:false, sitting:false, onFurn:false,
@@ -14399,18 +14399,31 @@ function npcActor(F,id,look,name){
 }
 function npcTick(F,now){
   var A=F.actors, open=!!((A.yun&&A.yun.visible)||(A.kang&&A.kang.visible));
-  var bt=npcActor(F,'npcBartender',PO.F2LOOK.bartender,'바텐더'), sv=npcActor(F,'npcServer',PO.F2LOOK.server,'홀서빙');
+  // 안내 직원이 이미 자기 자리에 서 있으면 '이미 근무 중'(제자리), 엘리베이터에서 걸어 나오는 중이면 같이 출근한다
+  var first=['yun','kang'].some(function(id){ var y=A[id], P=POSTS2[id]; return y&&y.visible&&y.tile&&!y.path&&Math.abs(y.tile.c-P.c)+Math.abs(y.tile.r-P.r)<=1; });
+  var bt=npcActor(F,'npcBartender',PO.F2LOOK.bartender,'바텐더 박'), sv=npcActor(F,'npcServer',PO.F2LOOK.server,'강서빙');
   if(!sv.sprTray){ sv.sprPlain=sv.spr; sv.sprTray=PO.buildSprites(PO.F2LOOK.serverTray); }
-  if(!open){ bt.visible=sv.visible=false; bt.goal=sv.goal=null; sv.path=null; bt.bubble=sv.bubble=null; return; }
+  if(!open){
+    bt.visible=false; bt.bubble=null;
+    // 강서빙 퇴근: 엘리베이터까지 걸어가서 사라진다 (접속했을 때 이미 닫혀 있으면 바로 없음)
+    if(sv.visible && !sv.leaving){ sv.spr=sv.sprPlain; sv.bubble=null; sv.talkUntil=0; sv.leaving=true; sv.stepMs=220; sv.leaveUntil=now+30000; setGoal(F,sv,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now);
+      if(!sv.path){ sv.visible=false; sv.leaving=false; } }
+    return;
+  }
   if(!bt.visible){ bt.visible=true; bt.x=bt.tx=28*T-1; bt.feet=12*T-14; bt.dir='down'; bt.until=now+3000; bt.nextTalk=now+6000+Math.random()*9000; }
   if(now>bt.until && Math.abs(bt.x-bt.tx)<1){ bt.tx=(24+Math.floor(Math.random()*9))*T-1; bt.until=now+4000+Math.random()*6000; }
-  if(!sv.visible){ sv.visible=true; sv.spr=sv.sprPlain; sv.phase='bar'; sv.arrived=0; placeAt(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:'up' }); sv.nextTalk=now+12000+Math.random()*12000; }
+  if(sv.leaving) return;
+  if(!sv.visible){
+    sv.visible=true; sv.spr=sv.sprPlain; sv.phase='bar'; sv.arrived=0; sv.stepMs=280; sv.goal=null; sv.nextTalk=now+12000+Math.random()*12000;
+    if(first) placeAt(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:SRV_BAR.face });                        // 접속했을 때 이미 근무 중: 제자리
+    else { placeAt(F,sv,{ c:F.lobby.c, r:F.lobby.r, face:'down' }); setGoal(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:SRV_BAR.face },now); }   // 출근: 엘리베이터에서 걸어온다
+  }
   if(!sv.path){
     if(!sv.arrived) sv.arrived=now;
     if(now-sv.arrived > (sv.phase==='bar'?3500:2500)){
       sv.arrived=0;
       if(sv.phase==='bar'){ sv.spr=sv.sprTray; sv.phase='spot'; var sp=SRV_SPOTS[Math.floor(Math.random()*SRV_SPOTS.length)]; setGoal(F,sv,{ c:sp.c, r:sp.r, face:sp.face },now); }
-      else { sv.spr=sv.sprPlain; sv.phase='bar'; setGoal(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:'up' },now); }
+      else { sv.spr=sv.sprPlain; sv.phase='bar'; setGoal(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:SRV_BAR.face },now); }
     }
   }
   [[bt,BAR_LINES],[sv,SRV_LINES]].forEach(function(p){ var a=p[0], L=p[1];
