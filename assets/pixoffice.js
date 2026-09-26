@@ -1735,7 +1735,7 @@ onTile(pGardenBed(96,'veg'),2,11,4,11); onTile(pGardenBed(96,'herb'),2,14,4,14);
 bgc.drawImage(pLawn(12*T,7*T),9*T,16*T);
 onTile(pPond(),13,18,16,19); onTile(pBirdBath(),19,17,19,17);
 // 연못을 바라보는 벤치 셋 (아래 · 왼쪽 · 오른쪽)
-put(pOutBench(),432,640,660); put(pOutBenchV(),372,560,600); put(pOutBenchV(),548,560,600);
+put(pOutBench(),432,640,660,[13,20,16,20]); put(pOutBenchV(),372,560,600,[11,17,12,19]); put(pOutBenchV(),548,560,600,[17,17,18,19]);
 onTile(pGardenBed(64,'flower'),9,23,10,23); onTile(pGardenBed(64,'flower'),19,23,20,23);
 // 쉬는 자리: 선베드 · 벤치 · 피크닉 테이블 · 흔들 의자 · 등
 onTile(pLounger(),24,20,24,21); onTile(pLounger(),26,20,26,21); onTile(pLounger(),28,20,28,21);

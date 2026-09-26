@@ -71,6 +71,7 @@
   #officeSvg.pixMode #powerSubPanel, #officeSvg.pixMode #powerSubPanel *{ pointer-events:auto !important; }
   .office-char{ transition:opacity .9s ease; opacity:0; }
   .office-char.present{ opacity:1; }
+  .office-char.present.onRoof{ opacity:0; }
   /* 입구 자동문: 두 짝이 좌우로 갈라지며 열린다 */
   #doorLeafLeft, #doorLeafRight,
   #f2DoorLeafLeft, #f2DoorLeafRight{ transition:transform .5s cubic-bezier(.4,0,.2,1); }
@@ -5795,7 +5796,7 @@
     return null;
   }
   function watchEntranceDoor(){
-    var nodes = document.querySelectorAll('.office-char.present');
+    var nodes = document.querySelectorAll('.office-char.present:not(.onRoof)');
     var near = false;
     for(var i=0; i<nodes.length; i++){
       var p = currentXY(nodes[i]);
@@ -6655,6 +6656,55 @@
     }, er.idleAfter);
   }
   function scheduleAllErrands(){ ERRANDS.forEach(scheduleErrand); }
+  // ===== 옥상 정원에 바람 쐬러 가기 =====
+  // 근무 중(또는 야근 중) 가끔 한 명이 엘리베이터를 타고 옥상에 올라간다.
+  // 옥상에 있는 동안은 3층 그림에서 빠지고(onRoof), 옥상 그림(roofGuests)에 나타나 혼잣말을 하다가 내려온다
+  var ROOF_GO_LINES   = ['잠깐 옥상 다녀올게요', '바람 좀 쐬고 올게요', '머리 좀 식히고 올게요', '옥상 가서 하늘 좀 보고 올게요'];
+  var ROOF_BACK_LINES = ['다녀왔습니다', '개운하다!', '바람 쐬니까 좀 낫네', '자, 다시 집중!'];
+  var roofTrip = {};
+  function roofGuestQ(){ return (window.__roofGuests = window.__roofGuests || {}); }
+  function startRoofTrip(){
+    var d = new Date(), t = d.getHours()*60 + d.getMinutes();
+    if(wanderOn || Object.keys(roofTrip).length >= 2) return;
+    if(t >= 11*60+50 && t < 13*60+5) return;              // 점심시간엔 따로 옥상에 올라가 있다
+    var pool = staff.filter(function(s){
+      var el = charEl(s.id);
+      if(!el || !el.classList.contains('present') || el.classList.contains('onRoof')) return false;
+      if(isBusy(s.id) || stretchIds[s.id] || errandActive[s.id] || roofTrip[s.id]) return false;
+      if(overtimeMode) return !!overtimeStaffIds[s.id];
+      return true;
+    });
+    if(!pool.length) return;
+    var s = pool[Math.floor(Math.random()*pool.length)], el = charEl(s.id), key = 'st_'+s.id;
+    roofTrip[s.id] = true;
+    markBusy(s.id);
+    raiseChar(s);
+    showBubble(s, ROOF_GO_LINES[Math.floor(Math.random()*ROOF_GO_LINES.length)]);
+    function done(){ delete roofTrip[s.id]; clearBusy(s.id); }
+    travelTo(s, {x:ENTRANCE.x, y:ENTRANCE.y}, 62, function(){
+      if(!el.classList.contains('present')){ done(); return; }
+      el.classList.add('onRoof');
+      var h = new Date().getHours();
+      roofGuestQ()[key] = { kind:'staff', id:s.id, name:s.name, night: overtimeMode || h >= 18 || h < 7 };
+      if(typeof logDayEvent === 'function') logDayEvent('🌿', s.name+'가 옥상 정원에 바람 쐬러 갔습니다');
+      var t0 = Date.now();
+      (function wait(){
+        var q = roofGuestQ()[key];
+        if(q && !q.done && Date.now()-t0 < 180000){ setTimeout(wait, 1000); return; }
+        delete roofGuestQ()[key];
+        el.classList.remove('onRoof');
+        if(!el.classList.contains('present')){ done(); return; }   // 그사이 퇴근했다
+        showBubble(s, ROOF_BACK_LINES[Math.floor(Math.random()*ROOF_BACK_LINES.length)]);
+        travelTo(s, {x:s.x, y:s.y}, 62, function(){
+          lowerChar(s);
+          if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y};
+          done();
+        });
+      })();
+    });
+  }
+  setInterval(function(){ if(Math.random() < 0.15) startRoofTrip(); }, 45000);
+
   function cancelErrandsInProgress(){
     Object.keys(errandActive).forEach(function(id){
       var s = staffMap[id];
@@ -14093,6 +14143,37 @@
     }
     setInterval(function(){ if(Math.random() < 0.35) guardRound(); }, 30000);
 
+    // ---- 보안요원 옥상 순찰 (정각 · 20분 · 40분) ----
+    // 엘리베이터를 타고 올라가 옥상을 한 바퀴 돌고(옥상 그림 roofGuests) 다시 경비석으로 돌아온다
+    var secRoofSlot = null;
+    setInterval(function(){
+      var d = new Date(), m = d.getMinutes();
+      if(m % 20 > 2) return;                                   // 순찰 시각부터 3분 안에만 출발한다
+      var slot = d.toDateString()+' '+d.getHours()+':'+Math.floor(m/20);
+      if(secRoofSlot === slot) return;
+      var w = f2Walker.guard;
+      if(!w._on || !f2Visible('guard') || gPatrol.busy || !guardAtPost()) return;
+      secRoofSlot = slot; gPatrol.busy = true;
+      f2Say('guard', '옥상 순찰 다녀오겠습니다!');
+      f2StaffGo('guard', [F2_ELEV], function(){
+        f2RideOut(w, function(){
+          var Q = (window.__roofGuests = window.__roofGuests || {}), who = f2GuardToday();
+          Q.sec = { kind:'sec', name:who.name, look: who.key === 'leo' ? 'guardLeo' : 'guard' };
+          var t0 = Date.now();
+          (function wait(){
+            var q = Q.sec;
+            if(q && !q.done && Date.now()-t0 < 180000){ w._roofT = setTimeout(wait, 1000); return; }
+            delete Q.sec;
+            if(!w._on){ gPatrol.busy = false; return; }          // 그사이 퇴근 시간이 됐다
+            f2RideIn(w, function(){
+              f2Say('guard', '옥상 이상 무!');
+              f2StaffGo('guard', [F2_HOME.guard], function(){ gPatrol.busy = false; });
+            });
+          })();
+        });
+      });
+    }, 5000);
+
     // ---- 혼잣말과 이모지 (3층 직원과 같은 비율: 7초마다 30% 발동, 그중 30%는 이모지) ----
     setInterval(function(){
       if(Math.random() >= 0.3) return;
@@ -14477,7 +14558,7 @@ function postSeat(P){ return { c:P.c, r:P.r, seatX:P.x, seatFeet:P.feet, plateX:
 var FLOORS = {
   '3': { key:'3', svg:byId('officeSvg'), map:PO.MAP3, anch:ANCH3, lobby:{c:3,r:26},
     query:'.office-char', idOf:function(el){ return el.id.replace(/^char-/,''); },
-    present:function(el){ return el.classList.contains('present'); },
+    present:function(el){ return el.classList.contains('present') && !el.classList.contains('onRoof'); },
     look:function(id){ return STAFFLOOK[id] || PO.VISITORS[id]; },
     home:function(id){ var s=B.staffMap[id]; return s ? {x:s.x,y:s.y} : null; },
     seat:function(id){ return PO.SEATS[id] || null; },
@@ -14782,18 +14863,95 @@ function barStep(a,now){                                          // 바텐더: 
 
 // ---- 옥상 정원: 평일 점심시간(12시)엔 직원 몇 명이 올라와 벤치·소파에서 쉰다 ----
 var ROOF_LINES=[['도시락 맛있다'],['바람 좋다~'],['여기가 명당이네'],['하늘 좀 봐요'],['참새 귀엽다'],['남산타워 보인다'],['오후도 힘내자'],['커피 한 모금'],['졸리다..'],['꽃 예쁘게 폈네']];
-function roofTick(F,now){
+function roofTick(F,now,off){
+  roofGuests(F,now,off);
   var d=new Date(), wd=d.getDay(), on=wd>=1&&wd<=5&&d.getHours()===12;
   var key=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
-  if(!on){ for(var k in F.actors) F.actors[k].visible=false; return; }
-  if(F.roofDay!==key){ F.roofDay=key; F.actors={};
+  if(!on){ for(var k in F.actors) if(/^roof/.test(k)) F.actors[k].visible=false; return; }
+  if(F.roofDay!==key){ F.roofDay=key; for(var k0 in F.actors) if(/^roof/.test(k0)) delete F.actors[k0];
     var pool=PO.STAFF.slice(), seats=PO.MAPR.SEATS.slice(), h=PO.hash(key);
     for(var i=0;i<3;i++){ var p=pool.splice((h>>(i*3))%pool.length,1)[0], st=seats.splice((h>>(i*4+1))%seats.length,1)[0], cp={}; for(var kk in p) cp[kk]=p[kk];
       F.actors['roof'+i]={ id:'roof'+i, npc:true, spr:PO.buildSprites(cp), name:p.name, visible:true, onFurn:true, sitting:false, path:null, x:st.x, feet:st.feet, dir:st.dir,
         frame:0, blinkUntil:0, nextBlink:now+Math.random()*3000, bubble:null, emo:null, stepMs:300, talkUntil:0, nextTalk:now+4000+Math.random()*12000, tile:null, goal:null }; } }
-  for(var id in F.actors){ var a=F.actors[id]; a.visible=true;
+  for(var id in F.actors){ var a=F.actors[id]; if(!/^roof/.test(id)) continue; a.visible=true;
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; a.nextTalk=now+15000+Math.random()*25000; }
     else if(!a.talkUntil && now>a.nextTalk){ a.bubble=ROOF_LINES[Math.floor(Math.random()*ROOF_LINES.length)]; a.talkUntil=now+3200; } }
+}
+
+// ---- 옥상 손님: 바람 쐬러 온 3층 직원 · 30분마다 도는 경비 · 20분마다 올라오는 2층 보안요원 ----
+// 3층·2층 게임 쪽이 window.__roofGuests 에 적어 두면, 옥상 엘리베이터에서 나와 몇 곳을 들렀다가 내려가고 done 으로 알린다
+var ROOF_GUEST_LINES={
+  work:['머리 좀 식히고 가야지','여기 오면 좀 풀리네','마감 전에 바람 한 번','아이디어가 안 떠오르네..','메일 답장은 이따가 하자','햇볕 좋다~','저 구름 모양 스티커로 만들까','남산타워 오늘 잘 보인다','10분만 쉬자','하늘색 시안 괜찮겠다','연못 물고기 있나?','참새야 안녕'],
+  night:['야경 예쁘다..','오늘도 야근이네','전구 켜지니까 분위기 좋다','부엉이도 졸고 나도 졸리고','조금만 더 하고 퇴근하자','바람 차다','별 보인다','집에 가고 싶다..','불빛이 다 반짝반짝하네'],
+  guard:['옥상 순찰 왔습니다','난간 이상 없고','전구 줄도 이상 없음','문단속 확인','화분 물은 넉넉하네','오늘도 조용하네','연못도 이상 없고'],
+  guardNight:['부엉이 녀석 또 조네','손전등 없인 못 다니겠군','야경은 좋다만','늦게까지 고생들 하네'],
+  sec:['옥상 순찰! 이상 무!','난간 점검 완료!','출입 통제 확인!','비상구 확인 완료!','연못 이상 무!','전구 점검 완료!']
+};
+var ROOF_GUEST_SPOTS={
+  view:[{c:7,r:7,face:'up'},{c:9,r:7,face:'up'},{c:16,r:7,face:'up'},{c:19,r:7,face:'up'},{c:28,r:7,face:'up'},{c:32,r:7,face:'up'}],
+  garden:[{c:5,r:11,face:'left'},{c:5,r:14,face:'left'},{c:20,r:19,face:'up'},{c:30,r:16,face:'right'},{c:12,r:22,face:'up'}],
+  sit:[{c:13,r:10,face:'down',sit:{x:13*T+15,feet:10*T+2,dir:'down'}}, {c:15,r:21,face:'up',sit:{x:463,feet:676,dir:'up'}},
+       {c:10,r:18,face:'right',sit:{x:375,feet:620,dir:'right'}}, {c:19,r:18,face:'left',sit:{x:551,feet:620,dir:'left'}},
+       {c:6,r:18,face:'up',sit:{x:6*T-1,feet:18*T+6,dir:'down'}}, {c:4,r:27,face:'up',sit:{x:4*T-17,feet:27*T+6,dir:'down'}}],
+  patrol:[{c:9,r:7,face:'up'},{c:28,r:7,face:'up'},{c:33,r:12,face:'right'},{c:15,r:22,face:'up'},{c:6,r:24,face:'down'},{c:30,r:25,face:'down'},{c:20,r:12,face:'left'}]
+};
+var ROOF_DOOR={ c:3, r:9 };
+function rpick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function roofGuestPlan(F,q){
+  function stay(a,b){ return a+Math.random()*(b-a); }
+  if(q.kind==='staff'){
+    var taken={}; for(var k in F.actors){ var o=F.actors[k]; if(o.plan) o.plan.forEach(function(sp){ taken[sp.c+','+sp.r]=1; }); }
+    var first=rpick(Math.random()<0.55?ROOF_GUEST_SPOTS.view:ROOF_GUEST_SPOTS.garden), plan=[{c:first.c,r:first.r,face:first.face,stay:stay(12000,18000)}];
+    var seats=ROOF_GUEST_SPOTS.sit.filter(function(sp){ return !taken[sp.c+','+sp.r]; });
+    if(seats.length && Math.random()<0.65){ var st=rpick(seats); plan.push({c:st.c,r:st.r,face:st.face,sit:st.sit,stay:stay(16000,26000)}); }
+    return plan;
+  }
+  return ROOF_GUEST_SPOTS.patrol.slice().sort(function(){ return Math.random()-0.5; }).slice(0,3+(Math.random()<0.5?1:0))
+    .map(function(sp){ return {c:sp.c,r:sp.r,face:sp.face,stay:stay(3500,6000)}; });
+}
+function roofGuests(F,now,off){
+  var Q=window.__roofGuests=window.__roofGuests||{}, d=new Date(), hr=d.getHours(), mn=d.getMinutes();
+  // 경비: 매시 15분 · 45분에 옥상을 한 바퀴 돈다 (밤낮 없이)
+  if((mn===15||mn===45) && F.guardSlot!==d.toDateString()+hr+':'+mn && !Q.guard){ F.guardSlot=d.toDateString()+hr+':'+mn; Q.guard={ kind:'guard', name:'경비' }; }
+  var night=hr>=18||hr<7;
+  for(var key in Q){ var q=Q[key], id='g_'+key, a=F.actors[id];
+    if(q.done){ if(key==='guard') delete Q[key]; continue; }
+    if(!a){
+      var look = q.kind==='staff' ? PO.STAFF.filter(function(p){ return p.id===q.id; })[0] : q.kind==='sec' ? PO.F2LOOK[q.look] : PO.VISITORS.visitorGuard;
+      if(!look){ q.done=true; continue; }
+      var cp={}; for(var kk in look) cp[kk]=look[kk];
+      a=npcActor(F,id,cp,q.name); a.visible=true; a.stepMs=q.kind==='staff'?300:250; a.plan=roofGuestPlan(F,q); a.pi=-1; a.stayUntil=0; a.out=false;
+      a.torch=q.kind!=='staff'; a.lines = q.kind==='staff' ? (q.night?ROOF_GUEST_LINES.night:ROOF_GUEST_LINES.work) : q.kind==='sec' ? ROOF_GUEST_LINES.sec : ROOF_GUEST_LINES.guard.concat(night?ROOF_GUEST_LINES.guardNight:[]);
+      placeAt(F,a,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'down' });
+    }
+    if(off) step(a,now);
+    if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
+    if(a.path) continue;
+    if(a.out){ a.visible=false; a.bubble=null; delete F.actors[id]; q.done=true; continue; }
+    if(!a.stayUntil){
+      if(a.pi>=0){ var sp=a.plan[a.pi];
+        if(sp.sit){ a.x=sp.sit.x; a.feet=sp.sit.feet; a.dir=sp.sit.dir; a.onFurn=true; }
+        if(a.pi===0 || Math.random()<0.6){ a.bubble=[rpick(a.lines)]; a.talkUntil=now+3400; }
+        a.stayUntil=now+sp.stay;
+      } else a.stayUntil=now+500;
+    }
+    if(now>a.stayUntil){
+      a.stayUntil=0; a.onFurn=false; a.pi++;
+      if(a.pi<a.plan.length){ var nx=a.plan[a.pi]; setGoal(F,a,{ c:nx.c, r:nx.r, face:nx.face },now); }
+      else { a.out=true; a.bubble=null; a.talkUntil=0; setGoal(F,a,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'up' },now); }
+    }
+  }
+}
+// 밤 순찰 손전등: 바라보는 쪽으로 부채꼴 불빛
+function drawTorches(F,g,ph){
+  if(ph!=='night'&&ph!=='dusk') return;
+  g.save(); g.globalCompositeOperation='lighter';
+  for(var id in F.actors){ var a=F.actors[id]; if(!a.visible||!a.torch) continue;
+    var hx=Math.round(a.x)+17, hy=Math.round(a.feet)-18, v={down:[0,1],up:[0,-1],left:[-1,0],right:[1,0]}[a.dir]||[0,1];
+    var gr=g.createRadialGradient(hx,hy,4,hx+v[0]*50,hy+v[1]*40+10,70);
+    gr.addColorStop(0,'rgba(255,240,190,0.55)'); gr.addColorStop(1,'rgba(255,240,190,0)'); g.fillStyle=gr;
+    var ang=Math.atan2(v[1],v[0]); g.beginPath(); g.moveTo(hx,hy); g.arc(hx,hy+8,90,ang-0.45,ang+0.45); g.closePath(); g.fill(); }
+  g.restore();
 }
 
 var lastPoll=0;
@@ -14810,7 +14968,7 @@ function frame(now){
   cvs.setAttribute('aria-label', F.key==='2' ? '2층 로비' : F.key==='L' ? '옥상 정원' : '끄적끄적문구 3층 사무실');
 
   if(now-lastPoll>140){ lastPoll=now; for(var fk in FLOORS){ var FF=FLOORS[fk]; if(FF.svg) try{ poll(FF,now); }catch(e){ if(window.console) console.warn('pixOffice poll', e); } } }
-  if(FLOORS.L && FLOORS.L.svg){ try{ roofTick(FLOORS.L,now); }catch(e){ if(window.console) console.warn('pixOffice roof', e); } }
+  if(FLOORS.L && FLOORS.L.svg){ try{ roofTick(FLOORS.L,now,F!==FLOORS.L); }catch(e){ if(window.console) console.warn('pixOffice roof', e); } }
   if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
   for(var id in F.actors){ if(F.actors[id].visible) step(F.actors[id],now); }
   step(F.robot,now);
@@ -14870,7 +15028,7 @@ function frame(now){
   var tint=PO.TINT[ph];
   if(tint){ g.save(); g.globalCompositeOperation='multiply'; g.globalAlpha=tint[1]*(F.lightDim>0.1?0.55:(F.key==='2'?0.6:1)); g.fillStyle=tint[0]; g.fillRect(0,0,W,H); g.restore(); }
   if(F.lightDim>0.01){ g.save(); g.globalAlpha=F.lightDim; g.fillStyle='#1c1c2e'; g.fillRect(0,0,W,H); g.restore(); }
-  if(F.key==='L') PO.drawRoofGlow(g,now);   // 옥상 전구·등불 불빛
+  if(F.key==='L'){ PO.drawRoofGlow(g,now); drawTorches(F,g,ph); }   // 옥상 전구·등불 불빛 · 순찰 손전등
   if(F.key==='3' && (ph==='night'||ph==='dusk') && F.lightDim<0.3){ g.save(); g.globalCompositeOperation='lighter';
     for(var sid in F.actors){ var sa=F.actors[sid]; if(!sa.visible||!sa.sitting) continue; var mx=sa.seat.c*T+32, my=(sa.seat.r+1)*T;
       g.fillStyle='rgba(130,150,200,0.08)'; g.fillRect(mx-30,my-24,60,40); } g.restore(); }
