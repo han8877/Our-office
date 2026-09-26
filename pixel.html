@@ -441,10 +441,6 @@ function pSpinner(seed){ return obj(32,72,function(g){           // 회전 스�
   for(var r=0;r<4;r++) for(var c=0;c<3;c++){ var x=2+c*10, y=6+r*15, col=PROD[(seed+r*3+c)%PROD.length];
     R(g,x,y,9,13,'#fffdf8'); R(g,x,y,9,1,'#ffffff'); R(g,x+3,y-1,3,2,'#9aa2a8'); disc(g,x+4,y+6,2,col); R(g,x+1,y+10,7,1,sh(col,0.1)); }
   R(g,10,0,13,4,'#f28a8a'); R(g,10,0,13,1,'#f8b4b4'); }); }
-function pShowSign(){ return obj(150,30,function(g){              // 쇼룸 간판
-  R(g,0,0,150,30,'#f6ede0'); R(g,0,0,150,2,'#fffaf2'); R(g,0,28,150,2,'#d8c8b0'); R(g,2,2,146,26,'#fbf4ea');
-  for(var i=0;i<5;i++) R(g,6+i*6,6,4,18,PROD[i]); for(var j=0;j<5;j++) R(g,114+j*6,6,4,18,PROD[j+4]); }); }
-
 function pSculpture(){ return obj(32,72,function(g){
   R(g,4,36,24,36,'#f3f1ec'); R(g,2,32,28,6,'#fbfaf7'); R(g,2,32,28,1,'#ffffff'); R(g,24,38,4,34,'#d8d4cb'); R(g,4,70,24,2,'#c9c5bc');
   disc(g,16,16,12,'#f07a4a'); disc(g,16,16,8,'#fbf6ee'); disc(g,18,16,6,'#2f9bb0'); disc(g,18,16,3,'#fbf6ee'); disc(g,19,16,1,'#f5c542');
@@ -748,7 +744,7 @@ var BALLOONS=(function(){
 //  사람들
 // =====================================================================
 var STAFF = [
-  {id:'kobujang',  name:'최실장', kind:'fox',     shirt:'#d98f7a', acc:'glasses', desk:[33,6],  team:'lead'},
+  {id:'kobujang',  name:'최실장', kind:'fox',     shirt:'#d98f7a', acc:'glasses', desk:[31,6],  team:'lead'},
   {id:'kimnote',   name:'김팀장', kind:'dog',     shirt:'#f0c46a', desk:[4,8],   team:'note'},
   {id:'leenote',   name:'이노트', kind:'tiger',   shirt:'#a48ad0', desk:[7,8],   team:'note'},
   {id:'jungnote',  name:'정노트', kind:'giraffe', shirt:'#e89a78', desk:[4,12],  team:'note'},
@@ -787,7 +783,7 @@ var LINES = {
 // =====================================================================
 var bg=cv(W,H), bgc=bg.getContext('2d');
 var things=[];            // 정렬해서 그릴 것들 {img,x,y,sy} 또는 {draw,sy} 또는 {person}
-var zones=[], SIGNS=[];
+var SIGNS=[];
 var blocked=[]; for(var r=0;r<ROWS;r++){ blocked.push([]); for(var c=0;c<COLS;c++) blocked[r].push(0); }
 var noCross={};           // 칸과 칸 사이에 판이 서 있어서 못 지나가는 경계
 function wallEdge(c1,r1,c2,r2){ noCross[c1+','+r1+'>'+c2+','+r2]=noCross[c2+','+r2+'>'+c1+','+r1]=1; }
@@ -814,14 +810,6 @@ kitchenTiles(bgc,26,24,34,28);                 // 탕비실
 paintOuterWalls(bgc);
 block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0,ROWS-1,COLS-1,ROWS-1);
 
-// 팻말 자리: 가구·사람과 겹치지 않는 칸
-// 구역 이름: 팻말 대신 바닥에 옅게 새긴다. 자리 규칙은 하나 — 구역 바닥의 왼쪽 위 모서리.
-// (c, r) = 그 구역의 첫 바닥 칸. wall=true 면 위쪽에 벽이 서 있어서 벽면 아래부터 센다. dx 는 옆 벽 두께만큼 비킬 때
-function zone(name,c,r,wall,dx){ zones.push([name, c*T+6+(dx||0), wall ? r*T+18 : r*T+6]); }
-zone('노트 디자인팀',1,5); zone('다목적실',13,6); zone('디자인실',23,5); zone('디자인실장실',29,5,false,8);
-zone('아트코너',13,12); zone('라운지',23,13);
-zone('경영지원팀',1,17,true); zone('스티커 디자인팀',13,17,true,4); zone('재고창고',26,17);
-zone('엘리베이터 홀',1,25); zone('홍보팀',6,25,true,2); zone('회의실',16,25,true,4); zone('탕비실',26,24,true,4);
 
 // ---- 벽에 거는 것 ----
 function wallItem(img,x,y){ bgc.drawImage(img,x-1,y-1); }
@@ -829,7 +817,7 @@ wallItem(pLogoBoard(),40,32); SIGNS.push(['끄적끄적문구',40+84,32+17]);
 wallItem(pAC(),220,30);
 wallItem(pPainting(),21*T+16,30);
 wallItem(pWhiteboard(),30*T,28);
-wallItem(pShowSign(),23*T+24,34); SIGNS.push(['디자인실',23*T+24+75,34+15]);
+wallItem(pPainting(),24*T+4,30);
 wallItem(pSwitch(),29*T+4,44);
 
 // ---- 칸막이 ----
@@ -944,20 +932,22 @@ var SPOTS=[
 ].filter(function(s){ return !blocked[s.r][s.c]; });
 var WALKERS=['hannote','chosti','minhongbo','kimnote','hansti','seohongbo'];
 
-// ---- R-도우미: 복도를 천천히 떠다니며 공기 상태를 알려주는 로봇 (본편과 같은 대사) ----
-function pRobot(blink){ return obj(30,34,function(g){
-  ell(g,3,11,2,5,'#a9cfd8'); ell(g,27,11,2,5,'#a9cfd8'); P(g,3,8,'#d4ecf2'); P(g,27,8,'#d4ecf2');     // 귀
-  R(g,6,21,18,9,'#b8dcc6'); R(g,5,22,20,7,'#b8dcc6'); R(g,6,21,18,1,'#d4ecdc'); R(g,22,22,2,7,'#98c4aa');   // 몸통
-  R(g,10,24,10,4,'#eef6ef'); disc(g,15,22,1,'#7fd4ea');
-  tri(g,10,30,20,30,15,33,'#8fb4bf');                                                                    // 추진기
-  R(g,6,2,18,19,'#c9e4d2'); R(g,4,4,22,15,'#c9e4d2'); R(g,5,3,20,17,'#c9e4d2');                          // 머리
-  R(g,6,2,10,1,'#e6f4ea'); R(g,23,5,2,13,'#a8ccb4');
-  R(g,8,5,14,12,'#fdfdfb'); R(g,7,6,16,10,'#fdfdfb');                                                    // 얼굴 화면
-  if(blink){ R(g,10,10,3,1,'#1d2f6b'); R(g,17,10,3,1,'#1d2f6b'); }
-  else { R(g,10,7,3,5,'#1d2f6b'); R(g,17,7,3,5,'#1d2f6b'); P(g,10,7,'#6a7ab8'); P(g,17,7,'#6a7ab8'); }
-  P(g,12,14,'#1d2f6b'); R(g,13,15,4,1,'#1d2f6b'); P(g,17,14,'#1d2f6b');
-  P(g,8,15,'#f4b6c0'); P(g,21,15,'#f4b6c0'); }); }
-var ROBOT={ spr:pRobot(false), blink:pRobot(true), tile:null, path:null, step:0, stepStart:0, x:0, feet:0, wait:0, talkUntil:0, nextBlink:0, blinkUntil:0 };
+// ---- R-도우미: 바퀴로 복도를 천천히 돌며 공기 상태를 알려주는 흰 로봇 (본편과 같은 대사) ----
+function pRobot(blink,wheel){ return obj(30,36,function(g){
+  var wh='#f8f9fb', sd='#dfe4ea', lo='#c3cad3';
+  ell(g,3,11,2,5,'#cfd8e0'); ell(g,27,11,2,5,'#cfd8e0'); P(g,3,8,'#eef2f5'); P(g,27,8,'#eef2f5');       // 귀
+  R(g,7,20,16,9,wh); R(g,6,21,18,7,wh); R(g,21,21,2,7,sd); R(g,7,20,16,1,'#ffffff');                     // 몸통
+  R(g,10,23,10,4,'#e8eef3'); disc(g,15,21,1,'#7fd4ea');
+  R(g,4,28,22,4,sd); R(g,4,28,22,1,wh); R(g,4,31,22,1,lo);                                             // 바퀴 받침
+  [7,23].forEach(function(cx){ disc(g,cx,33,2,'#4a5058'); P(g,cx,33,'#8a929a');                          // 바퀴 (굴러가면 바큇살이 돈다)
+    if(wheel) P(g,cx-1,32,'#8a929a'); else P(g,cx+1,34,'#8a929a'); });
+  R(g,6,2,18,17,wh); R(g,4,4,22,13,wh); R(g,5,3,20,15,wh);                                              // 머리
+  R(g,6,2,10,1,'#ffffff'); R(g,23,5,2,11,sd); R(g,6,18,18,1,sd);
+  R(g,8,5,14,10,'#2f3a52'); R(g,7,6,16,8,'#2f3a52'); R(g,8,5,6,1,'#4a5670');                             // 얼굴 화면 (어두운 유리)
+  if(blink){ R(g,10,10,3,1,'#7fe0f0'); R(g,17,10,3,1,'#7fe0f0'); }
+  else { R(g,10,7,3,4,'#7fe0f0'); R(g,17,7,3,4,'#7fe0f0'); P(g,10,7,'#d8f8ff'); P(g,17,7,'#d8f8ff'); }
+  P(g,12,12,'#7fe0f0'); R(g,13,13,4,1,'#7fe0f0'); P(g,17,12,'#7fe0f0'); }); }
+var ROBOT={ spr:pRobot(false,0), roll:pRobot(false,1), blink:pRobot(true,0), tile:null, path:null, step:0, stepStart:0, x:0, feet:0, wait:0, talkUntil:0, nextBlink:0, blinkUntil:0 };
 var R_LINES=['온도 적정','습도 적정','미세먼지 관리중','항균모드 작동','모기 박멸'];
 var R_STEP=560;                       // 칸당 ms — 직원보다 느긋하게
 var R_WAY=[[12,6],[12,13],[3,15],[9,15],[20,15],[25,17],[25,21],[20,12],[30,12],[8,23],[5,26],[2,26]]
@@ -1026,15 +1016,6 @@ function relayout(){
   Z=Math.max(1,Math.min(2,Math.floor(Math.min(vw/W,vh/H))));
   ['width','height'].forEach(function(k){ var v=(k==='width'?W:H)*Z+'px'; stage.style[k]=v; world.style[k]=v; labels.style[k]=v; });
   placeLabels();
-}
-// 바닥 글씨 레이어: 가구·사람 밑에 깔린다. 글꼴이 늦게 오면 한 번 더 그린다
-var floorText=cv(W,H);
-function paintFloorText(){
-  var g=floorText.getContext('2d'); g.clearRect(0,0,W,H); g.font='16px NeoDGM, monospace'; g.textBaseline='top';
-  zones.forEach(function(z){ var w=Math.round(g.measureText(z[0]).width);
-    g.fillStyle='rgba(255,253,248,0.75)'; g.fillText(z[0],z[1]+1,z[2]+1);
-    g.fillStyle='rgba(120,104,96,0.72)'; g.fillText(z[0],z[1],z[2]);
-    g.fillStyle='rgba(120,104,96,0.35)'; g.fillRect(z[1],z[2]+19,w,1); });
 }
 function placeLabels(){
   labels.innerHTML='';
@@ -1146,11 +1127,12 @@ function frame(now){
     if(so) showBalloon(so,['note','dots','bulb','sweat','heart','zzz'][Math.floor(Math.random()*6)],1900); }
   if(now-lastSay>9000&&!typing) say(people[Math.floor(Math.random()*people.length)]);
 
-  wc.drawImage(bg,0,0); wc.drawImage(floorText,0,0);
+  wc.drawImage(bg,0,0);
   drawWindow(wc,ph,now); drawClock(wc);
   var list=things.slice(); list.push({draw:function(g){ drawFish(g,now); },sy:5*T+0.5});
-  list.push({sy:ROBOT.feet, draw:function(g){ var X=Math.round(ROBOT.x), F=Math.round(ROBOT.feet), bob=Math.round(Math.sin(now*0.004)*2);
-    ell(g,X+16,F+2,8-(bob>0?1:0),2,'rgba(60,90,100,0.2)'); g.drawImage(now<ROBOT.blinkUntil?ROBOT.blink:ROBOT.spr,X,F-44+bob); }});
+  list.push({sy:ROBOT.feet, draw:function(g){ var X=Math.round(ROBOT.x), F=Math.round(ROBOT.feet);
+    var img=now<ROBOT.blinkUntil?ROBOT.blink:(ROBOT.path&&Math.floor(now/140)%2?ROBOT.roll:ROBOT.spr);
+    ell(g,X+16,F,12,2,'rgba(60,70,90,0.2)'); g.drawImage(img,X,F-36); }});
   list.sort(function(a,b){ return (a.person?a.person.feet:a.sy)-(b.person?b.person.feet:b.sy); });
   list.forEach(function(it){
     if(it.person){ var o=it.person, img=(o.state==='sit'&&now<o.blinkUntil)?o.spr.blink:o.spr[o.dir][o.frame];
@@ -1163,7 +1145,7 @@ function frame(now){
   people.forEach(function(o){ if(o.balloon&&now<o.balloonUntil){ var bob=Math.round(Math.sin(now*0.012)*1.5);
     wc.drawImage(o.balloon,Math.round(o.x)+2,Math.round(o.feet)-48-24+bob); } });
   if(now<ROBOT.talkUntil){ rTalk.style.display='block'; rTalk.textContent=ROBOT.talk;
-    rTalk.style.left=((ROBOT.x+16)*Z)+'px'; rTalk.style.top=((ROBOT.feet-48)*Z)+'px'; } else rTalk.style.display='none';
+    rTalk.style.left=((ROBOT.x+16)*Z)+'px'; rTalk.style.top=((ROBOT.feet-40)*Z)+'px'; } else rTalk.style.display='none';
   var tint=TINT[ph];
   if(tint){ wc.save(); wc.globalCompositeOperation='multiply'; wc.globalAlpha=tint[1]; wc.fillStyle=tint[0]; wc.fillRect(0,0,W,H); wc.restore(); }
   if(ph==='night'||ph==='dusk'){ wc.save(); wc.globalCompositeOperation='lighter';    // 밤에는 모니터 불빛
@@ -1174,8 +1156,7 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 
-paintFloorText();
-document.fonts&&document.fonts.load('16px NeoDGM').then(paintFloorText).catch(function(){});
+document.fonts&&document.fonts.load('16px NeoDGM').catch(function(){});
 relayout();
 setTimeout(function(){ document.getElementById('mapName').style.opacity='0'; },4200);
 say(people[1]);
