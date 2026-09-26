@@ -14359,12 +14359,16 @@ function drawPlate(g,cx,y,name,small){
   g.fillStyle='#ffffff'; g.textBaseline='top'; g.fillText(name,x+(small?4:6),y+2);
 }
 var EMO_BAL={ happy:'heart', sleepy:'zzz', angry:'excl', sad:'sweat', surprised:'excl', cool:'note', blank:'dots' };
+// 앉은 사람을 좌석 쿠션 높이로 올린다: 엉덩이가 방석에, 무릎·구두는 앞턱에 걸치고 등받이는 몸 뒤에 온다
+// (뒤돌아 앉으면 뒤통수와 어깨가 등받이 위로 보이게)
+var SIT_LIFT={ down:11, left:7, right:7, up:12 };
+function sitLift(a){ return (a.onFurn && !a.path && a.spr.sit) ? (SIT_LIFT[a.dir]||0) : 0; }
 function drawActor(g,a,now){
   var img=(a.sitting&&now<a.blinkUntil)?a.spr.blink:a.spr[a.dir][a.path?a.frame:0];
   var X=Math.round(a.x), Y=Math.round(a.feet)-48;
   if(a.onFurn && !a.path){                                   // 소파·의자에 앉음: 몸을 낮추고 무릎·구두 끝만 보인다
     var st=a.spr.sit&&a.spr.sit[a.dir];
-    if(st){ g.drawImage(a.dir==='down'&&now<a.blinkUntil&&a.spr.sitBlink?a.spr.sitBlink:st,X,Y); return; }
+    if(st){ g.drawImage(a.dir==='down'&&now<a.blinkUntil&&a.spr.sitBlink?a.spr.sitBlink:st,X,Y-sitLift(a)); return; }
     g.drawImage(img,0,0,img.width,41,X,Y+6,img.width,41); return; }
   if(!a.sitting) ell(g,X+17,Math.round(a.feet),9,2,'rgba(90,50,70,0.22)');
   g.drawImage(img,X,Y);
@@ -14494,12 +14498,12 @@ function frame(now){
   } else {
     drawPlate(g,POSTS2.yun.plateX,POSTS2.yun.plateY,'윤안내'); drawPlate(g,POSTS2.kang.plateX,POSTS2.kang.plateY,'강안내');
     drawPlate(g,POSTS2.guard.plateX,POSTS2.guard.plateY,'보안');
-    for(var vid in F.actors){ var va=F.actors[vid]; if(va.visible&&va.name) drawPlate(g,Math.round(va.x)+17,Math.round(va.feet)+(va.onFurn&&!va.path?6:3),va.name,true); }
+    for(var vid in F.actors){ var va=F.actors[vid]; if(va.visible&&va.name) drawPlate(g,Math.round(va.x)+17,Math.round(va.feet)+(va.onFurn&&!va.path?6-sitLift(va):3),va.name,true); }
   }
   // 말풍선 · 감정
   var talkers=[]; for(var tid in F.actors){ var ta=F.actors[tid]; if(ta.visible&&(ta.bubble||ta.emo)) talkers.push(ta); }
   talkers.sort(function(p,q){ return p.feet-q.feet; });
-  talkers.forEach(function(a){ var cx=Math.round(a.x)+17, top=Math.round(a.feet)-48+(a.onFurn&&!a.path?6:0);
+  talkers.forEach(function(a){ var cx=Math.round(a.x)+17, top=Math.round(a.feet)-48+(a.onFurn&&!a.path?6-sitLift(a):0);
     if(a.bubble) drawBubble(g,cx,top+4,a.bubble,'#6f5a4a');
     else { var b=PO.BALLOONS[EMO_BAL[a.emo]||'dots']; if(b) g.drawImage(b,Math.round(a.x)+2,top-22+Math.round(Math.sin(now*0.012)*1.5)); } });
   if(F.robot.bubble) drawBubble(g,Math.round(F.robot.x)+16,Math.round(F.robot.feet)-36,F.robot.bubble,'#6f9aa6');
