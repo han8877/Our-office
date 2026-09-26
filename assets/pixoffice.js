@@ -468,6 +468,48 @@ function pMeetTable(){ return obj(160,80,function(g){ var t='#f2dfbe', edge='#c7
   R(g,64,18,24,15,'#d5dbe1'); R(g,64,18,24,2,'#eef2f5'); disc(g,76,25,2,'#f7f9fb');
   R(g,48,32,8,8,'#f07a82'); R(g,48,32,8,2,'#f8b0b4'); R(g,96,12,8,8,'#6fb7e8'); R(g,96,12,8,2,'#aad6f4');
   R(g,134,14,10,4,'#f2c24a'); R(g,134,19,10,4,'#5ab37a'); }); }
+// ---- 일반 사무실 소품 (3층 채우기) ----
+function pFiling(){ return obj(64,68,function(g){                 // 4단 서류 캐비닛 둘, 위에 바인더
+  for(var k=0;k<2;k++){ var x=k*32; R(g,x,14,31,54,'#e2e5e8'); R(g,x,14,31,2,'#f6f7f8'); R(g,x+29,16,2,52,'#b8bec4');
+    for(var d=0;d<4;d++){ var y=18+d*12; R(g,x+3,y,25,10,'#eef0f2'); R(g,x+3,y+9,25,1,'#c3cad3'); R(g,x+11,y+3,9,2,'#9aa2a8'); R(g,x+13,y+6,5,2,'#fbfaf6'); } }
+  var bc=['#4a6a9a','#c96a6a','#6a9a6a','#e8b84a','#8a6ab0','#4a8a9a'];
+  for(var i=0;i<6;i++){ R(g,4+i*9,0,7,14,bc[i]); R(g,4+i*9,0,7,1,sh(bc[i],0.35)); R(g,6+i*9,4,3,5,'#fbfaf6'); } }); }
+function pSafe(){ return obj(32,40,function(g){                   // 금고
+  R(g,0,4,32,36,'#5a616b'); R(g,0,4,32,2,'#7a828c'); R(g,29,6,3,34,'#3d434c'); R(g,3,8,24,28,'#6a727c');
+  disc(g,14,20,5,'#c9cfd4'); disc(g,14,20,3,'#8a929a'); P(g,14,16,'#fbfaf6'); R(g,22,16,3,9,'#c9a25c'); R(g,4,0,24,4,'#fbfaf6'); R(g,6,1,18,1,'#c9c2b4'); }); }
+function pShredder(){ return obj(28,40,function(g){               // 문서 세단기
+  R(g,2,12,24,28,'#3d434c'); R(g,2,12,24,2,'#5a616b'); R(g,4,16,20,20,'#4a5058'); for(var y=18;y<34;y+=3) R(g,6,y,16,1,'#e8e4dc');
+  R(g,0,4,28,9,'#2a2e34'); R(g,0,4,28,1,'#4a5058'); R(g,6,6,16,2,'#111418'); P(g,24,8,'#6ad08a'); R(g,9,0,10,5,'#fbfaf6'); }); }
+function pPrinterStand(){ return obj(64,56,function(g){          // 공용 프린터와 복사용지 상자
+  R(g,4,26,56,30,'#c9a27a'); R(g,4,26,56,2,'#dcbc96'); R(g,6,32,24,20,'#b08a62'); R(g,34,32,24,20,'#b08a62'); R(g,17,40,2,4,'#e2c29e'); R(g,45,40,2,4,'#e2c29e');
+  R(g,10,6,44,20,'#f4f5f6'); R(g,10,6,44,2,'#ffffff'); R(g,12,2,40,5,'#e2e5e8'); R(g,14,14,30,4,'#2a2e34'); R(g,16,12,26,3,'#fbfaf6'); R(g,46,10,6,4,'#3a4a5a'); P(g,48,11,'#6ad08a');
+  R(g,52,48,12,8,'#e8d8b0'); R(g,52,48,12,1,'#f8ecd0'); }); }
+function pCoatRack(){ return obj(28,72,function(g){               // 옷걸이 스탠드: 코트와 가방
+  ell(g,14,70,10,2,'#8a6444'); R(g,13,8,3,62,'#8a6444'); R(g,13,8,1,62,'#b08462'); R(g,7,8,15,2,'#8a6444'); disc(g,14,5,3,'#8a6444');
+  R(g,3,10,11,30,'#8a9ab0'); R(g,3,10,11,2,'#aabace'); R(g,12,10,2,30,'#6a7a90'); R(g,17,12,9,22,'#d8b88a'); R(g,17,12,9,2,'#e8d0a8'); R(g,19,26,6,6,'#c9a27a'); }); }
+function pFlipChart(){ return obj(40,72,function(g){              // 플립차트 이젤
+  line(g,6,70,14,20,'#8a929a'); line(g,34,70,26,20,'#8a929a'); R(g,19,50,2,20,'#8a929a');
+  R(g,4,4,32,44,'#fbfaf6'); R(g,4,4,32,2,'#ffffff'); R(g,2,2,36,3,'#5a616b'); R(g,34,6,2,42,'#dcd6cc');
+  R(g,8,10,18,2,'#4a86d0'); R(g,8,15,24,1,'#b8b2a6'); R(g,8,19,20,1,'#b8b2a6'); R(g,8,26,6,12,'#f28a8a'); R(g,16,30,6,8,'#f2d06a'); R(g,24,22,6,16,'#8ac2a0'); R(g,6,40,28,1,'#8a929a'); }); }
+function pWaterTable(){ return obj(56,44,function(g){             // 회의용 물·컵 테이블
+  R(g,4,20,48,4,'#e8e3da'); R(g,4,18,48,3,'#fdfbf7'); R(g,8,24,3,20,'#b8bec4'); R(g,45,24,3,20,'#b8bec4');
+  for(var i=0;i<4;i++){ R(g,8+i*7,4,5,14,'#cfe8f4'); R(g,8+i*7,4,5,2,'#6fb3d8'); R(g,9+i*7,8,1,8,'#ffffff'); }
+  for(var j=0;j<3;j++){ R(g,38+(j%2)*5,12-Math.floor(j/2)*3,5,6,'#fbfaf6'); } R(g,37,17,12,1,'#d8d2c6'); }); }
+function pBoxStack(){ return obj(60,60,function(g){               // 택배 상자 더미
+  function box(x,y,w,h){ R(g,x,y,w,h,'#c89a64'); R(g,x,y,w,2,'#dcb682'); R(g,x+w-2,y,2,h,'#a87a48'); R(g,x+(w>>1)-2,y,4,h,'#e8d4a0'); R(g,x+4,y+h-8,10,5,'#fbfaf6'); }
+  box(0,30,30,30); box(30,34,30,26); box(6,4,26,26); box(34,12,20,22); }); }
+function pHandTruck(){ return obj(28,60,function(g){              // 손수레
+  R(g,4,4,3,50,'#3a6a9a'); R(g,20,4,3,50,'#3a6a9a'); R(g,4,4,19,3,'#3a6a9a'); R(g,4,52,22,4,'#5a616b'); disc(g,6,56,4,'#2a2e34'); disc(g,22,56,4,'#2a2e34');
+  R(g,6,28,16,22,'#c89a64'); R(g,6,28,16,2,'#dcb682'); R(g,12,28,4,22,'#e8d4a0'); }); }
+function pExtinguisher(){ return obj(16,34,function(g){           // 소화기
+  R(g,3,8,10,24,'#d8403a'); R(g,3,8,3,24,'#f06a60'); R(g,11,8,2,24,'#a8302a'); R(g,4,4,8,5,'#2a2e34'); R(g,10,2,5,2,'#2a2e34'); R(g,4,16,8,6,'#fbfaf6'); R(g,2,31,12,3,'#3a3f46'); }); }
+function pCorkBoard(){ return obj(88,52,function(g){             // 게시판: 공지·포스트잇·사진
+  R(g,0,0,88,52,'#a8764a'); R(g,0,0,88,2,'#c49a6c'); R(g,3,3,82,46,'#d8b07a');
+  for(var i=0;i<40;i++) P(g,4+Math.floor(rnd(i*2.1)*80),4+Math.floor(rnd(i*3.7)*44),'#c49a64');
+  R(g,8,7,20,26,'#fbfaf6'); R(g,10,11,16,1,'#b8b2a6'); R(g,10,14,14,1,'#b8b2a6'); R(g,10,17,15,1,'#b8b2a6'); disc(g,18,7,1,'#e05a5a');
+  R(g,34,8,14,14,'#f7e27a'); R(g,52,10,14,14,'#f7b8c8'); R(g,36,28,14,14,'#b8e0f0'); R(g,54,28,14,14,'#c8e8b8');
+  R(g,70,8,12,16,'#fbfaf6'); R(g,71,9,10,10,'#8ac2e8'); R(g,71,15,10,4,'#7ab070'); disc(g,76,8,1,'#4a86d0');
+  R(g,10,38,18,8,'#fbfaf6'); R(g,12,41,12,1,'#e05a5a'); }); }
 function pFridge(){ return obj(60,88,function(g){
   // 냉장고: 무광 화이트, 스테인리스 손잡이
   var m='#f4f5f3', sd='#d9dcda';
@@ -936,6 +978,16 @@ onTile(pPlant('monstera','#f4f1ea'),24,25,24,25); onTile(pPlant('bush','#9fd4c0'
 // 탕비실
 onTile(pFridge(),28,24,29,25); onTile(pSink(),30,24,31,24); onTile(pVending(),32,24,33,25); onTile(pMicro(),34,24,34,24);
 onTile(pSmallTable(),29,27,30,27); onTile(pCoffeeBar(),26,28,27,28); onTile(pRecycle(),32,28,34,28); onTile(pPlant('tall','#f4f1ea'),34,26,34,26); onTile(pChairN('#f4c0a8'),29,26,29,26,-8); onTile(pChairS('#f4c0a8'),30,28,30,28);
+// ---- 일반 사무실 소품 ----
+wallItem(pCorkBoard(),26*T+4,26);
+// 노트팀: 공용 프린터, 서류 캐비닛
+onTile(pPrinterStand(),9,5,10,5); onTile(pFiling(),1,11,2,11);
+// 경영지원팀: 서류 캐비닛 · 금고 · 세단기 · 옷걸이 · 소화기 (18행은 통로로 비워 둔다)
+onTile(pFiling(),1,17,2,17); onTile(pSafe(),3,17,3,17); onTile(pShredder(),6,17,6,17); onTile(pCoatRack(),7,17,7,17); onTile(pExtinguisher(),11,21,11,21);
+// 다목적실: 플립차트, 물·컵 테이블
+onTile(pFlipChart(),13,6,13,7); onTile(pWaterTable(),13,10,14,10);
+// 재고창고: 상자 더미와 손수레
+onTile(pBoxStack(),26,17,27,18); onTile(pHandTruck(),26,20,26,20);
 
 // ---- 팀 구역 간유리 벽 (실장실·회의실 벽처럼 방을 두른다) ----
 // 가로 벽: r행에 서고 그 칸은 못 지나간다. doors 에 적은 열은 문
@@ -1333,6 +1385,38 @@ function pCoffeeLong(){ return obj(96,32,function(g){               // 긴 티�
   R(g,44,6,14,6,'#fdfbf6'); R(g,50,6,2,6,'#d8d2c6'); disc(g,72,9,3,'#ffffff'); disc(g,72,9,2,'#c98a5a'); disc(g,82,9,3,'#ffffff'); disc(g,82,9,2,'#8aa86a'); }); }
 function spot(g,cx,cy,rx,ry){ g.fillStyle='rgba(255,238,196,0.32)'; g.beginPath(); g.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); g.fill();
   g.fillStyle='rgba(255,244,214,0.3)'; g.beginPath(); g.ellipse(cx,cy,rx*0.6,ry*0.6,0,0,Math.PI*2); g.fill(); }
+function pLogoStatue(){ return obj(96,120,function(g){         // 회사 로고 금빛 동상: 상자에서 고개 내민 고양이와 문구들
+  var G0='#5e4210', G1='#a8802a', G2='#d4aa42', G3='#f0d070', G4='#fff4c0';
+  // 검은 대리석 좌대 + 황동 띠 + 명판
+  R(g,10,100,76,18,'#3a3f46'); R(g,10,100,4,18,'#4a5058'); R(g,82,100,4,18,'#2a2e34'); ell(g,48,100,38,6,'#4a5058'); ell(g,48,99,36,5,'#5a616b');
+  R(g,10,108,76,2,G2); R(g,10,108,76,1,G3); R(g,36,111,24,6,G2); R(g,36,111,24,1,G3); R(g,39,113,18,1,G1);
+  // 왼쪽: 잎 · 연필
+  ell(g,10,54,7,15,G1); ell(g,9,53,6,14,G2); line(g,9,42,11,68,G1); R(g,10,66,2,14,G1); P(g,6,46,G3); P(g,7,44,G4);
+  R(g,17,30,10,48,G2); R(g,17,30,3,48,G3); R(g,25,30,2,48,G1); tri(g,17,30,26,30,21,14,G3); R(g,20,14,3,4,G1); R(g,17,30,10,2,G4);
+  // 오른쪽: 가위 · 자 · 책 더미
+  disc(g,78,28,8,G2); disc(g,86,39,7,G2); disc(g,75,25,2,G4); g.clearRect(76,27,5,4); g.clearRect(84,38,5,3);
+  line(g,73,34,66,50,G1); line(g,74,34,67,50,G2); line(g,82,42,68,52,G1); line(g,82,43,68,53,G2);
+  for(var k=0;k<5;k++) line(g,75+k,54,84+k,76,k<3?G2:G1); for(var t=0;t<6;t++) R(g,77+Math.round(t*1.6),57+t*3,2,1,G0);
+  R(g,70,78,24,6,G3); R(g,70,78,24,1,G4); R(g,68,84,26,6,G2); R(g,68,89,26,1,G1); R(g,70,90,24,6,G1); R(g,90,78,4,18,G1);
+  // 왼쪽 아래: 테이프
+  disc(g,15,88,11,G2); disc(g,12,85,5,G3); g.clearRect(12,86,6,6); R(g,0,96,16,3,G2); R(g,0,96,16,1,G3);
+  // 고양이 머리 (크게)
+  tri(g,28,42,32,20,44,36,G2); tri(g,52,36,64,20,68,42,G2); tri(g,31,37,33,26,40,35,G3); tri(g,56,35,62,26,65,37,G1);
+  R(g,28,36,40,32,G2); R(g,31,33,34,4,G2); R(g,28,38,3,26,G3); R(g,33,34,14,2,G4); R(g,65,38,3,28,G1);
+  R(g,44,38,1,5,G1); R(g,48,38,1,5,G1); R(g,52,38,1,5,G1);
+  R(g,37,47,4,5,G0); R(g,55,47,4,5,G0); P(g,37,47,G4); P(g,55,47,G4);
+  P(g,44,55,G0); P(g,45,56,G0); P(g,46,57,G0); P(g,47,56,G0); P(g,48,55,G0); P(g,49,56,G0); P(g,50,57,G0); P(g,51,56,G0); P(g,52,55,G0);
+  R(g,31,53,5,3,G3); R(g,60,53,5,3,G3);
+  // 상자
+  R(g,21,64,54,34,G2); R(g,21,64,54,2,G4); R(g,21,66,54,1,G3); R(g,21,67,54,2,G1); R(g,21,64,3,34,G3); R(g,71,66,4,32,G1); R(g,21,96,54,2,G1);
+  R(g,34,74,28,13,G3); R(g,34,74,28,1,G4); R(g,35,86,26,1,G1); R(g,39,78,18,1,G1); R(g,39,82,12,1,G1); P(g,36,80,G1); P(g,59,80,G1);
+  // 앞발
+  ell(g,38,67,6,4,G3); ell(g,58,67,6,4,G3); P(g,36,69,G1); P(g,39,69,G1); P(g,56,69,G1); P(g,59,69,G1);
+}); }
+function drawStatueFx(g,x,y,t){                                     // 반짝임: 로고의 별 + 가끔 스치는 빛
+  var ph=(t%2400)/2400, a=ph<0.5?ph*2:(1-ph)*2, sx=x+20, sy=y+6, r=1+Math.round(a*3);
+  g.globalAlpha=0.35+0.65*a; R(g,sx-r,sy,r*2+1,1,'#fff0a0'); R(g,sx,sy-r,1,r*2+1,'#fff0a0'); R(g,sx-1,sy-1,3,3,'#ffd84a'); g.globalAlpha=1;
+  var gl=Math.floor(t/350)%12; var spots=[[32,22],[64,22],[21,15],[28,67],[71,79],[46,34]]; if(gl<spots.length){ var q=spots[gl]; P(g,x+q[0],y+q[1],'#ffffff'); P(g,x+q[0]+1,y+q[1]-1,'#fff4c0'); } }
 // 움직이는 화면이 달린 물건: 그림 위에 화면을 매 프레임 그린다
 function onTileFx(img,c0,r0,c1,r1,fx){ var w=img.width-2, h=img.height-2, x=c0*T+Math.round(((c1-c0+1)*T-w)/2), y=(r1+1)*T-h;
   things.push({sy:(r1+1)*T, draw:function(g){ g.drawImage(img,x-1,y-1); fx(g,x,y,performance.now()); }}); block(c0,r0,c1,r1); }
@@ -1382,7 +1466,10 @@ onTile(pPlinth('celadon'),25,5,25,6); onTile(pGalleryBench(),27,6,30,6); onTile(
 onTile(pPlant('tall','#f4f1ea'),34,5,34,5);
 // 라운지
 onTile(pSofa('#d2bc9e'),11,10,14,10); onTile(pSofaBack('#d2bc9e'),11,18,14,18);
-put(pRoundTable(),11*T+16,15*T-52,15*T,[12,13,13,14]);
+// 라운지 가운데: 회사 로고 금빛 동상 (핀조명)
+spot(bgc,13*T,15*T-6,60,13);
+(function(){ var st=pLogoStatue(), x=13*T-48, y=15*T-118;
+  things.push({sy:15*T, draw:function(g){ g.drawImage(st,x-1,y-1); drawStatueFx(g,x,y,performance.now()); }}); block(12,13,13,14); })();
 onTile(pArmchair('#d2bc9e'),8,14,8,14); onTile(pArmchair('#d2bc9e'),17,14,17,14);
 [[9,10],[16,10],[9,18],[16,18]].forEach(function(p){ onTile(pSideLamp(),p[0],p[1],p[0],p[1]); });
 // 라운지 귀퉁이: 2인 소파와 원형 티테이블 넷
