@@ -1435,6 +1435,24 @@ function drawStatueFx(g,x,y,t){                                     // 반짝임
   var ph=(t%2400)/2400, a=ph<0.5?ph*2:(1-ph)*2, sx=x+20, sy=y+6, r=1+Math.round(a*3);
   g.globalAlpha=0.35+0.65*a; R(g,sx-r,sy,r*2+1,1,'#fff0a0'); R(g,sx,sy-r,1,r*2+1,'#fff0a0'); R(g,sx-1,sy-1,3,3,'#ffd84a'); g.globalAlpha=1;
   var gl=Math.floor(t/350)%12; var spots=[[32,22],[64,22],[21,15],[28,67],[71,79],[46,34]]; if(gl<spots.length){ var q=spots[gl]; P(g,x+q[0],y+q[1],'#ffffff'); P(g,x+q[0]+1,y+q[1]-1,'#fff4c0'); } }
+function pUrn(kind){ return obj(32,48,function(g){               // 돌 화분(어반): 둥근 회양목 · 꽃
+  R(g,9,40,14,6,'#d8d2c6'); R(g,7,45,18,3,'#c9c2b4'); R(g,12,34,8,7,'#e8e3da'); ell(g,16,31,11,5,'#efeae2'); ell(g,16,29,11,3,'#fbf8f2'); R(g,5,30,22,2,'#d8d2c6');
+  R(g,9,34,3,6,'#fbf8f2'); R(g,20,34,2,6,'#cfc8ba');
+  if(kind==='flower'){ disc(g,16,22,9,'#4f8a50'); disc(g,11,20,5,'#5f9e5c'); disc(g,21,20,5,'#5f9e5c');
+    [[10,18,'#fbf2fa'],[16,15,'#f7c8d8'],[22,18,'#fbf2fa'],[13,24,'#f7c8d8'],[20,24,'#fbf2fa'],[16,20,'#f2d06a']].forEach(function(f){ disc(g,f[0],f[1],2,f[2]); P(g,f[0],f[1],'#f5c542'); }); }
+  else { R(g,15,18,2,10,'#6a5440'); disc(g,16,13,11,'#3f7a48'); disc(g,14,11,8,'#4f8e56'); disc(g,12,8,4,'#66a86a'); P(g,11,7,'#9ad89a'); P(g,19,15,'#2f6a3a'); P(g,21,10,'#2f6a3a'); }
+}); }
+function pRailH(w){ return obj(w,24,function(g){                  // 월넛 난간: 황동 손잡이, 난간동자
+  R(g,0,12,w,10,'#5a3a28'); R(g,0,12,w,1,'#7a5236'); R(g,0,21,w,1,'#3e2618');
+  for(var x=3;x<w-2;x+=6){ R(g,x,6,2,7,'#7a5236'); P(g,x,6,'#9a6a48'); }
+  R(g,0,3,w,3,'#c9a25c'); R(g,0,3,w,1,'#f0d070'); R(g,0,5,w,1,'#9a7a3e');
+  for(var px=0;px<w;px+=32){ var xx=Math.min(px,w-6); R(g,xx,0,6,22,'#4a2e1e'); R(g,xx,0,6,2,'#c9a25c'); R(g,xx+1,0,2,22,'#6a4a36'); } }); }
+function pRailV(h){ return obj(10,h,function(g){                   // 세로 난간 (위에서 본 모습)
+  R(g,2,0,6,h,'#5a3a28'); R(g,3,0,3,h,'#c9a25c'); R(g,3,0,1,h,'#f0d070');
+  for(var y=0;y<h;y+=32){ var yy=Math.min(y,h-8); R(g,0,yy,10,8,'#4a2e1e'); R(g,1,yy,8,2,'#c9a25c'); } }); }
+function pStanchions(h){ return obj(20,h,function(g){              // 황동 기둥 + 버건디 벨벳 로프 (세로 줄)
+  for(var y=10;y<h;y+=32){ var yy=Math.min(y,h-26); ell(g,10,yy+24,7,2,'#9a7a3e'); R(g,9,yy+2,3,22,'#c9a25c'); R(g,9,yy+2,1,22,'#f0d070'); disc(g,10,yy+1,3,'#e2c27e'); }
+  for(var y2=10;y2+32<h;y2+=32){ for(var k=0;k<32;k++){ var sag=Math.round(Math.sin(k/32*Math.PI)*3); R(g,10+sag,y2+6+k,2,1,'#8a2434'); } } }); }
 // 움직이는 화면이 달린 물건: 그림 위에 화면을 매 프레임 그린다
 function onTileFx(img,c0,r0,c1,r1,fx){ var w=img.width-2, h=img.height-2, x=c0*T+Math.round(((c1-c0+1)*T-w)/2), y=(r1+1)*T-h;
   things.push({sy:(r1+1)*T, draw:function(g){ g.drawImage(img,x-1,y-1); fx(g,x,y,performance.now()); }}); block(c0,r0,c1,r1); }
@@ -1488,6 +1506,7 @@ onTile(pSofa('#d2bc9e'),11,10,14,10); onTile(pSofaBack('#d2bc9e'),11,18,14,18);
 spot(bgc,13*T,15*T-6,60,13);
 (function(){ var st=pLogoStatue(), x=13*T-48, y=15*T-118;
   things.push({sy:15*T, draw:function(g){ g.drawImage(st,x-1,y-1); drawStatueFx(g,x,y,performance.now()); }}); block(12,13,13,14); })();
+onTile(pUrn('topiary'),11,13,11,13); onTile(pUrn('topiary'),14,13,14,13); onTile(pUrn('flower'),11,15,11,15); onTile(pUrn('flower'),14,15,14,15);
 onTile(pArmchair('#d2bc9e'),8,14,8,14); onTile(pArmchair('#d2bc9e'),17,14,17,14);
 [[9,10],[16,10],[9,18],[16,18]].forEach(function(p){ onTile(pSideLamp(),p[0],p[1],p[0],p[1]); });
 // 라운지 귀퉁이: 2인 소파와 원형 티테이블 넷
@@ -1505,6 +1524,15 @@ onTile(pBarCounter(320),24,12,33,12);
 var STOOLS2=[25,27,29,31]; STOOLS2.forEach(function(c){ onTile(pBarStool(),c,13,c,13); });
 onTile(pPlant('monstera','#f4f1ea'),34,14,34,14);
 onTileFx(pMenuBoard(),23,10,23,11,drawMenu); onTile(pWineFridge(),34,10,34,11);
+// 라운지 바 둘레: 월넛 난간(지나갈 수 없음). 입구는 왼쪽 메뉴판 옆(12~13행)과 아래 가운데(27~30열)
+(function(){
+  function hRail(c0,c1,edge){ put(pRailH((c1-c0+1)*T),c0*T,edge*T-20,edge*T); for(var c=c0;c<=c1;c++) wallEdge(c,edge-1,c,edge); }
+  function vRail(col,r0,r1){ put(pRailV((r1-r0+1)*T+8),col*T-5,r0*T-6,(r1+1)*T); for(var r=r0;r<=r1;r++) wallEdge(col-1,r,col,r); }
+  hRail(23,26,16); hRail(31,34,16); vRail(23,14,15); vRail(23,9,9);
+  onTile(pUrn('topiary'),23,15,23,15);
+  // 입구 앞 대기 줄: 벨벳 로프 (22열)
+  put(pStanchions(3*T),22*T+6,9*T-8,12*T-2); block(22,9,22,11);
+})();
 // 독서 코너
 onTile(pMagShelf(),24,17,26,18); onTile(pBookshelf(5),31,17,32,18); onTile(pBookshelf(11),33,17,34,18);
 [[24,21],[24,25],[33,21],[33,25]].forEach(function(p){ onTile(pArmchair('#b8c6b0'),p[0],p[1],p[0],p[1]); });
