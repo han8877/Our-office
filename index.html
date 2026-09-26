@@ -2036,6 +2036,10 @@
     <svg width="16" height="12" viewBox="0 0 16 12"><rect x="0.5" y="0.5" width="15" height="9" rx="2" fill="none" stroke="#5c4a3a" stroke-width="1"/><path d="M4 9.5 L4 11.5 L6.5 9.5" fill="none" stroke="#5c4a3a" stroke-width="1"/></svg>
     <span>메신저 <span id="msgBadge" class="msg-badge"></span></span>
   </button>
+  <button class="sideBtn" id="shopBtn" aria-label="온라인샵">
+    <svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 4.5 h10 l-0.8 8.5 h-8.4 z" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linejoin="round"/><path d="M4.6 6 V3.6 a2.4 2.4 0 0 1 4.8 0 V6" stroke="#5c4a3a" stroke-width="1" fill="none" stroke-linecap="round"/></svg>
+    <span>온라인샵</span>
+  </button>
   <i class="sideSep"></i>
   <button class="sideBtn" id="dexBtn" aria-label="주요 프로젝트">
     <svg width="14" height="12" viewBox="0 0 14 12"><path d="M0.5 2.5 a1.5 1.5 0 0 1 1.5 -1.5 h3 l1.5 1.5 h5.5 a1.5 1.5 0 0 1 1.5 1.5 v6 a1.5 1.5 0 0 1 -1.5 1.5 h-10 a1.5 1.5 0 0 1 -1.5 -1.5 z" stroke="#5c4a3a" stroke-width="1" fill="none"/></svg>
@@ -4884,6 +4888,7 @@
       <tr><td>청소</td><td>10분마다 바닥에 먼지가 한 곳씩 쌓입니다. 누르면 한 번에 치워요</td></tr>
       <tr><td>결재</td><td>직원들이 올린 결재를 승인·반려합니다 (9번 설명 참고). 미결재가 있으면 버튼에 빨간 숫자가 붙어요</td></tr>
       <tr><td>메신저</td><td>전체채팅·1:1 채팅과 쪽지를 주고받을 수 있어요. 새 쪽지가 오면 버튼에 빨간 숫자가 붙습니다</td></tr>
+      <tr><td>온라인샵</td><td>끄적끄적문구 상품을 구경하는 직원 전용 쇼핑몰이에요. 상품을 골라 장바구니에 담고 결제까지 눌러볼 수 있지만, 실제 결제는 되지 않습니다</td></tr>
       <tr><td>프로젝트</td><td>사업 등록·관리 (8번 설명 참고)</td></tr>
       <tr><td>야근모드</td><td>전원 퇴근 후 랜덤 2~4명만 남아 야근 시작</td></tr>
       <tr><td>일지</td><td>주인 없는 문서 파일 <b>오래된 근무일지</b>를 한 쪽씩 넘겨 읽습니다 (10번 설명 참고). 안 읽은 쪽이 있으면 초록 테두리가 켜져요</td></tr>
@@ -14544,5 +14549,10 @@ window.__pixOffice = { floors:FLOORS, actors:FLOORS['3'].actors, robot:FLOORS['3
 })();
 </script>
 
+<script src="assets/shop.js"></script>
+<script>
+// 메뉴 '온라인샵' → 끄적끄적문구 온라인샵 팝업
+(function(){ var b=document.getElementById('shopBtn'); if(b) b.addEventListener('click', function(){ if(window.OurShop) OurShop.open(); }); })();
+</script>
 </body>
 </html>
