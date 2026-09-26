@@ -221,7 +221,7 @@ var CSS='\
 .shModal.on{ display:flex; }\
 .shModal .box{ background:#fffdf8; border:1.4px solid #5c4a3a; border-radius:14px; padding:20px 18px 16px; max-width:300px; text-align:center; }\
 .shModal .box img{ width:92px; }\
-.shModal .box p{ margin:10px 0 16px; font-size:14px; line-height:1.55; color:#3e3228; word-break:keep-all; }\
+.shModal .box p{ margin:10px 0 16px; font-size:14px; line-height:1.55; color:#3e3228; word-break:keep-all; white-space:pre-line; }\
 .shModal .box .shBtn{ width:100%; }\
 ';
 
@@ -327,7 +327,7 @@ function onClick(e){
     case 'cancelSel':
       var sel=Object.keys(state.cart).filter(function(id){ return state.cartSel[id]; }); if(!sel.length) return;
       sel.forEach(function(id){ delete state.cart[id]; delete state.cartSel[id]; }); saveCart(); render(); toast('선택한 상품을 취소했어요'); break;
-    case 'pay': showModal('직원전용 관리자페이지이므로 결제는 진행되지 않습니다'); break;
+    case 'pay': showModal('직원 전용 관리자 페이지이므로\n결제는 진행되지 않습니다.'); break;
     case 'modalOk': modal.classList.remove('on'); break;
   }
 }
