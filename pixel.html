@@ -40,13 +40,17 @@
     background:rgba(255,255,255,.1); border-radius:5px; }
   #msgName{ display:block; color:#ffe39a; }
   #msgText{ display:block; min-height:44px; }
+  #rTalk{ position:absolute; display:none; pointer-events:none; white-space:nowrap; font-size:16px; line-height:16px; color:#2e4a52;
+    background:#ffffff; border:2px solid #6f9aa6; border-radius:8px; padding:4px 8px; transform:translate(-50%,-100%);
+    box-shadow:0 2px 0 rgba(60,90,100,.25); }
+  #rTalk:after{ content:''; position:absolute; left:50%; bottom:-7px; margin-left:-5px; border:5px solid transparent; border-top-color:#6f9aa6; border-bottom:0; }
   #msgNext{ position:absolute; right:14px; bottom:6px; animation:blink .8s steps(1) infinite; }
   @keyframes blink{ 50%{ opacity:0; } }
   @media (prefers-reduced-motion:reduce){ #msgNext{ animation:none; } }
 </style>
 </head>
 <body>
-<div id="view"><div id="stage"><canvas id="world"></canvas><div id="labels"></div></div></div>
+<div id="view"><div id="stage"><canvas id="world"></canvas><div id="labels"></div><div id="rTalk"></div></div></div>
 <div id="mapName" class="win">끄적끄적문구 · 3층 사무실<small>화면을 끌어서 둘러보세요</small></div>
 <div id="clock" class="win">--:--</div>
 <div id="msg" class="win"><canvas id="msgFace" width="26" height="26"></canvas><span id="msgName"></span><span id="msgText"></span><span id="msgNext">▼</span></div>
@@ -745,18 +749,18 @@ var BALLOONS=(function(){
 // =====================================================================
 var STAFF = [
   {id:'kobujang',  name:'최실장', kind:'fox',     shirt:'#d98f7a', acc:'glasses', desk:[33,6],  team:'lead'},
-  {id:'kimnote',   name:'김팀장', kind:'dog',     shirt:'#f0c46a', desk:[2,8],   team:'note'},
-  {id:'leenote',   name:'이노트', kind:'tiger',   shirt:'#a48ad0', desk:[6,8],   team:'note'},
-  {id:'jungnote',  name:'정노트', kind:'giraffe', shirt:'#e89a78', desk:[2,12],  team:'note'},
-  {id:'hannote',   name:'전노트', kind:'raccoon', shirt:'#6fc49a', desk:[6,12],  team:'note'},
-  {id:'nabujang',  name:'나팀장', kind:'bear',    shirt:'#6aaac4', desk:[2,20],  team:'biz'},
+  {id:'kimnote',   name:'김팀장', kind:'dog',     shirt:'#f0c46a', desk:[4,8],   team:'note'},
+  {id:'leenote',   name:'이노트', kind:'tiger',   shirt:'#a48ad0', desk:[7,8],   team:'note'},
+  {id:'jungnote',  name:'정노트', kind:'giraffe', shirt:'#e89a78', desk:[4,12],  team:'note'},
+  {id:'hannote',   name:'전노트', kind:'raccoon', shirt:'#6fc49a', desk:[7,12],  team:'note'},
+  {id:'nabujang',  name:'나팀장', kind:'bear',    shirt:'#6aaac4', desk:[3,20],  team:'biz'},
   {id:'choiinsa',  name:'최인사', kind:'cat',     shirt:'#ec94ae', desk:[6,20],  team:'biz'},
-  {id:'parkhoegye',name:'박회계', kind:'rabbit',  shirt:'#a6c86a', desk:[10,20], team:'biz'},
-  {id:'jungsti',   name:'정팀장', kind:'monkey',  shirt:'#5a8ac4', desk:[15,19], team:'sticker'},
+  {id:'parkhoegye',name:'박회계', kind:'rabbit',  shirt:'#a6c86a', desk:[9,20], team:'biz'},
+  {id:'jungsti',   name:'정팀장', kind:'monkey',  shirt:'#5a8ac4', desk:[17,19], team:'sticker'},
   {id:'hansti',    name:'손스티', kind:'horse',   shirt:'#f08aa0', desk:[20,19], team:'sticker'},
-  {id:'yoosti',    name:'유스티', kind:'cow',     shirt:'#8cc07a', desk:[15,22], team:'sticker'},
+  {id:'yoosti',    name:'유스티', kind:'cow',     shirt:'#8cc07a', desk:[17,22], team:'sticker'},
   {id:'chosti',    name:'조스티', kind:'frog',    shirt:'#f2b64a', desk:[20,22], team:'sticker'},
-  {id:'yoohongbo', name:'유팀장', kind:'hedgehog',shirt:'#e87a6a', desk:[8,27],  team:'pr'},
+  {id:'yoohongbo', name:'유팀장', kind:'hedgehog',shirt:'#e87a6a', desk:[7,27],  team:'pr'},
   {id:'seohongbo', name:'서홍보', kind:'fox2',    shirt:'#7ab2dc', desk:[10,27],  team:'pr'},
   {id:'minhongbo', name:'민홍보', kind:'bear2',   shirt:'#f4d06a', desk:[13,27], team:'pr'}
 ];
@@ -801,7 +805,7 @@ carpet(bgc,1,5,11,14);   // 노트 디자인팀
 carpet(bgc,13,6,21,11);   // 다목적실
 carpet(bgc,23,13,34,15);   // 라운지
 carpet(bgc,1,16,11,22);   // 경영지원팀 (12열은 복도)
-carpet(bgc,13,16,24,22);   // 스티커 디자인팀
+carpet(bgc,13,16,24,23);   // 스티커 디자인팀
 concrete(bgc,26,17,34,22);                     // 재고창고
 carpet(bgc,6,24,14,28);   // 홍보팀
 stoneFloor(bgc,1,25,5,28); stoneFloor(bgc,5,23,5,24);   // 엘리베이터 홀과 사무실로 이어지는 복도
@@ -817,7 +821,7 @@ function zone(name,c,r,wall,dx){ zones.push([name, c*T+6+(dx||0), wall ? r*T+18 
 zone('노트 디자인팀',1,5); zone('다목적실',13,6); zone('디자인실',23,5); zone('디자인실장실',29,5,false,8);
 zone('아트코너',13,12); zone('라운지',23,13);
 zone('경영지원팀',1,17,true); zone('스티커 디자인팀',13,17,true,4); zone('재고창고',26,17);
-zone('엘리베이터 홀',1,25); zone('홍보팀',6,25,true,2); zone('회의실',16,24,true,4); zone('탕비실',26,24,true,4);
+zone('엘리베이터 홀',1,25); zone('홍보팀',6,25,true,2); zone('회의실',16,25,true,4); zone('탕비실',26,24,true,4);
 
 // ---- 벽에 거는 것 ----
 function wallItem(img,x,y){ bgc.drawImage(img,x-1,y-1); }
@@ -834,8 +838,8 @@ put(vWall(8*T+4,false),22*T+11,3*T,11*T+4); block(22,3,22,10);
 put(hWall(3*T),22*T,11*T+2,11*T+48); put(hWall(6*T),27*T,11*T+2,11*T+48); put(hWall(1*T),34*T,11*T+2,11*T+48);   // 문: 쇼룸 25~26열, 실장실 33열
 block(22,11,24,11); block(27,11,32,11); block(34,11,34,11);
 // 회의실: 유리 (23행, 18~19열은 문)
-put(glassWall(2*T),15*T,23*T+2,23*T+48); put(glassWall(5*T),20*T,23*T+2,23*T+48); block(15,23,17,23); block(20,23,24,23);
-put(vWall(6*T,true),15*T+11,23*T+4,29*T); block(15,24,15,28);
+put(glassWall(3*T),15*T,24*T+2,24*T+48); put(glassWall(5*T),20*T,24*T+2,24*T+48); block(15,24,17,24); block(20,24,24,24);   // 문: 18~19열
+put(vWall(5*T-4,true),15*T+11,24*T+4,29*T); block(15,25,15,28);
 // 탕비실 (23행, 26~27열은 문)
 put(hWall(T),25*T,23*T+2,23*T+48); put(hWall(7*T),28*T,23*T+2,23*T+48); block(25,23,25,23); block(28,23,34,23);
 put(vWall(6*T,false),25*T+11,23*T+4,29*T); block(25,24,25,28);
@@ -860,24 +864,27 @@ onTile(pPlant('monstera','#f4f1ea'),29,9,29,9); onTile(pTrash(),34,9,34,9);
 // 노트팀
 onTile(pDrawers(),10,7,10,8); onTile(pPlant('bush','#9fd4c0'),10,12,10,12);
 // 다목적실
-[[14,8],[16,8],[18,8],[14,10],[16,10],[18,10]].forEach(function(p,i){ onTile(pWhiteChair(),p[0],p[1],p[0],p[1]); });
-onTile(pTV(),20,7,21,8); onTile(pPlant('tall','#d9794a'),21,10,21,10);
+// 흰 의자 3개씩 두 줄, 의자 사이 8px
+for(var cr=0; cr<2; cr++) for(var cc=0; cc<3; cc++){ var chx=14*T+20+cc*36, chy=9*T+cr*42;
+  put(pWhiteChair(),chx,chy-36,chy); }
+block(14,8,17,9);
+onTile(pTV(),19,7,20,8); onTile(pPlant('tall','#d9794a'),21,10,21,10);
 // 아트코너
-onTile(pImacDesk(),13,14,14,14); onTile(pSculpture(),16,13,16,14);
+onTile(pImacDesk(),13,14,14,14); onTile(pSculpture(),16,13,16,14); onTile(pSofa('#9cbcd0'),18,14,21,14);
 // 라운지
-onTile(pLoungeSofa(),26,14,29,14); onTile(pBookshelf(3),31,13,32,14); onTile(pBookshelf(9),33,13,34,14); onTile(pPlant('monstera','#f5b8c8'),30,14,30,14);
+onTile(pLoungeSofa(),26,14,29,14); onTile(pBookshelf(3),31,13,32,14); onTile(pBookshelf(9),33,13,34,14); onTile(pPlant('monstera','#f5b8c8'),25,14,25,14);
 // 경영지원팀
-onTile(pDrawers(),11,17,11,18); onTile(pPlant('tall','#9fd4c0'),4,21,4,21); onTile(pCopier(),9,17,10,17);
+onTile(pDrawers(),11,17,11,18); onTile(pPlant('tall','#9fd4c0'),1,21,1,21); onTile(pCopier(),9,17,10,17);
 // 스티커팀
-onTile(pPlant('bush','#f5b8c8'),13,19,13,19); onTile(pDrawers(),23,18,23,19); onTile(pCopier(),23,21,24,21);
+onTile(pPlant('bush','#f5b8c8'),14,21,14,21); onTile(pDrawers(),23,18,23,19); onTile(pCopier(),23,21,24,21);
 // 재고창고
 onTile(pShelf(1),28,18,30,19); onTile(pShelf(5),32,18,34,19); onTile(pShelf(8),28,21,30,22); onTile(pShelf(12),32,21,34,22);
 // 홍보팀
-onTile(pDrawers(),6,27,6,28); onTile(pPlant('bush','#d9794a'),7,28,7,28); onTile(pPlant('tall','#f4f1ea'),12,28,12,28);
+onTile(pPlant('bush','#d9794a'),3,28,3,28);   // 홍보팀은 책상 셋으로 꽉 차서 화분은 엘리베이터 홀로
 // 회의실
-onTile(pMeetTable(),18,25,22,26);
-[18,20,22].forEach(function(c){ onTile(pChairN('#4aa3a0'),c,24,c,24,-8); onTile(pChairS('#4aa3a0'),c,27,c,27); });
-onTile(pPlant('monstera','#f4f1ea'),24,24,24,24); onTile(pPlant('bush','#9fd4c0'),24,28,24,28);
+onTile(pMeetTable(),18,26,22,27);
+[18,20,22].forEach(function(c){ onTile(pChairN('#4aa3a0'),c,25,c,25,-8); onTile(pChairS('#4aa3a0'),c,28,c,28); });
+onTile(pPlant('monstera','#f4f1ea'),24,25,24,25); onTile(pPlant('bush','#9fd4c0'),24,28,24,28);
 // 탕비실
 onTile(pFridge(),28,24,29,25); onTile(pSink(),30,24,31,24); onTile(pVending(),32,24,33,25); onTile(pMicro(),34,24,34,24);
 onTile(pSmallTable(),29,27,30,27); onTile(pChairN('#f4c0a8'),29,26,29,26,-8); onTile(pChairS('#f4c0a8'),30,28,30,28);
@@ -897,7 +904,7 @@ vFrost(12,3,14,[5,6]); hFrost(1,11,14,[4,5]);
 // 경영지원팀: 위 벽(4~5열 문), 아래 벽, 오른쪽 벽 (1~4열 아래는 엘리베이터 홀 벽)
 hFrost(1,11,16,[4,5]); hFrost(5,11,22); vFrost(12,16,22);
 // 스티커 디자인팀: 위 벽(18~19열 문), 양옆 벽, 왼쪽 아래 짧은 벽 (나머지 아래쪽은 회의실 유리벽)
-hFrost(13,24,16,[18,19]); vFrost(13,16,23); vFrost(25,16,23); hFrost(13,14,23);
+hFrost(13,24,16,[18,19]); vFrost(13,16,24); vFrost(25,16,24);
 // 홍보팀: 위 벽(10~11열 문), 왼쪽 벽 (오른쪽은 회의실 벽)
 hFrost(6,14,24,[10,11]); vFrost(6,24,29,[],-5);
 // 제품 쇼룸 | 디자인실장실
@@ -936,6 +943,26 @@ var SPOTS=[
   {c:23,r:22,face:'up',b:'dots'}, {c:11,r:16,face:'up',b:'excl'}, {c:20,r:12,face:'down',b:'note'}
 ].filter(function(s){ return !blocked[s.r][s.c]; });
 var WALKERS=['hannote','chosti','minhongbo','kimnote','hansti','seohongbo'];
+
+// ---- R-도우미: 복도를 천천히 떠다니며 공기 상태를 알려주는 로봇 (본편과 같은 대사) ----
+function pRobot(blink){ return obj(30,34,function(g){
+  ell(g,3,11,2,5,'#a9cfd8'); ell(g,27,11,2,5,'#a9cfd8'); P(g,3,8,'#d4ecf2'); P(g,27,8,'#d4ecf2');     // 귀
+  R(g,6,21,18,9,'#b8dcc6'); R(g,5,22,20,7,'#b8dcc6'); R(g,6,21,18,1,'#d4ecdc'); R(g,22,22,2,7,'#98c4aa');   // 몸통
+  R(g,10,24,10,4,'#eef6ef'); disc(g,15,22,1,'#7fd4ea');
+  tri(g,10,30,20,30,15,33,'#8fb4bf');                                                                    // 추진기
+  R(g,6,2,18,19,'#c9e4d2'); R(g,4,4,22,15,'#c9e4d2'); R(g,5,3,20,17,'#c9e4d2');                          // 머리
+  R(g,6,2,10,1,'#e6f4ea'); R(g,23,5,2,13,'#a8ccb4');
+  R(g,8,5,14,12,'#fdfdfb'); R(g,7,6,16,10,'#fdfdfb');                                                    // 얼굴 화면
+  if(blink){ R(g,10,10,3,1,'#1d2f6b'); R(g,17,10,3,1,'#1d2f6b'); }
+  else { R(g,10,7,3,5,'#1d2f6b'); R(g,17,7,3,5,'#1d2f6b'); P(g,10,7,'#6a7ab8'); P(g,17,7,'#6a7ab8'); }
+  P(g,12,14,'#1d2f6b'); R(g,13,15,4,1,'#1d2f6b'); P(g,17,14,'#1d2f6b');
+  P(g,8,15,'#f4b6c0'); P(g,21,15,'#f4b6c0'); }); }
+var ROBOT={ spr:pRobot(false), blink:pRobot(true), tile:null, path:null, step:0, stepStart:0, x:0, feet:0, wait:0, talkUntil:0, nextBlink:0, blinkUntil:0 };
+var R_LINES=['온도 적정','습도 적정','미세먼지 관리중','항균모드 작동','모기 박멸'];
+var R_STEP=560;                       // 칸당 ms — 직원보다 느긋하게
+var R_WAY=[[12,6],[12,13],[3,15],[9,15],[20,15],[25,17],[25,21],[20,12],[30,12],[8,23],[5,26],[2,26]]
+  .map(function(p){ return {c:p[0],r:p[1]}; }).filter(function(t){ return !blocked[t.r][t.c]; });
+
 
 // =====================================================================
 //  시간 · 창밖
@@ -1026,7 +1053,8 @@ window.addEventListener('mouseup',function(){ if(drag&&drag.moved) suppress=true
 view.addEventListener('click',function(e){ if(suppress){ suppress=false; return; }
   var rc=stage.getBoundingClientRect(), nx=(e.clientX-rc.left)/Z, ny=(e.clientY-rc.top)/Z, hit=null;
   people.forEach(function(o){ var x=o.x, y=o.feet-48; if(nx>=x+4&&nx<=x+30&&ny>=y+6&&ny<=y+48){ if(!hit||o.feet>hit.feet) hit=o; } });
-  if(hit){ say(hit); showBalloon(hit,'excl',1400); } });
+  if(hit){ say(hit); showBalloon(hit,'excl',1400); return; }
+  if(nx>=ROBOT.x&&nx<=ROBOT.x+32&&ny>=ROBOT.feet-46&&ny<=ROBOT.feet) robotTalk(); });
 
 // 대화창
 var msgName=document.getElementById('msgName'), msgText=document.getElementById('msgText'), msgFace=document.getElementById('msgFace'), mfc=msgFace.getContext('2d');
@@ -1085,13 +1113,35 @@ function update(o,now){
 people.forEach(function(o){ var k=WALKERS.indexOf(o.p.id); o.walker=k>=0;
   o.until=performance.now()+(k>=0?1200+k*2600:0)+Math.random()*2000; o.nextBlink=performance.now()+Math.random()*3000; });
 
+function robotPos(t){ return { x:t.c*T+1, feet:t.r*T+24 }; }
+function robotTalk(){ ROBOT.talk=R_LINES[Math.floor(Math.random()*R_LINES.length)]; ROBOT.talkUntil=performance.now()+4400; }
+function robotUpdate(now){
+  var R0=ROBOT;
+  if(now>R0.nextBlink){ R0.blinkUntil=now+160; R0.nextBlink=now+2600+Math.random()*3000; }
+  if(!R0.tile){ R0.tile=R_WAY[1]; var p0=robotPos(R0.tile); R0.x=p0.x; R0.feet=p0.feet; R0.wait=now+1200; }
+  if(R0.path){
+    var k=(now-R0.stepStart)/R_STEP;
+    while(k>=1&&R0.step<R0.path.length-1){ R0.step++; R0.stepStart+=R_STEP; k-=1; }
+    var a=R0.path[R0.step];
+    if(R0.step>=R0.path.length-1){ R0.tile=a; var pa=robotPos(a); R0.x=pa.x; R0.feet=pa.feet; R0.path=null;
+      R0.wait=now+700+Math.random()*1800; if(Math.random()<0.35){ robotTalk(); R0.wait+=2200; } return; }
+    var A=robotPos(a), B=robotPos(R0.path[R0.step+1]); R0.x=A.x+(B.x-A.x)*k; R0.feet=A.feet+(B.feet-A.feet)*k; return;
+  }
+  if(now>R0.wait){
+    var opts=R_WAY.filter(function(t){ return t!==R0.tile; }), goal=opts[Math.floor(Math.random()*opts.length)];
+    var path=bfs({c:R0.tile.c,r:R0.tile.r},goal);
+    if(path&&path.length>1){ R0.path=path; R0.step=0; R0.stepStart=now; R0.tile=goal; } else R0.wait=now+1500;
+  }
+}
+var rTalk=document.getElementById('rTalk');
+
 // =====================================================================
 //  그리기
 // =====================================================================
 var lastBalloon=0;
 function frame(now){
   var hm=nowHM(), ph=phase(hm.h);
-  people.forEach(function(o){ update(o,now); });
+  people.forEach(function(o){ update(o,now); }); robotUpdate(now);
   if(now-lastBalloon>2600){ lastBalloon=now; var sit=people.filter(function(o){ return o.state==='sit'; }), so=sit[Math.floor(Math.random()*sit.length)];
     if(so) showBalloon(so,['note','dots','bulb','sweat','heart','zzz'][Math.floor(Math.random()*6)],1900); }
   if(now-lastSay>9000&&!typing) say(people[Math.floor(Math.random()*people.length)]);
@@ -1099,6 +1149,8 @@ function frame(now){
   wc.drawImage(bg,0,0); wc.drawImage(floorText,0,0);
   drawWindow(wc,ph,now); drawClock(wc);
   var list=things.slice(); list.push({draw:function(g){ drawFish(g,now); },sy:5*T+0.5});
+  list.push({sy:ROBOT.feet, draw:function(g){ var X=Math.round(ROBOT.x), F=Math.round(ROBOT.feet), bob=Math.round(Math.sin(now*0.004)*2);
+    ell(g,X+16,F+2,8-(bob>0?1:0),2,'rgba(60,90,100,0.2)'); g.drawImage(now<ROBOT.blinkUntil?ROBOT.blink:ROBOT.spr,X,F-44+bob); }});
   list.sort(function(a,b){ return (a.person?a.person.feet:a.sy)-(b.person?b.person.feet:b.sy); });
   list.forEach(function(it){
     if(it.person){ var o=it.person, img=(o.state==='sit'&&now<o.blinkUntil)?o.spr.blink:o.spr[o.dir][o.frame];
@@ -1110,6 +1162,8 @@ function frame(now){
   });
   people.forEach(function(o){ if(o.balloon&&now<o.balloonUntil){ var bob=Math.round(Math.sin(now*0.012)*1.5);
     wc.drawImage(o.balloon,Math.round(o.x)+2,Math.round(o.feet)-48-24+bob); } });
+  if(now<ROBOT.talkUntil){ rTalk.style.display='block'; rTalk.textContent=ROBOT.talk;
+    rTalk.style.left=((ROBOT.x+16)*Z)+'px'; rTalk.style.top=((ROBOT.feet-48)*Z)+'px'; } else rTalk.style.display='none';
   var tint=TINT[ph];
   if(tint){ wc.save(); wc.globalCompositeOperation='multiply'; wc.globalAlpha=tint[1]; wc.fillStyle=tint[0]; wc.fillRect(0,0,W,H); wc.restore(); }
   if(ph==='night'||ph==='dusk'){ wc.save(); wc.globalCompositeOperation='lighter';    // 밤에는 모니터 불빛
@@ -1126,7 +1180,7 @@ relayout();
 setTimeout(function(){ document.getElementById('mapName').style.opacity='0'; },4200);
 say(people[1]);
 requestAnimationFrame(frame);
-window.__pixel={ people:people, blocked:blocked, SPOTS:SPOTS };
+window.__pixel={ people:people, blocked:blocked, SPOTS:SPOTS, robot:ROBOT };
 })();
 </script>
 </body>
