@@ -1741,26 +1741,26 @@ onTile(pGardenBed(64,'flower'),9,23,10,23); onTile(pGardenBed(64,'flower'),19,23
 onTile(pLounger(),24,20,24,21); onTile(pLounger(),26,20,26,21); onTile(pLounger(),28,20,28,21);
 onTile(pOutBench(),3,26,5,26); onTile(pOutBench(),12,26,14,26); onTile(pOutBench(),30,26,32,26);
 onTile(pPicnic(),17,25,20,26); onTile(pSwingChair(),34,20,34,22);
-var LANTERNS=[[7,26],[22,26],[27,26],[34,26],[5,9],[8,20],[21,20],[23,13],[16,28],[25,28],[2,21],[30,19]];
+var LANTERNS=[[7,26],[22,26],[27,26]];
 LANTERNS.forEach(function(p){ onTile(pLantern2(),p[0],p[1],p[0],p[1]); });
-// 바닥 매립등: 연못 둘레 · 잔디 모서리 · 산책길 · 라운지 앞 · 선베드 앞
-var FLOOR_LIGHTS=[[480,552],[400,676],[560,676],[300,524],[660,524],[300,700],[660,700],
-  [13*T,14*T+10],[16*T,14*T+10],[19*T,14*T+10],[23*T,12*T+16],[30*T+16,12*T+8],[25*T,23*T+8],[27*T,23*T+8],[29*T,23*T+8],[6*T,10*T],[6*T,13*T+16],[6*T,19*T]];
-[3,6,9,12,15,21,24,27,32].forEach(function(c){ FLOOR_LIGHTS.push([c*T+16,24*T+16]); });
+// 바닥 매립등: 정원 가장자리를 따라 둘러서
+var FLOOR_LIGHTS=[[240,272],[720,272],[1010,272], [48,306],[48,500],[48,692], [1104,452],[1104,624],[1104,768], [188,912],[412,912],[652,912],[940,912]];
 FLOOR_LIGHTS.forEach(function(f){ floorLight(bgc,f[0],f[1]); });
 onTile(pPlant('tall','#4a4e56'),1,23,1,23);
 // 빈 곳 채우기: 빈백과 낮은 탁자 · 올리브 화분 · 텃밭 옆 벤치 · 물뿌리개
 onTile(pBeanBag('#e8a88c'),25,16,25,16); onTile(pBeanBag('#a9c9b4'),28,16,28,16); onTile(pBeanBag('#f2d06a'),26,18,26,18); onTile(pLowTable(),26,16,27,16);
 onTile(pOlivePot(),7,12,7,12); onTile(pOlivePot(),7,15,7,15); onTile(pOutBench(),5,17,7,17); put(pWateringCan(),5*T+8,11*T+20,11*T+38);
-onTile(pGrassPot(),22,21,22,21); onTile(pLavender(),29,24,29,24); onTile(pLavender(),10,21,10,21); onTile(pPlant('monstera','#e8e2d6'),8,11,8,11); onTile(pGrassPot(),1,28,1,28); onTile(pPlant('bush','#e8e2d6'),34,28,34,28);
+onTile(pGrassPot(),22,21,22,21); onTile(pLavender(),29,24,29,24); onTile(pLavender(),10,21,10,21); onTile(pPlant('monstera','#e8e2d6'),8,11,8,11); onTile(pGrassPot(),1,28,1,28);
 // 전구 줄: 기둥 사이로 늘어진 줄 (밤이 되면 불이 들어온다)
 var BULB_LINES=[[[11*T+16,8*T-84],[21*T+16,8*T-84]],[[11*T+16,14*T-84],[21*T+16,14*T-84]],[[11*T+16,8*T-84],[11*T+16,14*T-84]],[[21*T+16,8*T-84],[21*T+16,14*T-84]],
-  [[21*T+16,8*T-84],[34*T,8*T-60]],[[21*T+16,14*T-84],[34*T,11*T-40]]];
-// 잔디·연못 위로 건 전구 줄 (네 기둥 사이 + X자) · 앞쪽 벤치 쪽 · 선베드 쪽
+  [[21*T+16,8*T-84],[34*T,8*T-60]],[[21*T+16,14*T-84],[34*T+16,12*T-84]]];
+// 정원 테두리를 따라 두른 전구 줄 (펜트하우스 벽 → 왼쪽 → 앞쪽 → 오른쪽 → 난간 모서리)
 function BA(c,r){ return [c*T+16,r*T-84]; }
-[[8,15],[21,15],[8,24],[21,24],[2,24],[31,23]].forEach(function(p){ put(pPost(),p[0]*T+12,p[1]*T+32-120,p[1]*T+32,[p[0],p[1],p[0],p[1]]); });
-BULB_LINES.push([BA(8,15),BA(21,15)],[BA(8,24),BA(21,24)],[BA(8,15),BA(8,24)],[BA(21,15),BA(21,24)],[BA(8,15),BA(21,24)],[BA(21,15),BA(8,24)],
-  [BA(2,24),BA(8,24)],[BA(21,24),BA(31,23)],[BA(11,14),BA(8,15)],[BA(21,14),BA(21,15)]);
+var EDGE_POSTS=[[1,13],[1,20],[2,28],[9,28],[16,28],[24,28],[34,28],[34,18],[34,12]];
+EDGE_POSTS.forEach(function(p){ put(pPost(),p[0]*T+12,p[1]*T+32-120,p[1]*T+32,[p[0],p[1],p[0],p[1]]); });
+BULB_LINES.push([[160,236],BA(11,8)],[[36,286],BA(1,13)]);
+for(var ei=0;ei<EDGE_POSTS.length-1;ei++) BULB_LINES.push([BA(EDGE_POSTS[ei][0],EDGE_POSTS[ei][1]),BA(EDGE_POSTS[ei+1][0],EDGE_POSTS[ei+1][1])]);
+BULB_LINES.push([BA(34,12),[34*T,8*T-60]]);
 var BULBS=[]; BULB_LINES.forEach(function(L){ var a=L[0], b=L[1], n=Math.max(4,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/18));
   for(var i=0;i<=n;i++){ var t=i/n; BULBS.push({ x:Math.round(a[0]+(b[0]-a[0])*t), y:Math.round(a[1]+(b[1]-a[1])*t+Math.sin(t*Math.PI)*16), c:['#ffe8a0','#ffd0a0','#fff4c8'][i%3] }); } });
 function drawBulbWires(g){ BULB_LINES.forEach(function(L){ var a=L[0], b=L[1]; g.strokeStyle='rgba(60,50,40,0.7)'; g.lineWidth=1; g.beginPath(); g.moveTo(a[0],a[1]);
