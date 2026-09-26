@@ -808,6 +808,7 @@ function drawBody(g,K,p,dir,frame,sit){
     R(g,14+ax,28,4,7,sD); R(g,14+ax,35,4,3,hand); R(g,14+ax,35,4,1,sh(hand,0.25));
     if(p.scarf) R(g,12,25,9,3,p.scarf);
     if(p.apron){ R(g,11,32,9,8,p.apron); R(g,11,32,9,1,sh(p.apron,0.3)); }
+    if(p.badge) drawBadge(g,'left');
     drawCarry(g,p,'left',14+ax);
     return;
   }
@@ -829,7 +830,16 @@ function drawBody(g,K,p,dir,frame,sit){
   if(dir==='down'&&p.tie){ R(g,15,27,2,2,p.tie); R(g,15,29,2,6,sh(p.tie,-0.1)); }
   if(p.scarf&&dir!=='up'){ R(g,11,25,10,3,p.scarf); R(g,15,28,3,4,sh(p.scarf,-0.15)); }
   if(p.scarf&&dir==='up'){ R(g,11,25,10,2,p.scarf); }
+  if(p.badge) drawBadge(g,dir);
   if(dir==='down') drawCarry(g,p,'down',22);
+}
+// 사원증: 남색 목줄에 흰 카드 (앞: 가슴에 달랑 · 옆: 몸 앞쪽 · 뒤: 목덜미 줄만)
+var LANYARD='#2f4a8a', LANYARD_L='#4a6ab0';
+function drawBadge(g,dir){
+  if(dir==='up'){ R(g,12,26,8,1,LANYARD); return; }
+  if(dir==='left'){ R(g,13,26,1,4,LANYARD); R(g,10,30,4,6,'#fbfaf6'); R(g,10,30,4,1,LANYARD_L); P(g,11,32,'#c9a88a'); R(g,11,34,2,1,'#8a96a8'); return; }
+  R(g,12,26,1,2,LANYARD); R(g,13,28,1,2,LANYARD); R(g,19,26,1,2,LANYARD); R(g,18,28,1,2,LANYARD);
+  R(g,14,30,4,1,LANYARD_L); R(g,14,31,4,5,'#fbfaf6'); R(g,15,32,2,2,'#c9a88a'); R(g,14,35,4,1,'#8a96a8');
 }
 function drawCarry(g,p,dir,hx){
   var it=p.item; if(!it) return;
@@ -895,6 +905,8 @@ var STAFF = [
   {id:'seohongbo', name:'서홍보', kind:'fox2',    shirt:'#7ab2dc', desk:[10,27],  team:'pr'},
   {id:'minhongbo', name:'민홍보', kind:'bear2',   shirt:'#f4d06a', desk:[13,27], team:'pr'}
 ];
+
+STAFF.forEach(function(p){ p.badge=true; });   // 우리 회사 직원만 사원증을 건다
 
 // ---- 방문객 생김새 (본편 방문객 id → 그림) ----
 var VISITORS={
