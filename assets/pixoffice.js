@@ -3,7 +3,7 @@
    좌표: 타일 32px, 36×30칸 (1152×960). */
 (function(){
 'use strict';
-var STATE={ elevOpen:false, elev2Open:false };
+var STATE={ elevOpen:false, elev2Open:false, roofWx:'sunny' };
 var T = 32, COLS = 36, ROWS = 30, W = COLS*T, H = ROWS*T;
 
 // ---------- 색 ----------
@@ -1841,6 +1841,7 @@ function owl(g,x,y,t){ var bob=Math.round(Math.sin(t*0.0016)*1.5), yy=y+bob, pee
 var BIRD_SPOTS={ lawn:[[10*T,19*T+20],[12*T+10,21*T+16],[18*T+24,21*T+8],[20*T,18*T+16],[10*T+20,17*T+12]], deck:[[23*T,24*T],[26*T,24*T+10],[16*T,23*T+20],[29*T,23*T]] };
 function roofBirds(g,t){
   var ph=roofPhase(); if(isNight(ph)) return;
+  if(STATE.roofWx==='rain'||STATE.roofWx==='snow'){ pigeon(g,15*T,11*T+20,Math.floor(t/400)%2?0:1); return; }   // 궂은 날엔 새들이 숨고 비둘기 하나만 차양 밑에
   for(var i=0;i<4;i++){ var sp=BIRD_SPOTS.lawn, k=Math.floor(t/5200+i*1.7)%sp.length, s=sp[(k+i)%sp.length], hop=((t/260)+i)%10<1?-3:0;
     sparrow(g,s[0]+i*9,s[1]+hop+(i%2)*6,Math.floor(t/180+i)%2,((t/400)+i)%5<1); }
   for(var j=0;j<2;j++){ var dp=BIRD_SPOTS.deck, s2=dp[(Math.floor(t/9000)+j*2)%dp.length], wx=Math.round(Math.sin(t*0.0007+j)*14); pigeon(g,s2[0]+wx,s2[1]+j*10,Math.floor(t/220+j)%2?0:1); }
@@ -1865,6 +1866,29 @@ function drawRoofGlow(g,t){
     g.globalAlpha=0.35*a; g.beginPath(); g.ellipse(f[0],f[1]-4,7,10,0,0,Math.PI*2); g.fill(); g.globalAlpha=0.9*a; g.fillStyle='#fff4c8'; g.fillRect(f[0]-2,f[1]-1,4,2); });
   g.restore();
 }
+// 비·눈: 온 화면에 내리고, 비엔 연못에 물결 · 바닥이 젖어 어두워지고, 눈엔 바닥이 하얗게 덮인다
+function drawRoofWeather(g,t,wx){
+  if(wx==='rain'){
+    g.fillStyle='rgba(40,50,70,0.10)'; g.fillRect(0,ROOF_H,W,H-ROOF_H);
+    for(var k=0;k<3;k++){ var ph2=((t/900)+k*0.33)%1, rx=440+k*30, ry=598+(k%2)*10; g.strokeStyle='rgba(230,240,255,'+(0.7*(1-ph2)).toFixed(2)+')'; g.lineWidth=1;
+      g.beginPath(); g.ellipse(rx,ry,3+ph2*10,1.5+ph2*4,0,0,Math.PI*2); g.stroke(); }
+    g.fillStyle='rgba(215,228,245,0.55)';
+    for(var i=0;i<140;i++){ var x=Math.floor(rnd(i*7.3)*(W+80))-40, y=Math.floor(((t*0.55)+rnd(i*3.1)*H)%H), dx=Math.round((y%40)/40*3);
+      g.fillRect(x-dx,y,1,7); }
+  } else if(wx==='snow'){
+    g.fillStyle='rgba(248,250,255,0.2)'; g.fillRect(0,ROOF_H,W,H-ROOF_H);
+    g.fillStyle='rgba(255,255,255,0.35)'; g.fillRect(9*T,16*T,12*T,7*T);                          // 잔디 위엔 더 소복이
+    for(var j=0;j<120;j++){ var sx=Math.floor((rnd(j*5.7)*W+Math.sin(t*0.0015+j)*10+W)%W), sy=Math.floor(((t*0.05)+rnd(j*2.3)*H)%H), sz=j%3?2:3;
+      g.fillStyle='rgba(255,255,255,0.9)'; g.fillRect(sx,sy,sz,sz); }
+  }
+}
+// 우산 (비·눈 오는 날 걷는 사람 머리 위)
+function drawUmbrella(g,x,top,c){
+  g.fillStyle=sh(c,-0.25); g.beginPath(); g.ellipse(x,top+2,18,5,0,0,Math.PI); g.fill();
+  g.fillStyle=c; g.beginPath(); g.ellipse(x,top+2,18,11,0,Math.PI,Math.PI*2); g.fill();
+  g.fillStyle=sh(c,0.25); g.beginPath(); g.ellipse(x-5,top-3,6,4,0,Math.PI,Math.PI*2); g.fill();
+  R(g,x-1,top-11,2,3,'#3a3f46'); R(g,x,top+2,1,14,'#3a3f46');
+}
 // 점심시간에 쉬러 올라온 직원이 앉는 자리 (앉는 방향 · 발 위치)
 var ROOF_SEATS=[ {x:13*T+32-17, feet:10*T+2, dir:'down'}, {x:14*T+32-17, feet:10*T+2, dir:'down'}, {x:15*T+32-17, feet:10*T+2, dir:'down'},
   {x:4*T-17, feet:27*T+6, dir:'down'}, {x:13*T-17, feet:27*T+6, dir:'down'}, {x:31*T-17, feet:27*T+6, dir:'down'}, {x:6*T+16-17, feet:18*T+6, dir:'down'}, {x:18*T+16-17, feet:26*T+10, dir:'up'}, {x:480-17, feet:676, dir:'up'}, {x:392-17, feet:620, dir:'right'}, {x:568-17, feet:620, dir:'left'} ];
@@ -1875,7 +1899,7 @@ useMap(MAP3);
 window.PixOffice={
   T:T, COLS:COLS, ROWS:ROWS, W:W, H:H, STATE:STATE,
   h2r:h2r, mix:mix, sh:sh, rnd:rnd, hash:hash, cv:cv, R:R, P:P, ell:ell, disc:disc, ring:ring, line:line, tri:tri, obj:obj, outline:outline,
-  bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, MAPR:MAPR, liveWeather:function(){ return LIVE_WX; }, drawRoofGlow:drawRoofGlow, F2LOOK:F2LOOK,
+  bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, MAPR:MAPR, drawRoofWeather:drawRoofWeather, drawUmbrella:drawUmbrella, liveWeather:function(){ return LIVE_WX; }, drawRoofGlow:drawRoofGlow, F2LOOK:F2LOOK,
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,

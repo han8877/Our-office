@@ -6667,6 +6667,7 @@
     var d = new Date(), t = d.getHours()*60 + d.getMinutes();
     if(wanderOn || Object.keys(roofTrip).length >= 2) return;
     if(t >= 11*60+50 && t < 13*60+5) return;              // 점심시간엔 따로 옥상에 올라가 있다
+    if(weatherState === 'rain' && Math.random() < 0.75) return;   // 비 오는 날엔 잘 안 올라간다
     var pool = staff.filter(function(s){
       var el = charEl(s.id);
       if(!el || !el.classList.contains('present') || el.classList.contains('onRoof')) return false;
@@ -14880,7 +14881,7 @@ function barStep(a,now){                                          // 바텐더: 
 var ROOF_LINES=[['도시락 맛있다'],['바람 좋다~'],['여기가 명당이네'],['하늘 좀 봐요'],['참새 귀엽다'],['남산타워 보인다'],['오후도 힘내자'],['커피 한 모금'],['졸리다..'],['꽃 예쁘게 폈네']];
 function roofTick(F,now,off){
   roofGuests(F,now,off);
-  var d=new Date(), wd=d.getDay(), on=wd>=1&&wd<=5&&d.getHours()===12;
+  var d=new Date(), wd=d.getDay(), wx=B.weather(), on=wd>=1&&wd<=5&&d.getHours()===12&&wx!=='rain'&&wx!=='snow';
   var key=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
   if(!on){ for(var k in F.actors) if(/^roof/.test(k)) F.actors[k].visible=false; return; }
   if(F.roofDay!==key){ F.roofDay=key; for(var k0 in F.actors) if(/^roof/.test(k0)) delete F.actors[k0];
@@ -14900,6 +14901,8 @@ var ROOF_GUEST_LINES={
   night:['야경 예쁘다..','오늘도 야근이네','전구 켜지니까 분위기 좋다','부엉이도 졸고 나도 졸리고','조금만 더 하고 퇴근하자','바람 차다','별 보인다','집에 가고 싶다..','불빛이 다 반짝반짝하네'],
   guard:['옥상 순찰 왔습니다','난간 이상 없고','전구 줄도 이상 없음','문단속 확인','화분 물은 넉넉하네','오늘도 조용하네','연못도 이상 없고'],
   guardNight:['부엉이 녀석 또 조네','손전등 없인 못 다니겠군','야경은 좋다만','늦게까지 고생들 하네'],
+  snow:['눈이다!','눈 쌓인 서울 예쁘다','손 시려~','눈사람 만들고 싶다','첫눈인가?','발자국 남기는 재미'],
+  rain:['비 오는 옥상도 운치 있네','빗소리 좋다','연못에 동그라미 생긴다'],
   sec:['옥상 순찰! 이상 무!','난간 점검 완료!','출입 통제 확인!','비상구 확인 완료!','연못 이상 무!','전구 점검 완료!']
 };
 var ROOF_GUEST_SPOTS={
@@ -14917,7 +14920,7 @@ function roofGuestPlan(F,q){
   if(q.kind==='staff'){
     var taken={}; for(var k in F.actors){ var o=F.actors[k]; if(o.plan) o.plan.forEach(function(sp){ taken[sp.c+','+sp.r]=1; }); }
     var first=rpick(Math.random()<0.55?ROOF_GUEST_SPOTS.view:ROOF_GUEST_SPOTS.garden), plan=[{c:first.c,r:first.r,face:first.face,stay:stay(12000,18000)}];
-    var seats=ROOF_GUEST_SPOTS.sit.filter(function(sp){ return !taken[sp.c+','+sp.r]; });
+    var seats=ROOF_GUEST_SPOTS.sit.filter(function(sp){ return !taken[sp.c+','+sp.r] && (!q.wet || sp.c===13); });   // 궂은 날엔 차양 밑 소파에만 앉는다
     if(seats.length && Math.random()<0.65){ var st=rpick(seats); plan.push({c:st.c,r:st.r,face:st.face,sit:st.sit,stay:stay(16000,26000)}); }
     return plan;
   }
@@ -14935,8 +14938,10 @@ function roofGuests(F,now,off){
       var look = q.kind==='staff' ? PO.STAFF.filter(function(p){ return p.id===q.id; })[0] : q.kind==='sec' ? PO.F2LOOK[q.look] : PO.VISITORS.visitorGuard;
       if(!look){ q.done=true; continue; }
       var cp={}; for(var kk in look) cp[kk]=look[kk];
+      var wxNow=B.weather(); q.wet=wxNow==='rain'||wxNow==='snow';
       a=npcActor(F,id,cp,q.name); a.visible=true; a.stepMs=q.kind==='staff'?300:250; a.plan=roofGuestPlan(F,q); a.pi=-1; a.stayUntil=0; a.out=false;
-      a.torch=q.kind!=='staff'; a.lines = q.kind==='staff' ? (q.night?ROOF_GUEST_LINES.night:ROOF_GUEST_LINES.work) : q.kind==='sec' ? ROOF_GUEST_LINES.sec : ROOF_GUEST_LINES.guard.concat(night?ROOF_GUEST_LINES.guardNight:[]);
+      a.torch=q.kind!=='staff';
+      a.lines = q.kind==='staff' ? (wxNow==='snow'?ROOF_GUEST_LINES.snow:wxNow==='rain'?ROOF_GUEST_LINES.rain:q.night?ROOF_GUEST_LINES.night:ROOF_GUEST_LINES.work) : q.kind==='sec' ? ROOF_GUEST_LINES.sec : ROOF_GUEST_LINES.guard.concat(night?ROOF_GUEST_LINES.guardNight:[]);
       placeAt(F,a,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'down' });
     }
     if(off) step(a,now);
@@ -14989,7 +14994,8 @@ function frame(now){
   step(F.robot,now);
 
   var d=new Date(), hm={h:d.getHours(), m:d.getMinutes()}, ph=PO.phase(hm.h), g=fb, M=F.map;
-  if(F.key==='L'){ g.clearRect(0,0,W,M.ROOF_H+40); if(window.PixCity && PixCity.roofSky) PixCity.roofSky(g,W,M.ROOF_H,now); }   // 옥상: 하늘과 서울 풍경을 먼저
+  var roofWx=B.weather(); PO.STATE.roofWx=roofWx;
+  if(F.key==='L'){ g.clearRect(0,0,W,M.ROOF_H+40); if(window.PixCity && PixCity.roofSky) PixCity.roofSky(g,W,M.ROOF_H,now,roofWx); }   // 옥상: 하늘과 서울 풍경을 먼저
   g.drawImage(M.bg,0,0);
   if(F.key==='3'){
     F.dust.forEach(function(p){ g.globalAlpha=(p.heavy?0.75:0.4)*Math.min(1,p.op*1.4);
@@ -15011,7 +15017,8 @@ function frame(now){
   if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
   list.sort(function(p,q){ return p.sy-q.sy; });
   list.forEach(function(it){
-    if(it.actor) drawActor(g,it.actor,now);
+    if(it.actor){ drawActor(g,it.actor,now);
+      if(F.key==='L' && (roofWx==='rain'||roofWx==='snow') && !(it.actor.onFurn&&!it.actor.path)) PO.drawUmbrella(g,Math.round(it.actor.x)+17,Math.round(it.actor.feet)-56,it.actor.torch?'#2f4a6a':PO.hash(it.actor.id)%2?'#e8a88c':'#8fae96'); }
     else if(it.robot){ var rb=F.robot, X2=Math.round(rb.x), Fe=Math.round(rb.feet);
       var rimg=now<rb.blinkUntil?rb.blink:(rb.path&&Math.floor(now/140)%2?rb.roll:rb.spr);
       ell(g,X2+16,Fe,12,2,'rgba(60,70,90,0.2)'); g.drawImage(rimg,X2,Fe-36); }
@@ -15035,7 +15042,9 @@ function frame(now){
   // 말풍선 · 감정
   var talkers=[]; for(var tid in F.actors){ var ta=F.actors[tid]; if(ta.visible&&(ta.bubble||ta.emo)) talkers.push(ta); }
   talkers.sort(function(p,q){ return p.feet-q.feet; });
+  var umbOn = F.key==='L' && (roofWx==='rain'||roofWx==='snow');
   talkers.forEach(function(a){ var cx=Math.round(a.x)+17, top=Math.round(a.feet)-48+(a.onFurn&&!a.path?6-sitLift(a):0);
+    if(umbOn && !(a.onFurn&&!a.path)) top-=14;   // 우산 위로 말풍선을 올린다
     if(a.bubble) drawBubble(g,cx,top+4,a.bubble,'#6f5a4a');
     else { var b=PO.BALLOONS[EMO_BAL[a.emo]||'dots']; if(b) g.drawImage(b,Math.round(a.x)+2,top-22+Math.round(Math.sin(now*0.012)*1.5)); } });
   if(F.robot.bubble) drawBubble(g,Math.round(F.robot.x)+16,Math.round(F.robot.feet)-36,F.robot.bubble,'#6f9aa6');
@@ -15043,7 +15052,7 @@ function frame(now){
   var tint=PO.TINT[ph];
   if(tint){ g.save(); g.globalCompositeOperation='multiply'; g.globalAlpha=tint[1]*(F.lightDim>0.1?0.55:(F.key==='2'?0.6:1)); g.fillStyle=tint[0]; g.fillRect(0,0,W,H); g.restore(); }
   if(F.lightDim>0.01){ g.save(); g.globalAlpha=F.lightDim; g.fillStyle='#1c1c2e'; g.fillRect(0,0,W,H); g.restore(); }
-  if(F.key==='L'){ PO.drawRoofGlow(g,now); drawTorches(F,g,ph); }   // 옥상 전구·등불 불빛 · 순찰 손전등
+  if(F.key==='L'){ PO.drawRoofWeather(g,now,roofWx); PO.drawRoofGlow(g,now); drawTorches(F,g,ph); }   // 옥상 전구·등불 불빛 · 순찰 손전등
   if(F.key==='3' && (ph==='night'||ph==='dusk') && F.lightDim<0.3){ g.save(); g.globalCompositeOperation='lighter';
     for(var sid in F.actors){ var sa=F.actors[sid]; if(!sa.visible||!sa.sitting) continue; var mx=sa.seat.c*T+32, my=(sa.seat.r+1)*T;
       g.fillStyle='rgba(130,150,200,0.08)'; g.fillRect(mx-30,my-24,60,40); } g.restore(); }

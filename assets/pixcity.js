@@ -271,9 +271,12 @@ function CityBg(){
 // ---- 옥상 정원에서 보이는 서울 (L층 위쪽 띠) ----
 // 하늘·해와 달·구름·별은 매 프레임, 산·남산타워·빌딩 숲은 시간대가 바뀔 때만 다시 그린다
 var roofCache={ ph:null, w:0, c:null };
-function roofSky(g,w,h,now){
-  var ph=phaseNow(), pal=PAL[ph];
-  sky(g,w,h,pal,h); stars(g,w,h,now,pal); sunMoon(g,Math.round(w*0.84),44,ph,now); clouds(g,w,now,ph,10);
+function roofSky(g,w,h,now,wx){
+  var ph=phaseNow(), pal=PAL[ph], grey=wx==='cloudy'||wx==='rain'||wx==='snow';
+  sky(g,w,h,pal,h);
+  if(grey){ g.fillStyle=wx==='rain'?'rgba(110,120,132,0.55)':'rgba(170,178,188,0.45)'; g.fillRect(0,0,w,h); }   // 흐린 하늘: 해·별이 가려진다
+  else { stars(g,w,h,now,pal); sunMoon(g,Math.round(w*0.84),44,ph,now); }
+  clouds(g,w,now,ph,10); if(grey){ clouds(g,w,now*0.8+50000,ph,30); clouds(g,w,now*1.3+90000,ph,0); }
   if(roofCache.ph!==ph || roofCache.w!==w){
     var c=cv(w,h), cg=c.getContext('2d'), night=pal.glow>0.5;
     range(cg,0,w,h-46,74,1.7,pal.far); tower(cg,Math.round(w*0.6),h-60,mix(pal.far,'#7a8a9a',0.3));
@@ -288,6 +291,7 @@ function roofSky(g,w,h,now){
     roofCache={ ph:ph, w:w, c:c };
   }
   g.drawImage(roofCache.c,0,0);
+  if(grey){ g.fillStyle=wx==='rain'?'rgba(120,130,140,0.32)':wx==='snow'?'rgba(225,230,238,0.35)':'rgba(190,196,204,0.2)'; g.fillRect(0,0,w,h); }   // 빗속·눈속 먼 풍경은 뿌옇게
 }
 window.PixCity={ Intro:Intro, CityBg:CityBg, facade:facade, PAL:PAL, roofSky:roofSky };
 })();
