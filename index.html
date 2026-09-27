@@ -4968,6 +4968,7 @@
       <tr><td>08:00~21:00</td><td>운영 시간. 식당 직원은 07:50쯤 엘리베이터로 출근하고, 문 닫은 뒤 마감 정리를 하고 21:05쯤 퇴근해요. 다 나가면 불이 저절로 꺼져요(벽 스위치로 직접 켜고 끌 수도 있어요)</td></tr>
       <tr><td>12:00~13:00</td><td>2층 안내 직원 둘도 함께, 점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 퇴식구에 식판을 올려두고 올라가요</td></tr>
       <tr><td>주말·공휴일</td><td>점심때 당직 직원과 경비, 2층 보안요원이 함께 내려와 먹어요</td></tr>
+      <tr><td>13:00~14:00</td><td>2층 라운지 바의 바텐더 박·강서빙이 점심을 먹으러 내려와요 (바는 12~13시에 대신 문을 열어요)</td></tr>
       <tr><td>보안요원</td><td>2층 보안요원은 매일 점심(12:00~12:40)과 저녁(18:00~18:40)을 먹으러 내려와요</td></tr>
       <tr><td>저녁</td><td>야근 중인 직원이 18시 10분~20시 30분 사이에 한두세 명씩 저녁을 먹으러 내려와요</td></tr>
       <tr><td>자판기</td><td>점심에 가끔 라면을 뽑아 먹는 사람이 있고, 식판을 내고 나서 아이스크림을 뽑아 먹으며 올라가기도 해요. 평일 오후(14:00~17:30)나 야근 중엔 3층에서 라면·아이스크림을 먹으러 한두 명씩 내려와요</td></tr>
@@ -14706,6 +14707,7 @@
     weather: function(){ return weatherState; },
     doorOpen: function(){ return doorIsOpen; },
     robotLine: function(){ return rLine(); },
+    workDay: function(){ return !isNonWorkingDay(); },
     // 오늘 점심을 먹으러 나가는 직원 (쉬는 날·연차·출장·조퇴 제외)
     lunchEaters: function(){ if(isNonWorkingDay()) return []; var out = getOutAllDayIdsAll();
       return staff.filter(function(s){ return !out[s.id] && !hasLeftEarlyByNow(s.id); }).map(function(s){ return s.id; }); }
@@ -15085,26 +15087,58 @@ function npcActor(F,id,look,name){
     x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null, dir:'down', frame:0, blinkUntil:0, nextBlink:performance.now()+2000,
     bubble:null, emo:null, stepMs:280, name:name, until:0, arrived:0, talkUntil:0, nextTalk:0 };
 }
+var B1_BAR_LINES=['점심 장사 끝!','오늘 자몽 에이드 잘 나갔어요','바에서 먹는 밥이랑은 또 다르네','오후엔 뭐 새로 만들어볼까','쟁반 나르느라 팔 아파요','잔 닦다 보면 시간 금방 가요'];
+var B1_BAR_QA=[['오늘 자몽 에이드 몇 잔 나갔어요?','서른 잔은 넘었을걸요'],['오후엔 뭐 준비해요?','레몬 좀 더 썰어놔야죠'],['손님들 오늘 많았죠?','점심 끝나고 확 몰렸어요'],['신메뉴 언제 나와요?','다음 주에 선보일게요!']];
+function barLunchGo(id,name){                                         // 13~14시: 지하 식당에서 둘이 같이 먹는다 (13:56쯤 일어난다)
+  var Q=window.__b1Guests=window.__b1Guests||{}, key='bar_'+id, dk=new Date().toDateString();
+  if(Q[key] && Q[key].day===dk) return;
+  Q[key]={ kind:'dinner', id:id, name:name, group:'barcrew', day:dk, leaveAt:13*3600+55*60+(id==='server'?20:0), bar:true };
+}
 function npcTick(F,now){
-  var A=F.actors, open=!!((A.yun&&A.yun.visible)||(A.kang&&A.kang.visible));
-  // 안내 직원이 이미 자기 자리에 서 있으면 '이미 근무 중'(제자리), 엘리베이터에서 걸어 나오는 중이면 같이 출근한다
-  var first=['yun','kang'].some(function(id){ var y=A[id], P=POSTS2[id]; return y&&y.visible&&y.tile&&!y.path&&Math.abs(y.tile.c-P.c)+Math.abs(y.tile.r-P.r)<=1; });
+  var A=F.actors, d=new Date(), t=d.getHours()*60+d.getMinutes(), work=B.workDay?B.workDay():false;
+  var deskOn=!!((A.yun&&A.yun.visible)||(A.kang&&A.kang.visible));
+  // 바는 안내 직원이 있을 때 열고, 점심(12~13시)엔 안내 직원이 없어도 연다. 바 직원 점심은 13~14시 (지하 식당)
+  var barLunch = work && t>=13*60 && t<14*60, noonShift = work && t>=12*60 && t<13*60;
+  var open = (deskOn || noonShift) && !barLunch;
+  var first=['yun','kang'].some(function(id){ var y=A[id], P=POSTS2[id]; return y&&y.visible&&y.tile&&!y.path&&Math.abs(y.tile.c-P.c)+Math.abs(y.tile.r-P.r)<=1; }) || (noonShift && !F.barBooted);
   var bt=npcActor(F,'npcBartender',PO.F2LOOK.bartender,'바텐더 박'), sv=npcActor(F,'npcServer',PO.F2LOOK.server,'강서빙');
   if(!sv.sprTray){ sv.sprPlain=sv.spr; sv.sprTray=PO.buildSprites(PO.F2LOOK.serverTray); }
+  var booted=F.barBooted; F.barBooted=true;
+  var offscreen = activeFloor()!==F;
+  if(offscreen){ if(bt.path) step(bt,now); if(sv.path) step(sv,now); }
   if(!open){
-    bt.visible=false; bt.bubble=null;
-    // 강서빙 퇴근: 엘리베이터까지 걸어가서 사라진다 (접속했을 때 이미 닫혀 있으면 바로 없음)
-    if(sv.visible && !sv.leaving){ sv.spr=sv.sprPlain; sv.bubble=null; sv.talkUntil=0; sv.leaving=true; sv.stepMs=220; sv.leaveUntil=now+30000; setGoal(F,sv,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now);
-      if(!sv.path){ sv.visible=false; sv.leaving=false; } }
+    bt.bubble=null;
+    if(!booted && barLunch && t<13*60+50){ barLunchGo('bartender','바텐더 박'); barLunchGo('server','강서빙'); }   // 접속했을 때 이미 점심 중
+    // 바텐더 박: 접속했을 때 이미 닫혀 있으면 없음. 근무하다 닫으면 카운터 끝으로 나와 엘리베이터까지 걸어간다
+    if(bt.visible && !bt.leaving && !bt.path){
+      if(!booted){ bt.visible=false; }
+      else if(bt.onBar!==false){ bt.tx=24*T-1; if(Math.abs(bt.x-bt.tx)<1){ bt.onBar=false; placeAt(F,bt,{ c:23, r:12, face:'left' }); bt.leaving=true; bt.goingOut=true; bt.stepMs=240; setGoal(F,bt,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now); if(!bt.path){ bt.visible=false; bt.leaving=false; } } }
+    }
+    if(bt.goingOut && (!bt.visible || !bt.path)){ bt.visible=false; bt.leaving=false; bt.goingOut=false; bt.wasOut=true; if(barLunch) barLunchGo('bartender','바텐더 박'); }   // 엘리베이터에 닿았다
+    // 강서빙 퇴근·점심: 엘리베이터까지 걸어가서 사라진다 (접속했을 때 이미 닫혀 있으면 바로 없음)
+    if(sv.visible && !sv.leaving){ sv.spr=sv.sprPlain; sv.bubble=null; sv.talkUntil=0;
+      if(!booted){ sv.visible=false; }
+      else { sv.leaving=true; sv.goingOut=true; sv.stepMs=220; sv.leaveUntil=now+30000; setGoal(F,sv,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now);
+        if(!sv.path){ sv.visible=false; sv.leaving=false; } } }
+    if(sv.goingOut && (!sv.visible || !sv.path)){ sv.visible=false; sv.leaving=false; sv.goingOut=false; sv.wasOut=true; if(barLunch) barLunchGo('server','강서빙'); }
     return;
   }
-  if(!bt.visible){ bt.visible=true; bt.x=bt.tx=28*T-1; bt.feet=12*T-14; bt.dir='down'; bt.until=now+3000; bt.nextTalk=now+6000+Math.random()*9000; }
-  if(now>bt.until && Math.abs(bt.x-bt.tx)<1){ bt.tx=(24+Math.floor(Math.random()*9))*T-1; bt.until=now+4000+Math.random()*6000; }
+  if(bt.goingOut && !bt.visible){ bt.goingOut=false; bt.wasOut=true; } if(sv.goingOut && !sv.visible){ sv.goingOut=false; sv.wasOut=true; }   // 나가자마자 다시 열린 경우
+  // 바텐더 박: 돌아올 땐 엘리베이터에서 걸어 나와 카운터 끝으로 들어간다
+  if(!bt.visible){
+    bt.nextTalk=now+6000+Math.random()*9000; bt.until=now+3000;
+    if(bt.wasOut && booted){ bt.visible=true; bt.onBar=false; bt.stepMs=260; placeAt(F,bt,{ c:F.lobby.c, r:F.lobby.r, face:'down' }); setGoal(F,bt,{ c:23, r:12, face:'right' },now); bt.bubble=['잘 먹었다~']; bt.talkUntil=now+2500; }
+    else { bt.visible=true; bt.onBar=true; bt.x=bt.tx=28*T-1; bt.feet=12*T-14; bt.dir='down'; }
+    bt.wasOut=false;
+  }
+  if(bt.onBar===false && !bt.path){ bt.onBar=true; bt.x=bt.tx=24*T-1; bt.feet=12*T-14; bt.tile=null; bt.goal=null; bt.dir='right'; }
+  if(bt.onBar && now>bt.until && Math.abs(bt.x-bt.tx)<1){ bt.tx=(24+Math.floor(Math.random()*9))*T-1; bt.until=now+4000+Math.random()*6000; }
   if(sv.leaving) return;
   if(!sv.visible){
     sv.visible=true; sv.spr=sv.sprPlain; sv.phase='bar'; sv.arrived=0; sv.stepMs=280; sv.goal=null; sv.nextTalk=now+12000+Math.random()*12000;
-    if(first) placeAt(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:SRV_BAR.face });                        // 접속했을 때 이미 근무 중: 제자리
-    else { placeAt(F,sv,{ c:F.lobby.c, r:F.lobby.r, face:'down' }); setGoal(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:SRV_BAR.face },now); }   // 출근: 엘리베이터에서 걸어온다
+    if(first && !sv.wasOut) placeAt(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:SRV_BAR.face });                        // 접속했을 때 이미 근무 중: 제자리
+    else { placeAt(F,sv,{ c:F.lobby.c, r:F.lobby.r, face:'down' }); setGoal(F,sv,{ c:SRV_BAR.c, r:SRV_BAR.r, face:SRV_BAR.face },now); }   // 출근·점심 복귀: 엘리베이터에서 걸어온다
+    sv.wasOut=false;
   }
   if(!sv.path){
     if(!sv.arrived) sv.arrived=now;
@@ -15125,7 +15159,7 @@ function npcTick(F,now){
     else if(!a.talkUntil && now>a.nextTalk && !a.path){ a.bubble=L[Math.floor(Math.random()*L.length)]; a.talkUntil=now+3200; } });
 }
 function barStep(a,now){                                          // 바텐더: 카운터 뒤를 옆으로만 오간다
-  if(!a||!a.visible) return;
+  if(!a||!a.visible||a.onBar===false) return;
   var dt=Math.min(100,now-(a.lastT||now)), dx=a.tx-a.x; a.lastT=now;
   if(Math.abs(dx)>0.5){ a.x+=(dx>0?1:-1)*Math.min(Math.abs(dx),0.05*dt); a.dir=dx>0?'right':'left'; a.frame=[1,0,2,0][Math.floor(now/150)%4]; a.until=Math.max(a.until,now+3000); }
   else { a.x=a.tx; a.frame=0; a.dir='down'; }
@@ -15273,6 +15307,7 @@ function b1Chat(F,a,now){
   if(mates.length && r<(boss?0.6:0.4)){ var qa=(boss?B1_BOSS_QA:B1_QA)[Math.floor(Math.random()*(boss?B1_BOSS_QA:B1_QA).length)], m=mates[Math.floor(Math.random()*mates.length)];
     b1Say(a,[qa[0]],now); m.replyAt=now+2600; m.replyLine=qa[1]; return; }
   if(boss){ b1Say(a,B1_BOSS_LINES,now); return; }
+  if(a.barCrew){ if(mates.length && r<0.45){ var bq=B1_BAR_QA[Math.floor(Math.random()*B1_BAR_QA.length)], bm=mates[Math.floor(Math.random()*mates.length)]; b1Say(a,[bq[0]],now); bm.replyAt=now+2600; bm.replyLine=bq[1]; } else b1Say(a,B1_BAR_LINES,now); return; }
   if(a.secGuard){ b1Say(a,a.meal==='lunch'?B1_SEC_LUNCH:B1_SEC_LINES,now); return; }
   if(a.dinner){ b1Say(a,B1_DINNER_LINES,now); return; }
   if((a.id==='b1_yun'||a.id==='b1_kang') && r<0.7){ b1Say(a,B1_DESK_LINES,now); return; }
@@ -15442,12 +15477,12 @@ function b1Tick(F,now,off){
       if(q.kind==='snack'){ var pref=free.filter(function(st){ return q.item==='ice' ? st.table==='X' : st.table!=='X'; }); if(pref.length) free=pref; free=[free[Math.floor(Math.random()*free.length)]]; }
       da=b1MakeDiner(F,did,q.id,free[0],now); if(!da){ q.done=true; continue; }
       if(q.kind==='snack'){ da.snackOnly=true; da.snackGuest=true; da.snack=q.item; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+600; continue; }
-      if(q.name) da.name=q.name; da.weekend=q.kind==='weekend'; da.secGuard=(q.id==='guard'||q.id==='guardLeo'); da.isGuard=q.id==='visitorGuard'; da.meal=q.meal;
+      if(q.name) da.name=q.name; da.barCrew=!!q.bar; da.weekend=q.kind==='weekend'; da.secGuard=(q.id==='guard'||q.id==='guardLeo'); da.isGuard=q.id==='visitorGuard'; da.meal=q.meal;
       da.dinner=true; da.dinnerGroup=q.group; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
   }
   // 한 명씩 움직이기
   for(var id in F.actors){ var a2=F.actors[id]; if(!a2.ph) continue;
-    if(a2.dinner && !a2.snackGuest && a2.ph==='eat' && !a2.leaveFixed){ a2.leaveFixed=true; a2.leaveSec=nowSec+(a2.weekend?300:240)+Math.floor(Math.random()*120); }
+    if(a2.dinner && !a2.snackGuest && a2.ph==='eat' && !a2.leaveFixed){ a2.leaveFixed=true; a2.leaveSec=(a2.q&&a2.q.leaveAt)?Math.max(a2.q.leaveAt,nowSec+60):nowSec+(a2.weekend?300:240)+Math.floor(Math.random()*120); }
     if(off) step(a2,now);
     b1Step(F,a2,now,M,nowSec);
     if(a2.gone){ if(a2.q) a2.q.done=true; else F.lunchDone[id+key]=1; delete F.actors[id]; }
