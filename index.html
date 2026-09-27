@@ -4966,7 +4966,7 @@
     <table>
       <tr><th>시간</th><th>내용</th></tr>
       <tr><td>08:00~21:00</td><td>운영 시간. 식당 직원은 07:50쯤 엘리베이터로 출근하고, 문 닫은 뒤 마감 정리를 하고 21:05쯤 퇴근해요. 다 나가면 불이 저절로 꺼져요(벽 스위치로 직접 켜고 끌 수도 있어요)</td></tr>
-      <tr><td>12:00~13:00</td><td>점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 퇴식구에 식판을 올려두고 올라가요</td></tr>
+      <tr><td>12:00~13:00</td><td>2층 안내 직원 둘도 함께, 점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 퇴식구에 식판을 올려두고 올라가요</td></tr>
       <tr><td>주말·공휴일</td><td>점심때 당직 직원과 경비, 2층 보안요원이 함께 내려와 먹어요</td></tr>
       <tr><td>보안요원</td><td>2층 보안요원은 매일 점심(12:00~12:40)과 저녁(18:00~18:40)을 먹으러 내려와요</td></tr>
       <tr><td>저녁</td><td>야근 중인 직원이 18시 10분~20시 30분 사이에 한두세 명씩 저녁을 먹으러 내려와요</td></tr>
@@ -15243,6 +15243,7 @@ var B1_QA=[['오늘 오후에 회의 있죠?','네 3시요. 자료 다 됐어요
   ['매운 거 괜찮아요?','저 매운 거 좋아해요'],['요즘 뭐 배워요?','퇴근하고 요가 다녀요'],['저녁에 약속 있어요?','오늘은 칼퇴할 거예요'],['국 더 드실래요?','아뇨 배불러요'],
   ['그 영화 봤어요?','아직이요. 스포 금지!'],['다음 회식 어디서 해요?','고기 먹고 싶어요'],['이번 프로젝트 끝나면 뭐 해요?','일단 푹 잘래요'],['디저트 뭐 먹을래요?','아이스크림 어때요?'],
   ['내일 비 온대요','우산 챙겨야겠다'],['인턴 잘 적응해요?','네 엄청 열심히 해요'],['이 반찬 이름 뭐예요?','도라지무침이요'],['요즘 운동해요?','계단 오르기만 해요ㅋㅋ'],['식판 제가 치울게요','헉 고마워요!']];
+var B1_DESK_LINES=['오늘 방문객 많았죠?','오후 예약 손님 세 분이에요','데스크 비워서 괜찮을까요?','꽃 새로 꽂아야겠어요','키오스크 종이 갈아야 해요','로비 음악 바꿀까요?'];
 var B1_TEAM_LINES=['이번 시안 어땠어요?','팀장님 오늘 기분 좋으신 듯','그 건 마감 언제죠?','우리 팀 회식 언제 해요?','오후에 팀 회의 해요','샘플 나왔대요!'];
 var B1_BOSS_LINES=['다들 많이 먹어요','여기 밥 맛있네','오후도 힘냅시다','반찬 더 달라고 해요'];
 var B1_BOSS_QA=[['다들 많이 먹어요','감사합니다 사장님!'],['요즘 일은 할 만해요?','네! 재밌어요'],['여기 밥 맛있네','여기 제육이 최고예요'],['오후도 힘냅시다','화이팅입니다!']];
@@ -15274,6 +15275,7 @@ function b1Chat(F,a,now){
   if(boss){ b1Say(a,B1_BOSS_LINES,now); return; }
   if(a.secGuard){ b1Say(a,a.meal==='lunch'?B1_SEC_LUNCH:B1_SEC_LINES,now); return; }
   if(a.dinner){ b1Say(a,B1_DINNER_LINES,now); return; }
+  if((a.id==='b1_yun'||a.id==='b1_kang') && r<0.7){ b1Say(a,B1_DESK_LINES,now); return; }
   var day=B1_DAY_LINES[new Date().getDay()], wx=B1_WX_LINES[B.weather()];
   if(r<0.46 && day) b1Say(a,day,now);
   else if(r<0.51 && wx) b1Say(a,wx,now);
@@ -15302,6 +15304,7 @@ function lunchPlan(key){
     while(g.length<size && rest.length) g.push(rest.shift());
     groups.push(g);
   }
+  if(eaters.length) groups.push(['yun','kang']);                          // 2층 안내 직원 둘도 같이 내려와 먹는다
   if(boss && groups.length){ var bg=groups[Math.floor(rng()*groups.length)]; if(bg.length>=4) groups.push(['boss']); else bg.unshift('boss'); }
   // 자리: 테이블마다 위아래로 마주 보게 채운다 (혼자면 이끼 바)
   var used={}, seats=PO.MAPB.SEATS, order={};
@@ -15318,7 +15321,7 @@ function lunchPlan(key){
   return LUNCH_PLAN;
 }
 function b1Look(id){ if(id==='boss') return PO.VISITORS.visitorBoss; return STAFFLOOK[id] || PO.VISITORS[id] || PO.F2LOOK[id]; }
-function b1Name(id){ if(id==='boss') return '사장님'; var p=STAFFLOOK[id]; return p?p.name:''; }
+function b1Name(id){ if(id==='boss') return '사장님'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; var p=STAFFLOOK[id]; return p?p.name:''; }
 function b1MakeDiner(F,key,id,seat,now){
   var look=b1Look(id); if(!look) return null;
   var c1={}, c2={}; for(var k in look){ c1[k]=look[k]; c2[k]=look[k]; } c2.item='foodtray';
