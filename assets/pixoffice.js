@@ -2098,7 +2098,8 @@ onTile(pMossBar(11*T),22,12,32,13);
 onTile(pTeaStation(),28,20,32,21);                                        // 커피·차 코너
 put(pDishReturn(),T,18*T-256,18*T,[1,10,2,17]); var B1_RETURN={ c:3, r:14, face:'left' };   // 퇴식구 (왼쪽 벽)
 things.push({sy:18*T+0.1, draw:function(g){ var t=performance.now();                      // 컨베이어 위 식판이 창구로 올라간다
-  for(var i=0;i<5;i++){ var y=17*T+8-((t*0.02+i*52)%246); R(g,T+22,y,22,12,'#b88a5c'); R(g,T+22,y,22,1,'#d8aa7a'); disc(g,T+28,y+6,3,'#fbfaf6'); disc(g,T+37,y+6,2,'#f0c8a0'); }
+  // 식당 문을 닫으면 컨베이어가 멈추고 비어 있다
+  if(STATE.b1ConvOn!==false) for(var i=0;i<5;i++){ var y=17*T+8-((t*0.02+i*52)%246); R(g,T+22,y,22,12,'#b88a5c'); R(g,T+22,y,22,1,'#d8aa7a'); disc(g,T+28,y+6,3,'#fbfaf6'); disc(g,T+37,y+6,2,'#f0c8a0'); }
   g.font='10px NeoDGM, sans-serif'; g.textBaseline='top'; R(g,T+14,10*T-22,50,16,'#2a2e34'); g.fillStyle='#fbf6e6'; g.fillText('퇴식구',T+20,10*T-19); }});
 onTile(pSelfCorner(),22,17,25,17);                                       // 셀프 코너: 전자레인지 둘 · 양념 · 컵
 onTile(pPlant('monstera','#e8e2d6'),27,17,27,17); onTile(pPlant('tall','#e8e2d6'),22,21,22,21); onTile(pPlant('bush','#e8e2d6'),5,9,5,9);
