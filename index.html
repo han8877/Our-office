@@ -4967,6 +4967,7 @@
       <tr><th>시간</th><th>내용</th></tr>
       <tr><td>08:00~21:00</td><td>운영 시간. 문을 닫으면 불이 저절로 꺼져요. 벽 스위치로 직접 켜고 끌 수도 있어요</td></tr>
       <tr><td>12:00~13:00</td><td>점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 퇴식구에 식판을 올려두고 올라가요</td></tr>
+      <tr><td>주말·공휴일</td><td>점심때 당직 직원과 경비, 2층 보안요원이 함께 내려와 먹어요</td></tr>
       <tr><td>저녁</td><td>야근 중인 직원이 18시 10분~20시 30분 사이에 한두세 명씩 저녁을 먹으러 내려와요</td></tr>
       <tr><td>자판기</td><td>점심에 가끔 라면을 뽑아 먹는 사람이 있고, 식판을 내고 나서 아이스크림을 뽑아 먹으며 올라가기도 해요. 평일 오후(14:00~17:30)나 야근 중엔 3층에서 라면·아이스크림을 먹으러 한두 명씩 내려와요</td></tr>
     </table>
@@ -9063,6 +9064,45 @@
       logDayEvent('🗓️', '주말 당직 — '+dutyStaff.name+'와 경비가 출근했습니다');
     }
   }
+
+  // 주말 점심: 당직자와 경비가 함께 지하 식당에 내려가 먹고 온다 (12:00~12:40 사이 출발)
+  var dutyLunchDay = '', dutyLunchOn = false;
+  function b1GuestQ2(){ return (window.__b1Guests = window.__b1Guests || {}); }
+  function dutyLunchGo(){
+    var s = dutyStaff, gid = visitorDefs.guard.id, gel = charEl(gid), sel = charEl(s.id), left = 2;
+    dutyLunchOn = true; dutyLunchDay = dateKey();
+    clearTimeout(dutyTimer); clearTimeout(dutyGuardTimer);
+    showBubble(s, '경비님, 밥 먹으러 가요!');
+    setTimeout(function(){ if(dutyActive) showBubble({ id:gid }, '좋습니다, 같이 가시죠'); }, 1800);
+    if(typeof logDayEvent === 'function') logDayEvent('🍱', '주말 점심 — '+s.name+'와 경비가 구내식당에 갔습니다');
+    function back(){ if(--left > 0) return; dutyLunchOn = false;
+      if(!dutyActive) return;
+      dutyTimer = setTimeout(dutyGo, 1500); dutyGuardTimer = setTimeout(dutyGuardGo, 3000); }
+    function trip(el, who, entrance, key, q){
+      travelTo(who, entrance, 62, function(){
+        if(!dutyActive || !el.classList.contains('present')){ back(); return; }
+        el.classList.add('onRoof'); b1GuestQ2()[key] = q;
+        var t0 = Date.now();
+        (function wait(){
+          var cur = b1GuestQ2()[key];
+          if(cur && !cur.done && Date.now()-t0 < 20*60000 && dutyActive){ setTimeout(wait, 1000); return; }
+          delete b1GuestQ2()[key]; el.classList.remove('onRoof');
+          if(dutyActive) showBubble(who, key === 'wk_duty' ? '잘 먹었다, 다시 한 바퀴!' : '든든하게 먹었습니다');
+          back();
+        })();
+      });
+    }
+    setTimeout(function(){
+      if(!dutyActive){ dutyLunchOn = false; return; }
+      raiseChar(s);
+      trip(sel, s, {x:ENTRANCE.x, y:ENTRANCE.y}, 'wk_duty', { kind:'weekend', id:s.id, name:s.name, group:'wk' });
+      trip(gel, { id:gid }, VISITOR_ENTRANCE, 'wk_guard', { kind:'weekend', id:'visitorGuard', name:'경비', group:'wk' });
+    }, 3000);
+  }
+  setInterval(function(){
+    var d = new Date(), t = d.getHours()*60 + d.getMinutes();
+    if(dutyActive && dutyStaff && !dutyLunchOn && dutyLunchDay !== dateKey() && t >= 12*60 && t < 12*60+40) dutyLunchGo();
+  }, 5000);
 
   function stopWeekendDuty(graceful){
     if(!dutyActive) return;
@@ -14299,6 +14339,32 @@
     }
     setInterval(function(){ if(Math.random() < 0.35) guardRound(); }, 30000);
 
+    // ---- 주말·공휴일 점심: 보안요원도 지하 식당에서 당직·경비와 같이 먹는다 ----
+    var secLunchDay = '';
+    setInterval(function(){
+      var d = new Date(), t = d.getHours()*60 + d.getMinutes(), dk = d.toDateString();
+      if(!isNonWorkingDay(d) || secLunchDay === dk || t < 12*60 || t >= 12*60+40) return;
+      var w = f2Walker.guard;
+      if(!w._on || !f2Visible('guard') || gPatrol.busy || !guardAtPost()) return;
+      secLunchDay = dk; gPatrol.busy = true;
+      var who = f2GuardToday();
+      f2Say('guard', '점심 먹고 오겠습니다!');
+      f2StaffGo('guard', [F2_ELEV], function(){
+        f2RideOut(w, function(){
+          var Q = (window.__b1Guests = window.__b1Guests || {});
+          Q.wk_sec = { kind:'weekend', id:(who.key === 'leo' ? 'guardLeo' : 'guard'), name:who.name, group:'wk' };
+          var t0 = Date.now();
+          (function wait(){
+            var q = Q.wk_sec;
+            if(q && !q.done && Date.now()-t0 < 20*60000){ w._lunchT = setTimeout(wait, 1000); return; }
+            delete Q.wk_sec;
+            if(!w._on){ gPatrol.busy = false; return; }
+            f2RideIn(w, function(){ f2Say('guard', '식사 완료! 근무 복귀!'); f2StaffGo('guard', [F2_HOME.guard], function(){ gPatrol.busy = false; }); });
+          })();
+        });
+      });
+    }, 5000);
+
     // ---- 보안요원 옥상 순찰 (정각 · 20분 · 40분) ----
     // 엘리베이터를 타고 올라가 옥상을 한 바퀴 돌고(옥상 그림 roofGuests) 다시 경비석으로 돌아온다
     var secRoofSlot = null;
@@ -15143,6 +15209,8 @@ var B1_BOSS_LINES=['다들 많이 먹어요','여기 밥 맛있네','오후도 �
 var B1_BOSS_QA=[['다들 많이 먹어요','감사합니다 사장님!'],['요즘 일은 할 만해요?','네! 재밌어요'],['여기 밥 맛있네','여기 제육이 최고예요'],['오후도 힘냅시다','화이팅입니다!']];
 var B1_BOSS_HELLO=['사장님 오셨어요!','사장님 맛있게 드세요','앗 사장님!'];
 var B1_DINNER_LINES=['야근엔 밥심이지','오늘 몇 시에 끝날까..','든든하게 먹자','저녁 메뉴 괜찮네','우리만 남았네요','빨리 먹고 끝내요','내일은 칼퇴 각','야식 대신 저녁 든든히'];
+var B1_WEEKEND_LINES=['주말엔 식당이 한산하네','오늘 메뉴 좋네요','주말 근무 화이팅','조용해서 좋다','밥 먹고 한 바퀴 더 돌아야지','다들 쉬는 날인데 우리만 나왔네'];
+var B1_WEEKEND_QA=[['주말 근무 힘들죠?','그래도 조용해서 좋아요'],['오후엔 뭐 하세요?','화분 물 주고 어항 밥 줘야죠'],['오늘 순찰 이상 없었죠?','네 이상 무!'],['경비님 많이 드세요','감사합니다, 같이 드시죠'],['보안요원님도 오셨네요','주말엔 같이 먹어야죠!'],['다음 주말도 근무예요?','격일이라 모레 또 나와요']];
 var B1_DAY_LINES={ 1:['월요병 온다..','주말이 너무 짧았어'], 3:['벌써 수요일이네','반 왔다!'], 5:['불금이다!','오늘 퇴근하고 뭐 해요?'] };
 var B1_WX_LINES={ rain:['비 오니까 다들 식당 왔네','비 오는 날엔 국물이지'], snow:['눈 온다! 밖에 봤어요?','눈 오는 날엔 라면인데'], sunny:['날씨 좋다, 밥 먹고 산책해요'], cloudy:['날이 흐리네요'] };
 // 먹는 동안 말하기: 혼잣말 · 요일·날씨 이야기 · 같이 앉은 사람과 주고받기
@@ -15152,6 +15220,7 @@ function b1Chat(F,a,now){
   a.nextTalk=now+12000+Math.random()*20000;
   var mates=[]; for(var id in F.actors){ var o=F.actors[id]; if(o!==a && o.grp && o.grp===a.grp && o.ph==='eat' && !o.talkUntil && !o.replyAt) mates.push(o); }
   var boss=a.id==='b1_boss', r=Math.random();
+  if(a.weekend){ if(mates.length && r<0.45){ var wq=B1_WEEKEND_QA[Math.floor(Math.random()*B1_WEEKEND_QA.length)], wm=mates[Math.floor(Math.random()*mates.length)]; b1Say(a,[wq[0]],now); wm.replyAt=now+2600; wm.replyLine=wq[1]; } else b1Say(a,B1_WEEKEND_LINES,now); return; }
   if(mates.length && r<(boss?0.6:0.4)){ var qa=(boss?B1_BOSS_QA:B1_QA)[Math.floor(Math.random()*(boss?B1_BOSS_QA:B1_QA).length)], m=mates[Math.floor(Math.random()*mates.length)];
     b1Say(a,[qa[0]],now); m.replyAt=now+2600; m.replyLine=qa[1]; return; }
   if(boss){ b1Say(a,B1_BOSS_LINES,now); return; }
@@ -15199,7 +15268,7 @@ function lunchPlan(key){
   LUNCH_PLAN={ key:key, roof:roof, diners:diners, boss:boss };
   return LUNCH_PLAN;
 }
-function b1Look(id){ if(id==='boss') return PO.VISITORS.visitorBoss; return STAFFLOOK[id]; }
+function b1Look(id){ if(id==='boss') return PO.VISITORS.visitorBoss; return STAFFLOOK[id] || PO.VISITORS[id] || PO.F2LOOK[id]; }
 function b1Name(id){ if(id==='boss') return '사장님'; var p=STAFFLOOK[id]; return p?p.name:''; }
 function b1MakeDiner(F,key,id,seat,now){
   var look=b1Look(id); if(!look) return null;
@@ -15304,11 +15373,12 @@ function b1Tick(F,now,off){
       if(q.kind==='snack'){ var pref=free.filter(function(st){ return q.item==='ice' ? st.table==='X' : st.table!=='X'; }); if(pref.length) free=pref; free=[free[Math.floor(Math.random()*free.length)]]; }
       da=b1MakeDiner(F,did,q.id,free[0],now); if(!da){ q.done=true; continue; }
       if(q.kind==='snack'){ da.snackOnly=true; da.snackGuest=true; da.snack=q.item; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+600; continue; }
+      if(q.name) da.name=q.name; da.weekend=q.kind==='weekend';
       da.dinner=true; da.dinnerGroup=q.group; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
   }
   // 한 명씩 움직이기
   for(var id in F.actors){ var a2=F.actors[id]; if(!a2.ph) continue;
-    if(a2.dinner && !a2.snackGuest && a2.ph==='eat' && !a2.leaveFixed){ a2.leaveFixed=true; a2.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
+    if(a2.dinner && !a2.snackGuest && a2.ph==='eat' && !a2.leaveFixed){ a2.leaveFixed=true; a2.leaveSec=nowSec+(a2.weekend?300:240)+Math.floor(Math.random()*120); }
     if(off) step(a2,now);
     b1Step(F,a2,now,M,nowSec);
     if(a2.gone){ if(a2.q) a2.q.done=true; else F.lunchDone[id+key]=1; delete F.actors[id]; }
