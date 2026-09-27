@@ -1039,6 +1039,7 @@ onTile(pPlant('bush','#d9794a'),3,28,3,28);   // 홍보팀은 책상 셋으로 �
 onTile(pMeetTable(),18,26,22,27); onTile(pRollMonitor(),16,26,17,27);
 [18,20,22].forEach(function(c){ onTile(pChairN('#d2cbb8'),c,25,c,25,-8); onTile(pChairS('#d2cbb8'),c,28,c,28); });
 onTile(pPlant('monstera','#f4f1ea'),24,25,24,25); onTile(pPlant('bush','#9fd4c0'),24,28,24,28);
+[18,20,22].forEach(function(c){ blocked[25][c]=0; blocked[28][c]=0; });   // 회의실 의자 칸은 지나갈 수 있게: 막혀 있으면 안쪽·아래쪽 자리에 못 가고 문 앞에서 멈춘다
 // 탕비실
 onTile(pFridge(),28,24,29,25); onTile(pSink(),30,24,31,24); onTile(pVending(),32,24,33,25); onTile(pMicro(),34,24,34,24);
 onTile(pSmallTable(),29,27,30,27); onTile(pCoffeeBar(),26,28,27,28); onTile(pRecycle(),32,28,34,28); onTile(pPlant('tall','#f4f1ea'),34,26,34,26); onTile(pChairN('#e8d4bf'),29,26,29,26,-8); onTile(pChairS('#e8d4bf'),30,28,30,28);

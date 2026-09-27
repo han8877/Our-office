@@ -15096,6 +15096,10 @@ function poll(F,now){
       if(a.leaving){ a.stepMs=300; }
       if(!a.visible){ a.visible=true; a.leaving=false; a.stepMs=300; placeAt(F,a,g); }
       else if(stable(a,g)){ a.leaving=false; a.stepMs=300; setGoal(F,a,g,now); }
+      else if(!a.path && a.goal && !a.goal.seat && !g.seat && (a.goal.wantC!==a.goal.c || a.goal.wantR!==a.goal.r) && a.goal.wantC===g.c && a.goal.wantR===g.r){
+        // 가려던 자리를 지나가던 사람이 잠깐 찜해서 옆 칸에 서 있었다: 자리가 비었으면 제자리로 옮겨 앉는다
+        if(claim(F,a,g.c,g.r,g.sit).same){ a.goal=null; setGoal(F,a,g,now); }
+      }
     } else if(a.visible && !a.leaving){
       // 자리에서 바로 사라진 것과 걸어 나가다 사라진 것을 구분한다.
       // 걸어 나가던 중이면 엘리베이터까지 마저 걸어가서 사라진다
