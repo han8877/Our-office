@@ -704,7 +704,7 @@ function drawEarsBehind(g,K,dir,cx){
     ell(g,ox,16,15,13,mc); for(var am=0;am<18;am++){ var tm=am/18*Math.PI*2, mx=ox+Math.round(Math.cos(tm)*15), my=16+Math.round(Math.sin(tm)*13); disc(g,mx,my,3,mc); }
     ell(g,ox,16,13,11,sh(mc,0.15)); if(!side){ disc(g,cx-9,8,3,K.f); disc(g,cx+9,8,3,K.f); } return; }
   if(K.ears==='hedgehog' && !back){ var s=d;
-    if(side){ ell(g,cx+4,15,10,10,s); for(var a2=0;a2<12;a2++){ var t2=-Math.PI*0.9+a2/11*Math.PI*1.3, x2=cx+4+Math.round(Math.cos(t2)*11), y2=15+Math.round(Math.sin(t2)*11); tri(g,x2-2,y2+2,x2+1,y2-3,x2+2,y2+2,s); } return; }
+    if(side){ ell(g,cx+2,15,10,10,s); for(var a2=0;a2<12;a2++){ var t2=-Math.PI*0.9+a2/11*Math.PI*1.3, x2=cx+2+Math.round(Math.cos(t2)*9), y2=15+Math.round(Math.sin(t2)*10); tri(g,x2-2,y2+2,x2+1,y2-3,x2+2,y2+2,s); } return; }
     ell(g,cx,15,14,11,s); for(var a3=0;a3<17;a3++){ var t3=Math.PI*(0.92+a3/16*1.16), x3=cx+Math.round(Math.cos(t3)*15), y3=15+Math.round(Math.sin(t3)*12), tx=x3+Math.round(Math.cos(t3)*4), ty=y3+Math.round(Math.sin(t3)*4);
       tri(g,x3-2,y3,tx,ty,x3+2,y3,s); line(g,Math.round(cx+Math.cos(t3)*8),Math.round(15+Math.sin(t3)*7),tx,ty,sh(s,0.35)); } }
 }
@@ -1274,7 +1274,7 @@ function pAirPurifier(){ return obj(24,52,function(g){ R(g,2,6,20,46,'#f4f5f6');
 // 작은 3×5 픽셀 글꼴 (화면 속 숫자·글자)
 var FONT3={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3':'111001111001111','4':'101101111001001','5':'111100111001111',
   '6':'111100111101111','7':'111001001001001','8':'111101111101111','9':'111101111001111','B':'110101110101110','L':'100100100100111','F':'111100110100100',
-  'C':'111100100100111','N':'101111111111101','E':'111100111100111','W':'101101111111101',':':'000010000010000','°':'010101010000000'};
+  'C':'111100100100111','N':'101111111111101','E':'111100111100111','W':'101101111111101',':':'000010000010000','°':'010101010000000','-':'000000111000000'};
 function txt3(g,x,y,s,c){ for(var i=0;i<s.length;i++){ var b=FONT3[s[i]]; if(b) for(var k=0;k<15;k++) if(b[k]==='1') P(g,x+i*4+k%3,y+Math.floor(k/3),c); } }
 function pBezel(w,h){ return obj(w,h,function(g){                 // 벽걸이 화면 테두리: 짙은 회색 + 아래 황동 띠
   R(g,0,0,w,h,'#2a2e34'); R(g,0,0,w,1,'#4a5058'); R(g,0,h-3,w,3,'#c9a25c'); R(g,0,h-3,w,1,'#e2c27e'); R(g,w-1,1,1,h-4,'#1c1f24'); }); }
@@ -1319,13 +1319,45 @@ function drawPillar(g,x,y,t){ var sx=x+5, sy=y+3, w=18, h=66, sl=Math.floor(t/50
     R(g,sx+3,sy+14,12,16,'#fdfbf6'); R(g,sx+3,sy+14,3,16,'#6fb3b8'); R(g,sx+8,sy+18,5,1,'#c9b8a8'); R(g,sx+8,sy+21,5,1,'#c9b8a8');
     [[5,38,'#f28ab0'],[11,40,'#f5d04a'],[8,46,'#8ac2f2'],[13,48,'#9ad89a']].forEach(function(d){ disc(g,sx+d[0],sy+d[1],2,d[2]); });
     R(g,sx+3,sy+56,12,1,'#a898b8'); R(g,sx+5,sy+59,8,1,'#c8b8d8'); }
-  else if(sl===1){ vgrad(g,sx,sy,w,h,'#8ec8ec','#d8eef8',6); var pr=Math.floor(t/400)%2;
-    disc(g,sx+9,sy+16,5,'#ffd060'); for(var a=0;a<8;a++){ var an=a*Math.PI/4; P(g,sx+9+Math.round(Math.cos(an)*(8+pr)),sy+16+Math.round(Math.sin(an)*(8+pr)),'#ffd060'); }
-    txt3(g,sx+3,sy+32,'24°','#2f4a6a'); ell(g,sx+10,sy+48,6,2,'#ffffff'); R(g,sx+3,sy+58,12,1,'#5a8ab0'); }
+  else if(sl===1) drawWxScreen(g,sx,sy,w,h,t);
   else { R(g,sx,sy,w,h,'#1e2a3a'); var d=new Date(), hh=('0'+d.getHours()).slice(-2), mm=('0'+d.getMinutes()).slice(-2);
     txt3(g,sx+5,sy+20,hh,'#e8fbf6'); if(Math.floor(t/500)%2) { P(g,sx+9,sy+27,'#6fd0c0'); P(g,sx+9,sy+29,'#6fd0c0'); } txt3(g,sx+5,sy+32,mm,'#e8fbf6');
     R(g,sx+3,sy+44,12,1,'#3f7f86'); R(g,sx+5,sy+48,8,1,'#2f4058'); }
   R(g,sx,sy+h-2,w,2,'#00000022'); for(var i=0;i<3;i++) R(g,sx+5+i*3,sy+h-4,2,1,i===sl?'#ffffff':'#8a929a'); }
+// ---- 서울 실제 날씨 (Open-Meteo: 키 없이 쓰는 공개 날씨 API). 못 받아오면 '--°' 로 둔다 ----
+var LIVE_WX={ ok:false };
+function wxKind(code){ if(code<=1) return 'clear'; if(code<=3) return 'cloud'; if(code===45||code===48) return 'fog';
+  if((code>=71&&code<=77)||code===85||code===86) return 'snow'; if(code>=95) return 'storm'; return 'rain'; }
+function fetchLiveWx(){
+  if(!window.fetch) return;
+  fetch('https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m,weather_code,is_day&timezone=Asia%2FSeoul')
+    .then(function(r){ return r.json(); })
+    .then(function(j){ var c=j&&j.current; if(c && typeof c.temperature_2m==='number') LIVE_WX={ ok:true, temp:Math.round(c.temperature_2m), kind:wxKind(c.weather_code), day:c.is_day!==0 }; })
+    .catch(function(){});
+}
+fetchLiveWx(); setInterval(fetchLiveWx, 30*60*1000);
+function drawWxScreen(g,sx,sy,w,h,t){
+  var wx=LIVE_WX, k=wx.ok?wx.kind:'clear', day=wx.ok?wx.day:true, pr=Math.floor(t/400)%2, cx=sx+9, cy=sy+16;
+  var bg = !day ? ['#1e2a4a','#3a4a78'] : k==='clear' ? ['#8ec8ec','#d8eef8'] : k==='cloud'||k==='fog' ? ['#a8b8c8','#dce4ec'] : ['#6a7a90','#aab6c4'];
+  vgrad(g,sx,sy,w,h,bg[0],bg[1],6);
+  function cloud(x,y,c){ ell(g,x,y,6,3,c); disc(g,x-2,y-2,3,c); disc(g,x+2,y-3,3,c); }
+  if(k==='clear'){
+    if(day){ disc(g,cx,cy,5,'#ffd060'); for(var a=0;a<8;a++){ var an=a*Math.PI/4; P(g,cx+Math.round(Math.cos(an)*(8+pr)),cy+Math.round(Math.sin(an)*(8+pr)),'#ffd060'); } }
+    else { disc(g,cx,cy,5,'#f4e6a8'); disc(g,cx+3,cy-2,4,bg[0]); P(g,sx+3,sy+6,'#ffffff'); P(g,sx+15,sy+9,pr?'#ffffff':'#8a9ac8'); P(g,sx+4,sy+24,'#c8d4f0'); }
+  } else {
+    if(k==='cloud' && day){ disc(g,cx+3,cy-3,4,'#ffd060'); }
+    cloud(cx,cy,k==='cloud'||k==='fog'?'#ffffff':'#e2e6ec');
+    if(k==='rain') for(var i=0;i<4;i++) R(g,cx-5+i*3,cy+5+((Math.floor(t/150)+i*2)%5),1,2,'#6fb3e8');
+    if(k==='snow') for(var j=0;j<4;j++) P(g,cx-5+j*3,cy+5+((Math.floor(t/300)+j*2)%6),'#ffffff');
+    if(k==='storm'){ R(g,cx,cy+4,2,3,'#ffd040'); R(g,cx-1,cy+6,2,3,'#ffd040'); if(pr) R(g,cx+2,cy+5,1,1,'#fff4b0'); }
+    if(k==='fog'){ R(g,cx-6,cy+5,12,1,'#ffffff'); R(g,cx-4,cy+8,10,1,'#e2e8ee'); }
+  }
+  var tt = wx.ok ? wx.temp+'°' : '--°';
+  txt3(g,sx+Math.max(1,Math.round((w-tt.length*4+1)/2)),sy+32,tt,day?'#2f4a6a':'#e8f0ff');
+  R(g,sx+3,sy+44,12,1,day?'#5a8ab0':'#6a7ab0');
+  if(wx.ok){ R(g,sx+4,sy+48,2,2,'#f07a82'); R(g,sx+8,sy+48,6,1,day?'#5a8ab0':'#8a9ac8'); R(g,sx+8,sy+50,4,1,day?'#8ab0cc':'#6a7ab0'); }   // 서울 위치 핀
+  R(g,sx+3,sy+58,12,1,day?'#5a8ab0':'#6a7ab0');
+}
 function pMenuBoard(){ return obj(24,64,function(g){               // 바 디지털 메뉴판
   ell(g,12,61,9,2,'#8a6444'); R(g,11,44,2,17,'#8a929a'); R(g,11,44,1,17,'#c9cfd4');
   R(g,1,0,22,46,'#2a2e34'); R(g,1,0,22,1,'#4a5058'); R(g,1,44,22,2,'#c9a25c'); }); }
