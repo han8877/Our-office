@@ -692,20 +692,20 @@ function drawEarsBehind(g,K,dir,cx){
   var f=K.f, inr=K.i||'#f7b6c4', d=K.d, side=dir==='left', back=dir==='up';
   if(K.ears==='round'){ if(side){ disc(g,cx+6,9,4,f); disc(g,cx+6,9,2,inr); return; }
     disc(g,cx-8,9,4,f); disc(g,cx+8,9,4,f); if(!back){ disc(g,cx-8,9,2,inr); disc(g,cx+8,9,2,inr); } }
-  if(K.ears==='long'){ if(side){ ell(g,cx+4,4,3,8,f); ell(g,cx+4,5,1,6,inr); return; }
-    ell(g,cx-5,3,3,8,f); ell(g,cx+5,3,3,8,f); if(!back){ ell(g,cx-5,4,1,6,inr); ell(g,cx+5,4,1,6,inr); } }
+  if(K.ears==='long'){ if(side){ ell(g,cx+4,5,3,7,f); ell(g,cx+4,6,1,5,inr); return; }                        // 토끼 귀 끝이 칸 위로 나가지 않게
+    ell(g,cx-5,4,3,7,f); ell(g,cx+5,4,3,7,f); if(!back){ ell(g,cx-5,5,1,5,inr); ell(g,cx+5,5,1,5,inr); } }
   if(K.ears==='pointed'){ if(side){ tri(g,cx+1,11,cx+5,1,cx+9,10,f); tri(g,cx+3,10,cx+5,4,cx+7,10,inr); return; }
     tri(g,cx-11,12,cx-8,1,cx-2,8,f); tri(g,cx+11,12,cx+8,1,cx+2,8,f);
     if(!back){ tri(g,cx-9,10,cx-8,4,cx-5,8,inr); tri(g,cx+9,10,cx+8,4,cx+5,8,inr); } }
   if(K.ears==='side'){ if(side){ disc(g,cx+7,18,4,f); disc(g,cx+7,18,2,K.F); return; }
-    disc(g,cx-12,18,4,f); disc(g,cx+12,18,4,f); if(!back){ disc(g,cx-12,18,2,K.F); disc(g,cx+12,18,2,K.F); } }
+    disc(g,cx-10,18,4,f); disc(g,cx+10,18,4,f); if(!back){ disc(g,cx-11,18,2,K.F); disc(g,cx+11,18,2,K.F); } }
   if(K.ears==='horns'){ var hc='#f2e2b4';
     if(side){ R(g,cx+3,4,3,6,hc); R(g,cx+4,2,2,3,hc); ell(g,cx+9,15,4,2,f); return; }
     R(g,cx-8,4,3,6,hc); R(g,cx-9,2,2,3,hc); R(g,cx+5,4,3,6,hc); R(g,cx+7,2,2,3,hc);
-    ell(g,cx-12,14,4,2,f); ell(g,cx+12,14,4,2,f); if(!back){ ell(g,cx-12,14,2,1,inr); ell(g,cx+12,14,2,1,inr); } }
+    ell(g,cx-11,14,3,2,f); ell(g,cx+11,14,3,2,f); if(!back){ ell(g,cx-11,14,2,1,inr); ell(g,cx+11,14,2,1,inr); } }
   if(K.ears==='knobs'){ if(side){ R(g,cx+2,2,2,8,f); disc(g,cx+3,2,2,d); ell(g,cx+8,12,3,2,f); return; }
     R(g,cx-5,2,2,8,f); R(g,cx+3,2,2,8,f); disc(g,cx-4,2,2,d); disc(g,cx+4,2,2,d); ell(g,cx-11,12,3,2,f); ell(g,cx+11,12,3,2,f); }
-  if(K.ears==='mane'){ var mc=sh(K.d,0.1), ox=side?cx+1:cx, mr=side?11:13;          // 갈기: 그림 칸 안에 들어오게 (옆모습에서 뒷머리가 잘리지 않게)
+  if(K.ears==='mane'){ var mc=sh(K.d,0.1), ox=side?cx+1:cx, mr=side?9:11;          // 갈기: 그림 칸 안에 들어오게 (옆모습에서 뒷머리가 잘리지 않게)
     ell(g,ox,16,mr,13,mc); for(var am=0;am<18;am++){ var tm=am/18*Math.PI*2, mx=ox+Math.round(Math.cos(tm)*mr), my=16+Math.round(Math.sin(tm)*13); disc(g,mx,my,3,mc); }
     if(side){ ell(g,ox+5,18,7,11,mc); for(var bm=0;bm<5;bm++) disc(g,ox+9,8+bm*5,3,mc); }                        // 옆모습: 뒤통수 쪽 갈기를 더 풍성하게
     ell(g,ox,16,mr-2,11,sh(mc,0.15)); if(!side){ disc(g,cx-9,8,3,K.f); disc(g,cx+9,8,3,K.f); } return; }
@@ -713,7 +713,7 @@ function drawEarsBehind(g,K,dir,cx){
     disc(g,cx-3,5,3,cc); disc(g,cx,3,3,cc); disc(g,cx+3,5,3,cc); P(g,cx-1,2,sh(cc,0.35)); }
   if(K.ears==='hedgehog' && !back){ var s=d;
     if(side){ ell(g,cx+2,15,10,10,s); for(var a2=0;a2<12;a2++){ var t2=-Math.PI*0.9+a2/11*Math.PI*1.3, x2=cx+2+Math.round(Math.cos(t2)*9), y2=15+Math.round(Math.sin(t2)*10); tri(g,x2-2,y2+2,x2+1,y2-3,x2+2,y2+2,s); } return; }
-    ell(g,cx,15,14,11,s); for(var a3=0;a3<17;a3++){ var t3=Math.PI*(0.92+a3/16*1.16), x3=cx+Math.round(Math.cos(t3)*15), y3=15+Math.round(Math.sin(t3)*12), tx=x3+Math.round(Math.cos(t3)*4), ty=y3+Math.round(Math.sin(t3)*4);
+    ell(g,cx,15,13,11,s); for(var a3=0;a3<17;a3++){ var t3=Math.PI*(0.92+a3/16*1.16), x3=cx+Math.round(Math.cos(t3)*11), y3=15+Math.round(Math.sin(t3)*12), tx=x3+Math.round(Math.cos(t3)*3), ty=y3+Math.round(Math.sin(t3)*4);
       tri(g,x3-2,y3,tx,ty,x3+2,y3,s); line(g,Math.round(cx+Math.cos(t3)*8),Math.round(15+Math.sin(t3)*7),tx,ty,sh(s,0.35)); } }
 }
 function drawEarsFront(g,K,dir,cx){
@@ -729,7 +729,7 @@ function drawHead(g,K,p,dir,blink){
   ell(g,cx,cy,rx,ry,fD); ell(g,cx-1,cy-1,rx-1,ry-1,f); ell(g,cx-4,cy-5,4,2,fL);
   if(dir==='up'){                                   // 뒤통수
     ell(g,cx,cy+5,rx-3,3,fD);
-    if(K.ears==='hedgehog'){ ell(g,cx,cy-1,rx+1,ry,d); for(var a=0;a<16;a++){ var t=Math.PI*(1+a/15), x=cx+Math.round(Math.cos(t)*(rx+2)), y=cy+Math.round(Math.sin(t)*(ry+1)); tri(g,x-2,y+3,x,y-3,x+2,y+3,d); }
+    if(K.ears==='hedgehog'){ ell(g,cx,cy-1,rx+1,ry,d); for(var a=0;a<16;a++){ var t=Math.PI*(1+a/15), x=cx+Math.round(Math.cos(t)*(rx+1)), y=cy+Math.round(Math.sin(t)*(ry+1)); tri(g,x-2,y+3,x,y-3,x+2,y+3,d); }
       for(var k=0;k<20;k++) P(g,cx-9+Math.floor(rnd(k)*18),cy-6+Math.floor(rnd(k+5)*12),sh(d,0.25)); }
     if(K.mark==='tiger'){ R(g,cx-1,cy-8,3,5,d); R(g,cx-6,cy-6,2,4,d); R(g,cx+5,cy-6,2,4,d); R(g,cx-9,cy,3,2,d); R(g,cx+7,cy,3,2,d); }
     if(K.mark==='cow'){ ell(g,cx-5,cy-3,4,3,d); ell(g,cx+6,cy+3,3,2,d); }
@@ -764,7 +764,7 @@ function drawHead(g,K,p,dir,blink){
       if(blink) R(g,ex,ey+2,2,1,eye); else { R(g,ex,ey,2,3,eye); P(g,ex,ey,'#ffffff'); } }
     R(g,cx-2,cy+4,3,2,blush);
     P(g,mx-2,my+2,nose); P(g,mx-1,my+3,nose);
-    if(K.mark==='chicken'){ tri(g,mx-9,my,mx-2,my-3,mx-2,my+2,'#f0a030'); R(g,mx-8,my,6,1,'#d88420'); ell(g,mx,my+5,2,2,'#e0483a'); }
+    if(K.mark==='chicken'){ tri(g,mx-7,my,mx-1,my-3,mx-1,my+2,'#f0a030'); R(g,mx-6,my,5,1,'#d88420'); ell(g,mx,my+5,2,2,'#e0483a'); }
     if(p.acc==='glasses'){ ring(g,cx-5,cy-1,3,'#3a3040'); R(g,cx-2,cy-1,6,1,'#3a3040'); }
     if(p.acc==='shades'){ R(g,cx-9,cy-3,7,3,'#1d1f24'); R(g,cx-2,cy-2,7,1,'#1d1f24'); P(g,cx-8,cy-3,'#6a7a8a'); }
     drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return;
@@ -865,7 +865,7 @@ function drawCarry(g,p,dir,hx){
   if(it==='case'){ R(g,hx-1,36,9,7,'#7a4a2a'); R(g,hx-1,36,9,1,'#9a6a44'); R(g,hx+2,34,3,2,'#5a3420'); }
   else if(it==='laptop'){ R(g,dir==='down'?5:hx+3,29,3,10,'#aeb6bf'); R(g,dir==='down'?5:hx+3,29,1,10,'#d8dde2'); }
   else if(it==='file'){ R(g,hx-1,31,7,9,'#e8a040'); R(g,hx-1,31,7,1,'#f4c070'); }
-  else if(it==='tray'){ var tx=dir==='down'?hx+1:hx; R(g,tx+1,29,2,7,sh(p.shirt,-0.2));                      // 어깨높이로 든 은쟁반과 잔
+  else if(it==='tray'){ var tx=dir==='down'?hx-2:hx; R(g,tx+1,29,2,7,sh(p.shirt,-0.2));                      // 어깨높이로 든 은쟁반과 잔
     ell(g,tx+2,28,7,2,'#c9cfd4'); ell(g,tx+2,27,6,1,'#eef1f3'); R(g,tx-2,22,3,5,'#f2d06a'); R(g,tx-2,22,3,1,'#ffffff'); R(g,tx+3,21,3,6,'#e8a0b0'); R(g,tx+3,21,3,1,'#ffffff'); }
   else if(it==='foodtray'){ var fx=dir==='down'?8:hx-8; R(g,fx,30,16,7,'#b88a5c'); R(g,fx,30,16,1,'#d8aa7a'); disc(g,fx+4,33,2,'#fbfaf6'); disc(g,fx+10,33,2,'#e8903a'); R(g,fx+13,31,2,4,'#6aa84a'); }
   else if(it==='icecream'){ var ix=dir==='down'?23:hx+1; tri(g,ix-2,31,ix+2,31,ix,37,'#d8a060'); P(g,ix-1,32,'#b8844a'); disc(g,ix,29,3,'#f7a8c8'); P(g,ix-1,28,'#ffe0ec'); }
