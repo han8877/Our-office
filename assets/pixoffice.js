@@ -705,9 +705,10 @@ function drawEarsBehind(g,K,dir,cx){
     ell(g,cx-12,14,4,2,f); ell(g,cx+12,14,4,2,f); if(!back){ ell(g,cx-12,14,2,1,inr); ell(g,cx+12,14,2,1,inr); } }
   if(K.ears==='knobs'){ if(side){ R(g,cx+2,2,2,8,f); disc(g,cx+3,2,2,d); ell(g,cx+8,12,3,2,f); return; }
     R(g,cx-5,2,2,8,f); R(g,cx+3,2,2,8,f); disc(g,cx-4,2,2,d); disc(g,cx+4,2,2,d); ell(g,cx-11,12,3,2,f); ell(g,cx+11,12,3,2,f); }
-  if(K.ears==='mane'){ var mc=sh(K.d,0.1), ox=side?cx+3:cx;
-    ell(g,ox,16,15,13,mc); for(var am=0;am<18;am++){ var tm=am/18*Math.PI*2, mx=ox+Math.round(Math.cos(tm)*15), my=16+Math.round(Math.sin(tm)*13); disc(g,mx,my,3,mc); }
-    ell(g,ox,16,13,11,sh(mc,0.15)); if(!side){ disc(g,cx-9,8,3,K.f); disc(g,cx+9,8,3,K.f); } return; }
+  if(K.ears==='mane'){ var mc=sh(K.d,0.1), ox=side?cx+1:cx, mr=side?11:13;          // 갈기: 그림 칸 안에 들어오게 (옆모습에서 뒷머리가 잘리지 않게)
+    ell(g,ox,16,mr,13,mc); for(var am=0;am<18;am++){ var tm=am/18*Math.PI*2, mx=ox+Math.round(Math.cos(tm)*mr), my=16+Math.round(Math.sin(tm)*13); disc(g,mx,my,3,mc); }
+    if(side){ ell(g,ox+5,18,7,11,mc); for(var bm=0;bm<5;bm++) disc(g,ox+9,8+bm*5,3,mc); }                        // 옆모습: 뒤통수 쪽 갈기를 더 풍성하게
+    ell(g,ox,16,mr-2,11,sh(mc,0.15)); if(!side){ disc(g,cx-9,8,3,K.f); disc(g,cx+9,8,3,K.f); } return; }
   if(K.ears==='comb'){ var cc='#e0483a'; if(side){ disc(g,cx-1,5,3,cc); disc(g,cx+2,3,3,cc); disc(g,cx+5,5,3,cc); return; }   // 닭 볏
     disc(g,cx-3,5,3,cc); disc(g,cx,3,3,cc); disc(g,cx+3,5,3,cc); P(g,cx-1,2,sh(cc,0.35)); }
   if(K.ears==='hedgehog' && !back){ var s=d;

@@ -4976,7 +4976,7 @@
     <table>
       <tr><th>식당 사람</th><th>내용</th></tr>
       <tr><td><b>현계산</b></td><td>닭. 계산대에서 "맛있게 드세요"</td></tr>
-      <tr><td><b>안조리</b>·<b>주조리</b></td><td>미어캣. 하얀 요리사 모자를 쓰고 배식대에서 음식을 채워요</td></tr>
+      <tr><td><b>윤요리</b>·<b>주요리</b></td><td>미어캣. 하얀 요리사 모자를 쓰고 배식대에서 음식을 채워요</td></tr>
       <tr><td>사장님</td><td>일주일에 세 번쯤 점심을 드시러 와요. 외부 약속이 많으시거든요</td></tr>
       <tr><td>R-도우미</td><td>식당 통로를 돌아다니다가 문을 닫으면 충전 자리로 돌아가요</td></tr>
     </table>
@@ -15416,7 +15416,7 @@ function b1Tick(F,now,off){
   var lo=byId('b1LightOverlay'); if(lo){ var op=b1Light.on?'0':(staffTime?'0.55':'0.62'); if(lo.style.opacity!==op) lo.style.opacity=op; }
   // 식당 직원: 계산 닭 한 명 · 조리 미어캣 둘. 07:50부터 한 명씩 엘리베이터에서 내려 주방 통로로 걸어 들어오고,
   // 21시에 문을 닫으면 마감 정리 후 21:05부터 한 명씩 엘리베이터로 걸어 나간다
-  var cs=npcActor(F,'b1cashier',PO.B1LOOK.cashier,'현계산'), k1=npcActor(F,'b1cook1',PO.B1LOOK.cook1,'안조리'), k2=npcActor(F,'b1cook2',PO.B1LOOK.cook2,'주조리');
+  var cs=npcActor(F,'b1cashier',PO.B1LOOK.cashier,'현계산'), k1=npcActor(F,'b1cook1',PO.B1LOOK.cook1,'윤요리'), k2=npcActor(F,'b1cook2',PO.B1LOOK.cook2,'주요리');
   var DOOR_X=2*T-1, POST_X=[23*T-1,11*T-1,17*T-1];
   [cs,k1,k2].forEach(function(n,i){
     var inAt=7*3600+50*60+i*45, outAt=21*3600+5*60+i*40, here = nowSec>=inAt && nowSec<outAt;
