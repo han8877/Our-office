@@ -1361,7 +1361,8 @@ function fetchLiveWx(){
 }
 fetchLiveWx(); setInterval(fetchLiveWx, 30*60*1000);
 function drawWxScreen(g,sx,sy,w,h,t){
-  var wx=LIVE_WX, k=wx.ok?wx.kind:'clear', day=wx.ok?wx.day:true, pr=Math.floor(t/400)%2, cx=sx+9, cy=sy+16;
+  var fb={ rain:'rain', cloudy:'cloud', snow:'snow' }[STATE.roofWx]||'clear', hr=new Date().getHours();   // 못 받아오면 게임 날씨를 그대로 (기온은 --°)
+  var wx=LIVE_WX, k=wx.ok?wx.kind:fb, day=wx.ok?wx.day:(hr>=7&&hr<19), pr=Math.floor(t/400)%2, cx=sx+9, cy=sy+16;
   var bg = !day ? ['#1e2a4a','#3a4a78'] : k==='clear' ? ['#8ec8ec','#d8eef8'] : k==='cloud'||k==='fog' ? ['#a8b8c8','#dce4ec'] : ['#6a7a90','#aab6c4'];
   vgrad(g,sx,sy,w,h,bg[0],bg[1],6);
   function cloud(x,y,c){ ell(g,x,y,6,3,c); disc(g,x-2,y-2,3,c); disc(g,x+2,y-3,3,c); }
