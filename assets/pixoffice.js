@@ -446,14 +446,18 @@ function drawArtEye(g,look,open){
   R(g,cx-9,cy-ry-1,18,1,'#5a2a1a'); R(g,cx-7,cy-ry-2,14,1,'#5a2a1a');                        // 윗눈꺼풀
   R(g,cx-8,cy+ry,16,1,'#b84a2a');
 }
-// 아트코너 모니터에 재고창고 쪽을 가리키는 빨간 화살표
+// 아트코너 모니터에 재고창고 쪽을 가리키는 빨간 화살표 (화면 가운데 → 재고창고 가운데 방향으로 기울인다)
+var ARROW_ANG=Math.atan2(20*T-(15*T-49), 30.5*T-(13*T+32));
 function drawArtArrow(g,now){
   var sx=13*T+16, sy=15*T-60+2, w=32, h=18;
   R(g,sx,sy,w,h,'#14161c');
   if(Math.floor(now/90)%23===0) return;                                                         // 가끔 지지직
-  var c='#e8323c', y=sy+9, off=Math.floor(now/260)%3;
-  R(g,sx+4+off,y-2,17,4,c); for(var i=0;i<7;i++) R(g,sx+19+off+i,y-6+i,1,12-2*i,c);
-  R(g,sx+4+off,y-2,17,1,'#ff8a90');
+  var ca=Math.cos(ARROW_ANG), sa=Math.sin(ARROW_ANG), off=Math.floor(now/260)%3-1, cx=sx+w/2, cy=sy+h/2;
+  for(var y=0;y<h;y++) for(var x=0;x<w;x++){
+    var px=sx+x+0.5-cx, py=sy+y+0.5-cy, u=px*ca+py*sa-off, v=-px*sa+py*ca;
+    var shaft = u>=-12 && u<=3 && Math.abs(v)<=1.9, head = u>3 && u<=11 && Math.abs(v)<=(11-u)*0.85;
+    if(shaft||head) P(g,sx+x,sy+y, v<-1.2 && shaft ? '#ff8a90' : '#e8323c');
+  }
 }
 
 function pSculpture(){ return obj(32,72,function(g){
