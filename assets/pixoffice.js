@@ -428,14 +428,13 @@ function pRecycle(){ return obj(96,36,function(g){             // 분리수거�
   [['#5a8ad0','종이'],['#5ab37a','플'],['#f2c24a','캔']].forEach(function(b,i){ var x=i*32+2, c=b[0];
     R(g,x,6,28,30,c); R(g,x,2,28,6,sh(c,0.25)); R(g,x,2,28,1,sh(c,0.5)); R(g,x+8,3,12,2,sh(c,-0.35));
     R(g,x+25,8,3,28,sh(c,-0.2)); R(g,x+8,16,12,10,sh(c,0.45)); R(g,x+11,19,6,4,c); }); }); }
-function pRollMonitor(){ return obj(64,80,function(g){         // 회의용 이동식 모니터
-  R(g,8,74,48,3,'#6a7078'); disc(g,10,77,2,'#3a3f46'); disc(g,54,77,2,'#3a3f46');
-  R(g,29,40,6,34,'#8a9096'); R(g,29,40,2,34,'#c9cfd4');
-  R(g,0,0,64,40,'#1d2026'); R(g,2,2,60,34,'#2a3140');
-  R(g,5,5,54,28,'#eef4f8'); R(g,5,5,54,5,'#5a8ac0'); R(g,8,6,20,2,'#ffffff');                            // 발표 화면
-  [[12,22,6],[20,16,12],[28,19,9],[36,12,16]].forEach(function(b){ R(g,b[0],b[1],5,b[2],'#8ac2f2'); R(g,b[0],b[1],5,1,'#5a8ac0'); });
-  R(g,46,14,10,1,'#b8bec4'); R(g,46,18,8,1,'#b8bec4'); R(g,46,22,10,1,'#b8bec4');
-  R(g,24,36,16,2,'#3a3f46'); }); }
+function pRollMonitor(){ return obj(36,80,function(g){        // 회의용 이동식 모니터 (폭 한 칸: 옆으로 지나갈 수 있게)
+  R(g,4,74,28,3,'#6a7078'); disc(g,6,77,2,'#3a3f46'); disc(g,30,77,2,'#3a3f46');
+  R(g,16,40,4,34,'#8a9096'); R(g,16,40,1,34,'#c9cfd4');
+  R(g,0,0,36,40,'#1d2026'); R(g,2,2,32,34,'#2a3140');
+  R(g,4,5,28,28,'#eef4f8'); R(g,4,5,28,5,'#5a8ac0'); R(g,6,6,12,2,'#ffffff');                             // 발표 화면
+  [[7,22,6],[13,16,12],[19,19,9],[25,12,16]].forEach(function(b){ R(g,b[0],b[1],4,b[2],'#8ac2f2'); R(g,b[0],b[1],4,1,'#5a8ac0'); });
+  R(g,12,36,12,2,'#3a3f46'); }); }
 
 function pSculpture(){ return obj(32,72,function(g){
   R(g,4,36,24,36,'#f3f1ec'); R(g,2,32,28,6,'#fbfaf7'); R(g,2,32,28,1,'#ffffff'); R(g,24,38,4,34,'#d8d4cb'); R(g,4,70,24,2,'#c9c5bc');
@@ -1036,7 +1035,7 @@ onTile(pShelf(1),28,18,30,19); onTile(pShelf(5),32,18,34,19); onTile(pShelf(8),2
 // 홍보팀
 onTile(pPlant('bush','#d9794a'),3,28,3,28);   // 홍보팀은 책상 셋으로 꽉 차서 화분은 엘리베이터 홀로
 // 회의실
-onTile(pMeetTable(),18,26,22,27); onTile(pRollMonitor(),16,26,17,27);
+onTile(pMeetTable(),18,26,22,27); onTile(pRollMonitor(),16,26,16,27);   // 모니터는 왼쪽 한 칸만: 17열로 아래 줄 왼쪽 자리에 바로 간다
 [18,20,22].forEach(function(c){ onTile(pChairN('#d2cbb8'),c,25,c,25,-8); onTile(pChairS('#d2cbb8'),c,28,c,28); });
 onTile(pPlant('monstera','#f4f1ea'),24,25,24,25); onTile(pPlant('bush','#9fd4c0'),24,28,24,28);
 [18,20,22].forEach(function(c){ blocked[25][c]=0; blocked[28][c]=0; });   // 회의실 의자 칸은 지나갈 수 있게: 막혀 있으면 안쪽·아래쪽 자리에 못 가고 문 앞에서 멈춘다
