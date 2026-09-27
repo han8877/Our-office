@@ -4968,6 +4968,7 @@
       <tr><td>08:00~21:00</td><td>운영 시간. 문을 닫으면 불이 저절로 꺼져요. 벽 스위치로 직접 켜고 끌 수도 있어요</td></tr>
       <tr><td>12:00~13:00</td><td>점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 퇴식구에 식판을 올려두고 올라가요</td></tr>
       <tr><td>주말·공휴일</td><td>점심때 당직 직원과 경비, 2층 보안요원이 함께 내려와 먹어요</td></tr>
+      <tr><td>보안요원 저녁</td><td>2층 보안요원은 매일 18:00~18:40 사이에 저녁을 먹으러 내려와요</td></tr>
       <tr><td>저녁</td><td>야근 중인 직원이 18시 10분~20시 30분 사이에 한두세 명씩 저녁을 먹으러 내려와요</td></tr>
       <tr><td>자판기</td><td>점심에 가끔 라면을 뽑아 먹는 사람이 있고, 식판을 내고 나서 아이스크림을 뽑아 먹으며 올라가기도 해요. 평일 오후(14:00~17:30)나 야근 중엔 3층에서 라면·아이스크림을 먹으러 한두 명씩 내려와요</td></tr>
     </table>
@@ -5882,6 +5883,14 @@
 
   function isWeekend(d){ var day = (d||new Date()).getDay(); return day===0 || day===6; }
   function isHoliday(d){ return KR_HOLIDAYS_2026.indexOf(dateKey(d)) !== -1; }
+  // 조사: 받침이 있으면 앞말, 없으면 뒷말 (이/가 · 은/는 · 을/를 · 과/와 · 으로/로)
+  function josa(word, pair){
+    var w = String(word||''), c = w.charCodeAt(w.length-1), p = pair.split('/');
+    if(!(c >= 0xAC00 && c <= 0xD7A3)) return w + p[1];
+    var jong = (c - 0xAC00) % 28;
+    if(pair === '으로/로') return w + (jong === 0 || jong === 8 ? '로' : '으로');
+    return w + (jong ? p[0] : p[1]);
+  }
   function isNonWorkingDay(d){ return isWeekend(d) || isHoliday(d); }
 
   // 문자열 기반 간단 시드 해시 (날짜별로 항상 같은 결과를 주기 위함)
@@ -6740,7 +6749,7 @@
       el.classList.add('onRoof');
       var h = new Date().getHours();
       roofGuestQ()[key] = { kind:'staff', id:s.id, name:s.name, night: overtimeMode || h >= 18 || h < 7 };
-      if(typeof logDayEvent === 'function') logDayEvent('🌿', s.name+'가 옥상 정원에 바람 쐬러 갔습니다');
+      if(typeof logDayEvent === 'function') logDayEvent('🌿', josa(s.name,'이/가')+' 옥상 정원에 바람 쐬러 갔습니다');
       var t0 = Date.now();
       (function wait(){
         var q = roofGuestQ()[key];
@@ -6778,7 +6787,7 @@
     pool.sort(function(){ return Math.random() - 0.5; });
     var group = pool.slice(0, Math.min(pool.length, 1 + Math.floor(Math.random()*3))), gid = 'g' + Date.now(), left = group.length;
     dinnerActive = true;
-    if(typeof logDayEvent === 'function') logDayEvent('🍱', group.map(function(s){ return s.name; }).join('·') + '가 저녁 먹으러 구내식당에 갔습니다');
+    if(typeof logDayEvent === 'function') logDayEvent('🍱', josa(group.map(function(s){ return s.name; }).join('·'),'이/가') + ' 저녁 먹으러 구내식당에 갔습니다');
     group.forEach(function(s, i){
       var el = charEl(s.id), key2 = 'dn_' + s.id;
       dinnerDone[s.id] = true; markBusy(s.id); raiseChar(s);
@@ -6821,7 +6830,7 @@
     pool.sort(function(){ return Math.random() - 0.5; });
     var group = pool.slice(0, Math.random() < 0.3 ? 2 : 1), gid = 's' + Date.now(), left = group.length, item = Math.random() < 0.5 ? 'ramen' : 'ice';
     snackActive = true;
-    if(typeof logDayEvent === 'function') logDayEvent(item === 'ramen' ? '🍜' : '🍦', group.map(function(s){ return s.name; }).join('·') + '가 지하 식당 자판기에서 ' + (item === 'ramen' ? '라면' : '아이스크림') + '을 먹고 옵니다');
+    if(typeof logDayEvent === 'function') logDayEvent(item === 'ramen' ? '🍜' : '🍦', josa(group.map(function(s){ return s.name; }).join('·'),'이/가') + ' 지하 식당 자판기에서 ' + (item === 'ramen' ? '라면' : '아이스크림') + '을 먹고 옵니다');
     group.forEach(function(s, i){
       var el = charEl(s.id), key = 'sn_' + s.id;
       markBusy(s.id); raiseChar(s);
@@ -7631,7 +7640,7 @@
       var shuffled = pool.slice().sort(function(){ return Math.random()-0.5; });
       var callCount = Math.floor(Math.random()*3) + 2;
       var called = shuffled.slice(0, callCount);
-      if(typeof logDayEvent === 'function') logDayEvent('🌃', '야근 — '+called.map(function(s){return s.name;}).join('·')+'가 남았습니다');
+      if(typeof logDayEvent === 'function') logDayEvent('🌃', '야근 — '+josa(called.map(function(s){return s.name;}).join('·'),'이/가')+' 남았습니다');
       called.forEach(function(s, i){
         setTimeout(function(){ walkIn(s, null, true); setMood(s.id, 'tired'); }, i*260);
         bumpOvertime(s.id);
@@ -8177,7 +8186,7 @@
       markBusy(s.id);
       travelTo(s, breakSeats[i], 62);
     });
-    toast(chosen.map(function(s){return s.name;}).join(', ')+'이(가) 탕비실로 향합니다');
+    toast(josa(chosen.map(function(s){return s.name;}).join(', '),'이/가')+' 탕비실로 향합니다');
     if(typeof logDayEvent === 'function') logDayEvent('☕', chosen.map(function(s){return s.name;}).join('·')+' 탕비실에서 쉬는 중');
     setMoodAll(chosen, 'happy');
 
@@ -8499,7 +8508,7 @@
     setPos(courierObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
     charEl(courierObj.id).classList.add('present');
     showBubble(courierObj, '택배 왔습니다. 어디다 놓을까요?');
-    if(typeof logDayEvent === 'function') logDayEvent('📮', '택배 도착 — '+respondent.name+'가 재고창고로 안내했습니다');
+    if(typeof logDayEvent === 'function') logDayEvent('📮', '택배 도착 — '+josa(respondent.name,'이/가')+' 재고창고로 안내했습니다');
 
     setTimeout(function(){
       showBubble(respondent, '앗! 재고창고에 놔주세요.');
@@ -8546,7 +8555,7 @@
     setPos(vendorObj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
     charEl(vendorObj.id).classList.add('present');
     showBubble(vendorObj, '저..회의때문에..');
-    if(typeof logDayEvent === 'function') logDayEvent('🤝', '업체직원 방문 — '+lead.name+'과 회의');
+    if(typeof logDayEvent === 'function') logDayEvent('🤝', '업체직원 방문 — '+josa(lead.name,'과/와')+' 회의');
 
     setTimeout(function(){
       showBubble(pr, '아! 실장님 방으로 가시면 돼요.');
@@ -8764,7 +8773,7 @@
     charEl(obj.id).classList.add('present');
     showBubble(obj, '행사 논의하러 왔습니다');
     if(typeof logDayEvent === 'function'){
-      logDayEvent('🎻', '연주자 조 방문 — ' + a.name + '·' + b.name + '와 행사 논의');
+      logDayEvent('🎻', '연주자 조 방문 — ' + a.name + '·' + josa(b.name,'과/와') + ' 행사 논의');
     }
 
     function clearAll(){ clearBubble(obj.id); clearBubble(a.id); clearBubble(b.id); }
@@ -8982,11 +8991,11 @@
       // 물주기·밥주기는 하루 첫 번째만 일지에 남긴다 (매번 남기면 일지가 도배된다)
       if(kind === 'plant' && !dutyWaterLogged){
         dutyWaterLogged = true;
-        if(typeof logDayEvent === 'function') logDayEvent('🪴', s.name+'가 화분에 물을 줬습니다');
+        if(typeof logDayEvent === 'function') logDayEventOnce('🪴', josa(s.name,'이/가')+' 화분에 물을 줬습니다');
       }
       if(kind === 'tank' && !dutyFeedLogged){
         dutyFeedLogged = true;
-        if(typeof logDayEvent === 'function') logDayEvent('🐟', s.name+'가 어항에 밥을 줬습니다');
+        if(typeof logDayEvent === 'function') logDayEventOnce('🐟', josa(s.name,'이/가')+' 어항에 밥을 줬습니다');
       }
       // 가끔은 다음 곳으로 가기 전에 혼잣말이나 표정을 한 번 더
       if(Math.random() < 0.45){
@@ -9019,7 +9028,7 @@
         showBubble(obj, DUTY_GUARD_TANK_LINES[Math.floor(Math.random()*DUTY_GUARD_TANK_LINES.length)]);
         if(!dutyFeedLogged){
           dutyFeedLogged = true;
-          if(typeof logDayEvent === 'function') logDayEvent('🐟', '경비가 어항에 밥을 줬습니다');
+          if(typeof logDayEvent === 'function') logDayEventOnce('🐟', '경비가 어항에 밥을 줬습니다');
         }
       } else if(Math.random() < 0.55){
         showBubble(obj, DUTY_GUARD_LINES[Math.floor(Math.random()*DUTY_GUARD_LINES.length)]);
@@ -9059,9 +9068,9 @@
       dutyGuardGo();
     }, 2800);
 
-    toast('쉬는 날이라 당직 '+dutyStaff.name+'와 경비만 출근했어요');
+    toast('쉬는 날이라 당직 '+josa(dutyStaff.name,'과/와')+' 경비만 출근했어요');
     if(typeof logDayEvent === 'function'){
-      logDayEvent('🗓️', '주말 당직 — '+dutyStaff.name+'와 경비가 출근했습니다');
+      logDayEventOnce('🗓️', '주말 당직 — '+josa(dutyStaff.name,'과/와')+' 경비가 출근했습니다');
     }
   }
 
@@ -9074,7 +9083,7 @@
     clearTimeout(dutyTimer); clearTimeout(dutyGuardTimer);
     showBubble(s, '경비님, 밥 먹으러 가요!');
     setTimeout(function(){ if(dutyActive) showBubble({ id:gid }, '좋습니다, 같이 가시죠'); }, 1800);
-    if(typeof logDayEvent === 'function') logDayEvent('🍱', '주말 점심 — '+s.name+'와 경비가 구내식당에 갔습니다');
+    if(typeof logDayEvent === 'function') logDayEventOnce('🍱', '주말 점심 — '+josa(s.name,'과/와')+' 경비가 구내식당에 갔습니다');
     function back(){ if(--left > 0) return; dutyLunchOn = false;
       if(!dutyActive) return;
       dutyTimer = setTimeout(dutyGo, 1500); dutyGuardTimer = setTimeout(dutyGuardGo, 3000); }
@@ -9117,7 +9126,7 @@
 
     if(graceful && s){
       // 퇴근 시각: 둘 다 입구로 걸어 나간 뒤 사라진다
-      if(typeof logDayEvent === 'function') logDayEvent('🚪', '주말 당직 종료 — '+s.name+'와 경비가 퇴근했습니다');
+      if(typeof logDayEvent === 'function') logDayEventOnce('🚪', '주말 당직 종료 — '+josa(s.name,'과/와')+' 경비가 퇴근했습니다');
       clearBubble(s.id);
       walkOut(s, function(){
         lowerChar(s);
@@ -9300,7 +9309,7 @@
 
     loungeBusy = true;
     var chosen = pool.slice().sort(function(){ return Math.random()-0.5; }).slice(0,3);
-    toast(chosen.map(function(s){ return s.name; }).join(', ') + '이(가) 라운지로 향합니다');
+    toast(josa(chosen.map(function(s){ return s.name; }).join(', '),'이/가') + ' 라운지로 향합니다');
     if(typeof logDayEvent === 'function') logDayEvent('🛋️', '라운지 휴식');
     setMoodAll(chosen, 'happy');
 
@@ -9493,7 +9502,7 @@
     var s = pool[Math.floor(Math.random()*pool.length)];
     markBusy(s.id);
     raiseChar(s);
-    toast(s.name + '이(가) 아트코너로 향합니다');
+    toast(josa(s.name,'이/가') + ' 아트코너로 향합니다');
     if(typeof logDayEvent === 'function') logDayEvent('🗿', '아트코너 방문');
     setMood(s.id, 'happy');
     lifetime.arts++;
@@ -9546,7 +9555,7 @@
 
     stockBusy = true;
     var chosen = pool.slice(0, STOCK_SPOTS.length);
-    toast(chosen.map(function(s){ return s.name; }).join(', ') + '이(가) 재고 확인을 하러 갑니다');
+    toast(josa(chosen.map(function(s){ return s.name; }).join(', '),'이/가') + ' 재고 확인을 하러 갑니다');
     if(typeof logDayEvent === 'function') logDayEvent('📦', '재고 확인');
     setMoodAll(chosen, 'focused');
 
@@ -12413,6 +12422,11 @@
   function saveChatLog(){
     try{ localStorage.setItem(CHATLOG_KEY, JSON.stringify({ today:chatLogToday, history:chatLogHistory })); }catch(e){}
   }
+  // 같은 날 같은 기록은 한 번만 (다시 접속할 때마다 쌓이지 않게)
+  function logDayEventOnce(icon, text){
+    if(chatLogToday.date === dateKey() && chatLogToday.entries.some(function(e){ return e.text === text; })) return;
+    logDayEvent(icon, text);
+  }
   function logDayEvent(icon, text){
     if(chatLogToday.date !== dateKey()){
       chatLogHistory.unshift(chatLogToday);
@@ -14318,7 +14332,7 @@
               }, 13000 + Math.random()*9000);
             });
           });
-          if(typeof logDayEvent === 'function' && evening) logDayEvent('🍸', f2GuardToday().name+'가 라운지 바에서 몰래 한 잔 했습니다');
+          if(typeof logDayEvent === 'function' && evening) logDayEvent('🍸', josa(f2GuardToday().name,'이/가')+' 라운지 바에서 몰래 한 잔 했습니다');
           return;
         }
         // 순찰: 길목 두세 곳
@@ -14339,30 +14353,34 @@
     }
     setInterval(function(){ if(Math.random() < 0.35) guardRound(); }, 30000);
 
-    // ---- 주말·공휴일 점심: 보안요원도 지하 식당에서 당직·경비와 같이 먹는다 ----
-    var secLunchDay = '';
-    setInterval(function(){
-      var d = new Date(), t = d.getHours()*60 + d.getMinutes(), dk = d.toDateString();
-      if(!isNonWorkingDay(d) || secLunchDay === dk || t < 12*60 || t >= 12*60+40) return;
-      var w = f2Walker.guard;
-      if(!w._on || !f2Visible('guard') || gPatrol.busy || !guardAtPost()) return;
-      secLunchDay = dk; gPatrol.busy = true;
-      var who = f2GuardToday();
-      f2Say('guard', '점심 먹고 오겠습니다!');
+    // ---- 보안요원 식사: 지하 식당 ----
+    // 주말·공휴일 점심(12:00~12:40)엔 당직·경비와 같이, 저녁(18:00~18:40)은 매일 혼자 내려가 먹는다
+    var secMealDone = {};
+    function secMeal(tag, qkind, goLine, backLine){
+      var w = f2Walker.guard, who = f2GuardToday(), key = 'sec_' + tag;
+      gPatrol.busy = true;
+      f2Say('guard', goLine);
+      if(typeof logDayEventOnce === 'function') logDayEventOnce('🍱', josa(who.name,'이/가') + ' ' + (tag === 'lunch' ? '점심' : '저녁') + ' 먹으러 구내식당에 갔습니다');
       f2StaffGo('guard', [F2_ELEV], function(){
         f2RideOut(w, function(){
           var Q = (window.__b1Guests = window.__b1Guests || {});
-          Q.wk_sec = { kind:'weekend', id:(who.key === 'leo' ? 'guardLeo' : 'guard'), name:who.name, group:'wk' };
+          Q[key] = { kind:qkind, id:(who.key === 'leo' ? 'guardLeo' : 'guard'), name:who.name, group:(tag === 'lunch' ? 'wk' : 'secdn') };
           var t0 = Date.now();
           (function wait(){
-            var q = Q.wk_sec;
-            if(q && !q.done && Date.now()-t0 < 20*60000){ w._lunchT = setTimeout(wait, 1000); return; }
-            delete Q.wk_sec;
+            var q = Q[key];
+            if(q && !q.done && Date.now()-t0 < 20*60000){ w._mealT = setTimeout(wait, 1000); return; }
+            delete Q[key];
             if(!w._on){ gPatrol.busy = false; return; }
-            f2RideIn(w, function(){ f2Say('guard', '식사 완료! 근무 복귀!'); f2StaffGo('guard', [F2_HOME.guard], function(){ gPatrol.busy = false; }); });
+            f2RideIn(w, function(){ f2Say('guard', backLine); f2StaffGo('guard', [F2_HOME.guard], function(){ gPatrol.busy = false; }); });
           })();
         });
       });
+    }
+    setInterval(function(){
+      var d = new Date(), t = d.getHours()*60 + d.getMinutes(), dk = d.toDateString(), w = f2Walker.guard;
+      if(!w._on || !f2Visible('guard') || gPatrol.busy || !guardAtPost()) return;
+      if(isNonWorkingDay(d) && t >= 12*60 && t < 12*60+40 && !secMealDone['lunch'+dk]){ secMealDone['lunch'+dk] = 1; secMeal('lunch', 'weekend', '점심 먹고 오겠습니다!', '식사 완료! 근무 복귀!'); }
+      else if(t >= 18*60 && t < 18*60+40 && !secMealDone['dinner'+dk]){ secMealDone['dinner'+dk] = 1; secMeal('dinner', 'dinner', '저녁 식사 다녀오겠습니다!', '저녁 든든히 먹었습니다! 근무 복귀!'); }
     }, 5000);
 
     // ---- 보안요원 옥상 순찰 (정각 · 20분 · 40분) ----
@@ -15208,6 +15226,7 @@ var B1_TEAM_LINES=['이번 시안 어땠어요?','팀장님 오늘 기분 좋으
 var B1_BOSS_LINES=['다들 많이 먹어요','여기 밥 맛있네','오후도 힘냅시다','반찬 더 달라고 해요'];
 var B1_BOSS_QA=[['다들 많이 먹어요','감사합니다 사장님!'],['요즘 일은 할 만해요?','네! 재밌어요'],['여기 밥 맛있네','여기 제육이 최고예요'],['오후도 힘냅시다','화이팅입니다!']];
 var B1_BOSS_HELLO=['사장님 오셨어요!','사장님 맛있게 드세요','앗 사장님!'];
+var B1_SEC_LINES=['저녁 먹고 마감 근무!','오늘 로비 조용했지','9시까지 힘내자','밥 먹고 순찰 한 바퀴!','근무 중 식사는 빠르게!'];
 var B1_DINNER_LINES=['야근엔 밥심이지','오늘 몇 시에 끝날까..','든든하게 먹자','저녁 메뉴 괜찮네','우리만 남았네요','빨리 먹고 끝내요','내일은 칼퇴 각','야식 대신 저녁 든든히'];
 var B1_WEEKEND_LINES=['주말엔 식당이 한산하네','오늘 메뉴 좋네요','주말 근무 화이팅','조용해서 좋다','밥 먹고 한 바퀴 더 돌아야지','다들 쉬는 날인데 우리만 나왔네'];
 var B1_WEEKEND_QA=[['주말 근무 힘들죠?','그래도 조용해서 좋아요'],['오후엔 뭐 하세요?','화분 물 주고 어항 밥 줘야죠'],['오늘 순찰 이상 없었죠?','네 이상 무!'],['경비님 많이 드세요','감사합니다, 같이 드시죠'],['보안요원님도 오셨네요','주말엔 같이 먹어야죠!'],['다음 주말도 근무예요?','격일이라 모레 또 나와요']];
@@ -15224,6 +15243,7 @@ function b1Chat(F,a,now){
   if(mates.length && r<(boss?0.6:0.4)){ var qa=(boss?B1_BOSS_QA:B1_QA)[Math.floor(Math.random()*(boss?B1_BOSS_QA:B1_QA).length)], m=mates[Math.floor(Math.random()*mates.length)];
     b1Say(a,[qa[0]],now); m.replyAt=now+2600; m.replyLine=qa[1]; return; }
   if(boss){ b1Say(a,B1_BOSS_LINES,now); return; }
+  if(a.secGuard){ b1Say(a,B1_SEC_LINES,now); return; }
   if(a.dinner){ b1Say(a,B1_DINNER_LINES,now); return; }
   var day=B1_DAY_LINES[new Date().getDay()], wx=B1_WX_LINES[B.weather()];
   if(r<0.46 && day) b1Say(a,day,now);
@@ -15373,7 +15393,7 @@ function b1Tick(F,now,off){
       if(q.kind==='snack'){ var pref=free.filter(function(st){ return q.item==='ice' ? st.table==='X' : st.table!=='X'; }); if(pref.length) free=pref; free=[free[Math.floor(Math.random()*free.length)]]; }
       da=b1MakeDiner(F,did,q.id,free[0],now); if(!da){ q.done=true; continue; }
       if(q.kind==='snack'){ da.snackOnly=true; da.snackGuest=true; da.snack=q.item; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+600; continue; }
-      if(q.name) da.name=q.name; da.weekend=q.kind==='weekend';
+      if(q.name) da.name=q.name; da.weekend=q.kind==='weekend'; da.secGuard=(q.id==='guard'||q.id==='guardLeo');
       da.dinner=true; da.dinnerGroup=q.group; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
   }
   // 한 명씩 움직이기
