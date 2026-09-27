@@ -2003,6 +2003,16 @@ function pRamenVending(){ return obj(68,100,function(g){            // 라면 �
   R(g,50,22,12,6,'#1e2024'); R(g,51,23,8,4,'#6fd0a0'); for(var b=0;b<4;b++){ R(g,51,32+b*6,10,4,'#fbf3e0'); R(g,52,33+b*6,4,2,'#d8402e'); }
   R(g,10,68,36,22,'#3a3f46'); R(g,12,70,32,18,'#1e2024'); R(g,22,72,12,3,'#9aa2a8'); ell(g,28,84,7,2,'#5a6068'); g.fillStyle='rgba(255,255,255,0.35)'; g.fillRect(24,76,1,6); g.fillRect(31,75,1,7);   // 조리구 (김)
   R(g,50,70,12,16,'#fbf3e0'); R(g,52,72,8,3,'#2a2e34'); R(g,52,78,8,6,'#9aa2a8'); R(g,2,96,64,4,'#8a2a1e'); }); }
+function pIceVending(){ return obj(68,100,function(g){             // 아이스크림 자판기: 하늘색 냉동 진열창
+  R(g,2,4,64,96,'#6ab8e0'); R(g,2,4,64,2,'#a8dcf4'); R(g,62,6,4,94,'#3a88b8'); R(g,2,4,64,14,'#fbf8f2');
+  tri(g,8,10,14,10,11,17,'#d8a060'); disc(g,11,8,3,'#f7a8c8'); R(g,18,8,40,2,'#f07a9a'); R(g,18,12,30,2,'#6ab8e0');
+  R(g,6,22,40,40,'#2a2e34'); R(g,7,23,38,38,'#eaf6fc');
+  var packs=['#f7a8c8','#fbe98a','#8ad0f0','#c8a8ec','#a8e0b8','#f5b070'];
+  for(var r=0;r<3;r++) for(var c=0;c<3;c++){ var x=9+c*12, y=26+r*12, pc=packs[(r*3+c)%6];
+    if((r+c)%2){ R(g,x,y,10,9,pc); R(g,x,y,10,2,'#ffffff'); R(g,x+3,y+4,4,3,sh(pc,-0.25)); } else { R(g,x+4,y+1,2,8,'#e8d8b0'); ell(g,x+5,y+2,4,3,pc); tri(g,x+2,y+4,x+8,y+4,x+5,y+9,'#d8a060'); } }
+  g.fillStyle='rgba(255,255,255,0.4)'; g.fillRect(8,24,6,36); R(g,7,23,38,2,'#ffffff');                     // 성에
+  R(g,50,22,12,6,'#1e2024'); R(g,51,23,8,4,'#8ad0f0'); for(var b=0;b<4;b++){ R(g,51,32+b*6,10,4,'#fbf8f2'); R(g,52,33+b*6,4,2,'#f07a9a'); }
+  R(g,10,70,40,16,'#2a2e34'); R(g,12,72,36,12,'#3a4048'); R(g,50,70,12,16,'#fbf8f2'); R(g,52,72,8,3,'#2a2e34'); R(g,2,96,64,4,'#2a6890'); }); }
 function pArtB1(kind){ return obj(48,112,function(g){               // 식당 조각품 (흰 좌대 위)
   R(g,8,64,32,48,'#f6f4ef'); R(g,8,64,5,48,'#ffffff'); R(g,35,64,5,48,'#dcd8cf'); R(g,5,60,38,5,'#fbfaf7'); R(g,5,60,38,1,'#ffffff'); R(g,5,110,38,2,'#c9c4b8');
   R(g,16,88,16,4,'#c9a25c'); R(g,16,88,16,1,'#e2c27e');
@@ -2089,9 +2099,9 @@ onTile(pAirPurifier(),18,21,18,21); onTile(pAirPurifier(),34,24,34,24);
 onTile(pStandAC(),34,15,34,16);
 onTile(pMossIsland(10*T),23,25,32,25);
 onTile(pOliveTree(),20,26,21,27); onTile(pOliveTree(),33,26,34,27);
-onTile(pPlant('tall','#e8e2d6'),18,15,18,15); onTile(pPlant('monstera','#e8e2d6'),1,22,1,22); onTile(pPlant('monstera','#e8e2d6'),34,9,34,9);
+onTile(pPlant('tall','#e8e2d6'),18,15,18,15); onTile(pPlant('monstera','#e8e2d6'),3,28,3,28); onTile(pPlant('monstera','#e8e2d6'),34,9,34,9);
 onTile(pPlant('bush','#e8e2d6'),21,8,21,8);
-onTile(pRamenVending(),1,25,2,27);                                        // 라면 자판기
+onTile(pIceVending(),1,19,2,21); onTile(pRamenVending(),1,22,2,24); onTile(pRamenVending(),1,25,2,27);   // 아이스크림 자판기 · 라면 자판기 둘
 // 조각품 둘: 광택 나는 빨간 사과 · 커다란 숟가락과 포크 (핀조명)
 spot(bgc,30*T+16,18*T-4,24,8); onTile(pArtB1('apple'),30,16,30,17); spot(bgc,25*T+16,22*T-4,24,8); onTile(pArtB1('spoon'),25,20,25,21); onTile(pPlant('bush','#4a4e56'),18,27,18,27);
 MAPB.SWITCH=SWITCHB; MAPB.ELEV={x:32,y:0,w:128,h:96}; MAPB.SEATS=B1_SEATS; MAPB.RETURN=B1_RETURN;
