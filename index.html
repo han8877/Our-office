@@ -6862,24 +6862,39 @@
   setInterval(syncAttendanceToClock, 20000);
 
 
-  var weatherState = 'sunny'; // 'sunny' | 'rain' | 'cloudy'
+  var weatherState = 'sunny'; // 'sunny' | 'rain' | 'cloudy' | 'snow'
   var cloudIcon = byId('cloudIcon');
+  // 창밖 날씨는 서울 실제 날씨(PixOffice.liveWeather — 2층 사이니지와 같은 값)를 따른다.
+  // 아직 못 받아왔거나 받아올 수 없으면 예전처럼 무작위로 바꾼다
+  var liveWeatherSeen = false;
+  function liveWeatherState(){
+    var w = window.PixOffice && PixOffice.liveWeather && PixOffice.liveWeather();
+    if(!w || !w.ok) return null;
+    return (w.kind==='rain' || w.kind==='storm') ? 'rain' : w.kind==='snow' ? 'snow' : (w.kind==='cloud' || w.kind==='fog') ? 'cloudy' : 'sunny';
+  }
   function toggleWeatherRandomly(){
-    // 비율 화창10 : 비1 : 흐림3 (총 14)
-    var r = Math.random() * 14;
-    weatherState = (r < 1) ? 'rain' : (r < 4) ? 'cloudy' : 'sunny';
+    var live = liveWeatherState();
+    if(live){ liveWeatherSeen = true; weatherState = live; }
+    else if(liveWeatherSeen) return;                     // 한 번 받아온 뒤엔 잠깐 끊겨도 그대로 둔다
+    else {
+      // 비율 화창10 : 비1 : 흐림3 (총 14)
+      var r = Math.random() * 14;
+      weatherState = (r < 1) ? 'rain' : (r < 4) ? 'cloudy' : 'sunny';
+    }
+    var wet = weatherState==='rain' || weatherState==='snow';
     rainIcon.style.opacity = (weatherState==='rain') ? 1 : 0;
-    cloudIcon.style.opacity = (weatherState==='cloudy') ? 1 : 0;
+    cloudIcon.style.opacity = (weatherState==='cloudy' || weatherState==='snow') ? 1 : 0;
     var umb = byId('umbrellaSet');
-    if(umb) umb.style.opacity = (weatherState==='rain') ? 1 : 0;
+    if(umb) umb.style.opacity = wet ? 1 : 0;
     var windowPane = byId('windowPane');
     if(windowPane){
-      windowPane.style.fill = (weatherState==='rain') ? '#c9cdd1' : (weatherState==='cloudy') ? '#cddae1' : '#cfe8f2';
+      windowPane.style.fill = (weatherState==='rain') ? '#c9cdd1' : (weatherState==='cloudy' || weatherState==='snow') ? '#cddae1' : '#cfe8f2';
     }
     updateClock();
   }
   toggleWeatherRandomly();
   setInterval(toggleWeatherRandomly, 25000);
+  setTimeout(toggleWeatherRandomly, 2500);                // 접속 직후 날씨를 받아오면 바로 반영
 
   setInterval(updateClock, 1000);
 

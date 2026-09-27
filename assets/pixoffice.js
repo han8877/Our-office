@@ -745,6 +745,9 @@ function drawHead(g,K,p,dir,blink){
     if(K.mark==='redpanda'){ ell(g,cx-4,cy+5,5,3,F); P(g,cx-5,cy-5,F); P(g,cx-4,cy-5,F); R(g,cx-6,cy+1,1,4,d); }
     if(K.mark==='badger'){ R(g,cx-7,cy-9,9,2,F); R(g,cx-8,cy-5,10,4,d); ell(g,cx-6,cy+4,4,2,F); }
     if(K.mark==='calico'){ ell(g,cx+4,cy-5,4,3,'#e89a4a'); ell(g,cx+6,cy+2,2,2,'#3a302c'); }
+    if(K.ears==='hedgehog'){ ell(g,cx+5,cy-3,8,7,d); ell(g,cx,cy-7,8,3,d); ell(g,cx+3,cy-5,8,5,d);   // 옆모습 가시: 정수리부터 뒤통수까지 덮는다
+      for(var hs=0;hs<26;hs++){ var hx=cx-5+Math.floor(rnd(hs*1.7)*18), hy=cy-10+Math.floor(rnd(hs*2.9+3)*14), ux=(hx-cx-3)/10, uy=(hy-cy+4)/8;
+        if(ux*ux+uy*uy<0.85 && hx>cx-3-(hy<cy-5?4:0)) R(g,hx,hy,2,1,sh(d,hs%3?0.28:-0.2)); } }
     R(g,mx-5,my-2,3,2,nose); P(g,mx-5,my-2,sh(nose,0.4));
     if(K.ears==='frog'){ disc(g,cx-4,cy-9,4,f); disc(g,cx-4,cy-9,3,'#ffffff'); if(blink) R(g,cx-6,cy-9,3,1,eye); else R(g,cx-6,cy-10,2,3,eye); R(g,mx-4,my+1,8,1,d); }
     else { var ex=cx-5, ey=cy-2;
@@ -1096,7 +1099,7 @@ var SKY={ day:['#86cdf2','#d2effb'], morning:['#9ed4f2','#fff0cc'], dawn:['#8a98
 var TINT={ day:null, morning:['#ffe6b0',0.14], dawn:['#c0b2e0',0.2], sunset:['#ffb080',0.2], dusk:['#9a8ad0',0.28], night:['#5a66b4',0.4] };
 
 function drawWindow(g,ph,t,hm,weather){
-  var sky=SKY[ph], top=WIN.y, hgt=WIN.h, wet=weather==='rain', grey=wet||weather==='cloudy';
+  var sky=SKY[ph], top=WIN.y, hgt=WIN.h, wet=weather==='rain', grey=wet||weather==='cloudy'||weather==='snow';
   if(grey&&ph!=='night'&&ph!=='dusk') sky=[mix(sky[0],'#9aa4ae',wet?0.6:0.4), mix(sky[1],'#c9ced3',wet?0.6:0.35)];
   PANES.forEach(function(p){ for(var y=0;y<p[3];y++){ var k=(p[1]+y-top)/hgt; R(g,p[0],p[1]+y,p[2],1,mix(sky[0],sky[1],Math.min(1,k*1.15))); } });
   g.save(); g.beginPath(); PANES.forEach(function(p){ g.rect(p[0],p[1],p[2],p[3]); }); g.clip();
@@ -1117,11 +1120,13 @@ function drawWindow(g,ph,t,hm,weather){
     for(var wy=top+hgt-bh+3; wy<top+hgt-2; wy+=4) for(var wx=bx+3; wx<bx+bw-3; wx+=4){
       if(night){ if(rnd(wx*wy+i)>0.42) R(g,wx,wy,2,2,'#ffd873'); } else R(g,wx,wy,2,2,sh(bcol,0.3)); } });
   R(g,x0-6,top+hgt-4,260,4,night?'#1a2238':'#9fbf98');
+  if(weather==='snow'){ for(var sI=0;sI<40;sI++){ var sxx=x0-6+Math.floor((rnd(sI*5.7)*262+Math.sin(t*0.002+sI)*4+262)%262), syy=top+Math.floor(((t*0.03)+rnd(sI*2.3)*hgt)%hgt);
+    R(g,sxx,syy,2,2,'#ffffff'); } R(g,x0-6,top+hgt-3,260,3,'#f4f6f8'); }
   if(wet){ g.fillStyle='rgba(220,232,245,0.75)'; for(var rI=0;rI<46;rI++){ var rx=x0-6+Math.floor(rnd(rI*7.3)*262), ry=top+Math.floor(((t*0.12)+rnd(rI*3.1)*hgt)%hgt);
     g.fillRect(rx,ry,1,4); } }
   g.restore();
   g.drawImage(windowFrame,WIN.x-1,WIN.y-1);
-  if(!night&&!wet) [[WIN.x+110,WIN.y+WIN.h+1],[WIN.x+216,WIN.y+WIN.h+1]].forEach(function(b){    // 창틀에 앉은 참새
+  if(!night&&!wet&&weather!=='snow') [[WIN.x+110,WIN.y+WIN.h+1],[WIN.x+216,WIN.y+WIN.h+1]].forEach(function(b){    // 창틀에 앉은 참새
     ell(g,b[0],b[1]-4,5,3,'#b08a6a'); disc(g,b[0]-5,b[1]-7,3,'#9a7458'); P(g,b[0]-8,b[1]-7,'#f0a030'); P(g,b[0]-9,b[1]-7,'#f0a030'); P(g,b[0]-6,b[1]-8,'#1d1210'); R(g,b[0]+3,b[1]-5,4,2,'#8a6a50'); R(g,b[0]-3,b[1]-3,5,2,'#f4ead8'); R(g,b[0]-1,b[1],1,2,'#e08a3a'); R(g,b[0]+1,b[1],1,2,'#e08a3a'); });
 }
 function drawClock(g,hm,pos){
@@ -1870,7 +1875,7 @@ useMap(MAP3);
 window.PixOffice={
   T:T, COLS:COLS, ROWS:ROWS, W:W, H:H, STATE:STATE,
   h2r:h2r, mix:mix, sh:sh, rnd:rnd, hash:hash, cv:cv, R:R, P:P, ell:ell, disc:disc, ring:ring, line:line, tri:tri, obj:obj, outline:outline,
-  bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, MAPR:MAPR, drawRoofGlow:drawRoofGlow, F2LOOK:F2LOOK,
+  bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, MAPR:MAPR, liveWeather:function(){ return LIVE_WX; }, drawRoofGlow:drawRoofGlow, F2LOOK:F2LOOK,
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
