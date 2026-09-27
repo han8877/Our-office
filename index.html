@@ -14317,6 +14317,8 @@
                               '이건 물이야, 물', '장부엔 적지 말아줘요', '오늘 하루도 고생했다, 나'];
     var GUARD_BACK_LINES   = ['아무도 못 봤겠지', '자, 다시 근무!', '흠흠, 순찰 계속'];
     var gPatrol = { busy:false };
+    var guardDrinkDay = '';                         // 다시 접속해도 같은 날엔 또 마시지 않게 기억해 둔다
+    try{ guardDrinkDay = localStorage.getItem('ggj_guard_drink_day') || ''; }catch(e){}
     function guardAtPost(){
       var q = f2pos.guard, h = F2_HOME.guard;
       return !!q && Math.abs(q.x-h.x) < 3 && Math.abs(q.y-h.y) < 3;
@@ -14335,7 +14337,10 @@
       gPatrol.busy = true; w.node = 'h4'; w.prev = null;
       var evening = new Date().getHours() >= 18;
       var bar = F2_SEATS.filter(function(st){ return /^bar/.test(st.id) && !f2SeatBy[st.id]; });
-      var drink = bar.length && Math.random() < (evening ? 0.45 : 0.2);
+      // 몰래 한 잔은 하루 한 번, 저녁(19시 이후)에만 가끔. 근무 중이니까
+      var dk = new Date().toDateString(), late = new Date().getHours() >= 19;
+      var drink = bar.length && late && guardDrinkDay !== dk && Math.random() < 0.15;
+      if(drink){ guardDrinkDay = dk; try{ localStorage.setItem('ggj_guard_drink_day', dk); }catch(e){} }
       moveTo(w, F2_NODES.h4.x, F2_NODES.h4.y, function(){
         if(drink){
           var st = bar[Math.floor(Math.random()*bar.length)];
@@ -14353,7 +14358,7 @@
               }, 13000 + Math.random()*9000);
             });
           });
-          if(typeof logDayEvent === 'function' && evening) logDayEvent('🍸', josa(f2GuardToday().name,'이/가')+' 라운지 바에서 몰래 한 잔 했습니다');
+          if(typeof logDayEventOnce === 'function') logDayEventOnce('🍸', josa(f2GuardToday().name,'이/가')+' 라운지 바에서 몰래 한 잔 했습니다');
           return;
         }
         // 순찰: 길목 두세 곳
