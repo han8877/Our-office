@@ -436,6 +436,26 @@ function pRollMonitor(){ return obj(36,80,function(g){        // 회의용 이�
   [[7,22,6],[13,16,12],[19,19,9],[25,12,16]].forEach(function(b){ R(g,b[0],b[1],4,b[2],'#8ac2f2'); R(g,b[0],b[1],4,1,'#5a8ac0'); });
   R(g,12,36,12,2,'#3a3f46'); }); }
 
+// 아트코너 조형물이 눈으로 변한다: look -1(왼쪽) ~ 1(오른쪽)
+function drawArtEye(g,look,open){
+  var cx=16*T+16, cy=15*T-72+16, dx=Math.round(look*5);
+  disc(g,cx,cy,12,'#f07a4a'); disc(g,cx,cy,11,'#d8603a');
+  var ry=Math.max(1,Math.round(7*open));
+  ell(g,cx,cy,10,ry,'#fbfaf6'); ell(g,cx,cy+1,10,Math.max(1,ry-1),'#fbfaf6');
+  if(open>0.3){ disc(g,cx+dx,cy,5,'#2f9bb0'); disc(g,cx+dx,cy,4,'#237a8c'); disc(g,cx+dx,cy,2,'#141414'); P(g,cx+dx+1,cy-2,'#ffffff'); P(g,cx+dx+2,cy-2,'#ffffff'); }
+  R(g,cx-9,cy-ry-1,18,1,'#5a2a1a'); R(g,cx-7,cy-ry-2,14,1,'#5a2a1a');                        // 윗눈꺼풀
+  R(g,cx-8,cy+ry,16,1,'#b84a2a');
+}
+// 아트코너 모니터에 재고창고 쪽을 가리키는 빨간 화살표
+function drawArtArrow(g,now){
+  var sx=13*T+16, sy=15*T-60+2, w=32, h=18;
+  R(g,sx,sy,w,h,'#14161c');
+  if(Math.floor(now/90)%23===0) return;                                                         // 가끔 지지직
+  var c='#e8323c', y=sy+9, off=Math.floor(now/260)%3;
+  R(g,sx+4+off,y-2,17,4,c); for(var i=0;i<7;i++) R(g,sx+19+off+i,y-6+i,1,12-2*i,c);
+  R(g,sx+4+off,y-2,17,1,'#ff8a90');
+}
+
 function pSculpture(){ return obj(32,72,function(g){
   R(g,4,36,24,36,'#f3f1ec'); R(g,2,32,28,6,'#fbfaf7'); R(g,2,32,28,1,'#ffffff'); R(g,24,38,4,34,'#d8d4cb'); R(g,4,70,24,2,'#c9c5bc');
   disc(g,16,16,12,'#f07a4a'); disc(g,16,16,8,'#fbf6ee'); disc(g,18,16,6,'#2f9bb0'); disc(g,18,16,3,'#fbf6ee'); disc(g,19,16,1,'#f5c542');
@@ -1006,7 +1026,17 @@ onTile(pPlant('tall','#f4f1ea'),10,3,10,4);
 onTile(pCooler(),11,3,11,4);
 onTile(pTrash(),12,4,12,4);
 onTile(pLockers(),14,3,20,4);
-onTile(pCabinet(),33,3,34,4);
+// 실장실 흰 수납장: 옆으로 밀리면 뒤에 숨은 빨간 스위치가 보인다 (STATE.cabShift 만큼 왼쪽으로)
+var CAB_IMG=pCabinet(), CAB_X=33*T, CAB_Y=5*T-72;
+var HIDDEN_SW={ x:CAB_X+36, y:CAB_Y+14, w:20, h:30 };   // 숨은 스위치 (누르는 자리)
+things.push({ sy:5*T, draw:function(g){ var sh=Math.round(STATE.cabShift||0);
+  if(sh>0){ var hx=HIDDEN_SW.x, hy=HIDDEN_SW.y;
+    R(g,CAB_X+sh-2,CAB_Y+66,64-sh,4,'rgba(90,70,50,0.18)');                                // 수납장이 서 있던 자국
+    R(g,hx,hy,20,30,'#3a3f46'); R(g,hx+1,hy+1,18,28,'#5a6068'); R(g,hx+1,hy+1,18,1,'#7a8088');
+    P(g,hx+3,hy+3,'#2a2e34'); P(g,hx+16,hy+3,'#2a2e34'); P(g,hx+3,hy+26,'#2a2e34'); P(g,hx+16,hy+26,'#2a2e34');
+    R(g,hx+6,hy+7,8,16,'#2a2e34'); R(g,hx+7,hy+8,6,7,'#d8323a'); R(g,hx+7,hy+8,6,1,'#f06a70'); R(g,hx+7,hy+15,6,1,'#8a1c22'); }
+  g.drawImage(CAB_IMG,CAB_X-1-sh,CAB_Y-1); } });
+block(33,3,34,4);
 // 제품 쇼룸
 onTile(pDisplayShelf(0),23,3,25,4); onTile(pDisplayShelf(5),26,3,28,4);
 onTile(pIsland(),24,7,27,8); onTile(pSpinner(1),23,9,23,9); onTile(pSpinner(6),28,9,28,9); onTile(pPlant('monstera','#f4f1ea'),28,6,28,6);
@@ -2132,6 +2162,6 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();
