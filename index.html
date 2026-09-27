@@ -5867,23 +5867,22 @@
   function dateKey(d){ d = d || new Date(); return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
 
   // 2026년 대한민국 공휴일 (검색 기반, 참고용)
-  var KR_HOLIDAYS_2026 = [
-    '2026-01-01', // 신정
-    '2026-02-16','2026-02-17','2026-02-18', // 설날 연휴
-    '2026-03-01', // 삼일절
-    '2026-05-05', // 어린이날
-    '2026-05-24', // 부처님오신날
-    '2026-06-06', // 현충일
-    '2026-07-17', // 제헌절
-    '2026-08-15','2026-08-17', // 광복절 + 대체공휴일
-    '2026-09-24','2026-09-25','2026-09-26', // 추석 연휴
-    '2026-10-03','2026-10-05', // 개천절 + 대체공휴일
-    '2026-10-09', // 한글날
-    '2026-12-25'  // 크리스마스
-  ];
+  // 공휴일 (대체공휴일·선거일 포함). 목록이 없는 해는 날짜가 고정된 양력 공휴일만 쉰다
+  var KR_HOLIDAYS = {
+    2026: ['2026-01-01', '2026-02-16','2026-02-17','2026-02-18', '2026-03-01','2026-03-02', '2026-05-05', '2026-05-24','2026-05-25',
+           '2026-06-03', '2026-06-06', '2026-07-17', '2026-08-15','2026-08-17', '2026-09-24','2026-09-25','2026-09-26',
+           '2026-10-03','2026-10-05', '2026-10-09', '2026-12-25'],
+    2027: ['2027-01-01', '2027-02-06','2027-02-07','2027-02-08','2027-02-09', '2027-03-01', '2027-05-05', '2027-05-13', '2027-06-06',
+           '2027-07-17', '2027-08-15','2027-08-16', '2027-09-14','2027-09-15','2027-09-16', '2027-10-03','2027-10-04',
+           '2027-10-09','2027-10-11', '2027-12-25','2027-12-27'],
+    2028: ['2028-01-01', '2028-01-25','2028-01-26','2028-01-27', '2028-03-01', '2028-04-12', '2028-05-02', '2028-05-05', '2028-06-06',
+           '2028-07-17', '2028-08-15', '2028-10-02','2028-10-03','2028-10-04','2028-10-05', '2028-10-09', '2028-12-25']
+  };
+  var KR_FIXED_HOLIDAYS = ['01-01','03-01','05-05','06-06','07-17','08-15','10-03','10-09','12-25'];
 
   function isWeekend(d){ var day = (d||new Date()).getDay(); return day===0 || day===6; }
-  function isHoliday(d){ return KR_HOLIDAYS_2026.indexOf(dateKey(d)) !== -1; }
+  function isHoliday(d){ var k = dateKey(d), y = +k.slice(0,4), list = KR_HOLIDAYS[y];
+    return list ? list.indexOf(k) !== -1 : KR_FIXED_HOLIDAYS.indexOf(k.slice(5)) !== -1; }
   // 조사: 받침이 있으면 앞말, 없으면 뒷말 (이/가 · 은/는 · 을/를 · 과/와 · 으로/로)
   function josa(word, pair){
     var w = String(word||''), c = w.charCodeAt(w.length-1), p = pair.split('/');
@@ -8661,6 +8660,7 @@
   // ---- 사장님 방문 (누적 탕비실 이용 10번마다, 10초) ----
   function maybeTriggerBossVisit(){
     if(visitorEventActive) return;
+    if(window.__bossAtB1) return;          // 사장님은 지금 지하 식당에서 점심 중
     if(lifetime.breaks <= 0 || lifetime.breaks % 10 !== 0) return;
     visitorEventActive = true;
 
@@ -9129,9 +9129,30 @@
       trip(gel, { id:gid }, VISITOR_ENTRANCE, 'wk_guard', { kind:'weekend', id:'visitorGuard', name:'경비', group:'wk' });
     }, 3000);
   }
+  // 주말 당직 경비의 옥상 순찰 (매시 15분·45분): 3층에서 빠져 옥상 그림(roofGuests)에 나타났다 돌아온다
+  var dutyRoofOn = false, dutyRoofSlot = '';
+  function dutyGuardRoof(slot){
+    var gid = visitorDefs.guard.id, gel = charEl(gid), who = { id:gid };
+    dutyRoofOn = true; dutyRoofSlot = slot;
+    clearTimeout(dutyGuardTimer);
+    showBubble(who, '옥상 순찰 다녀오겠습니다');
+    travelTo(who, VISITOR_ENTRANCE, 78, function(){
+      if(!dutyActive || !gel.classList.contains('present')){ dutyRoofOn = false; return; }
+      gel.classList.add('onRoof');
+      var Q = (window.__roofGuests = window.__roofGuests || {}); Q.guard = { kind:'guard', name:'경비' };
+      var t0 = Date.now();
+      (function wait(){
+        var q = Q.guard;
+        if(q && !q.done && Date.now()-t0 < 6*60000 && dutyActive){ setTimeout(wait, 1000); return; }
+        gel.classList.remove('onRoof'); dutyRoofOn = false;
+        if(dutyActive){ showBubble(who, '옥상 이상 없습니다'); dutyGuardTimer = setTimeout(dutyGuardGo, 2500); }
+      })();
+    });
+  }
   setInterval(function(){
-    var d = new Date(), t = d.getHours()*60 + d.getMinutes();
-    if(dutyActive && dutyStaff && !dutyLunchOn && dutyLunchDay !== dateKey() && t >= 12*60 && t < 12*60+40) dutyLunchGo();
+    var d = new Date(), t = d.getHours()*60 + d.getMinutes(), m = d.getMinutes();
+    if(dutyActive && dutyStaff && !dutyLunchOn && !dutyRoofOn && dutyLunchDay !== dateKey() && t >= 12*60 && t < 12*60+40) dutyLunchGo();
+    else if(dutyActive && !dutyLunchOn && !dutyRoofOn && (m === 15 || m === 45) && dutyRoofSlot !== dateKey()+d.getHours()+':'+m) dutyGuardRoof(dateKey()+d.getHours()+':'+m);
   }, 5000);
 
   function stopWeekendDuty(graceful){
@@ -9632,6 +9653,7 @@
       toast(overtimeMode ? '야근 중인 인원이 3명보다 적어 교육을 열 수 없어요' : '지금 교육에 참석할 수 있는 직원이 부족해요');
       return;
     }
+    if(window.__bossAtB1){ toast('사장님은 지금 구내식당에서 점심 중이세요'); return; }
 
     multiBusy = true;
     visitorEventActive = true;
@@ -14713,6 +14735,7 @@
     doorOpen: function(){ return doorIsOpen; },
     robotLine: function(){ return rLine(); },
     workDay: function(){ return !isNonWorkingDay(); },
+    visitorPresent: function(id){ var el = charEl(id); return !!(el && el.classList.contains('present')); },
     // 오늘 점심을 먹으러 나가는 직원 (쉬는 날·연차·출장·조퇴 제외)
     lunchEaters: function(){ if(isNonWorkingDay()) return []; var out = getOutAllDayIdsAll();
       return staff.filter(function(s){ return !out[s.id] && !hasLeftEarlyByNow(s.id); }).map(function(s){ return s.id; }); }
@@ -14824,6 +14847,8 @@ function svgToArt(x,y){ return { x:32+(x-20)*1088/960, y:96+(y-20)*832/800 }; }
 
 // ---- 층 ----
 var STAFFLOOK = {}; PO.STAFF.forEach(function(p){ STAFFLOOK[p.id]=p; });
+// 설정에서 바꾼 이름을 따른다 (그림 쪽 STAFF 이름은 처음 이름이다)
+function staffName(id){ var s=B.staffMap&&B.staffMap[id]; return s ? s.name : (STAFFLOOK[id] ? STAFFLOOK[id].name : ''); }
 var M2 = PO.MAP2, POSTS2 = M2.POSTS;
 var F2_HOME = { yun:{x:266,y:160}, kang:{x:406,y:160}, guard:{x:85,y:700} };
 function postSeat(P){ return { c:P.c, r:P.r, seatX:P.x, seatFeet:P.feet, plateX:P.plateX, plateY:P.plateY }; }
@@ -15180,9 +15205,9 @@ function roofTick(F,now,off){
   if(F.roofDay!==key){ F.roofDay=key; for(var k0 in F.actors) if(/^roof/.test(k0)) delete F.actors[k0];
     var roofIds=lunchPlan(d.toDateString()).roof, seats=PO.MAPR.SEATS.slice(), h=PO.hash(key);
     for(var i=0;i<roofIds.length;i++){ var p=STAFFLOOK[roofIds[i]], st=seats.splice((h>>(i*4+1))%seats.length,1)[0], cp={}; for(var kk in p) cp[kk]=p[kk];
-      F.actors['roof'+i]={ id:'roof'+i, npc:true, spr:PO.buildSprites(cp), name:p.name, visible:true, onFurn:true, sitting:false, path:null, x:st.x, feet:st.feet, dir:st.dir,
+      F.actors['roof'+i]={ id:'roof'+i, npc:true, spr:PO.buildSprites(cp), name:staffName(roofIds[i]), sid:roofIds[i], visible:true, onFurn:true, sitting:false, path:null, x:st.x, feet:st.feet, dir:st.dir,
         frame:0, blinkUntil:0, nextBlink:now+Math.random()*3000, bubble:null, emo:null, stepMs:300, talkUntil:0, nextTalk:now+4000+Math.random()*12000, tile:null, goal:null }; } }
-  for(var id in F.actors){ var a=F.actors[id]; if(!/^roof/.test(id)) continue; a.visible=true;
+  for(var id in F.actors){ var a=F.actors[id]; if(!/^roof/.test(id)) continue; a.visible=true; if(a.sid) a.name=staffName(a.sid);
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; a.nextTalk=now+15000+Math.random()*25000; }
     else if(!a.talkUntil && now>a.nextTalk){ a.bubble=ROOF_LINES[Math.floor(Math.random()*ROOF_LINES.length)]; a.talkUntil=now+3200; } }
 }
@@ -15223,9 +15248,10 @@ function roofGuestPlan(F,q){
 function roofGuests(F,now,off){
   var Q=window.__roofGuests=window.__roofGuests||{}, d=new Date(), hr=d.getHours(), mn=d.getMinutes();
   // 경비: 매시 15분 · 45분에 옥상을 한 바퀴 돈다 (밤낮 없이)
-  if((mn===15||mn===45) && F.guardSlot!==d.toDateString()+hr+':'+mn && !Q.guard){ F.guardSlot=d.toDateString()+hr+':'+mn; Q.guard={ kind:'guard', name:'경비' }; }
+  if((mn===15||mn===45) && F.guardSlot!==d.toDateString()+hr+':'+mn && !Q.guard && !(B.visitorPresent && B.visitorPresent('visitorGuard'))){ F.guardSlot=d.toDateString()+hr+':'+mn; Q.guard={ kind:'guard', name:'경비' }; }
   var night=hr>=18||hr<7;
   for(var key in Q){ var q=Q[key], id='g_'+key, a=F.actors[id];
+    if(a && q.kind==='staff') a.name=staffName(q.id);
     if(q.done){ if(key==='guard') delete Q[key]; continue; }
     if(!a){
       var look = q.kind==='staff' ? PO.STAFF.filter(function(p){ return p.id===q.id; })[0] : q.kind==='sec' ? PO.F2LOOK[q.look] : PO.VISITORS.visitorGuard;
@@ -15361,7 +15387,7 @@ function lunchPlan(key){
   return LUNCH_PLAN;
 }
 function b1Look(id){ if(id==='boss') return PO.VISITORS.visitorBoss; return STAFFLOOK[id] || PO.VISITORS[id] || PO.F2LOOK[id]; }
-function b1Name(id){ if(id==='boss') return '사장님'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; var p=STAFFLOOK[id]; return p?p.name:''; }
+function b1Name(id){ if(id==='boss') return '사장님'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; return staffName(id); }
 function b1MakeDiner(F,key,id,seat,now){
   var look=b1Look(id); if(!look) return null;
   var c1={}, c2={}; for(var k in look){ c1[k]=look[k]; c2[k]=look[k]; } c2.item='foodtray';
@@ -15461,6 +15487,7 @@ function b1Tick(F,now,off){
       var aid='b1_'+dn.id, a=F.actors[aid];
       if(!a && !F.lunchDone[aid+key] && nowSec<dn.leave){
         if(nowSec<dn.arrive) return;
+        if(dn.id==='boss' && B.visitorPresent && B.visitorPresent('visitorBoss')) return;   // 3층 일정이 끝나면 내려오신다
         a=b1MakeDiner(F,aid,dn.id,dn.seat,now); if(!a) return;
         a.leaveSec=dn.leave; a.team=dn.team; a.grp='L'+dn.group; a.dessert=dn.dessert; if(dn.ramen){ a.snackOnly=true; a.snack='ramen'; }
         if(nowSec-dn.arrive>90){ var t2=dn.seat; a.tile={c:t2.c,r:t2.r}; a.goal={c:t2.c,r:t2.r,face:t2.dir}; b1Sit(a,now-(nowSec-dn.arrive-60)*1000); }   // 접속했을 때 이미 먹는 중
@@ -15487,11 +15514,13 @@ function b1Tick(F,now,off){
   }
   // 한 명씩 움직이기
   for(var id in F.actors){ var a2=F.actors[id]; if(!a2.ph) continue;
+    if(a2.lookSrc && STAFFLOOK[a2.lookSrc]) a2.name=staffName(a2.lookSrc);   // 설정에서 이름을 바꿔도 바로
     if(a2.dinner && !a2.snackGuest && a2.ph==='eat' && !a2.leaveFixed){ a2.leaveFixed=true; a2.leaveSec=(a2.q&&a2.q.leaveAt)?Math.max(a2.q.leaveAt,nowSec+60):nowSec+(a2.weekend?300:240)+Math.floor(Math.random()*120); }
     if(off) step(a2,now);
     b1Step(F,a2,now,M,nowSec);
     if(a2.gone){ if(a2.q) a2.q.done=true; else F.lunchDone[id+key]=1; delete F.actors[id]; }
   }
+  var bossA=F.actors.b1_boss; window.__bossAtB1 = !!(bossA && bossA.visible);
   STATE_B1_ELEV(F);
 }
 // 엘리베이터 문: 누가 문 앞(로비 칸)에 있으면 열린다
