@@ -4965,7 +4965,7 @@
     <p>엘리베이터에서 <code>B1</code>을 누르면 내려가는 직원 식당이에요. 원목 긴 테이블 가운데엔 이끼 화단이 있고, 배식대·계산대·음료 냉장고·셀프 코너·커피 코너·라면 자판기 둘·아이스크림 자판기·퇴식구, 그리고 조각품 두 점이 있어요. 자리는 모두 34석입니다.</p>
     <table>
       <tr><th>시간</th><th>내용</th></tr>
-      <tr><td>08:00~21:00</td><td>운영 시간. 문을 닫으면 불이 저절로 꺼져요. 벽 스위치로 직접 켜고 끌 수도 있어요</td></tr>
+      <tr><td>08:00~21:00</td><td>운영 시간. 식당 직원은 07:50쯤 엘리베이터로 출근하고, 문 닫은 뒤 마감 정리를 하고 21:05쯤 퇴근해요. 다 나가면 불이 저절로 꺼져요(벽 스위치로 직접 켜고 끌 수도 있어요)</td></tr>
       <tr><td>12:00~13:00</td><td>점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 퇴식구에 식판을 올려두고 올라가요</td></tr>
       <tr><td>주말·공휴일</td><td>점심때 당직 직원과 경비, 2층 보안요원이 함께 내려와 먹어요</td></tr>
       <tr><td>보안요원</td><td>2층 보안요원은 매일 점심(12:00~12:40)과 저녁(18:00~18:40)을 먹으러 내려와요</td></tr>
@@ -15372,16 +15372,31 @@ function b1Tick(F,now,off){
   var d=new Date(), open=b1Open(d), M=PO.MAPB, nowSec=d.getHours()*3600+d.getMinutes()*60+d.getSeconds(), key=d.toDateString();
   // 조명: 여는 시각에 켜지고 닫는 시각에 꺼진다. 그 사이엔 스위치로 마음대로
   if(!b1SwitchBound){ b1SwitchBound=true; var sw=byId('b1LightSwitch'); if(sw) sw.addEventListener('click', function(){ b1Light.on=!b1Light.on; }); }
-  if(b1Light.openPrev!==open){ b1Light.openPrev=open; b1Light.on=open; }
-  var lo=byId('b1LightOverlay'); if(lo){ var op=b1Light.on?'0':(open?'0.55':'0.62'); if(lo.style.opacity!==op) lo.style.opacity=op; }
-  // 식당 직원: 계산 닭 한 명 · 조리 미어캣 둘 (운영 시간에만)
+  // 식당 직원이 있는 시간(07:50~21:10)엔 불이 켜진다 (문은 08~21시)
+  var tSec=nowSec, staffTime = tSec>=7*3600+50*60 && tSec<21*3600+10*60;
+  if(b1Light.openPrev!==staffTime){ b1Light.openPrev=staffTime; b1Light.on=staffTime; }
+  var lo=byId('b1LightOverlay'); if(lo){ var op=b1Light.on?'0':(staffTime?'0.55':'0.62'); if(lo.style.opacity!==op) lo.style.opacity=op; }
+  // 식당 직원: 계산 닭 한 명 · 조리 미어캣 둘. 07:50부터 한 명씩 엘리베이터에서 내려 주방 통로로 걸어 들어오고,
+  // 21시에 문을 닫으면 마감 정리 후 21:05부터 한 명씩 엘리베이터로 걸어 나간다
   var cs=npcActor(F,'b1cashier',PO.B1LOOK.cashier,'현계산'), k1=npcActor(F,'b1cook1',PO.B1LOOK.cook1,'안조리'), k2=npcActor(F,'b1cook2',PO.B1LOOK.cook2,'주조리');
+  var DOOR_X=2*T-1, POST_X=[23*T-1,11*T-1,17*T-1];
   [cs,k1,k2].forEach(function(n,i){
-    if(!open){ n.visible=false; n.bubble=null; return; }
-    if(!n.visible){ n.visible=true; n.feet=4*T+2; n.dir='down'; n.x=n.tx=(i===0?23:i===1?11:17)*T-1; n.until=now+3000; n.nextTalk=now+8000+Math.random()*15000; }
-    if(i>0){ if(now>n.until && Math.abs(n.x-n.tx)<1){ n.tx=(8+Math.floor(Math.random()*13))*T-1; n.until=now+3000+Math.random()*6000; } barStep(n,now); }
-    if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; n.nextTalk=now+15000+Math.random()*25000; }
-    else if(!n.talkUntil && now>n.nextTalk){ n.bubble=(i===0?B1_CASHIER_LINES:B1_COOK_LINES)[Math.floor(Math.random()*(i===0?B1_CASHIER_LINES:B1_COOK_LINES).length)]; n.talkUntil=now+3000; }
+    var inAt=7*3600+50*60+i*45, outAt=21*3600+5*60+i*40, here = nowSec>=inAt && nowSec<outAt;
+    if(!n.b1ph){ n.feet=4*T+2; n.dir='down';                                  // 접속한 순간: 근무 중이면 제자리, 아니면 없음
+      if(here){ n.b1ph='work'; n.visible=true; n.x=n.tx=POST_X[i]; n.until=now+3000; n.nextTalk=now+8000+Math.random()*15000; }
+      else { n.b1ph='off'; n.visible=false; } }
+    if(n.b1ph==='off'){ if(here){ n.b1ph='in'; n.visible=true; n.x=DOOR_X; n.tx=POST_X[i]; n.stepMs=260; b1Say(n,[['좋은 아침입니다!'],['오늘도 맛있게 해봅시다'],['출근 완료!']][i][0].split('|'),now,2600); } return; }
+    if(n.b1ph==='in'){ barStep(n,now); if(Math.abs(n.x-n.tx)<1){ n.b1ph='work'; n.dir='down'; n.until=now+3000; n.nextTalk=now+10000+Math.random()*10000; } }
+    else if(n.b1ph==='work'){
+      if(!here){ n.b1ph='out'; n.tx=DOOR_X; b1Say(n,[['수고하셨습니다~'],['내일 봬요!'],['마감 청소 끝!']][i],now,2600); }
+      else {
+        if(i>0){ if(now>n.until && Math.abs(n.x-n.tx)<1){ n.tx=(8+Math.floor(Math.random()*13))*T-1; n.until=now+3000+Math.random()*6000; } barStep(n,now); }
+        var closing = nowSec>=21*3600;                                                                  // 문 닫은 뒤: 마감 정리
+        if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; n.nextTalk=now+15000+Math.random()*25000; }
+        else if(!n.talkUntil && now>n.nextTalk){ n.bubble=closing?[['정산 맞춰볼게요'],['배식대 닦는 중'],['내일 재료 확인!']][i]:(i===0?B1_CASHIER_LINES:B1_COOK_LINES)[Math.floor(Math.random()*(i===0?B1_CASHIER_LINES:B1_COOK_LINES).length)]; n.talkUntil=now+3000; }
+      }
+    }
+    if(n.b1ph==='out'){ barStep(n,now); if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; } if(Math.abs(n.x-DOOR_X)<1){ n.b1ph='off'; n.visible=false; n.bubble=null; } }
   });
   if(open && F.payNow && now-F.payNow<300 && !cs.talkUntil){ cs.bubble=['맛있게 드세요']; cs.talkUntil=now+1800; }
   // R-도우미: 운영 중엔 통로를 돌아다니고, 닫으면 충전 자리로
@@ -15437,7 +15452,7 @@ function b1Tick(F,now,off){
   STATE_B1_ELEV(F);
 }
 // 엘리베이터 문: 누가 문 앞(로비 칸)에 있으면 열린다
-function STATE_B1_ELEV(F){ var open=false, L=PO.MAPB.LOBBY; for(var id in F.actors){ var a=F.actors[id]; if(!a.visible||!a.tile) continue; if(Math.abs(a.tile.c-L.c)<=1 && a.tile.r<=L.r+1) open=true; } PO.STATE.elevB1Open=open; }
+function STATE_B1_ELEV(F){ var open=false, L=PO.MAPB.LOBBY; for(var id in F.actors){ var a=F.actors[id]; if(a.visible && (a.b1ph==='in'||a.b1ph==='out') && Math.abs(a.x-(2*T-1))<56) open=true; if(!a.visible||!a.tile) continue; if(Math.abs(a.tile.c-L.c)<=1 && a.tile.r<=L.r+1) open=true; } PO.STATE.elevB1Open=open; }
 function b1TopSit(a){ return !!(a.seatInfo && a.onFurn && !a.path && a.seatInfo.side==='top'); }
 // 테이블 위 식판 (먹는 동안 줄어든다)
 function b1Trays(F,list,now){
