@@ -1882,12 +1882,25 @@ function drawRoofWeather(g,t,wx){
       g.fillStyle='rgba(255,255,255,0.9)'; g.fillRect(sx,sy,sz,sz); }
   }
 }
-// 우산 (비·눈 오는 날 걷는 사람 머리 위)
-function drawUmbrella(g,x,top,c){
-  g.fillStyle=sh(c,-0.25); g.beginPath(); g.ellipse(x,top+2,18,5,0,0,Math.PI); g.fill();
-  g.fillStyle=c; g.beginPath(); g.ellipse(x,top+2,18,11,0,Math.PI,Math.PI*2); g.fill();
-  g.fillStyle=sh(c,0.25); g.beginPath(); g.ellipse(x-5,top-3,6,4,0,Math.PI,Math.PI*2); g.fill();
-  R(g,x-1,top-11,2,3,'#3a3f46'); R(g,x,top+2,1,14,'#3a3f46');
+// 우산: 손에 쥔 손잡이에서 대가 올라가 머리 위를 살짝 비스듬히 가린다.
+// layer 'back' = 몸 뒤로 지나가는 대 (사람보다 먼저), 'front' = 손잡이와 우산 천 (사람 다음)
+function drawUmbrella(g,X,feet,dir,c,layer){
+  var side = dir==='left'||dir==='right';
+  // 앞·뒤 모습: 손에서 비스듬히 어깨 옆으로 올려 머리 옆에 걸친다 (대가 머리 옆으로 보인다)
+  // 옆모습: 앞손으로 쥐고 머리 위를 가린다 (어깨 위로는 대가 머리 뒤로 지나간다)
+  var hx = dir==='down' ? X+25 : dir==='up' ? X+8 : X+17, hy = feet-7;
+  var cx = dir==='down' ? X+31 : dir==='up' ? X+2 : dir==='left' ? X+25 : X+9, cy = side ? feet-46 : feet-44;
+  var tilt = dir==='down' ? 0.35 : dir==='up' ? -0.35 : dir==='left' ? 0.32 : -0.32;
+  if(layer==='back'){ if(side) line(g,hx,hy,cx,cy+2,'#4a4f56'); return; }
+  if(side) line(g,hx,hy-1,hx+Math.round((cx-hx)*0.25),feet-18,'#4a4f56');            // 손에서 어깨까지
+  else { line(g,hx,hy,cx,cy+2,'#4a4f56'); line(g,hx+1,hy,cx+1,cy+2,sh('#4a4f56',0.25)); }
+  R(g,hx-1,hy-1,3,3,'#6a4a36'); P(g,hx-2,hy+2,'#6a4a36'); P(g,hx-2,hy+1,'#6a4a36');       // 손잡이 (J)
+  g.save(); g.translate(cx,cy); g.rotate(tilt);
+  g.fillStyle=sh(c,-0.25); g.beginPath(); g.ellipse(0,1,16,4,0,0,Math.PI); g.fill();
+  g.fillStyle=c; g.beginPath(); g.ellipse(0,1,16,10,0,Math.PI,Math.PI*2); g.fill();
+  g.fillStyle=sh(c,0.22); g.beginPath(); g.ellipse(-5,-3,5,4,0,Math.PI,Math.PI*2); g.fill();
+  g.fillStyle=sh(c,-0.12); g.fillRect(-1,-9,2,10); g.fillStyle='#3a3f46'; g.fillRect(-1,-12,2,3);
+  g.restore();
 }
 // 점심시간에 쉬러 올라온 직원이 앉는 자리 (앉는 방향 · 발 위치)
 var ROOF_SEATS=[ {x:13*T+32-17, feet:10*T+2, dir:'down'}, {x:14*T+32-17, feet:10*T+2, dir:'down'}, {x:15*T+32-17, feet:10*T+2, dir:'down'},
