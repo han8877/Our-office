@@ -1989,6 +1989,35 @@ function pSelfCorner(){ return obj(128,80,function(g){              // 셀프 �
   [4,40].forEach(function(x){ R(g,x,2,32,24,'#e8eaec'); R(g,x,2,32,2,'#ffffff'); R(g,x+3,6,20,16,'#2a2e34'); R(g,x+4,7,6,4,'#5a6068'); R(g,x+25,8,4,2,'#6fd0c0'); R(g,x+25,13,4,1,'#9aa2a8'); R(g,x+25,16,4,1,'#9aa2a8'); });
   [['#d8583a',80],['#2a2a2a',87],['#f2d06a',94],['#fbfaf6',101]].forEach(function(b){ R(g,b[1],16,5,10,b[0]); R(g,b[1]+1,13,3,3,sh(b[0],-0.2)); });
   R(g,110,14,14,12,'#fbfaf6'); R(g,110,14,14,2,'#e8e4dc'); disc(g,86,34,4,'#e8f4fa'); disc(g,96,34,4,'#e8f4fa'); }); }
+function pDishReturn(){ return obj(64,256,function(g){              // 퇴식구: 벽 쪽 창구 + 식판이 올라가는 컨베이어 (세로로 긴 카운터)
+  R(g,0,0,14,256,'#2a2e34'); R(g,2,6,10,244,'#3a4048'); for(var y=10;y<246;y+=12) R(g,3,y,8,1,'#5a6068');          // 벽 안쪽 세척실 창
+  R(g,14,0,50,256,'#b8bec4'); R(g,14,0,50,2,'#eef1f3'); R(g,62,2,2,254,'#8a929a');
+  R(g,20,4,26,248,'#6a7278'); for(var y2=8;y2<250;y2+=6) R(g,21,y2,24,1,'#58606a');                               // 컨베이어 벨트
+  R(g,48,4,12,248,'#dfe3e5'); R(g,48,4,12,1,'#ffffff'); for(var y3=20;y3<250;y3+=40){ R(g,50,y3,8,10,'#9aa2a8'); R(g,51,y3+1,6,2,'#c9cfd4'); }   // 수저·잔반 통
+  R(g,14,248,50,8,'#8a929a'); }); }
+function pRamenVending(){ return obj(68,100,function(g){            // 라면 자판기: 컵라면 진열창 · 온수 조리구
+  R(g,2,4,64,96,'#d8402e'); R(g,2,4,64,2,'#f07060'); R(g,62,6,4,94,'#a82a1e'); R(g,2,4,64,14,'#fbf3e0'); R(g,4,6,60,10,'#f2c230');
+  R(g,6,22,40,40,'#2a2e34'); R(g,7,23,38,38,'#e8eef2');
+  var cups=['#e8503a','#f2c230','#fbfaf6','#3a7ac0','#6aa84a','#e8903a'];
+  for(var r=0;r<3;r++) for(var c=0;c<4;c++){ var x=9+c*9, y=26+r*12, cc=cups[(r*4+c)%6]; R(g,x,y,7,9,cc); R(g,x,y,7,2,'#fbfaf6'); R(g,x+1,y+4,5,2,sh(cc,-0.3)); }
+  R(g,50,22,12,6,'#1e2024'); R(g,51,23,8,4,'#6fd0a0'); for(var b=0;b<4;b++){ R(g,51,32+b*6,10,4,'#fbf3e0'); R(g,52,33+b*6,4,2,'#d8402e'); }
+  R(g,10,68,36,22,'#3a3f46'); R(g,12,70,32,18,'#1e2024'); R(g,22,72,12,3,'#9aa2a8'); ell(g,28,84,7,2,'#5a6068'); g.fillStyle='rgba(255,255,255,0.35)'; g.fillRect(24,76,1,6); g.fillRect(31,75,1,7);   // 조리구 (김)
+  R(g,50,70,12,16,'#fbf3e0'); R(g,52,72,8,3,'#2a2e34'); R(g,52,78,8,6,'#9aa2a8'); R(g,2,96,64,4,'#8a2a1e'); }); }
+function pArtB1(kind){ return obj(48,112,function(g){               // 식당 조각품 (흰 좌대 위)
+  R(g,8,64,32,48,'#f6f4ef'); R(g,8,64,5,48,'#ffffff'); R(g,35,64,5,48,'#dcd8cf'); R(g,5,60,38,5,'#fbfaf7'); R(g,5,60,38,1,'#ffffff'); R(g,5,110,38,2,'#c9c4b8');
+  R(g,16,88,16,4,'#c9a25c'); R(g,16,88,16,1,'#e2c27e');
+  if(kind==='apple'){ ell(g,24,40,17,18,'#c8282a'); ell(g,17,40,10,15,'#e03a3a'); ell(g,31,40,9,14,'#b01e24'); ell(g,15,32,4,7,'#f88080'); P(g,14,29,'#ffe0e0');   // 광택 나는 빨간 사과
+    R(g,23,14,3,10,'#8a5a2a'); R(g,23,14,1,10,'#c49060'); ell(g,31,17,8,4,'#6aa84a'); ell(g,30,16,5,2,'#9ad06a'); ell(g,24,57,12,3,'#8a1a1e'); }
+  else { var sv='#c9cfd4', sl='#f4f6f8', sd='#8a929a';                                                    // 커다란 숟가락과 포크
+    ell(g,16,14,7,10,sv); ell(g,15,13,5,8,sl); ell(g,17,16,3,5,sd); R(g,15,24,3,34,sv); R(g,15,24,1,34,sl);
+    R(g,27,6,2,14,sv); R(g,30,6,2,14,sv); R(g,33,6,2,14,sv); R(g,36,6,2,14,sv); R(g,27,18,11,6,sv); R(g,27,18,11,1,sl); R(g,31,24,3,34,sv); R(g,31,24,1,34,sl); R(g,34,24,1,34,sd);
+    R(g,12,56,26,4,sd); }
+}); }
+function pTeaStation(){ return obj(160,80,function(g){              // 커피·차 코너: 커피머신 · 온수기 · 컵
+  R(g,0,24,160,20,'#fbf8f2'); R(g,0,24,160,2,'#ffffff'); R(g,0,44,160,36,'#c99a6a'); for(var x=0;x<160;x+=6) R(g,x,44,1,36,'#b08254'); R(g,0,78,160,2,'#8a6444');
+  R(g,8,0,36,28,'#2a2e34'); R(g,10,2,32,8,'#3a3f46'); R(g,12,4,10,4,'#6fd0c0'); R(g,20,14,12,10,'#1e2024'); R(g,24,22,4,4,'#fbfaf6');
+  R(g,54,4,22,24,'#dfe3e5'); R(g,54,4,22,2,'#ffffff'); R(g,58,12,4,4,'#e04a4a'); R(g,68,12,4,4,'#3a78d0');
+  for(var i=0;i<4;i++){ R(g,86+i*9,14,7,12,'#fbfaf6'); R(g,86+i*9,14,7,1,'#e8e4dc'); } R(g,124,10,28,16,'#b88a5c'); for(var t=0;t<4;t++) R(g,126+t*7,12,5,12,['#6aa84a','#e8903a','#8a5a3a','#f2d06a'][t]); }); }
 function pStandAC(){ return obj(34,84,function(g){ R(g,2,4,30,80,'#fbfbf9'); R(g,2,4,30,2,'#ffffff'); R(g,30,6,2,78,'#dcdcd6');
   for(var y=12;y<40;y+=3) R(g,6,y,22,1,'#d4d7d2'); R(g,8,46,18,8,'#2a2e34'); R(g,10,48,8,3,'#6fd0c0'); P(g,22,49,'#5ad07a'); R(g,4,80,26,4,'#c9ccc6'); }); }
 function drawMealTray(g,x,y,left){                                   // 테이블 위 식판 (left: 먹은 정도 0~1 남은 양)
@@ -2048,16 +2077,23 @@ onTile(pMossBar(11*T),22,12,32,13);
 [23,26,29,32].forEach(function(c,i){ put(pWovenStool(),c*T+3,15*T-30,14*T+10,[c,14,c,14]);
   B1_SEATS.push({ id:'X'+i, table:'X', side:'bot', col:i, x:c*T+16-17, feet:14*T+26, dir:'up', c:c, r:15, tray:{x:c*T+16, y:13*T-30} }); });
 // 식기 반납대 · 쓰레기통 셋 · 공기청정기 둘 · 냉난방기(스탠드) · 화분
-onTile(pTrayReturn(),28,20,32,21); var B1_RETURN={ c:30, r:22 };
+onTile(pTeaStation(),28,20,32,21);                                        // 커피·차 코너
+put(pDishReturn(),T,18*T-256,18*T,[1,10,2,17]); var B1_RETURN={ c:3, r:14, face:'left' };   // 퇴식구 (왼쪽 벽)
+things.push({sy:18*T+0.1, draw:function(g){ var t=performance.now();                      // 컨베이어 위 식판이 창구로 올라간다
+  for(var i=0;i<5;i++){ var y=17*T+8-((t*0.02+i*52)%246); R(g,T+22,y,22,12,'#b88a5c'); R(g,T+22,y,22,1,'#d8aa7a'); disc(g,T+28,y+6,3,'#fbfaf6'); disc(g,T+37,y+6,2,'#f0c8a0'); }
+  g.font='10px NeoDGM, sans-serif'; g.textBaseline='top'; R(g,T+14,10*T-22,50,16,'#2a2e34'); g.fillStyle='#fbf6e6'; g.fillText('퇴식구',T+20,10*T-19); }});
 onTile(pSelfCorner(),22,17,25,17);                                       // 셀프 코너: 전자레인지 둘 · 양념 · 컵
 onTile(pPlant('monstera','#e8e2d6'),27,17,27,17); onTile(pPlant('tall','#e8e2d6'),22,21,22,21); onTile(pPlant('bush','#e8e2d6'),5,9,5,9);
 onTile(pTrash(),33,21,33,21); onTile(pTrash(),5,27,5,27);
-onTile(pAirPurifier(),1,18,1,18); onTile(pAirPurifier(),34,24,34,24);
+onTile(pAirPurifier(),18,21,18,21); onTile(pAirPurifier(),34,24,34,24);
 onTile(pStandAC(),34,15,34,16);
 onTile(pMossIsland(10*T),23,25,32,25);
 onTile(pOliveTree(),20,26,21,27); onTile(pOliveTree(),33,26,34,27);
-onTile(pPlant('tall','#e8e2d6'),1,12,1,12); onTile(pPlant('monstera','#e8e2d6'),1,24,1,24); onTile(pPlant('monstera','#e8e2d6'),34,9,34,9);
-onTile(pPlant('bush','#e8e2d6'),21,8,21,8); onTile(pPlant('tall','#4a4e56'),1,27,1,27); onTile(pPlant('bush','#4a4e56'),18,27,18,27);
+onTile(pPlant('tall','#e8e2d6'),18,15,18,15); onTile(pPlant('monstera','#e8e2d6'),1,22,1,22); onTile(pPlant('monstera','#e8e2d6'),34,9,34,9);
+onTile(pPlant('bush','#e8e2d6'),21,8,21,8);
+onTile(pRamenVending(),1,25,2,27);                                        // 라면 자판기
+// 조각품 둘: 광택 나는 빨간 사과 · 커다란 숟가락과 포크 (핀조명)
+spot(bgc,30*T+16,18*T-4,24,8); onTile(pArtB1('apple'),30,16,30,17); spot(bgc,25*T+16,22*T-4,24,8); onTile(pArtB1('spoon'),25,20,25,21); onTile(pPlant('bush','#4a4e56'),18,27,18,27);
 MAPB.SWITCH=SWITCHB; MAPB.ELEV={x:32,y:0,w:128,h:96}; MAPB.SEATS=B1_SEATS; MAPB.RETURN=B1_RETURN;
 MAPB.LINE={ r:6, c0:8, c1:20 }; MAPB.PAY={ c:23, r:6 }; MAPB.LOBBY={ c:2, r:3 }; MAPB.DOCK={ c:26, r:27 };
 var B1LOOK={

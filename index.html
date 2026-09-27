@@ -4962,17 +4962,17 @@
 
     <div class="hDiv" aria-hidden="true">✦ ✦ ✦</div>
     <h3><span class="dg" aria-hidden="true">🍱</span>7. 지하 1층 구내식당(B1)은 어떤 곳인가요?</h3>
-    <p>엘리베이터에서 <code>B1</code>을 누르면 내려가는 직원 식당이에요. 원목 긴 테이블 가운데엔 이끼 화단이 있고, 배식대·계산대·음료 냉장고·셀프 코너·식기 반납대가 있어요. 자리는 모두 34석입니다.</p>
+    <p>엘리베이터에서 <code>B1</code>을 누르면 내려가는 직원 식당이에요. 원목 긴 테이블 가운데엔 이끼 화단이 있고, 배식대·계산대·음료 냉장고·셀프 코너·커피 코너·라면 자판기·퇴식구, 그리고 조각품 두 점이 있어요. 자리는 모두 34석입니다.</p>
     <table>
       <tr><th>시간</th><th>내용</th></tr>
       <tr><td>08:00~21:00</td><td>운영 시간. 문을 닫으면 불이 저절로 꺼져요. 벽 스위치로 직접 켜고 끌 수도 있어요</td></tr>
-      <tr><td>12:00~13:00</td><td>점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 식판을 반납하고 올라가요</td></tr>
+      <tr><td>12:00~13:00</td><td>점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 퇴식구에 식판을 올려두고 올라가요</td></tr>
       <tr><td>저녁</td><td>야근 중인 직원이 18시 10분~20시 30분 사이에 한두세 명씩 저녁을 먹으러 내려와요</td></tr>
     </table>
     <table>
       <tr><th>식당 사람</th><th>내용</th></tr>
-      <tr><td><b>한계산</b></td><td>닭. 계산대에서 "맛있게 드세요"</td></tr>
-      <tr><td><b>김조리</b>·<b>이조리</b></td><td>미어캣. 하얀 요리사 모자를 쓰고 배식대에서 음식을 채워요</td></tr>
+      <tr><td><b>현계산</b></td><td>닭. 계산대에서 "맛있게 드세요"</td></tr>
+      <tr><td><b>안조리</b>·<b>주조리</b></td><td>미어캣. 하얀 요리사 모자를 쓰고 배식대에서 음식을 채워요</td></tr>
       <tr><td>사장님</td><td>일주일에 세 번쯤 점심을 드시러 와요. 외부 약속이 많으시거든요</td></tr>
       <tr><td>R-도우미</td><td>식당 통로를 돌아다니다가 문을 닫으면 충전 자리로 돌아가요</td></tr>
     </table>
@@ -15082,14 +15082,45 @@ function drawTorches(F,g,ph){
 // ---- 지하 1층 구내식당 ----
 // 08~21시 운영(그 밖엔 저절로 불이 꺼진다) · 평일 점심(12~13시)엔 점심 먹는 직원이 엘리베이터로 우르르 내려와
 // 배식대 → 계산대 → 자리 순서로 움직이고 삼삼오오 모여 앉는다. 사장님은 일주일에 세 번쯤. 야근하면 저녁도 먹으러 온다
-var B1_EAT_LINES=['맛있다!','오늘 반찬 좋네','국물 끝내준다','배부르다..','오후에 회의 있죠?','이거 무슨 소스지?','주말에 뭐 해요?','디저트 먹으러 갈래요?','밥 한 공기 더?','제육 최고','김치 맛있다','천천히 먹어요'];
-var B1_TEAM_LINES=['이번 시안 어땠어요?','팀장님 오늘 기분 좋으신 듯','그 건 마감 언제죠?','우리 팀 회식 언제 해요?'];
+var B1_EAT_LINES=['맛있다!','오늘 반찬 좋네','국물 끝내준다','배부르다..','이거 무슨 소스지?','밥 한 공기 더?','제육 최고','김치 맛있다','천천히 먹어요',
+  '오늘 밥 진짜 잘 나왔다','계란말이 더 먹고 싶다','여기 된장찌개 집밥 같아요','샐러드 드레싱 뭐예요?','오늘 좀 짜다','식후엔 역시 아아','점심 먹고 산책 갈래요?',
+  '요즘 뭐 보세요?','그 드라마 봤어요?','어제 야구 봤어요?','요즘 운동 시작했어요','다이어트는 내일부터','이따 간식 뭐 먹지','휴가 계획 있어요?','고양이 사진 보여줄까요?',
+  '새로 생긴 카페 가봤어요?','주말에 캠핑 가요','요즘 잠을 못 자요','이번 달 너무 빨리 간다','택배가 안 와요ㅠ','점심시간 너무 짧아','디저트 먹으러 갈래요?',
+  '밥 먹으니까 졸리다','반찬 리필 되나요?','숟가락 하나만 줄래요?','여기 우동 맛집이에요','매운 거 잘 드세요?','배달 음식보다 낫다','역시 한식이 최고','라면 자판기 한번 먹어볼까','저 사과 조각 볼 때마다 배고파'];
+// 주고받는 대화: 한 사람이 말하면 같이 앉은 사람이 받아친다
+var B1_QA=[['오늘 오후에 회의 있죠?','네 3시요. 자료 다 됐어요?'],['주말에 뭐 해요?','그냥 집에서 쉬려고요'],['이거 맛있어요?','완전 추천이에요!'],['커피 마시러 갈 사람?','저요 저요!'],
+  ['요즘 바빠요?','마감이라 정신없어요'],['이번 신상 스티커 봤어요?','네 색감 너무 예뻐요'],['휴가 언제 가요?','다음 달에 제주도요!'],['점심 먹고 뭐 해요?','옥상 가서 바람 좀 쐬려고요'],
+  ['팀장님 오늘 기분 좋아 보이죠?','무슨 좋은 일 있으신가 봐요'],['반찬 더 받아올까요?','저도 같이 가요'],['어제 몇 시에 퇴근했어요?','말도 마요.. 9시요'],['이 노트 샘플 어때요?','표지 재질 좋네요'],
+  ['매운 거 괜찮아요?','저 매운 거 좋아해요'],['요즘 뭐 배워요?','퇴근하고 요가 다녀요'],['저녁에 약속 있어요?','오늘은 칼퇴할 거예요'],['국 더 드실래요?','아뇨 배불러요'],
+  ['그 영화 봤어요?','아직이요. 스포 금지!'],['다음 회식 어디서 해요?','고기 먹고 싶어요'],['이번 프로젝트 끝나면 뭐 해요?','일단 푹 잘래요'],['디저트 뭐 먹을래요?','아이스크림 어때요?'],
+  ['내일 비 온대요','우산 챙겨야겠다'],['인턴 잘 적응해요?','네 엄청 열심히 해요'],['이 반찬 이름 뭐예요?','도라지무침이요'],['요즘 운동해요?','계단 오르기만 해요ㅋㅋ'],['식판 제가 치울게요','헉 고마워요!']];
+var B1_TEAM_LINES=['이번 시안 어땠어요?','팀장님 오늘 기분 좋으신 듯','그 건 마감 언제죠?','우리 팀 회식 언제 해요?','오후에 팀 회의 해요','샘플 나왔대요!'];
 var B1_BOSS_LINES=['다들 많이 먹어요','여기 밥 맛있네','오후도 힘냅시다','반찬 더 달라고 해요'];
+var B1_BOSS_QA=[['다들 많이 먹어요','감사합니다 사장님!'],['요즘 일은 할 만해요?','네! 재밌어요'],['여기 밥 맛있네','여기 제육이 최고예요'],['오후도 힘냅시다','화이팅입니다!']];
 var B1_BOSS_HELLO=['사장님 오셨어요!','사장님 맛있게 드세요','앗 사장님!'];
-var B1_DINNER_LINES=['야근엔 밥심이지','오늘 몇 시에 끝날까..','든든하게 먹자','저녁 메뉴 괜찮네'];
+var B1_DINNER_LINES=['야근엔 밥심이지','오늘 몇 시에 끝날까..','든든하게 먹자','저녁 메뉴 괜찮네','우리만 남았네요','빨리 먹고 끝내요','내일은 칼퇴 각','야식 대신 저녁 든든히'];
+var B1_DAY_LINES={ 1:['월요병 온다..','주말이 너무 짧았어'], 3:['벌써 수요일이네','반 왔다!'], 5:['불금이다!','오늘 퇴근하고 뭐 해요?'] };
+var B1_WX_LINES={ rain:['비 오니까 다들 식당 왔네','비 오는 날엔 국물이지'], snow:['눈 온다! 밖에 봤어요?','눈 오는 날엔 라면인데'], sunny:['날씨 좋다, 밥 먹고 산책해요'], cloudy:['날이 흐리네요'] };
+// 먹는 동안 말하기: 혼잣말 · 요일·날씨 이야기 · 같이 앉은 사람과 주고받기
+function b1Chat(F,a,now){
+  if(a.replyAt && now>a.replyAt){ b1Say(a,[a.replyLine],now); a.replyAt=0; a.nextTalk=now+10000+Math.random()*14000; return; }
+  if(a.talkUntil || a.replyAt || now<a.nextTalk) return;
+  a.nextTalk=now+12000+Math.random()*20000;
+  var mates=[]; for(var id in F.actors){ var o=F.actors[id]; if(o!==a && o.grp && o.grp===a.grp && o.ph==='eat' && !o.talkUntil && !o.replyAt) mates.push(o); }
+  var boss=a.id==='b1_boss', r=Math.random();
+  if(mates.length && r<(boss?0.6:0.4)){ var qa=(boss?B1_BOSS_QA:B1_QA)[Math.floor(Math.random()*(boss?B1_BOSS_QA:B1_QA).length)], m=mates[Math.floor(Math.random()*mates.length)];
+    b1Say(a,[qa[0]],now); m.replyAt=now+2600; m.replyLine=qa[1]; return; }
+  if(boss){ b1Say(a,B1_BOSS_LINES,now); return; }
+  if(a.dinner){ b1Say(a,B1_DINNER_LINES,now); return; }
+  var day=B1_DAY_LINES[new Date().getDay()], wx=B1_WX_LINES[B.weather()];
+  if(r<0.46 && day) b1Say(a,day,now);
+  else if(r<0.51 && wx) b1Say(a,wx,now);
+  else if(a.team && r<0.75) b1Say(a,B1_TEAM_LINES,now);
+  else b1Say(a,B1_EAT_LINES,now);
+}
 var B1_CASHIER_LINES=[['맛있게 드세요'],['카드 찍어 주세요'],['오늘 반찬 맛있어요'],['식판은 반납대에','부탁해요']];
 var B1_COOK_LINES=[['오늘은 제육볶음이에요'],['국 뜨끈해요'],['밥 더 드릴까요?'],['반찬 새로 채웠어요'],['맛있게 드세요~']];
-var B1_ROBOT_SPOTS=[[4,5],[10,9],[17,9],[4,15],[12,15],[18,20],[10,21],[12,26],[25,15],[27,18],[24,22],[26,27],[30,16],[22,7],[3,21]];
+var B1_ROBOT_SPOTS=[[4,5],[10,9],[17,9],[4,15],[12,15],[18,20],[10,21],[12,26],[25,15],[27,18],[23,22],[26,27],[29,18],[22,7],[3,21]];
 var B1_TEAM={}; PO.STAFF.forEach(function(p){ B1_TEAM[p.id]=p.team; });
 function b1Rng(seed){ var x=seed||1; return function(){ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; }
 function b1Open(d){ var h=d.getHours(); return h>=8 && h<21; }
@@ -15149,10 +15180,10 @@ function b1Step(F,a,now,M,nowSec){
     case 'pay': a.ph='toSeat'; setGoal(F,a,{ c:a.seatInfo.c, r:a.seatInfo.r, face:a.seatInfo.side==='top'?'down':'up' },now); break;
     case 'toSeat': b1Sit(a,now); break;
     case 'eat':
-      if(nowSec>=a.leaveSec){ a.onFurn=false; a.spr=a.sprTray; a.bubble=null; a.ph='toReturn'; setGoal(F,a,{ c:M.RETURN.c, r:M.RETURN.r, face:'up' },now); break; }
-      if(!a.talkUntil && now>a.nextTalk){ b1Say(a, a.id==='b1_boss'?B1_BOSS_LINES : a.dinner?B1_DINNER_LINES : (a.team&&Math.random()<0.4)?B1_TEAM_LINES:B1_EAT_LINES, now); a.nextTalk=now+12000+Math.random()*20000; }
+      if(nowSec>=a.leaveSec){ a.onFurn=false; a.spr=a.sprTray; a.bubble=null; a.ph='toReturn'; setGoal(F,a,{ c:M.RETURN.c, r:M.RETURN.r, face:M.RETURN.face||'up' },now); break; }
+      b1Chat(F,a,now);
       break;
-    case 'toReturn': a.dir='up'; a.wait=now+900; a.ph='returned'; break;
+    case 'toReturn': a.dir=M.RETURN.face||'up'; a.wait=now+900; a.ph='returned'; break;
     case 'returned': a.spr=a.sprPlain; a.ph='out'; setGoal(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); break;
     case 'out': a.visible=false; a.gone=true; break;
   }
@@ -15166,7 +15197,7 @@ function b1Tick(F,now,off){
   if(b1Light.openPrev!==open){ b1Light.openPrev=open; b1Light.on=open; }
   var lo=byId('b1LightOverlay'); if(lo){ var op=b1Light.on?'0':(open?'0.55':'0.62'); if(lo.style.opacity!==op) lo.style.opacity=op; }
   // 식당 직원: 계산 닭 한 명 · 조리 미어캣 둘 (운영 시간에만)
-  var cs=npcActor(F,'b1cashier',PO.B1LOOK.cashier,'한계산'), k1=npcActor(F,'b1cook1',PO.B1LOOK.cook1,'김조리'), k2=npcActor(F,'b1cook2',PO.B1LOOK.cook2,'이조리');
+  var cs=npcActor(F,'b1cashier',PO.B1LOOK.cashier,'현계산'), k1=npcActor(F,'b1cook1',PO.B1LOOK.cook1,'안조리'), k2=npcActor(F,'b1cook2',PO.B1LOOK.cook2,'주조리');
   [cs,k1,k2].forEach(function(n,i){
     if(!open){ n.visible=false; n.bubble=null; return; }
     if(!n.visible){ n.visible=true; n.feet=4*T+2; n.dir='down'; n.x=n.tx=(i===0?23:i===1?11:17)*T-1; n.until=now+3000; n.nextTalk=now+8000+Math.random()*15000; }
@@ -15194,7 +15225,7 @@ function b1Tick(F,now,off){
       if(!a && !F.lunchDone[aid+key] && nowSec<dn.leave){
         if(nowSec<dn.arrive) return;
         a=b1MakeDiner(F,aid,dn.id,dn.seat,now); if(!a) return;
-        a.leaveSec=dn.leave; a.team=dn.team;
+        a.leaveSec=dn.leave; a.team=dn.team; a.grp='L'+dn.group;
         if(nowSec-dn.arrive>90){ var t2=dn.seat; a.tile={c:t2.c,r:t2.r}; a.goal={c:t2.c,r:t2.r,face:t2.dir}; b1Sit(a,now-(nowSec-dn.arrive-60)*1000); }   // 접속했을 때 이미 먹는 중
         else a.ph='spawn';
         if(dn.id==='boss'){ var mates=plan.diners.filter(function(o){ return o.group===dn.group && o.id!=='boss'; });
@@ -15211,7 +15242,7 @@ function b1Tick(F,now,off){
       if(mate) free.sort(function(a,b){ return (a.table===mate.table?0:1)-(b.table===mate.table?0:1) || Math.abs(a.col-mate.col)-Math.abs(b.col-mate.col); });
       if(!free.length){ q.done=true; continue; }
       da=b1MakeDiner(F,did,q.id,free[0],now); if(!da){ q.done=true; continue; }
-      da.dinner=true; da.dinnerGroup=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
+      da.dinner=true; da.dinnerGroup=q.group; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
   }
   // 한 명씩 움직이기
   for(var id in F.actors){ var a2=F.actors[id]; if(!a2.ph) continue;
