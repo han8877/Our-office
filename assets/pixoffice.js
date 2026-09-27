@@ -867,6 +867,8 @@ function drawCarry(g,p,dir,hx){
   else if(it==='tray'){ var tx=dir==='down'?hx+1:hx; R(g,tx+1,29,2,7,sh(p.shirt,-0.2));                      // 어깨높이로 든 은쟁반과 잔
     ell(g,tx+2,28,7,2,'#c9cfd4'); ell(g,tx+2,27,6,1,'#eef1f3'); R(g,tx-2,22,3,5,'#f2d06a'); R(g,tx-2,22,3,1,'#ffffff'); R(g,tx+3,21,3,6,'#e8a0b0'); R(g,tx+3,21,3,1,'#ffffff'); }
   else if(it==='foodtray'){ var fx=dir==='down'?8:hx-8; R(g,fx,30,16,7,'#b88a5c'); R(g,fx,30,16,1,'#d8aa7a'); disc(g,fx+4,33,2,'#fbfaf6'); disc(g,fx+10,33,2,'#e8903a'); R(g,fx+13,31,2,4,'#6aa84a'); }
+  else if(it==='icecream'){ var ix=dir==='down'?23:hx+1; tri(g,ix-2,31,ix+2,31,ix,37,'#d8a060'); P(g,ix-1,32,'#b8844a'); disc(g,ix,29,3,'#f7a8c8'); P(g,ix-1,28,'#ffe0ec'); }
+  else if(it==='ramen'){ var rx=dir==='down'?11:hx-2; R(g,rx,30,10,8,'#fbfaf6'); R(g,rx,32,10,2,'#d8402e'); R(g,rx-1,29,12,2,'#e8e4dc'); R(g,rx+7,25,1,5,'#c89a5a'); R(g,rx+9,25,1,5,'#c89a5a'); }
   else if(it==='paper'){ R(g,hx-1,32,6,8,'#ffffff'); R(g,hx,34,4,1,'#b8b2a6'); R(g,hx,36,3,1,'#b8b2a6'); }
 }
 function buildChar(p, dir, frame, blink, sit){
@@ -2035,6 +2037,11 @@ function drawMealTray(g,x,y,left){                                   // 테이�
   if(left>0.1){ disc(g,x-5,y-1,2,'#f6f2e6'); disc(g,x+2,y-1,2,left>0.5?'#e8903a':'#f0c8a0'); R(g,x+5,y-3,3,3,'#6aa84a'); R(g,x-7,y+3,6,2,'#d8583a'); }
   R(g,x+7,y-4,1,8,'#c9cfd4'); }
 
+function drawSnack(g,x,y,kind,left,t){                               // 테이블 위 컵라면 · 아이스크림
+  if(kind==='ramen'){ R(g,x-6,y-6,12,11,'#fbfaf6'); R(g,x-6,y-3,12,3,'#d8402e'); R(g,x-7,y-7,14,2,'#e8e4dc'); R(g,x+3,y-12,1,7,'#c89a5a'); R(g,x+5,y-12,1,7,'#c89a5a');
+    if(left>0.25){ var w=Math.floor((t||0)/300)%3; g.fillStyle='rgba(255,255,255,0.7)'; g.fillRect(x-3+w,y-14,1,4); g.fillRect(x+w,y-17,1,4); } }
+  else { R(g,x-6,y-2,12,6,'#fbfaf6'); if(left>0.1){ tri(g,x-3,y-2,x+3,y-2,x,y+4,'#d8a060'); disc(g,x,y-4,Math.max(1,Math.round(3*left)),'#f7a8c8'); } }
+}
 var MAPB=newMap(); useMap(MAPB);
 terrazzo(bgc,1,3,34,28,'#dccbb0');
 kitchenTiles(bgc,7,3,25,3);
@@ -2104,6 +2111,7 @@ onTile(pPlant('bush','#e8e2d6'),21,8,21,8);
 onTile(pIceVending(),1,19,2,21); onTile(pRamenVending(),1,22,2,24); onTile(pRamenVending(),1,25,2,27);   // 아이스크림 자판기 · 라면 자판기 둘
 // 조각품 둘: 광택 나는 빨간 사과 · 커다란 숟가락과 포크 (핀조명)
 spot(bgc,30*T+16,18*T-4,24,8); onTile(pArtB1('apple'),30,16,30,17); spot(bgc,25*T+16,22*T-4,24,8); onTile(pArtB1('spoon'),25,20,25,21); onTile(pPlant('bush','#4a4e56'),18,27,18,27);
+MAPB.VEND={ ice:{c:3,r:20,face:'left'}, ramen:[{c:3,r:23,face:'left'},{c:3,r:26,face:'left'}], iceX:T+34, ramenY:[23*T-22,26*T-22] };
 MAPB.SWITCH=SWITCHB; MAPB.ELEV={x:32,y:0,w:128,h:96}; MAPB.SEATS=B1_SEATS; MAPB.RETURN=B1_RETURN;
 MAPB.LINE={ r:6, c0:8, c1:20 }; MAPB.PAY={ c:23, r:6 }; MAPB.LOBBY={ c:2, r:3 }; MAPB.DOCK={ c:26, r:27 };
 var B1LOOK={
@@ -2117,7 +2125,7 @@ useMap(MAP3);
 window.PixOffice={
   T:T, COLS:COLS, ROWS:ROWS, W:W, H:H, STATE:STATE,
   h2r:h2r, mix:mix, sh:sh, rnd:rnd, hash:hash, cv:cv, R:R, P:P, ell:ell, disc:disc, ring:ring, line:line, tri:tri, obj:obj, outline:outline,
-  bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, MAPR:MAPR, MAPB:MAPB, B1LOOK:B1LOOK, drawMealTray:drawMealTray, drawRoofWeather:drawRoofWeather, drawUmbrella:drawUmbrella, liveWeather:function(){ return LIVE_WX; }, drawRoofGlow:drawRoofGlow, F2LOOK:F2LOOK,
+  bg:MAP3.bg, things:MAP3.things, blocked:MAP3.blocked, noCross:MAP3.noCross, MAP3:MAP3, MAP2:MAP2, MAPR:MAPR, MAPB:MAPB, B1LOOK:B1LOOK, drawMealTray:drawMealTray, drawSnack:drawSnack, drawRoofWeather:drawRoofWeather, drawUmbrella:drawUmbrella, liveWeather:function(){ return LIVE_WX; }, drawRoofGlow:drawRoofGlow, F2LOOK:F2LOOK,
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,

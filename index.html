@@ -4968,6 +4968,7 @@
       <tr><td>08:00~21:00</td><td>운영 시간. 문을 닫으면 불이 저절로 꺼져요. 벽 스위치로 직접 켜고 끌 수도 있어요</td></tr>
       <tr><td>12:00~13:00</td><td>점심 먹는 직원들이 엘리베이터에서 줄지어 내려와 식판을 받고 계산한 뒤 삼삼오오 모여 앉아요. 같은 팀끼리 앉을 때도 있어요. 다 먹으면 퇴식구에 식판을 올려두고 올라가요</td></tr>
       <tr><td>저녁</td><td>야근 중인 직원이 18시 10분~20시 30분 사이에 한두세 명씩 저녁을 먹으러 내려와요</td></tr>
+      <tr><td>자판기</td><td>점심에 가끔 라면을 뽑아 먹는 사람이 있고, 식판을 내고 나서 아이스크림을 뽑아 먹으며 올라가기도 해요. 평일 오후(14:00~17:30)나 야근 중엔 3층에서 라면·아이스크림을 먹으러 한두 명씩 내려와요</td></tr>
     </table>
     <table>
       <tr><th>식당 사람</th><th>내용</th></tr>
@@ -6800,6 +6801,49 @@
     });
   }
   setInterval(function(){ if(Math.random() < 0.3) startDinnerTrip(); }, 60000);
+
+  // ===== 간식: 지하 식당 자판기에서 라면·아이스크림 =====
+  // 평일 오후(14:00~17:30)나 야근 중(19:00~20:45)에 가끔 한두 명이 내려가 뽑아 먹고 온다
+  var SNACK_GO = { ramen:['출출하다, 라면 먹고 올게요', '라면 하나 먹고 올게요', '국물이 당겨서 잠깐..'], ice:['아이스크림 먹고 올게요', '당 충전하러 갑니다', '머리 좀 식히러 아이스크림!'] };
+  var SNACK_BACK = { ramen:['든든하다!', '라면은 역시 자판기 라면'], ice:['시원했다~', '당 충전 완료!'] };
+  var snackActive = false;
+  function startSnackTrip(){
+    var d = new Date(), t = d.getHours()*60 + d.getMinutes();
+    var ok = (!overtimeMode && !isNonWorkingDay() && t >= 14*60 && t < 17*60+30) || (overtimeMode && t >= 19*60 && t < 20*60+45);
+    if(!ok || snackActive || wanderOn) return;
+    var pool = staff.filter(function(s){
+      var el = charEl(s.id);
+      return el && el.classList.contains('present') && !el.classList.contains('onRoof') && (!overtimeMode || overtimeStaffIds[s.id])
+        && !isBusy(s.id) && !stretchIds[s.id] && !errandActive[s.id] && !roofTrip[s.id];
+    });
+    if(!pool.length) return;
+    pool.sort(function(){ return Math.random() - 0.5; });
+    var group = pool.slice(0, Math.random() < 0.3 ? 2 : 1), gid = 's' + Date.now(), left = group.length, item = Math.random() < 0.5 ? 'ramen' : 'ice';
+    snackActive = true;
+    if(typeof logDayEvent === 'function') logDayEvent(item === 'ramen' ? '🍜' : '🍦', group.map(function(s){ return s.name; }).join('·') + '가 지하 식당 자판기에서 ' + (item === 'ramen' ? '라면' : '아이스크림') + '을 먹고 옵니다');
+    group.forEach(function(s, i){
+      var el = charEl(s.id), key = 'sn_' + s.id;
+      markBusy(s.id); raiseChar(s);
+      setTimeout(function(){ showBubble(s, SNACK_GO[item][Math.floor(Math.random()*SNACK_GO[item].length)]); }, i*700);
+      function done(){ clearBusy(s.id); if(--left <= 0) snackActive = false; }
+      travelTo(s, {x:ENTRANCE.x, y:ENTRANCE.y}, 62, function(){
+        if(!el.classList.contains('present')){ done(); return; }
+        el.classList.add('onRoof');
+        b1GuestQ()[key] = { kind:'snack', item:item, id:s.id, name:s.name, group:gid };
+        var t0 = Date.now();
+        (function wait(){
+          var q = b1GuestQ()[key];
+          if(q && !q.done && Date.now()-t0 < 6*60000){ setTimeout(wait, 1000); return; }
+          delete b1GuestQ()[key];
+          el.classList.remove('onRoof');
+          if(!el.classList.contains('present')){ done(); return; }
+          showBubble(s, SNACK_BACK[item][Math.floor(Math.random()*2)]);
+          travelTo(s, {x:s.x, y:s.y}, 62, function(){ lowerChar(s); if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y}; done(); });
+        })();
+      });
+    });
+  }
+  setInterval(function(){ if(Math.random() < 0.12) startSnackTrip(); }, 60000);
 
   function cancelErrandsInProgress(){
     Object.keys(errandActive).forEach(function(id){
@@ -15151,7 +15195,7 @@ function lunchPlan(key){
   var diners=[], idx=0;
   groups.forEach(function(g,gi){ var st=take(g.length,g.length===1?'X':null); if(!st) return;
     var leave=12*60+43+Math.floor(rng()*12);                                                // 12:43~12:54 쯤 일어난다
-    g.forEach(function(id,k){ diners.push({ id:id, group:gi, seat:st[k], arrive:12*3600+20+idx*3+Math.floor(rng()*2), leave:leave*60+k*2, team:g.every(function(x){ return B1_TEAM[x]&&B1_TEAM[x]===B1_TEAM[g[0]]; }) }); idx++; }); });
+    g.forEach(function(id,k){ diners.push({ id:id, group:gi, seat:st[k], ramen:rng()<0.12, dessert:rng()<0.3, arrive:12*3600+20+idx*3+Math.floor(rng()*2), leave:leave*60+k*2, team:g.every(function(x){ return B1_TEAM[x]&&B1_TEAM[x]===B1_TEAM[g[0]]; }) }); idx++; }); });
   LUNCH_PLAN={ key:key, roof:roof, diners:diners, boss:boss };
   return LUNCH_PLAN;
 }
@@ -15160,10 +15204,13 @@ function b1Name(id){ if(id==='boss') return '사장님'; var p=STAFFLOOK[id]; re
 function b1MakeDiner(F,key,id,seat,now){
   var look=b1Look(id); if(!look) return null;
   var c1={}, c2={}; for(var k in look){ c1[k]=look[k]; c2[k]=look[k]; } c2.item='foodtray';
-  var a=npcActor(F,key,c1,b1Name(id)); a.sprPlain=a.spr; a.sprTray=PO.buildSprites(c2); a.seatInfo=seat; a.visible=true; a.stepMs=260; a.wait=0; a.nextTalk=now+6000+Math.random()*14000;
+  var a=npcActor(F,key,c1,b1Name(id)); a.lookSrc=id; a.sprPlain=a.spr; a.sprTray=PO.buildSprites(c2); a.seatInfo=seat; a.visible=true; a.stepMs=260; a.wait=0; a.nextTalk=now+6000+Math.random()*14000;
   return a;
 }
-function b1Sit(a,now){ var st=a.seatInfo; a.x=st.x; a.feet=st.feet; a.dir=st.dir; a.onFurn=true; a.spr=a.sprPlain; a.ph='eat'; if(!a.sitAt) a.sitAt=now; }
+function b1Spr(a,item){ a.sprItem=a.sprItem||{}; if(!a.sprItem[item]){ var look=b1Look(a.lookSrc), c={}; for(var k in look) c[k]=look[k]; c.item=item; a.sprItem[item]=PO.buildSprites(c); } return a.sprItem[item]; }
+var B1_VEND_LINES={ ramen:['출출한데 라면 하나','라면 뽑아야지','국물이 당긴다'], ice:['아이스크림 하나 뽑아야지','후식은 역시 아이스크림','뭐 먹지.. 이걸로!'] };
+var B1_SNACK_LINES={ ramen:['라면은 역시 자판기 라면','국물 최고','면이 딱 좋게 익었다','후루룩~'], ice:['시원하다~','달다 달아','역시 딸기맛','머리 띵해'] };
+function b1Sit(a,now){ var st=a.seatInfo; a.x=st.x; a.feet=st.feet; a.dir=st.dir; a.onFurn=true; a.spr=a.sprPlain; a.ph='eat'; if(!a.sitAt) a.sitAt=now; if(a.snackGuest && !a.leaveFixed){ a.leaveFixed=true; var ns=(function(d){ return d.getHours()*3600+d.getMinutes()*60+d.getSeconds(); })(new Date()); a.leaveSec=ns+(a.snack==='ramen'?100+Math.floor(Math.random()*60):40+Math.floor(Math.random()*25)); } }
 function b1Say(a,lines,now,ms){ a.bubble=[lines[Math.floor(Math.random()*lines.length)]]; a.talkUntil=now+(ms||3200); }
 // 먹는 사람 한 명의 흐름: 배식대 → 계산대 → 자리 → (먹고) → 반납대 → 엘리베이터
 function b1Step(F,a,now,M,nowSec){
@@ -15172,19 +15219,32 @@ function b1Step(F,a,now,M,nowSec){
   if(a.wait && now<a.wait) return;
   a.wait=0;
   switch(a.ph){
-    case 'spawn': placeAt(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'down' }); a.ph='toLine';
+    case 'spawn': placeAt(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'down' });
+      if(a.snackOnly){ a.ph='toVend'; var vt=a.snack==='ice'?M.VEND.ice:M.VEND.ramen[Math.floor(Math.random()*2)]; a.vendTile=vt; setGoal(F,a,{ c:vt.c, r:vt.r, face:vt.face },now); break; }
+      a.ph='toLine';
       setGoal(F,a,{ c:M.LINE.c0+Math.floor(Math.random()*(M.LINE.c1-M.LINE.c0+1)), r:M.LINE.r, face:'up' },now); break;
+    case 'toVend': a.dir='left'; a.wait=now+(a.snack==='ramen'?3800:2200); a.ph='vend'; b1Say(a,B1_VEND_LINES[a.snack],now,2600);
+      F.vendUse={ kind:a.snack, tile:a.vendTile||M.VEND.ice, until:now+(a.snack==='ramen'?3800:2200) }; break;
+    case 'vend': a.spr=b1Spr(a,a.snack==='ramen'?'ramen':'icecream');
+      if(a.afterMeal){ a.ph='out'; b1Say(a,B1_SNACK_LINES.ice,now); setGoal(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); break; }   // 후식: 먹으면서 올라간다
+      a.ph='toSeat'; setGoal(F,a,{ c:a.seatInfo.c, r:a.seatInfo.r, face:a.seatInfo.side==='top'?'down':'up' },now); break;
     case 'toLine': a.dir='up'; a.wait=now+2200; a.ph='line'; break;
     case 'line': a.spr=a.sprTray; a.ph='toPay'; setGoal(F,a,{ c:M.PAY.c, r:M.PAY.r, face:'up' },now); break;
     case 'toPay': a.dir='up'; a.wait=now+1400; a.ph='pay'; F.payNow=now; break;
     case 'pay': a.ph='toSeat'; setGoal(F,a,{ c:a.seatInfo.c, r:a.seatInfo.r, face:a.seatInfo.side==='top'?'down':'up' },now); break;
     case 'toSeat': b1Sit(a,now); break;
     case 'eat':
-      if(nowSec>=a.leaveSec){ a.onFurn=false; a.spr=a.sprTray; a.bubble=null; a.ph='toReturn'; setGoal(F,a,{ c:M.RETURN.c, r:M.RETURN.r, face:M.RETURN.face||'up' },now); break; }
+      if(nowSec>=a.leaveSec){ a.onFurn=false; a.bubble=null;
+        if(a.snack==='ice'){ a.spr=a.sprPlain; a.ph='out'; setGoal(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); break; }
+        a.spr=a.snack==='ramen'?b1Spr(a,'ramen'):a.sprTray; a.ph='toReturn'; setGoal(F,a,{ c:M.RETURN.c, r:M.RETURN.r, face:M.RETURN.face||'up' },now); break; }
+      if(a.snackGuest){ if(!a.talkUntil && now>a.nextTalk){ b1Say(a,B1_SNACK_LINES[a.snack],now); a.nextTalk=now+10000+Math.random()*12000; } break; }
+      if(a.snack && !a.talkUntil && now>a.nextTalk && Math.random()<0.5){ b1Say(a,B1_SNACK_LINES[a.snack],now); a.nextTalk=now+12000+Math.random()*15000; break; }
       b1Chat(F,a,now);
       break;
     case 'toReturn': a.dir=M.RETURN.face||'up'; a.wait=now+900; a.ph='returned'; break;
-    case 'returned': a.spr=a.sprPlain; a.ph='out'; setGoal(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); break;
+    case 'returned': a.spr=a.sprPlain;
+      if(a.dessert && !a.afterMeal && a.snack!=='ramen'){ a.afterMeal=true; a.snack='ice'; a.ph='toVend'; a.vendTile=M.VEND.ice; setGoal(F,a,{ c:M.VEND.ice.c, r:M.VEND.ice.r, face:'left' },now); break; }   // 식후 아이스크림
+      a.ph='out'; setGoal(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); break;
     case 'out': a.visible=false; a.gone=true; break;
   }
 }
@@ -15225,7 +15285,7 @@ function b1Tick(F,now,off){
       if(!a && !F.lunchDone[aid+key] && nowSec<dn.leave){
         if(nowSec<dn.arrive) return;
         a=b1MakeDiner(F,aid,dn.id,dn.seat,now); if(!a) return;
-        a.leaveSec=dn.leave; a.team=dn.team; a.grp='L'+dn.group;
+        a.leaveSec=dn.leave; a.team=dn.team; a.grp='L'+dn.group; a.dessert=dn.dessert; if(dn.ramen){ a.snackOnly=true; a.snack='ramen'; }
         if(nowSec-dn.arrive>90){ var t2=dn.seat; a.tile={c:t2.c,r:t2.r}; a.goal={c:t2.c,r:t2.r,face:t2.dir}; b1Sit(a,now-(nowSec-dn.arrive-60)*1000); }   // 접속했을 때 이미 먹는 중
         else a.ph='spawn';
         if(dn.id==='boss'){ var mates=plan.diners.filter(function(o){ return o.group===dn.group && o.id!=='boss'; });
@@ -15241,12 +15301,14 @@ function b1Tick(F,now,off){
       var free=M.SEATS.filter(function(st){ return !used[st.id]; });
       if(mate) free.sort(function(a,b){ return (a.table===mate.table?0:1)-(b.table===mate.table?0:1) || Math.abs(a.col-mate.col)-Math.abs(b.col-mate.col); });
       if(!free.length){ q.done=true; continue; }
+      if(q.kind==='snack'){ var pref=free.filter(function(st){ return q.item==='ice' ? st.table==='X' : st.table!=='X'; }); if(pref.length) free=pref; free=[free[Math.floor(Math.random()*free.length)]]; }
       da=b1MakeDiner(F,did,q.id,free[0],now); if(!da){ q.done=true; continue; }
+      if(q.kind==='snack'){ da.snackOnly=true; da.snackGuest=true; da.snack=q.item; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+600; continue; }
       da.dinner=true; da.dinnerGroup=q.group; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
   }
   // 한 명씩 움직이기
   for(var id in F.actors){ var a2=F.actors[id]; if(!a2.ph) continue;
-    if(a2.dinner && a2.ph==='eat' && !a2.leaveFixed){ a2.leaveFixed=true; a2.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
+    if(a2.dinner && !a2.snackGuest && a2.ph==='eat' && !a2.leaveFixed){ a2.leaveFixed=true; a2.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
     if(off) step(a2,now);
     b1Step(F,a2,now,M,nowSec);
     if(a2.gone){ if(a2.q) a2.q.done=true; else F.lunchDone[id+key]=1; delete F.actors[id]; }
@@ -15262,7 +15324,10 @@ function b1Trays(F,list,now){
   for(var id in F.actors){ var a=F.actors[id]; if(!a.visible||a.ph!=='eat'||!a.seatInfo) continue;
     (function(a){ var st=a.seatInfo, tot=Math.max(60,a.leaveSec-(a.sitSec||nowSec)); if(!a.sitSec) a.sitSec=nowSec;
       var left=Math.max(0,Math.min(1,(a.leaveSec-nowSec)/tot));
-      list.push({ sy:(st.table==='X'?14*T:st.side==='top'?st.feet+2*T-1:st.feet-26)+0.2, draw:function(g){ PO.drawMealTray(g,st.tray.x,st.tray.y,left); } }); })(a); }
+      list.push({ sy:(st.table==='X'?14*T:st.side==='top'?st.feet+2*T-1:st.feet-26)+0.2, draw:function(g){ if(a.snack) PO.drawSnack(g,st.tray.x,st.tray.y,a.snack,left,now); else PO.drawMealTray(g,st.tray.x,st.tray.y,left); } }); })(a); }
+  if(F.vendUse && now<F.vendUse.until){ var vu=F.vendUse, vx=T+30, vy=vu.tile.r*T-18;             // 자판기 사용 중: 불빛 · 라면 김
+    list.push({ sy:(vu.tile.r+2)*T, draw:function(g){ var ph=Math.floor(now/250)%2; g.fillStyle=ph?'rgba(255,240,160,0.8)':'rgba(255,255,255,0.5)'; g.fillRect(T+52,vu.tile.r*T-38,8,4);
+      if(vu.kind==='ramen'){ g.fillStyle='rgba(255,255,255,0.75)'; for(var i=0;i<3;i++){ var yy=vy-((now/40+i*12)%30); g.fillRect(vx+i*5,yy,2,5); } } } }); }
 }
 
 var lastPoll=0;
