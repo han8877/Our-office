@@ -2180,19 +2180,19 @@ function drawSnack(g,x,y,kind,left,t){                               // 테이�
 }
 var MAPB=newMap(); useMap(MAPB);
 terrazzo(bgc,1,3,34,28,'#dccbb0');
-kitchenTiles(bgc,7,3,25,3);
+kitchenTiles(bgc,5,3,25,3);
 paintOuterWalls(bgc);
 slatWall(bgc,5*T,FACE_TOP,2*T,FACE_BOT-FACE_TOP); subwayTiles(bgc,7*T,FACE_TOP,19*T,FACE_BOT-FACE_TOP);
 R(bgc,26*T,FACE_TOP,9*T,FACE_BOT-FACE_TOP,'#f1e6d0'); for(var wx=26*T+3; wx<35*T; wx+=7) P(bgc,wx,FACE_TOP+8+(wx%29),'#e6d8bc');   // 휴게실 벽: 크림색 + 나무 징두리
 R(bgc,26*T,FACE_BOT-22,9*T,22,'#c99a6a'); R(bgc,26*T,FACE_BOT-22,9*T,2,'#dcb488'); for(var px=26*T; px<35*T; px+=16) R(bgc,px,FACE_BOT-20,1,20,'#b08254');
 block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0,ROWS-1,COLS-1,ROWS-1);
-block(7,3,25,3);                                                      // 주방 (조리·계산 직원만)
+block(5,3,25,3);                                                      // 주방 (조리·계산 직원만)
 var ELEVB=[pElevator(false,'B1'),pElevator(true,'B1')];
 things.push({sy:3*T-1, draw:function(g){ g.drawImage(ELEVB[STATE.elevB1Open?1:0],T-1,-1); }});
 var SWITCHB={ x:5*T+8, y:46, w:18, h:26 }; wallItem(pSwitch(),SWITCHB.x,SWITCHB.y);
 // 벽: 메뉴 화면 다섯 · 냉난방기
-var MENUB=[]; for(var mi=0;mi<5;mi++){ MENUB.push({ x:8*T+mi*84, y:24, w:78, h:56 }); wallItem(pBezel(78,56),8*T+mi*84,24); }
-wallItem(pAC(),22*T+4,30);
+var MENUB=[]; for(var mi=0;mi<5;mi++){ MENUB.push({ x:10*T+mi*84, y:24, w:78, h:56 }); wallItem(pBezel(78,56),10*T+mi*84,24); }
+wallItem(pAC(),23*T+4,30);
 things.push({sy:1, draw:function(g){ drawMenuBoards(g); }});
 function drawMenuBoards(g){
   var names=[['한식','제육볶음'],['국·찌개','된장찌개'],['면','우동'],['일품','돈가스'],['샐러드','닭가슴살']], food=['#b8502a','#c8883a','#e8d8a8','#d89848','#6aa84a'];
@@ -2202,10 +2202,10 @@ function drawMenuBoards(g){
     ell(g,x+w/2,y+25,14,6,'#fbfaf6'); ell(g,x+w/2,y+24,11,4,food[i]); for(var k=0;k<6;k++) P(g,x+w/2-8+k*3,y+23+(k%2),sh(food[i],0.3));
     g.fillStyle='#5c4a3a'; g.fillText(names[i][1],x+w/2,y+33); });
   g.textAlign='left'; }
-// 배식대 · 식판 받는 곳 · 계산대 · 메뉴 모형 진열장
-onTile(pTrayStation(),5,4,6,5);
-onTile(pServeLine(14*T),8,4,21,5);
-onTile(pPosCounter(),22,4,24,5);
+// 들어오자마자 계산대 → 식판 받는 곳 → 배식대 (왼쪽에서 오른쪽으로) · 메뉴 모형 진열장
+onTile(pPosCounter(),5,4,7,5);
+onTile(pTrayStation(),8,4,9,5);
+onTile(pServeLine(14*T),10,4,23,5);
 onTile(pSampleCase(),1,7,4,7);
 onTile(pTrash(),24,10,24,10);
 // 음료·유제품·베이커리 냉장고: 휴게실 앞으로 내놓았다 (냉장고 등이 휴게실 벽이 된다)
@@ -2293,7 +2293,7 @@ spot(bgc,30*T+16,18*T-4,24,8); onTile(pArtB1('apple'),30,16,30,17); spot(bgc,25*
 MAPB.VEND={ ice:{c:3,r:20,face:'left'}, ramen:[{c:3,r:23,face:'left'},{c:3,r:26,face:'left'}], iceX:T+34, ramenY:[23*T-22,26*T-22] };
 MAPB.SWITCH=SWITCHB; MAPB.ELEV={x:32,y:0,w:128,h:96}; MAPB.SEATS=B1_SEATS; MAPB.RETURN=B1_RETURN; MAPB.SCRAP=B1_SCRAP; MAPB.SPOON=B1_SPOON;
 MAPB.REST={ lane:4*T+2, desks:[26*T+14,28*T+14,30*T+14], deskFeet:4*T+6, sofaIn:34*T-4, sofaRow:5*T+22, sofa:[31*T+14,33*T+2], sofaFeet:6*T+12 };   // 휴게실 자리
-MAPB.LINE={ r:6, c0:8, c1:20 }; MAPB.PAY={ c:23, r:6 }; MAPB.LOBBY={ c:2, r:3 }; MAPB.DOCK={ c:26, r:27 };
+MAPB.LINE={ r:6, c0:10, c1:22 }; MAPB.PAY={ c:6, r:6 }; MAPB.LOBBY={ c:2, r:3 }; MAPB.DOCK={ c:26, r:27 };
 var B1LOOK={
   cashier:{id:'b1cashier', kind:'chicken', shirt:'#f2a65a', pants:'#4a4038', apron:'#6a8a5a'},
   cook1:  {id:'b1cook1',   kind:'meerkat', shirt:'#fbfbf8', pants:'#3a3f46', chef:true, coat:true, apron:'#f4f4f0'},
@@ -2515,7 +2515,7 @@ put(pDesk(hash('empty')%97),28*T,14*T-16,14*T+32,[28,14,29,14]); things.push({im
 things.push({sy:14*T+33, draw:function(g){ var x=28*T+18, y=14*T-34; R(g,x,y,30,22,'#dfe3e6'); R(g,x+2,y+2,26,16,'#fbfaf6'); tx(g,'근무일지',x+15,y+7,7,'#3a3040','center'); tx(g,'.doc',x+15,y+14,7,'#3a3040','center');
   R(g,28*T+18,14*T+22,28,9,'#2e2430'); R(g,28*T+19,14*T+23,26,7,'#3c3040'); }});
 // 한교수의 메모 보드 (서버실 가운데 세운 코르크 보드): 연구 필기 · 쪽지 · 인물관계도 (빨간 실)
-function pMemoBoard(){ return obj(172,112,function(g){ var nm=STATE.lab5Names||{};
+function paintMemoBoard(g){ var nm=STATE.lab5Names||{};
   function scrib(x,y,w,n,c){ for(var l=0;l<n;l++){ var ww=w-((l*7)%Math.max(4,w/3)); for(var i=0;i<ww;i++) P(g,x+i,y+l*4+Math.round(Math.sin(i*0.9+l*2)*0.6),c); } }
   function paper(x,y,w,h,col,rot){ R(g,x+1,y+1,w,h,'rgba(0,0,0,0.25)'); R(g,x,y,w,h,col||'#f6f2e6'); R(g,x,y,w,1,'#ffffff'); disc(g,x+Math.floor(w/2),y+2,1,rot||'#d8323a'); }
   function pin(x,y){ disc(g,x,y,2,'#d8323a'); P(g,x-1,y-1,'#ff9a9a'); }
@@ -2534,8 +2534,10 @@ function pMemoBoard(){ return obj(172,112,function(g){ var nm=STATE.lab5Names||{
   var links=[[4,0],[4,1],[4,2],[4,3],[0,1],[1,3],[2,3]];
   links.forEach(function(l){ var a=who[l[0]], b=who[l[1]]; line(g,a[1],a[2],b[1],b[2],'#c8202a'); });
   who.forEach(function(w,i){ var cw=i===4?26:30; R(g,w[1]-cw/2+1,w[2]-7,cw,14,'rgba(0,0,0,0.25)'); R(g,w[1]-cw/2,w[2]-8,cw,14,i===4?'#2a2a30':'#fbfaf6'); tx(g,w[0],w[1],w[2]-1,7,i===4?'#ff6a70':'#2a2a30','center'); pin(w[1],w[2]-8); });
-  tx(g,'?',116,32,8,'#fbfaf6','center'); tx(g,'?',140,62,8,'#fbfaf6','center'); tx(g,'관찰 대상',128,92,7,'#3a2a20','center');
-}); }
+  tx(g,'?',116,32,8,'#fbfaf6','center'); tx(g,'?',140,62,8,'#fbfaf6','center'); tx(g,'관찰 대상',128,89,7,'#3a2a20','center');
+}
+function pMemoBoard(){ return obj(172,112,paintMemoBoard); }
+function memoBoardBig(k){ var c=cv(172*k,98*k), g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.scale(k,k); paintMemoBoard(g); return c; }   // 누르면 크게 (다리 없이 보드만)
 lazyItem(pMemoBoard,26*T-6,21*T-112,21*T,function(){ return JSON.stringify(STATE.lab5Names||{}); }); block(26,20,30,20);
 // 바닥 케이블 (서버실)
 [[33*T,10*T,29*T+8,14*T+30],[25*T,12*T,28*T,14*T+30],[33*T,20*T,30*T,18*T]].forEach(function(cb){ bgc.strokeStyle='#2a3448'; bgc.lineWidth=4; bgc.beginPath(); bgc.moveTo(cb[0],cb[1]); bgc.bezierCurveTo((cb[0]+cb[2])/2,cb[1]+50,(cb[0]+cb[2])/2,cb[3]+50,cb[2],cb[3]); bgc.stroke(); bgc.strokeStyle='#3a465e'; bgc.lineWidth=1; bgc.stroke(); });
@@ -2581,7 +2583,7 @@ function oldTint(img){ var c=cv(img.width,img.height), g=c.getContext('2d'); g.d
 MAP5.DOOR={ x:18*T, y:16*T-80, w:64, h:82 }; MAP5.LOBBY={ c:2, r:3 }; MAP5.ELEV={ x:32, y:0, w:128, h:96 };
 MAP5.HAN_SEAT={ c:19, r:26, face:'down', sit:true, pt:{ x:19*T+14, feet:27*T+6 } };
 MAP5.NAM_SEAT={ c:19, r:18, face:'down', sit:true, pt:{ x:19*T+14, feet:19*T+6 } };
-MAP5.STEEL={ c:22, r:27 }; MAP5.STEEL_IN={ c:24, r:27 }; MAP5.BOARD={ c:28, r:21, face:'up' }; MAP5.VDOCK=VDOCK; MAP5.LIGHTSW=LAB5SW; MAP5.KIOSK={ x:6*T-4, y:8*T-72, w:40, h:72 }; MAP5.RULES=KIOSK5_RULES;
+MAP5.STEEL={ c:22, r:27 }; MAP5.STEEL_IN={ c:24, r:27 }; MAP5.BOARD={ c:28, r:21, face:'up' }; MAP5.BOARD_RECT={ x:26*T-6, y:21*T-112, w:172, h:100 }; MAP5.VDOCK=VDOCK; MAP5.LIGHTSW=LAB5SW; MAP5.KIOSK={ x:6*T-4, y:8*T-72, w:40, h:72 }; MAP5.RULES=KIOSK5_RULES;
 
 useMap(MAP3);
 
@@ -2592,6 +2594,6 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, MAP5:MAP5, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, MAP5:MAP5, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();
