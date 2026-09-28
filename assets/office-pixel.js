@@ -506,15 +506,15 @@ var F1_STAFF={
   f1seo:{ name:'서 스태프', look:{id:'f1seo',kind:'sheep',shirt:'#bff2e4',pants:'#5a5a66',apron:'#ff5f9e'}, shop:'store', home:{c:13,r:4,face:'down'},
     spots:[{c:6,r:5,face:'up'},{c:9,r:5,face:'up'},{c:15,r:4,face:'right'},{c:8,r:5,face:'down'},{c:11,r:4,face:'down'}],
     lines:[['커스텀 노트','재단 중이에요'],['리소 잉크가','잘 먹었네'],['이번 판화는','주황 한 도'],['종이학','하나 더 접어야지'],['이름 각인은','10분이면 돼요']] },
-  f1jin:{ name:'바리스타 진', look:{id:'f1jin',kind:'elephant',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:27,r:3,face:'down'}, rest:{c:33,r:4,face:'down',sit:true}, restLines:[['이 책','재밌다'],['잠깐','숨 돌리자'],['쿠션','폭신~']],
+  f1jin:{ name:'바리스타 진', look:{id:'f1jin',kind:'elephant',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:27,r:3,face:'down'}, rest:{c:34,r:4,face:'down',sit:true}, restLines:[['이 책','재밌다'],['잠깐','숨 돌리자'],['쿠션','폭신~']],
     floor:[{c:24,r:7,face:'up'},{c:27,r:13,face:'up'},{c:22,r:12,face:'left'},{c:25,r:21,face:'up'}], floorLines:[['맛있게 드세요~'],['리필 필요하신 분~'],['원두 향','어떠세요?']],
     spots:[{c:25,r:3,face:'down'},{c:24,r:3,face:'up'},{c:22,r:3,face:'up'},{c:27,r:3,face:'down'}],
     lines:[['원두 향 좋다~'],['달빛 라떼','하나요!'],['오늘 원두는','에티오피아예요'],['얼음 채워 둘게요']] },
-  f1ryu:{ name:'바리스타 류', look:{id:'f1ryu',kind:'duck',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:31,r:3,face:'down'}, rest:{c:34,r:4,face:'down',sit:true}, restLines:[['꽥…','아니 하품이야'],['콜드브루','한 모금'],['고양이 쿠션','귀여워']],
+  f1ryu:{ name:'바리스타 류', look:{id:'f1ryu',kind:'duck',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:31,r:3,face:'down'}, rest:{c:33,r:5,face:'right',sit:true}, restLines:[['꽥…','아니 하품이야'],['콜드브루','한 모금'],['고양이 쿠션','귀여워']],
     floor:[{c:30,r:7,face:'up'},{c:29,r:13,face:'up'},{c:31,r:16,face:'left'},{c:28,r:25,face:'down'}], floorLines:[['필요한 거 있으면','불러주세요~'],['컵 치워 드릴게요'],['자리 괜찮으세요?']],
     spots:[{c:32,r:3,face:'down'},{c:31,r:3,face:'down'},{c:30,r:3,face:'down'}],
     lines:[['픽업대로','와 주세요~'],['나인 콜드브루','추천해요'],['시럽 넣어 드릴까요?']] },
-  f1woo:{ name:'우서빙', look:{id:'f1woo',kind:'hippo',shirt:'#e8efe4',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:28,r:19,face:'left'}, rest:{c:33,r:6,face:'up',sit:true}, busyMs:[6000,12000],
+  f1woo:{ name:'우서빙', look:{id:'f1woo',kind:'hippo',shirt:'#e8efe4',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:28,r:19,face:'left'}, rest:{c:34,r:6,face:'up',sit:true}, busyMs:[6000,12000],
     tasks:[{sp:{c:22,r:16,face:'right'},lines:[['레몬나무','물 줄 시간~'],['잎 먼지','닦아 줘야지'],['레몬이','노랗게 익었네~']]},{sp:{c:19,r:17,face:'left'},lines:[['극락조 잎이','또 났어요'],['화분 흙이','말랐네']]},
       {sp:{c:32,r:21,face:'right'},lines:[['몬스테라는','햇빛을 좋아해요'],['물은 흙이 마르면','흠뻑!']]},{sp:{c:19,r:21,face:'left'},lines:[['식물 벽','분무 완료']]},
       {sp:{c:25,r:13,face:'up'},lines:[['테이블','반짝반짝~'],['컵 자국','닦아야지']]},{sp:{c:21,r:23,face:'left'},lines:[['테이블 닦을게요~'],['의자 줄 맞추기']]},{sp:{c:28,r:16,face:'right'},lines:[['4인 테이블','정리 완료']]},
@@ -1301,7 +1301,7 @@ function frame(now){
   else if(F.key==='B1') b1Trays(F,list,now);
   if((F.key==='B1'||F.key==='5'||F.key==='1') && (roofWx==='rain'||roofWx==='snow')) list.push({sy:5*T-1, draw:function(gg){ PO.drawWetSign(gg,T+16,5*T); }});   // 비·눈 오는 날: 엘리베이터 앞 '미끄럼 주의'
   if(F.key==='5' && F.vac){ var vv=F.vac; list.push({ sy:vv.feet-14, draw:function(gg){ PO.drawVacuum(gg,Math.round(vv.x)+15,Math.round(vv.feet)-6,now,!!vv.path); } }); }
-  for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:(F.key==='1' && a.onFurn && !a.path && a.dir==='down') ? a.feet+8 : a.feet}); }   // 1층: 앞을 보고 앉은 사람은 의자 등받이 앞에
+  for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:(F.key==='1' && a.onFurn && !a.path && a.dir!=='up') ? a.feet+8 : a.feet}); }   // 1층: 앞·옆을 보고 앉은 사람은 의자 등받이 앞에
   if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
   list.sort(function(p,q){ return p.sy-q.sy; });
   list.forEach(function(it){

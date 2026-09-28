@@ -2997,23 +2997,34 @@ function pReturnStation(){ return obj(64,92,function(g){ R(g,0,24,64,68,OAK); R(
   R(g,6,-8,12,8,'#ffffff'); R(g,6,-8,12,2,'#e8e4dc'); R(g,22,-10,6,10,'#fbfaf6'); for(var s=0;s<4;s++) R(g,23+s,-14,1,6,[POT,SAGED,'#ffffff',POT][s]); R(g,34,-6,20,6,'#e8e4dc'); R(g,36,-8,16,2,'#ffffff');   // 냅킨 · 빨대 · 뚜껑
   [['일반','#8a8278'],['플라','#6aa8e0'],['컵','#6f9168']].forEach(function(b,i){ var x=4+i*20; R(g,x,34,16,48,'#f6f2ea'); R(g,x,34,16,6,b[1]); R(g,x+3,36,10,2,'#2a2e34'); tx(g,b[0],x+8,48,6,b[1],'center'); R(g,x+6,60,4,14,sh('#f6f2ea',-0.08)); }); }); }
 onTile(pReturnStation(),33,8,34,10);
-// ---- 직원 쉼터 (메뉴판 아래 모퉁이): 3인 테이블 · 뜨개질 바구니 · 책 · 귀여운 쿠션 — 손님이 없을 때 카페 직원들이 쉰다 ----
-function cushionHeart(g,x,y,c){ disc(g,x-3,y-2,4,c); disc(g,x+3,y-2,4,c); tri(g,x-7,y-1,x+7,y-1,x,y+7,c); P(g,x-4,y-4,'#ffffff'); P(g,x-3,y-4,'#ffffff'); }
-function cushionCat(g,x,y,c){ tri(g,x-7,y-3,x-4,y-10,x-1,y-4,c); tri(g,x+7,y-3,x+4,y-10,x+1,y-4,c); disc(g,x,y,7,c); P(g,x-3,y-1,'#3a2c28'); P(g,x+3,y-1,'#3a2c28'); P(g,x,y+2,'#e87a8a'); R(g,x-6,y+2,2,1,'#f7a2ae'); R(g,x+5,y+2,2,1,'#f7a2ae'); }
-function pNookShelf(){ return obj(64,46,function(g){ R(g,0,10,64,36,OAK); R(g,0,10,64,3,OAKL); R(g,0,43,64,3,OAKD); R(g,2,26,60,2,OAKD);
-  [['#c86a5a',9],['#6a8aa0',8],['#e8c46a',10],['#8aa06a',9],['#b89af0',8],['#f28ab0',9]].forEach(function(b,i){ R(g,4+i*5,24-b[1],4,b[1],b[0]); R(g,4+i*5,24-b[1],4,1,sh(b[0],0.3)); });   // 책
-  R(g,36,16,24,9,'#c8a878'); for(var x=37;x<60;x+=3) R(g,x,17,1,8,'#a8885a'); disc(g,41,15,4,'#f28ab0'); disc(g,49,14,4,'#8ac8e8'); disc(g,56,15,3,'#f5d63a'); line(g,45,8,50,15,'#8a6a4a'); line(g,52,7,48,15,'#8a6a4a');   // 뜨개질 바구니
-  R(g,6,30,12,10,'#fbfaf7'); leafClump(g,12,29,5,7); R(g,24,32,8,8,'#fff4dc'); R(g,24,32,8,2,'#8a5a3a'); R(g,38,31,20,9,'#fbfaf6'); tx(g,'직원 쉼터',48,35,6,'#8a6a4a','center'); }); }
-function pNookTable(){ return obj(60,40,function(g){ ell(g,30,14,29,12,OAKD); ell(g,30,12,28,11,OAKL); R(g,27,22,6,16,BRASS); ell(g,30,38,10,2,BRASS);
-  R(g,8,6,16,4,'#6a8aa0'); R(g,9,9,15,4,'#c86a5a'); R(g,10,12,13,4,'#e8c46a');                                                       // 책 더미
-  R(g,34,6,14,9,'#fbfaf6'); R(g,41,6,1,9,'#d8cfc0'); for(var l=0;l<3;l++){ R(g,35,8+l*2,5,1,'#b8b0a4'); R(g,43,8+l*2,4,1,'#b8b0a4'); }   // 펼친 책
-  R(g,18,15,14,5,'#f28ab0'); for(var k=0;k<14;k+=2) P(g,18+k,16,'#f8c0d4'); disc(g,36,18,3,'#f28ab0'); line(g,33,14,40,21,'#c8a060'); line(g,40,14,34,21,'#c8a060');   // 뜨다 만 목도리 · 털실 · 바늘
-  R(g,50,14,6,6,'#fff4dc'); R(g,50,14,6,2,'#8a5a3a'); }); }
+// ---- 직원 쉼터 (메뉴판 아래 모퉁이): 원목 선반 · 둥근 원목 테이블 · 가죽·패브릭 의자 셋 · 리넨 쿠션 · 뜨개질 바구니 · 책
+//      손님이 없을 때 카페 직원들이 쉰다. 카페 쪽(서쪽·남쪽)은 월넛 살 + 반투명 유리 파티션으로 가리고, 바 쪽(34행 4열 앞)으로만 드나든다
+var NK_W='#6e5038', NK_WD='#4e3826', NK_WL='#8e6a4c';
+function nookCushion(g,x,y,w,h,c){ R(g,x,y,w,h,c); R(g,x,y,w,1,sh(c,0.25)); R(g,x,y+h-1,w,1,sh(c,-0.2)); R(g,x+Math.floor(w/2),y+1,1,h-2,sh(c,-0.12)); }
+function pNookShelf(){ return obj(64,46,function(g){ R(g,0,10,64,36,NK_W); R(g,0,10,64,3,NK_WL); R(g,0,43,64,3,NK_WD); R(g,2,26,60,2,NK_WD);
+  [['#3e4a5a',10],['#7a4a3a',8],['#c8b89a',11],['#5a6a4e',9],['#2e2e34',10],['#a89a80',8],['#6a5a70',9]].forEach(function(b,i){ R(g,4+i*5,24-b[1],4,b[1],b[0]); R(g,4+i*5,24-b[1],4,1,sh(b[0],0.25)); });   // 책
+  R(g,40,15,20,10,'#b89a6a'); for(var x=41;x<60;x+=3) R(g,x,16,1,9,'#9a7c50'); disc(g,45,14,4,'#cfc6b6'); disc(g,53,13,4,'#8a8f96'); line(g,48,6,52,14,'#c8b89a'); line(g,55,6,51,14,'#c8b89a');   // 뜨개질 바구니 (귀리색·회색 실)
+  R(g,6,31,11,9,'#e8e2d8'); leafClump(g,11,30,5,9); R(g,24,33,7,7,'#f2eee8'); R(g,24,33,7,2,'#4a3a2e'); R(g,38,32,22,8,'#c8a878'); R(g,39,33,20,6,'#d8bc8a'); tx(g,'STAFF',49,36,6,'#5a4030','center'); }); }
+function pNookTable(){ return obj(40,40,function(g){ ell(g,20,13,19,11,NK_WD); ell(g,20,11,18,10,NK_W); ell(g,17,9,10,5,NK_WL); R(g,18,22,4,15,'#3a3a40'); ell(g,20,38,9,2,'#3a3a40');
+  R(g,5,6,12,3,'#3e4a5a'); R(g,6,9,11,3,'#7a4a3a'); R(g,24,5,11,7,'#f2eee8'); R(g,29,5,1,7,'#d8cfc0'); for(var l=0;l<3;l++) R(g,25,7+l*2,3,1,'#b8b0a4');   // 책
+  R(g,8,14,12,4,'#cfc6b6'); for(var k=0;k<12;k+=2) P(g,8+k,15,'#e2dbcf'); disc(g,24,16,3,'#8a8f96'); line(g,22,12,28,19,'#c8a060');     // 뜨다 만 목도리
+  R(g,30,12,5,5,'#f2eee8'); R(g,30,12,5,1,'#4a3a2e'); }); }
+function pChairSide(c){ return obj(28,36,function(g){ var w='#3a3a40';                                                        // 옆모습 의자 (등받이가 왼쪽, 오른쪽을 본다)
+  R(g,2,4,6,24,c); R(g,2,4,6,2,sh(c,0.3)); R(g,6,6,2,22,sh(c,-0.2)); R(g,2,18,24,8,sh(c,0.12)); R(g,2,18,24,2,sh(c,0.35)); R(g,2,26,24,2,sh(c,-0.25));
+  R(g,4,28,3,8,w); R(g,21,28,3,8,w); }); }
 onTile(pNookShelf(),33,3,34,3);
-(function(){ var a=pChairN('#f4c0cc'), b=pChairN('#fbe8b0'), c=pChairS('#cfe0f0');
-  cushionHeart(a.getContext('2d'),15,9,'#f28ab0'); cushionCat(b.getContext('2d'),15,10,'#f6f0e4'); cushionCat(c.getContext('2d'),15,17,'#e8c46a');
-  onTile(a,33,4,33,4); onTile(b,34,4,34,4); onTile(pNookTable(),33,5,34,5); onTile(c,33,6,33,6);
-  blocked[4][33]=0; blocked[4][34]=0; })();                                                                    // 위 두 자리는 안쪽이라 지나서 앉게 막지 않는다
+(function(){ var a=pChairN('#4e5a52'), b=pChairSide('#8a5a3a'), c=pChairS('#6b6258');
+  nookCushion(a.getContext('2d'),8,6,14,7,'#d8d0c4'); nookCushion(b.getContext('2d'),5,11,6,9,'#cfc6b6'); nookCushion(c.getContext('2d'),8,14,14,7,'#b8b0a4');
+  onTile(a,34,4,34,4); onTile(b,33,5,33,5); onTile(pNookTable(),34,5,34,5); onTile(c,34,6,34,6);
+  blocked[4][34]=0; blocked[5][33]=0; blocked[6][34]=0;                                                        // 의자 자리는 안쪽으로 지나 앉는다
+  wallEdge(32,5,33,5); wallEdge(32,6,33,6); wallEdge(33,6,33,7); wallEdge(34,6,34,7);                           // 파티션: 카페 쪽에선 못 들어온다
+  function screen(g,x,y,w,h,side){ var gl='rgba(236,240,238,0.72)';
+    if(side){ R(g,x,y,w,h,NK_WD); R(g,x+1,y,w-2,h,NK_W); R(g,x+1,y,w-2,2,NK_WL); for(var yy=y+6; yy<y+h; yy+=8) R(g,x+1,yy,w-2,1,NK_WD); return; }
+    R(g,x,y,w,h,NK_WD); R(g,x,y,w,2,NK_WL); g.fillStyle=gl; g.fillRect(x+2,y+3,w-4,12); R(g,x+2,y+15,w-4,1,NK_WD);             // 위: 반투명 유리
+    for(var xx=x+2; xx<x+w-2; xx+=4){ R(g,xx,y+16,3,h-18,NK_W); R(g,xx,y+16,1,h-18,NK_WL); } R(g,x,y+h-2,w,2,NK_WD); }             // 아래: 월넛 세로 살
+  things.push({sy:7*T, draw:function(g){ screen(g,33*T,7*T-42,2*T,42,false); R(g,34*T+4,7*T-17,24,9,'#c8a878'); tx(g,'STAFF',34*T+16,7*T-12,6,'#4a3a2e','center'); }});   // 남쪽 파티션
+  things.push({sy:7*T-1, draw:function(g){ screen(g,33*T-3,5*T-40,6,2*T+40-2,true); g.fillStyle='rgba(236,240,238,0.45)'; g.fillRect(33*T-2,5*T-38,4,20); }});   // 서쪽 파티션 (옆에서 본 얇은 칸막이)
+})();
 things.push({sy:11*T, draw:function(g){ tx(g,'퇴식대',34*T,11*T+8,8,SAGED,'center'); }});
 
 // ---- 가운데 레몬나무 + 둥근 화단 벤치 ----
