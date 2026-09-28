@@ -605,6 +605,7 @@ function pElevator(open,floor){ return obj(128,96,function(g){
   var A='#ffb347'; P(g,40,13,A); R(g,39,14,3,1,A); R(g,38,15,5,1,A);
   if(floor==='B1'){ R(g,38,13,5,1,'#262a31'); R(g,39,14,3,1,'#262a31'); R(g,38,15,5,1,'#262a31'); R(g,38,17,5,1,A); R(g,39,16,3,1,A); P(g,40,15,A);   // ▼B1
     R(g,46,13,4,1,A); P(g,46,14,A); P(g,49,14,A); R(g,46,15,4,1,A); P(g,46,16,A); P(g,50,16,A); R(g,46,17,4,1,A); R(g,53,13,1,5,A); P(g,52,14,A); }
+  else if(floor===5){ R(g,48,13,5,1,A); P(g,48,14,A); R(g,48,15,5,1,A); P(g,52,16,A); R(g,48,17,5,1,A); }
   else if(floor===2){ R(g,48,13,5,1,A); P(g,52,14,A); R(g,48,15,5,1,A); P(g,48,16,A); R(g,48,17,5,1,A); }
   else { R(g,48,13,5,1,A); P(g,52,14,A); R(g,49,15,4,1,A); P(g,52,16,A); R(g,48,17,5,1,A); }
   // 호출 버튼
@@ -691,6 +692,8 @@ var KIND = {
   pup:     {f:'#c9906a',F:'#f0d8bc',d:'#8e603f',ears:'floppy'},
   greycat: {f:'#b9b2a6',F:'#ebe6dc',d:'#8a847c',ears:'pointed',mark:'cat'},
   goat:    {f:'#c49a6c',F:'#ecd8bc',d:'#8a6a48',ears:'horns'},
+  owl:     {f:'#8a6a4a',F:'#efe0c4',d:'#5a4028',ears:'pointed',mark:'owl'},    // 5층 한교수
+  turtle:  {f:'#8fb87a',F:'#e4efc6',d:'#5a7a4a'},                                // 5층 남박사
   camel:   {f:'#d6aa6c',F:'#f2e0bf',d:'#9a6e40',ears:'camel',mark:'camel'},   // 낙타: 정수리 털뭉치, 옆으로 난 작은 귀, 긴 주둥이, 졸린 눈꺼풀
   guardmk: {f:'#a9765a',F:'#f0d2b0',d:'#744a30',ears:'side',mark:'monkey'},
   // 2층 라운지 바 (바텐더 레서판다 · 홀서빙 오소리)
@@ -2172,6 +2175,219 @@ var B1LOOK={
   cook2:  {id:'b1cook2',   kind:'meerkat', shirt:'#fbfbf8', pants:'#3a3f46', chef:true, coat:true, apron:'#f4f4f0'}
 };
 
+var MAP5=newMap(); useMap(MAP5);
+var WD='#5a3a24', WD2='#6e4a30', WDL='#8a603e', WDD='#2e1c12';
+var FN="NeoDGM, sans-serif";
+function fontReady(){ try{ return !document.fonts || document.fonts.check('10px NeoDGM'); }catch(e){ return true; } }
+function lazyItem(build,x,y,sy,key){ var img=null, k0=null; things.push({sy:sy, draw:function(g){ var k=key?key():''; if(!img||k!==k0){ var im=build(); if(!fontReady()){ g.drawImage(im,x-1,y-1); return; } img=im; k0=k; } g.drawImage(img,x-1,y-1); }}); }
+function tx(g,s,x,y,size,col,align){ g.font=size+'px '+FN; g.fillStyle=col; g.textAlign=align||'left'; g.textBaseline='middle'; g.fillText(s,x,y); g.textAlign='left'; }
+
+// ---------------- 바닥 ----------------
+stoneFloor(bgc,1,3,7,28);                                                      // 복도: 대리석
+for(var r=3;r<=15;r++) for(var c=8;c<=22;c++){ var x=c*T, y=r*T, b=(c+r)%2?'#8e8a84':'#86827c';     // 색채·종이 연구소: 회색 돌
+  R(bgc,x,y,T,T,b); R(bgc,x,y,T,1,'#7a766f'); R(bgc,x,y,1,T,'#7a766f'); R(bgc,x+1,y+1,T-2,1,sh(b,0.12)); var v=rnd(c*11+r*5); P(bgc,x+6+Math.floor(v*18),y+8+Math.floor(v*14),sh(b,-0.12)); }
+for(var r2=16;r2<=28;r2++) for(var c2=8;c2<=22;c2++){ var x2=c2*T, y2=r2*T, b2=(c2+r2)%2?'#e8efee':'#e0e8e7';   // 비밀 연구실: 민트 타일
+  R(bgc,x2,y2,T,T,b2); R(bgc,x2,y2,T,1,'#cfdad8'); R(bgc,x2,y2,1,T,'#cfdad8'); R(bgc,x2+1,y2+1,T-2,1,'#f6fbfa'); }
+carpet(bgc,17,26,22,28,'#b9b3cc');                                               // 한교수 방
+for(var r3=3;r3<=28;r3++) for(var c3=23;c3<=34;c3++){ var x3=c3*T, y3=r3*T, b3=(c3+r3)%2?'#1c2433':'#1a2130';   // 관제실: 남색 판
+  R(bgc,x3,y3,T,T,b3); R(bgc,x3,y3,T,1,'#253046'); R(bgc,x3,y3,1,T,'#253046'); P(bgc,x3+2,y3+2,'#2c3850'); }
+paintOuterWalls(bgc);
+// 윗벽: 복도는 건물 기본 벽, 연구소는 미색 회벽 + 짙은 나무 판벽, 관제실은 어두운 강판
+R(bgc,8*T,FACE_TOP,15*T,FACE_BOT-FACE_TOP,'#efe6d2'); for(var wx=8*T; wx<23*T; wx+=4) P(bgc,wx+(wx%12),FACE_TOP+10+(wx%23),'#e6dcc6');
+R(bgc,8*T,FACE_BOT-20,15*T,20,WD); R(bgc,8*T,FACE_BOT-20,15*T,2,WDL); for(var px=8*T; px<23*T; px+=32) R(bgc,px,FACE_BOT-18,1,18,WDD);
+R(bgc,23*T,FACE_TOP,12*T,FACE_BOT-FACE_TOP,'#141a26'); R(bgc,23*T,FACE_BOT-18,12*T,18,'#0e131c'); for(var sx=23*T; sx<35*T; sx+=48) R(bgc,sx,FACE_TOP,1,FACE_BOT-FACE_TOP,'#1c2433');
+R(bgc,23*T,0,12*T,FACE_TOP,'#2a3142'); R(bgc,23*T,0,12*T,2,'#3a4458');
+block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0,ROWS-1,COLS-1,ROWS-1);
+
+// ---------------- 벽 ----------------
+function hWallLab(len){ return obj(len,48,function(g,w){ R(g,0,0,w,10,CAP); R(g,0,0,w,2,CAP_HI); R(g,0,9,w,1,CAP_LO);
+  R(g,0,10,w,24,'#d6e6e2'); for(var x=0;x<w;x+=6) P(g,x+(x%4),16+(x%9),'#cadcd8'); R(g,0,34,w,10,'#b4cdc6'); R(g,0,34,w,1,'#e6f2ef'); R(g,0,43,w,1,'#98b2ab');
+  g.fillStyle='rgba(60,90,90,0.14)'; g.fillRect(0,44,w,4); }, true); }
+function steelV(len){ return obj(10,len,function(g,w,h){ R(g,0,0,10,h,'#2a3142'); R(g,0,0,2,h,'#48536a'); R(g,8,0,2,h,'#161b26'); }, true); }
+put(vWall(T,false),7*T+11,3*T,4*T); put(vWall(23*T,false),7*T+11,6*T,29*T); block(7,3,7,3); block(7,6,7,28);      // 복도 | 연구소 (4~5행 첫 출입문)
+put(hWallLab(10*T),8*T,16*T+2,16*T+48); put(hWallLab(3*T),20*T,16*T+2,16*T+48); block(8,16,17,16); block(20,16,22,16);   // 18~19열 비밀 문
+put(steelV(26*T),23*T+11,3*T,29*T); block(23,3,23,28);
+// 첫 출입문: 유리문 + 카드 리더기
+things.push({sy:6*T, draw:function(g){ var x=7*T+9, y=4*T; g.fillStyle='rgba(190,226,240,0.5)'; g.fillRect(x,y,14,2*T); R(g,x,y,14,2,'#8f9aa5'); R(g,x,y+2*T-2,14,2,'#8f9aa5'); R(g,x+6,y+2,2,2*T-4,'#a8b4be'); R(g,x+2,y+6,1,20,'#ffffff');
+  R(g,x-14,y+2*T+6,12,18,'#2e3440'); R(g,x-12,y+2*T+8,8,5,'#3ae890'); R(g,x-11,y+2*T+16,6,4,'#8a929c'); }});
+
+// ---------------- ① 복도 ----------------
+var ELEV5=pElevator(false,5); things.push({sy:3*T-1, draw:function(g){ g.drawImage(ELEV5,T-1,-1); }});
+function pStandSign(){ return obj(120,76,function(g){ R(g,58,40,4,34,'#8a7a64'); ell(g,60,74,16,2,'#6a5a4a'); R(g,0,0,120,42,'#8a6048'); R(g,2,2,116,38,'#fbf6ea'); R(g,4,4,112,1,'#ffffff'); R(g,2,37,116,2,'#e2d4bc');
+  tx(g,'색채 · 종이 연구소',60,15,11,'#4a3a2e','center'); tx(g,'COLOR & PAPER LAB  →',60,29,8,'#8a7a64','center'); }); }
+lazyItem(pStandSign,2*T+4,8*T-76,8*T); block(2,7,5,7); onTile(pBench(),2,15,4,15); onTile(pPlant('tall','#f4f1ea'),6,4,6,4); onTile(pPlant('monstera','#f4f1ea'),1,27,1,27); onTile(pExtinguisher(),6,22,6,22);
+function pExitSign(){ return obj(48,18,function(g){ R(g,0,0,48,18,'#2e8a4a'); R(g,1,1,46,16,'#3aa05a'); tx(g,'비상구',24,9,9,'#e8fff0','center'); }); }
+lazyItem(pExitSign,3*T+8,29*T-18,29*T);
+
+// ---------------- ② 색채·종이 연구소 (도쿄 큐쿄도처럼) ----------------
+function paperRow(g,x,y,w,h,hue0,step,sat,lt){ for(var i=0;i*4+3<=w;i++){ var hc='hsl('+((hue0+i*step)%360)+','+sat+'%,'+(lt+((i%3)-1)*4)+'%)'; R(g,x+i*4,y,3,h,hc); R(g,x+i*4,y,3,1,'rgba(255,255,255,0.4)'); R(g,x+i*4+2,y+1,1,h-1,'rgba(0,0,0,0.12)'); } }
+function packRow(g,x,y,w,n,cols){ var pw=Math.floor(w/n); for(var i=0;i<n;i++){ var px=x+i*pw; R(g,px+1,y,pw-2,10,cols[i%cols.length]); R(g,px+1,y,pw-2,2,'#fdfaf2'); R(g,px+1,y+9,pw-2,1,'rgba(0,0,0,0.2)'); } }
+// 현판
+function pPlaque(){ return obj(172,22,function(g){ R(g,0,0,172,22,'#3e2414'); R(g,2,2,168,18,'#6a3e22'); R(g,2,2,168,2,'#8a5a36'); R(g,2,18,168,2,'#4a2a18');
+  disc(g,8,11,2,'#c89a4a'); disc(g,163,11,2,'#c89a4a'); tx(g,'各  持  本  色',86,11,14,'#e8c46a','center'); }); }
+lazyItem(pPlaque,8*T+(15*T-172)/2,FACE_TOP+2,1);
+// 벽장: 세운 색종이 두 줄 + 봉투 묶음 한 줄 (무지개 순서로 이어진다)
+function pPaperWall(w,hue0){ return obj(w,50,function(g){ R(g,0,0,w,50,WD); R(g,2,2,w-4,46,WDD);
+  paperRow(g,4,4,w-8,13,hue0,2.6,62,66); R(g,2,17,w-4,3,WD2); R(g,2,17,w-4,1,WDL);
+  paperRow(g,4,20,w-8,12,hue0+40,2.6,48,56); R(g,2,32,w-4,3,WD2); R(g,2,32,w-4,1,WDL);
+  packRow(g,4,35,w-8,Math.floor((w-8)/16),['#f4efe2','#efe2cc','#e8eef2','#f2e0e4','#e6dcf0']); R(g,2,46,w-4,2,WD2); }); }
+[[8*T+4,108,0],[8*T+116,112,95],[8*T+232,112,190],[8*T+348,124,285]].forEach(function(u){ wallItem(pPaperWall(u[1],u[2]),u[0],FACE_BOT-50); });
+// 벽장 아래 서랍장
+function pDrawerRun(w){ return obj(w,34,function(g){ R(g,0,0,w,34,WD); R(g,0,0,w,3,WDL); R(g,0,31,w,3,'#3a2618');
+  for(var x=4; x+32<=w-2; x+=36){ R(g,x,6,32,22,WD2); R(g,x,6,32,1,WDL); R(g,x+12,16,8,2,'#c8a060'); R(g,x+12,16,8,1,'#e8c880'); } }); }
+onTile(pDrawerRun(15*T-8),8,3,22,3);
+// 왼쪽 벽 세로 선반
+function pSideShelf(){ return obj(36,296,function(g){ R(g,0,0,36,296,WD); R(g,0,0,36,3,WDL); R(g,2,4,32,288,WDD);
+  for(var i=0;i<7;i++){ var y=8+i*41; packRow(g,4,y,28,2,['hsl('+(i*50)+',55%,66%)','hsl('+(i*50+20)+',48%,76%)']); packRow(g,4,y+13,28,2,['#f4efe2','#efe2cc']); R(g,2,y+26,32,3,WD2); R(g,2,y+26,32,1,WDL); } }); }
+put(pSideShelf(),8*T+2,5*T,5*T+296,[8,5,8,13]);
+// 가운데 유리 진열장
+function pLongCase(){ return obj(92,232,function(g){ R(g,0,0,92,232,'#3a2a20'); R(g,0,0,92,2,'#5a4232'); R(g,4,4,84,220,'#dde9ec'); g.fillStyle='rgba(255,244,208,0.25)'; g.fillRect(4,4,84,40);
+  for(var i=0;i<8;i++){ var y=12+i*26; R(g,10,y,30,14,['#e8d4b0','#f2e0e4','#d8e4ec','#f4efe2','#e6dcf0'][i%5]); R(g,10,y,30,2,'#ffffff'); R(g,10,y+13,30,1,'rgba(0,0,0,0.15)');
+    R(g,46,y+1,5,13,['#c83a3a','#3a5ab0','#2a2a30','#8a6a48'][i%4]); R(g,46,y+1,5,2,'#e8e4dc'); R(g,56,y,26,14,'#fbf8f0'); R(g,58,y+3,14,1,'#b8b2a6'); R(g,58,y+7,18,1,'#b8b2a6'); R(g,58,y+10,10,1,'#b8b2a6'); }
+  R(g,4,4,2,220,'#ffffff'); R(g,86,4,2,220,'#b8c4c8'); R(g,0,224,92,8,'#2a1c14'); }); }
+put(pLongCase(),10*T,6*T,6*T+232,[10,6,12,12]);
+// 계단식 나무 진열대
+function pStepIsland(w){ return obj(w,78,function(g){ R(g,0,0,w,70,WD); R(g,0,0,w,3,WDL);
+  for(var t=0;t<3;t++){ R(g,4,6+t*20,w-8,16,WD2); R(g,4,6+t*20,w-8,1,WDL); for(var k=0;k*22+19<=w-12;k++){ var cc=['#f4efe2','#efe2cc','#e8eef2','#f2e0e4','#e8d4b0','#dfe8dc'][(k+t)%6]; R(g,6+k*22,7+t*20,19,12,cc); R(g,6+k*22,7+t*20,19,2,'#ffffff'); R(g,6+k*22,18+t*20,19,1,'rgba(0,0,0,0.18)'); } }
+  R(g,0,70,w,8,'#3a2618'); }); }
+onTile(pStepIsland(236),14,6,21,7); onTile(pStepIsland(236),14,10,21,11);
+// 비밀 문 앞 선반 다섯 (넷째가 문)
+function pFrontShelf(seed){ return obj(64,78,function(g){ R(g,0,0,64,78,WD); R(g,0,0,64,3,WDL); R(g,2,3,60,70,WDD);
+  paperRow(g,4,6,56,13,seed*52,5,58,64); R(g,2,19,60,3,WD2); R(g,2,19,60,1,WDL);
+  packRow(g,4,23,56,4,['hsl('+(seed*52+20)+',45%,72%)','#f4efe2','hsl('+(seed*52+60)+',40%,78%)','#efe2cc']); R(g,2,34,60,3,WD2); R(g,2,34,60,1,WDL);
+  paperRow(g,4,38,56,13,seed*52+120,5,50,58); R(g,2,51,60,3,WD2); R(g,2,51,60,1,WDL);
+  packRow(g,4,55,56,4,['#e8d4b0','#f4efe2','#dfe8dc','#f2e0e4']); R(g,2,66,60,3,WD2); R(g,0,73,64,5,'#3a2618'); }); }
+var FRONT=[]; for(var su=0; su<5; su++){ var fx=12*T+su*64; FRONT.push(pFrontShelf(su)); if(su===3) continue; put(FRONT[su],fx,16*T-78,16*T); }
+block(12,15,17,15); block(20,15,21,15);
+var DOORX=18*T;
+things.push({sy:16*T, draw:function(g){ var k=STATE.lab5Door||0, dx=Math.round(-46*k), dy=Math.round(6*k);
+  if(k>0){ R(g,DOORX,16*T-2,64,50,'#0c0e12'); var dg=g.createLinearGradient(0,16*T,0,16*T+48); dg.addColorStop(0,'rgba(90,255,180,0)'); dg.addColorStop(1,'rgba(90,255,180,0.2)'); g.fillStyle=dg; g.fillRect(DOORX,16*T,64,48); }
+  for(var sc=0; sc<3; sc++) R(g,DOORX-40+sc*6,16*T+4+sc*3,70-sc*10,1,'rgba(40,30,20,0.35)');     // 바닥 긁힌 자국
+  g.drawImage(FRONT[3],DOORX-1+dx,16*T-79+dy); }});
+
+// ---------------- ③ 비밀 연구실 ----------------
+// 칸막이 벽면: 감시 모니터 다섯 · 멈춘 시계 · 화이트보드 (실행 중 그림)
+things.push({sy:16*T+49, draw:function(g){ var y=16*T+12;
+  R(g,8*T+4,y-2,236,34,'#2a2f36'); R(g,8*T+4,y-2,236,2,'#4a525c');
+  (STATE.lab5Screens||[]).forEach(function(s,i){ var x=8*T+10+i*46; R(g,x-1,y+1,44,28,'#12161a'); g.save(); g.imageSmoothingEnabled=true; g.drawImage(s.img,s.sx,s.sy,s.sw,s.sh,x,y+2,42,26); g.restore();
+    g.fillStyle='rgba(60,220,160,0.22)'; g.fillRect(x,y+2,42,26); g.fillStyle='rgba(0,0,0,0.18)'; for(var yy=y+2; yy<y+28; yy+=2) g.fillRect(x,yy,42,1);
+    if(s.label){ R(g,x+1,y+3,s.label.length*5+4,8,'rgba(0,0,0,0.55)'); tx(g,s.label,x+3,y+7,7,'#9affd0'); } P(g,x+38,y+5,'#ff4a4a'); });
+  drawClock(g,{h:5,m:46},{cx:16*T+18,cy:y+15});
+  var wbx=20*T+4, wby=y-2; R(g,wbx,wby,88,34,'#b8c2c8'); R(g,wbx+2,wby+2,84,28,'#fbfdfd'); R(g,wbx+2,wby+30,84,3,'#9aa4ac');
+  if(STATE.lab5Sketch){ g.save(); g.globalAlpha=0.5; try{ g.filter='grayscale(1) contrast(1.4)'; }catch(e){} g.drawImage(STATE.lab5Sketch,0,0,W,H,wbx+4,wby+4,34,26); g.restore(); }
+  ring(g,wbx+34,wby+8,4,'#e8323c'); ring(g,wbx+30,wby+24,3,'#e8323c'); tx(g,'적응도 ?',wbx+64,wby+9,8,'#3a5ab0','center');
+  [[wbx+46,wby+26],[wbx+54,wby+22],[wbx+62,wby+24],[wbx+70,wby+17],[wbx+80,wby+19]].forEach(function(q,i,a){ if(i) line(g,a[i-1][0],a[i-1][1],q[0],q[1],'#3a5ab0'); }); }});
+// 정수기 · 관제 책상
+onTile(pCooler(),8,18,8,19);
+function pConsole(){ return obj(190,40,function(g){ R(g,0,14,190,20,'#c8d2d8'); R(g,0,14,190,3,'#eef3f6'); R(g,0,34,190,6,'#98a4ac'); R(g,4,40,4,0,'#98a4ac');
+  [8,56,104,148].forEach(function(x){ R(g,x,0,34,16,'#2a3038'); R(g,x+2,2,30,11,'#1a3a30'); R(g,x+5,5,16,1,'#6affb0'); R(g,x+5,8,22,1,'#6affb0'); R(g,x+14,16,6,2,'#8a929c'); R(g,x+6,22,24,4,'#f4f5f6'); }); }); }
+onTile(pConsole(),10,18,15,18);
+// 남박사 자리: 복합기 · 옷걸이 · 책상 · 팩스 · 쓰레기통
+onTile(pCoatRack(),18,18,18,19);
+put(pDesk(hash('nam')%97),19*T,19*T-16,19*T+32,[19,19,20,19]); things.push({img:pChairBack('#8a9a74'),x:19*T+13,y:19*T+6-32,sy:19*T+5});
+function pFax(){ return obj(30,44,function(g){ R(g,0,16,30,28,'#b8a888'); R(g,0,16,30,3,'#d8c8a8'); R(g,2,42,26,2,'#8a7a5a'); tx(g,'FAX',15,32,8,'#6a5a3a','center');
+  R(g,2,4,26,14,'#e8e4dc'); R(g,2,4,26,2,'#f8f6f2'); R(g,4,7,12,4,'#3a3f46'); R(g,20,8,5,2,'#3ae890'); R(g,6,0,18,6,'#fbfaf6'); R(g,8,2,12,1,'#b8b2a6'); }); }
+onTile(pFax(),21,18,21,19); onTile(pTrash(),22,19,22,19);
+// 베이지 세로 파일 책장
+function pBinderShelf(names){ return obj(156,132,function(g){ R(g,0,0,156,132,'#8a6a48'); R(g,0,0,156,3,'#a88a64'); R(g,3,4,150,124,'#6a4e34');
+  var bc=['#e6d6b6','#d8c49c','#ecdfc4','#cdb88e','#e2cfa8','#d4c29e','#efe4cc','#c9b287'];
+  for(var i=0;i<16;i++){ var x=8+(i%8)*18, y=7+Math.floor(i/8)*61, col=bc[i%8];
+    R(g,x,y,16,52,col); R(g,x,y,2,52,sh(col,0.2)); R(g,x+14,y,2,52,sh(col,-0.2)); R(g,x+3,y+3,10,34,'#fdfbf4'); disc(g,x+8,y+45,2,sh(col,-0.3));
+    var nm=names[i]; if(nm){ for(var k=0;k<nm.length;k++) tx(g,nm[k],x+8,y+9+k*10,9,'#3a3040','center'); } else { R(g,x+1,y+1,14,2,'#e8323c'); R(g,x+1,y+49,14,2,'#e8323c'); R(g,x+1,y+1,2,50,'#e8323c'); R(g,x+13,y+1,2,50,'#e8323c'); } }
+  R(g,3,61,150,5,'#8a6a48'); R(g,3,61,150,1,'#a88a64'); R(g,0,127,156,5,'#5a4028'); }); }
+function lab5Names(){ var n=STAFF.map(function(s){ return (STATE.lab5Names&&STATE.lab5Names[s.id])||s.name; }); n.push(''); return n; }
+lazyItem(function(){ return pBinderShelf(lab5Names()); },8*T+6,25*T-132,25*T,function(){ return lab5Names().join(','); }); block(8,22,12,24);
+onTile(pCoatRack(),13,23,13,24);
+// 예비 캡슐 셋 + 유리 난간 (가운데 캡슐엔 직원과 같은 모양의 실루엣)
+var SIL5=(function(){ var sp=buildChar({id:'sil',kind:'cat',shirt:'#888',pants:'#666',pantsC:'#666'},'down',0,false), c=cv(sp.width,sp.height), g=c.getContext('2d'); g.drawImage(sp,0,0); g.globalCompositeOperation='source-in'; g.fillStyle='#1e3c38'; g.fillRect(0,0,c.width,c.height); return c; })();
+function pCapsule(kind){ return obj(40,98,function(g){ ell(g,20,92,19,5,'#5a646e'); ell(g,20,89,17,4,'#8a949c');
+  g.fillStyle=kind===2?'rgba(200,230,230,0.4)':'rgba(120,230,190,0.42)'; g.fillRect(3,10,34,78);
+  if(kind===1){ g.save(); g.globalAlpha=0.5; g.drawImage(SIL5,3,20); g.restore(); }
+  R(g,3,10,3,78,'rgba(255,255,255,0.5)'); R(g,33,10,2,78,'rgba(255,255,255,0.25)');
+  if(kind<2) for(var b=0;b<4;b++) P(g,10+((b*13+kind*7)%20),18+((b*23)%60),'#e6fff6');
+  ell(g,20,8,18,5,'#8a949c'); ell(g,20,6,16,4,'#b8c2c8'); ell(g,20,5,10,2,'#dfe6ea'); }, true); }
+[0,1,2].forEach(function(k){ onTile(pCapsule(k),17+k*2,21,18+k*2,23); });
+things.push({sy:24*T-1, draw:function(g){ [0,1,2].forEach(function(k){ var cx=18*T+k*64; R(g,cx-18,24*T-14,36,10,'#2a3038'); tx(g,'예비-0'+(k+1),cx,24*T-9,7,k===2?'#ff8a8a':'#6affb0','center'); }); }});
+things.push({sy:24*T+6, draw:function(g){ g.fillStyle='rgba(190,226,240,0.35)'; g.fillRect(17*T,24*T-2,6*T,14); R(g,17*T,24*T-4,6*T,3,'#8f9aa5'); R(g,17*T,24*T-4,6*T,1,'#c3ccd4'); for(var x=17*T+8;x<23*T;x+=40) R(g,x,24*T,2,8,'rgba(255,255,255,0.7)'); }});
+block(17,21,22,23);
+// 새장 · 우산꽂이 · 안 뜯은 어항 상자
+function pBirdCage(){ return obj(60,60,function(g){ R(g,29,0,2,8,'#8a7a5a'); ell(g,30,56,28,4,'#8a7a5a'); R(g,4,54,52,3,'#a08a5a');
+  for(var b=0;b<9;b++){ var bx=6+b*6, top=14+Math.abs(4-b)*3; R(g,bx,top,1,54-top,'#b8a06a'); } ell(g,30,14,22,6,'rgba(0,0,0,0)'); R(g,10,14,40,2,'#b8a06a');
+  [['#6a8ac8',16],['#8a6a4a',30],['#5aa0b8',44]].forEach(function(d){ disc(g,d[1],46,5,d[0]); disc(g,d[1]+3,42,3,d[0]); P(g,d[1]+4,41,'#1a1a1a'); P(g,d[1]+6,42,'#e8a030'); R(g,d[1]-5,46,4,2,sh(d[0],-0.2)); }); }); }
+function pUmbStand(){ return obj(34,62,function(g){
+  [['#e87a8a',8,0],['#6aa8e8',17,-4],['#f2c64a',26,2]].forEach(function(u){ var x=u[1], t=6+u[2], c=u[0];
+    R(g,x,t,2,8,'#6a4a30'); R(g,x-4,t-4,6,2,'#6a4a30'); R(g,x-5,t-3,2,4,'#6a4a30'); R(g,x-3,t-5,4,1,'#8a6a48');        // J자 손잡이
+    tri(g,x-4,t+8,x+5,t+8,x+1,t+40,c); R(g,x-4,t+8,10,3,sh(c,0.22)); R(g,x-2,t+18,6,2,sh(c,-0.3)); line(g,x-2,t+12,x,t+32,sh(c,-0.15)); });   // 접힌 우산
+  R(g,2,36,30,26,'#5a6a74'); R(g,2,36,30,3,'#8a9aa4'); R(g,4,40,3,20,'#7a8a94'); R(g,28,40,2,20,'#46545c'); }); }
+function pFragile(){ return obj(80,52,function(g){ R(g,0,0,80,52,'#c89a64'); R(g,0,0,80,5,'#dcb682'); R(g,36,0,8,52,'#e8d4a0'); R(g,0,50,80,2,'#a87a44');
+  R(g,8,14,22,16,'#fbf6ea'); ell(g,19,22,7,3,'#f58a3a'); tri(g,12,22,9,19,9,25,'#f58a3a'); P(g,23,21,'#1a1a1a'); tx(g,'FRAGILE',60,38,8,'#8a4a2a','center'); }); }
+onTile(pBirdCage(),8,26,9,27); onTile(pUmbStand(),11,26,11,27); onTile(pFragile(),12,27,14,27); onTile(pPlant('tall','#f4f1ea'),15,28,15,28);
+// 한교수 방: 유리벽 · 책상 · 지구본 · 캐리어 · 조형물
+put(glassWall(4*T),19*T,25*T+2,25*T+48); block(19,25,22,25);
+put(vWall(4*T,true),16*T+27,25*T,29*T); for(var kr=25;kr<=28;kr++) wallEdge(16,kr,17,kr);
+put(pDesk(hash('han')%97),19*T,27*T-16,27*T+32,[19,27,20,27]); things.push({img:pChairBack('#6a5a7a'),x:19*T+13,y:27*T+6-32,sy:27*T+5});
+function pGlobe(){ return obj(30,48,function(g){ ell(g,15,46,10,2,'#6a4e34'); R(g,13,30,4,16,'#8a6a48'); disc(g,15,15,13,'#5a9ad8'); ell(g,11,10,5,4,'#6ab86a'); ell(g,20,19,4,5,'#6ab86a'); ell(g,14,22,3,2,'#6ab86a'); disc(g,9,9,2,'#bfe4ff');
+  for(var a=0;a<40;a++){ var t=-Math.PI*0.9+a/40*Math.PI*1.3; P(g,15+Math.round(Math.cos(t)*15),15+Math.round(Math.sin(t)*15),'#c8a060'); } }); }
+function pSuitcase(){ return obj(30,48,function(g){ R(g,9,0,12,3,'#3a3040'); R(g,9,0,2,10,'#3a3040'); R(g,19,0,2,10,'#3a3040'); R(g,1,9,28,35,'#c8503a'); R(g,1,9,28,3,'#e0705a'); R(g,26,12,3,32,'#a03a2a');
+  R(g,4,18,20,1,'#a03a2a'); R(g,4,30,20,1,'#a03a2a'); R(g,8,22,12,6,'#f2e6c8'); disc(g,5,45,2,'#2a2a30'); disc(g,25,45,2,'#2a2a30'); }); }
+function pMiniCopier(){ return obj(40,44,function(g){                    // 작은 복합기: 본체 폭 40
+  var body='#e4e2dc', lid='#c9c7c0', dark='#5d6166';
+  R(g,4,0,26,7,'#d4d2cb'); R(g,4,0,26,2,'#ecebe6'); R(g,6,3,22,3,'#fbfbf8');
+  R(g,0,7,40,9,lid); R(g,0,7,40,2,'#dfddd7'); R(g,0,15,40,1,sh(lid,-0.3));
+  R(g,24,9,13,5,'#3a3e44'); R(g,25,10,7,3,'#4a9ed8'); P(g,34,10,'#5ad07a'); P(g,35,12,'#f0a040');
+  R(g,0,16,40,28,body); R(g,0,16,40,2,'#f0eee9');
+  R(g,3,19,24,5,'#fbfbf7'); R(g,3,24,24,1,'#b8b5ad');
+  R(g,3,27,34,7,'#d3d1ca'); R(g,3,34,34,1,sh(body,-0.3)); R(g,15,29,10,2,dark);
+  R(g,3,36,34,7,'#d3d1ca'); R(g,15,38,10,2,dark);
+  R(g,37,16,3,28,sh(body,-0.2)); R(g,29,19,8,4,'#7a8088'); }); }
+onTile(pMiniCopier(),15,25,16,26);
+onTile(pGlobe(),17,26,17,26); onTile(pSuitcase(),17,28,17,28); onTile(pSculpture(),18,27,18,28); onTile(pPlant('monstera','#f4f1ea'),22,26,22,26);
+// 강철 문 (관제실로) — 한교수 방 안쪽 벽
+things.push({sy:28*T, draw:function(g){ var x=23*T+5, y=26*T-8; R(g,x,y,22,72,'#3a4254'); R(g,x+2,y+2,18,68,'#56607a'); R(g,x+2,y+34,18,2,'#2a3142'); disc(g,x+11,y+14,3,'#e8323c'); disc(g,x+11,y+14,1,'#ffaaaa');
+  R(g,x-16,y+22,12,18,'#2e3440'); for(var kp=0;kp<6;kp++) R(g,x-14+(kp%2)*5,y+25+Math.floor(kp/2)*5,3,3,'#8a929c'); }});
+
+// ---------------- ④ 관제실 ----------------
+things.push({sy:1, draw:function(g){ var x=24*T+4, y=6, w=246, h=80;
+  R(g,x,y,w,h,'#0a0d12'); R(g,x+4,y+4,w-8,h-8,'#061014'); g.fillStyle='rgba(60,255,160,0.07)'; g.fillRect(x+4,y+4,w-8,h-8);
+  tx(g,'호환프로그램 작업 중이므로',x+w/2,y+18,11,'#6affb0','center'); tx(g,'기다려주십시오.',x+w/2,y+33,11,'#6affb0','center');
+  R(g,x+24,y+46,w-48,10,'#0f2a20'); R(g,x+26,y+48,Math.round((w-52)*0.37),6,'#3ae890'); tx(g,'37%  · 오래 걸릴 수 있습니다.',x+w/2,y+67,8,'#3ab880','center');
+  g.fillStyle='rgba(0,0,0,0.25)'; for(var yy=y+4; yy<y+h-4; yy+=2) g.fillRect(x+4,yy,w-8,1);
+  var px=32*T+4, py=14; R(g,px,py,108,66,'#2a2f36'); R(g,px+2,py+2,104,62,'#3a4048');
+  for(var sw=0;sw<8;sw++){ var sx2=px+8+(sw%4)*25, sy2=py+6+Math.floor(sw/4)*30; R(g,sx2,sy2,18,24,'#23272e'); var red=sw===5; R(g,sx2+4,sy2+4,10,16,'#15181c'); R(g,sx2+5,sy2+(red?5:12),8,7,red?'#d8323a':'#6a727c'); if(red) R(g,sx2+5,sy2+5,8,1,'#f06a70'); } }});
+function pCtlConsole(){ return obj(220,40,function(g){ R(g,0,14,220,20,'#2a3242'); R(g,0,14,220,3,'#3e4a60'); R(g,0,34,220,6,'#10141c');
+  [10,62,114,166].forEach(function(x,i){ R(g,x,0,44,18,'#0a0d12'); R(g,x+2,2,40,13,['#0f3a2a','#0f2a3a','#3a2a0f','#2a0f1a'][i]); for(var l=0;l<3;l++) R(g,x+5,5+l*3,14+((i*7+l*5)%18),1,['#6affb0','#6ac8ff','#ffc86a','#ff6a8a'][i]); R(g,x+6,22,30,5,'#1a2230'); }); }); }
+onTile(pCtlConsole(),25,4,31,4);
+function pRack(seed){ return obj(50,112,function(g){ R(g,0,0,50,112,'#0c1018'); R(g,2,2,46,108,'#1a2230'); R(g,2,2,46,2,'#2a3448');
+  for(var u=0;u<98;u+=10){ R(g,5,6+u,40,7,'#232d3e'); var s=hash(String(seed*97+u)); R(g,7,8+u,2,2,s%3?'#3ae890':'#1a4a30'); R(g,11,8+u,2,2,s%5?'#1a4a30':'#ffb03a'); R(g,15,8+u,2,2,s%7?'#3a6ae8':'#1a2a4a'); R(g,30,9+u,12,1,'#10141c'); } }); }
+for(var i=0;i<5;i++) onTile(pRack(i),33,6+i*4,34,8+i*4);
+for(var j=0;j<3;j++) onTile(pRack(j+9),24,6+j*4,25,8+j*4);
+onTile(pRack(30),27,23,28,25); onTile(pRack(31),29,23,30,25);
+put(pDesk(hash('empty')%97),28*T,14*T-16,14*T+32,[28,14,29,14]); things.push({img:pChairBack('#7a6a8a'),x:28*T+44,y:14*T+10-32,sy:14*T+9});
+things.push({sy:14*T+33, draw:function(g){ var x=28*T+18, y=14*T-34; R(g,x,y,30,22,'#dfe3e6'); R(g,x+2,y+2,26,16,'#fbfaf6'); tx(g,'근무일지',x+15,y+7,7,'#3a3040','center'); tx(g,'.doc',x+15,y+14,7,'#3a3040','center');
+  R(g,28*T+18,14*T+22,28,9,'#2e2430'); R(g,28*T+19,14*T+23,26,7,'#3c3040'); }});
+// 바닥 케이블 (관제실)
+[[33*T,10*T,29*T+8,14*T+30],[25*T,12*T,28*T,14*T+30],[33*T,20*T,30*T,18*T]].forEach(function(cb){ bgc.strokeStyle='#2a3448'; bgc.lineWidth=4; bgc.beginPath(); bgc.moveTo(cb[0],cb[1]); bgc.bezierCurveTo((cb[0]+cb[2])/2,cb[1]+50,(cb[0]+cb[2])/2,cb[3]+50,cb[2],cb[3]); bgc.stroke(); bgc.strokeStyle='#3a465e'; bgc.lineWidth=1; bgc.stroke(); });
+
+// 한지 등 · 관제실 어둠 · 빈 책상 조명 (사람 위에 그린다)
+var LANTERNS5=[[11*T,5*T+20,26],[17*T+16,5*T+16,22],[20*T+10,9*T+30,28]];
+function drawLab5Fx(g,now){
+  LANTERNS5.forEach(function(l){ var x=l[0], y=l[1], r=l[2], sway=Math.round(Math.sin(now*0.0012+x)*1);
+    var lg=g.createRadialGradient(x,y+40,4,x,y+40,r*3.4); lg.addColorStop(0,'rgba(255,230,180,0.30)'); lg.addColorStop(1,'rgba(255,230,180,0)'); g.fillStyle=lg; g.fillRect(x-r*3.4,y-r*3.4+40,r*6.8,r*6.8);
+    R(g,x,0,1,y-r,'rgba(60,40,30,0.5)'); x+=sway;
+    disc(g,x,y,r,'#f4ecd8'); disc(g,x,y,r-1,'#fbf6ea'); disc(g,x-Math.round(r*0.25),y-Math.round(r*0.25),Math.round(r*0.62),'#fffdf6');
+    for(var a=-3;a<=3;a++){ var yy=y+Math.round(a*r/4), hw=Math.round(Math.sqrt(Math.max(0,r*r-(a*r/4)*(a*r/4)))); R(g,x-hw+2,yy,2*hw-4,1,'rgba(190,170,130,0.35)'); }
+    ring(g,x,y,r,'#d8ccb0'); R(g,x-4,y-r-2,8,3,'#8a6a48'); R(g,x-3,y+r-1,6,2,'#8a6a48'); });
+  g.fillStyle='rgba(40,90,90,0.05)'; g.fillRect(8*T,16*T+50,15*T,13*T);
+  var sp=g.createRadialGradient(29*T,14*T,10,29*T,14*T,160); sp.addColorStop(0,'rgba(255,240,200,0.22)'); sp.addColorStop(1,'rgba(255,240,200,0)'); g.fillStyle=sp; g.fillRect(24*T,8*T,11*T,12*T);
+  var gl=g.createRadialGradient(28*T,3*T,10,28*T,3*T,300); gl.addColorStop(0,'rgba(60,255,160,0.14)'); gl.addColorStop(1,'rgba(60,255,160,0)'); g.fillStyle=gl; g.fillRect(23*T+10,3*T,12*T,12*T);
+  g.save(); g.beginPath(); g.rect(23*T+10,3*T,12*T,26*T); g.clip(); var vg=g.createRadialGradient(29*T,15*T,140,29*T,15*T,520); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.45)'); g.fillStyle=vg; g.fillRect(23*T,3*T,12*T,26*T); g.restore();
+}
+function oldTint(img){ var c=cv(img.width,img.height), g=c.getContext('2d'); g.drawImage(img,0,0); g.globalCompositeOperation='source-atop'; g.fillStyle='rgba(150,110,60,0.35)'; g.fillRect(0,0,c.width,c.height); return c; }
+MAP5.DOOR={ x:18*T, y:16*T-80, w:64, h:82 }; MAP5.LOBBY={ c:2, r:3 }; MAP5.ELEV={ x:32, y:0, w:128, h:96 };
+MAP5.HAN_SEAT={ c:19, r:26, face:'down', sit:true, pt:{ x:19*T+14, feet:27*T+6 } };
+MAP5.NAM_SEAT={ c:19, r:18, face:'down', sit:true, pt:{ x:19*T+14, feet:19*T+6 } };
+MAP5.STEEL={ c:22, r:27 };
+
 useMap(MAP3);
 
 window.PixOffice={
@@ -2181,6 +2397,6 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, MAP5:MAP5, drawLab5Fx:drawLab5Fx, oldTint:oldTint, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();
