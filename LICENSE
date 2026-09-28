@@ -13,10 +13,11 @@ Copyright (c) 2026 han8877. All rights reserved.
   - 캐릭터 디자인과 픽셀 그림 (코드로 그려진 그림 포함)
   - 캐릭터 이름·설정·대사, 근무일지 등 모든 글
   - 세계관, 지도·공간 구성, 화면 디자인, 아이콘과 이미지
+  - 배경 음악 (audio/ 폴더의 음원 전부 — 저작권자가 직접 작곡·제작)
 
 저작권자의 사전 서면 허락 없이 다음 행위를 금지합니다.
   1. 전부 또는 일부를 복제·수정·배포·재게시하는 행위
-  2. 캐릭터·그림·글을 다른 게임, 서비스, 상품, 콘텐츠에 사용하는 행위
+  2. 캐릭터·그림·글·음악을 다른 게임, 서비스, 상품, 콘텐츠에 사용하는 행위
   3. 상업적 목적으로 이용하는 행위
   4. 이 저작물을 인공지능 학습용 데이터로 수집·사용하는 행위
 
@@ -42,12 +43,13 @@ All rights to the game "Kkeojeok Kkeojeok Stationery Office"
 (this repository and https://han8877.github.io/Our-office),
 including its source code, character designs and pixel art (including
 art rendered by code), character names, profiles and dialogue, diary
-text, setting, maps, UI design, icons and images, are reserved by the
-copyright holder (han8877).
+text, setting, maps, UI design, icons and images, and the background
+music in audio/ (composed and produced by the copyright holder), are
+reserved by the copyright holder (han8877).
 
 Without prior written permission from the copyright holder, you may NOT:
   1. copy, modify, distribute or republish this work in whole or in part;
-  2. use its characters, art or text in any other game, service, product
+  2. use its characters, art, text or music in any other game, service, product
      or content;
   3. use it for any commercial purpose;
   4. collect or use it as training data for artificial intelligence.
