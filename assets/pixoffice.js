@@ -1098,7 +1098,7 @@ onTile(pRoundTable(),30,8,32,9); onTile(pChairS('#b89478'),30,10,30,10); onTile(
 onTile(pPlant('monstera','#f4f1ea'),29,9,29,9); put(pBookshelf(4),29*T+10,5*T-80,5*T,[29,3,30,4]); onTile(pTrash(),34,9,34,9);
 // 노트팀
 onTile(pDrawers(),10,8,10,9); onTile(pPlant('bush','#9fd4c0'),10,12,10,12);
-onTile(pWorkTable(),4,5,7,6); onTile(pPaperRack(),1,7,2,8); onTile(pPlant('tall','#f4f1ea'),1,12,1,12);
+onTile(pWorkTable(),3,5,6,6);   // 7열은 비운다: 응접 소파 왼쪽 자리(7,4)로 가는 길 onTile(pPaperRack(),1,7,2,8); onTile(pPlant('tall','#f4f1ea'),1,12,1,12);
 // 다목적실
 // 흰 의자 3개씩 두 줄, 의자 사이 8px
 for(var cr=0; cr<2; cr++) for(var cc=0; cc<3; cc++){ var chx=14*T+20+cc*36, chy=9*T+cr*42;
