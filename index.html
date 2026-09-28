@@ -1837,8 +1837,8 @@
 </div>
 </div>
 <!-- 인트로는 첫 화면부터 픽셀 그림으로: 그림 모듈을 무거운 본 스크립트보다 먼저 불러 바로 그린다 -->
-<script src="assets/pixoffice.js"></script>
-<script src="assets/pixcity.js"></script>
+<script src="assets/pixoffice.js?v=20260928b"></script>
+<script src="assets/pixcity.js?v=20260928b"></script>
 <script>
 (function(){ var s=document.getElementById('introScreen');
   try{ if(window.PixCity) PixCity.Intro(); else s.classList.remove('pixIntro'); }
@@ -15091,7 +15091,7 @@ var FLOORS = {
     home:function(){ return null; }, seat:function(){ return null; }, bubble:function(){ return null; },
     robotEl:null, robotBub:null, light:'b1LightOverlay', switchEl:'b1LightSwitch', switchRect:PO.MAPB.SWITCH },
   // 5층 연구소: 남박사·한교수·R-0은 그림에서만 둔다 (lab5Tick)
-  '5': { key:'5', svg:byId('lab5Svg'), map:PO.MAP5, anch:[], lobby:PO.MAP5.LOBBY,
+  '5': !PO.MAP5 ? { key:'5', svg:null } : { key:'5', svg:byId('lab5Svg'), map:PO.MAP5, anch:[], lobby:PO.MAP5.LOBBY,
     query:'.lab5-nobody', idOf:function(el){ return el.id; }, present:function(){ return false; }, look:function(){ return null; },
     home:function(){ return null; }, seat:function(){ return null; }, bubble:function(){ return null; },
     robotEl:null, robotBub:null, light:null, switchEl:null, switchRect:{x:-99,y:-99,w:0,h:0} }
@@ -16042,7 +16042,7 @@ function hitProfile(F,p){
 }
 function onSwitch(F,p){ var s=F.switchRect; return p.x>=s.x-6&&p.x<=s.x+s.w+6&&p.y>=s.y-6&&p.y<=s.y+s.h+6; }
 // 엘리베이터를 누르면 메뉴의 '엘리베이터'와 같이 층 고르는 창이 뜬다 (3층은 왼쪽 아래 홀, 2층은 왼쪽 위)
-var ELEV_RECT={ '3':{x:32,y:22*T,w:128,h:96}, '2':{x:32,y:0,w:128,h:96}, 'L':PO.MAPR.ELEV, 'B1':PO.MAPB.ELEV, '5':PO.MAP5.ELEV };
+var ELEV_RECT={ '3':{x:32,y:22*T,w:128,h:96}, '2':{x:32,y:0,w:128,h:96}, 'L':PO.MAPR.ELEV, 'B1':PO.MAPB.ELEV, '5':PO.MAP5?PO.MAP5.ELEV:{x:-99,y:-99,w:0,h:0} };
 function onElevator(F,p){ var r=ELEV_RECT[F.key]; return !!r && p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h; }
 // ---- 실장실 수납장 뒤 숨은 스위치 ----
 // 일지를 23쪽까지 읽었고 최실장이 방에 없을 때만, 수납장을 세 번 누르면 옆으로 밀린다.
@@ -16102,7 +16102,7 @@ window.__pixOffice = { floors:FLOORS, actors:FLOORS['3'].actors, robot:FLOORS['3
 })();
 </script>
 
-<script src="assets/shop.js"></script>
+<script src="assets/shop.js?v=20260928b"></script>
 <script>
 // 메뉴 '온라인샵' → 끄적끄적문구 온라인샵 팝업
 (function(){ var b=document.getElementById('shopBtn'); if(b) b.addEventListener('click', function(){ if(window.OurShop) OurShop.open(); }); })();

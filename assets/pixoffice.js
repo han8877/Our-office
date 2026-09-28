@@ -2429,10 +2429,10 @@ function drawLab5Fx(g,now){
   var gl=g.createRadialGradient(28*T,3*T,10,28*T,3*T,300); gl.addColorStop(0,'rgba(60,255,160,0.14)'); gl.addColorStop(1,'rgba(60,255,160,0)'); g.fillStyle=gl; g.fillRect(23*T+10,3*T,12*T,12*T);
   g.save(); g.beginPath(); g.rect(23*T+10,3*T,12*T,26*T); g.clip(); var vg=g.createRadialGradient(29*T,15*T,140,29*T,15*T,520); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.45)'); g.fillStyle=vg; g.fillRect(23*T,3*T,12*T,26*T); g.restore();
 }
-function drawVacuum(g,x,y,t,moving){                                  // 원반형 납작한 로봇청소기 (x,y = 가운데 바닥)
-  ell(g,x,y+2,13,4,'rgba(20,10,20,0.3)'); ell(g,x,y,12,6,'#2e3238'); ell(g,x,y-1,12,6,'#3e434a'); ell(g,x,y-2,10,4,'#50565e'); ell(g,x-3,y-3,4,1,'#6a7078');
-  R(g,x-2,y-2,4,1,'#1c1f24'); P(g,x+5,y-2,(Math.floor(t/500)%2)?'#3ae890':'#1a5a3a');
-  var a=(t/90)%(Math.PI*2), bx=x-9, by=y+3; line(g,bx,by,bx+Math.round(Math.cos(a)*3),by+Math.round(Math.sin(a)*2),'#8a929c'); line(g,bx,by,bx-Math.round(Math.cos(a)*3),by-Math.round(Math.sin(a)*2),'#8a929c');
+function drawVacuum(g,x,y,t,moving){                                  // 원반형 납작한 흰 로봇청소기 (x,y = 가운데 바닥)
+  ell(g,x,y+2,13,4,'rgba(40,10,20,0.28)'); ell(g,x,y,12,6,'#aab4bc'); ell(g,x,y-1,12,6,'#e8edf0'); ell(g,x,y-2,10,4,'#f8fafb'); ell(g,x-3,y-3,4,1,'#ffffff');
+  R(g,x-3,y-2,6,1,'#c8d0d6'); ell(g,x,y+1,11,1,'#8a949c'); P(g,x+5,y-2,(Math.floor(t/500)%2)?'#3ae890':'#8ad8b0');
+  var a=(t/90)%(Math.PI*2), bx=x-9, by=y+3; line(g,bx,by,bx+Math.round(Math.cos(a)*3),by+Math.round(Math.sin(a)*2),'#6a747c'); line(g,bx,by,bx-Math.round(Math.cos(a)*3),by-Math.round(Math.sin(a)*2),'#6a747c');
   if(moving) P(g,x-12+Math.floor(t/60)%3,y+4,'rgba(255,255,255,0.35)'); }
 function oldTint(img){ var c=cv(img.width,img.height), g=c.getContext('2d'); g.drawImage(img,0,0); g.globalCompositeOperation='source-atop'; g.fillStyle='rgba(150,110,60,0.35)'; g.fillRect(0,0,c.width,c.height); return c; }
 MAP5.DOOR={ x:18*T, y:16*T-80, w:64, h:82 }; MAP5.LOBBY={ c:2, r:3 }; MAP5.ELEV={ x:32, y:0, w:128, h:96 };
