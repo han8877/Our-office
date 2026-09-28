@@ -2061,11 +2061,11 @@ function pTrayStation(){ return obj(64,76,function(g){               // 식판 �
   R(g,0,20,64,24,'#fbf8f2'); R(g,0,20,64,2,'#ffffff'); R(g,0,44,64,32,'#c99a6a'); for(var x=0;x<64;x+=6) R(g,x,44,1,32,'#b08254');
   for(var i=0;i<6;i++){ R(g,4,18-i*3,24,5,'#b88a5c'); R(g,4,18-i*3,24,1,'#d8aa7a'); }
   R(g,34,8,10,14,'#9aa2a8'); for(var k=0;k<4;k++) R(g,35+k*2,2,1,8,'#dfe3e5'); R(g,48,8,12,14,'#9aa2a8'); for(var j=0;j<3;j++) R(g,50+j*3,4,2,6,'#dfe3e5'); disc(g,52,30,4,'#e8f4fa'); disc(g,40,32,4,'#e8f4fa'); }); }
-function pSampleCase(){ return obj(128,72,function(g){              // 오늘의 메뉴 모형 진열장 (둥근 유리)
-  R(g,0,40,128,32,'#4a3a30'); R(g,0,40,128,2,'#6a5444'); for(var x=4;x<124;x+=20) R(g,x,50,16,14,'#5a4838');
-  R(g,2,6,124,36,'#2e2a26'); g.fillStyle='rgba(210,235,245,0.28)'; g.fillRect(2,2,124,40); R(g,2,2,124,1,'#e8f6fc'); R(g,4,4,40,1,'#ffffff');
-  var dish=['#d8583a','#fbfaf2','#e8903a','#6aa84a','#f2d06a','#b8502a','#e8d8a8'];
-  for(var i=0;i<6;i++){ var x=10+i*20; ell(g,x,16,7,3,'#fbfaf6'); ell(g,x,15,5,2,dish[i%7]); ell(g,x+4,32,7,3,'#fbfaf6'); ell(g,x+4,31,5,2,dish[(i+3)%7]); R(g,x-4,21,10,3,'#3a3f46'); R(g,x-3,22,8,1,'#c9cfd4'); } }); }
+function pSampleCase(){ return obj(128,50,function(g){              // 오늘의 메뉴 모형 진열장 (허리 높이, 둥근 유리)
+  R(g,0,26,128,24,'#4a3a30'); R(g,0,26,128,2,'#6a5444'); for(var x=4;x<124;x+=20) R(g,x,32,16,12,'#5a4838');
+  R(g,2,4,124,24,'#2e2a26'); g.fillStyle='rgba(210,235,245,0.28)'; g.fillRect(2,0,124,28); R(g,2,0,124,1,'#e8f6fc'); R(g,4,2,40,1,'#ffffff');
+  var dish=['#d8583a','#fbfaf6','#e8903a','#6aa84a','#f2d06a','#b8502a','#e8d8a8'];
+  for(var i=0;i<6;i++){ var x=10+i*20; ell(g,x,10,7,3,'#fbfaf6'); ell(g,x,9,5,2,dish[i%7]); ell(g,x+4,21,7,3,'#fbfaf6'); ell(g,x+4,20,5,2,dish[(i+3)%7]); R(g,x-4,14,10,2,'#3a3f46'); R(g,x-3,14,8,1,'#c9cfd4'); } }); }
 function pDrinkFridge(kind){ return obj(96,112,function(g){          // 음료·유제품·베이커리 냉장고 (위에 검은 간판)
   R(g,0,0,96,112,'#b8bec4'); R(g,0,0,96,2,'#e2e5e8'); R(g,0,0,96,16,'#1e2024'); R(g,94,16,2,96,'#8a929a');
   R(g,4,20,88,88,'#e8eef2'); g.fillStyle='rgba(255,250,235,0.35)'; g.fillRect(4,20,88,88);
@@ -2579,6 +2579,11 @@ function drawR0(g,x,feet,t,moving,dir,blink){                         // R-0: �
     else { var sc=Math.round(Math.sin(t*0.002)*1); R(g,cx-6+side*3+sc,hy-1,4,2,'#7ff0ff'); R(g,cx+2+side*3+sc,hy-1,4,2,'#7ff0ff'); P(g,cx-5+side*3+sc,hy-1,'#e8ffff'); P(g,cx+3+side*3+sc,hy-1,'#e8ffff'); } }
   R(g,cx,hy-12,1,4,'#9aa8b6'); disc(g,cx,hy-13,1,(Math.floor(t/700)%2)?'#7ff0ff':'#2a6a7a');                                 // 안테나 불빛
 }
+function drawWetSign(g,x,feet){                                       // 비·눈 오는 날 실내 입구에 세우는 노란 A자 '미끄럼 주의' 판 (x = 왼쪽, feet = 바닥)
+  ell(g,x+11,feet,12,2,'rgba(40,40,60,0.25)'); tri(g,x+2,feet,x+11,feet-30,x+20,feet,'#d8a820'); tri(g,x+4,feet-1,x+11,feet-27,x+18,feet-1,'#f6cc2a');
+  R(g,x+9,feet-31,5,3,'#3a3f46'); R(g,x+6,feet-12,11,1,'#2a2e34'); disc(g,x+11,feet-17,3,'#2a2e34'); P(g,x+11,feet-17,'#f6cc2a'); R(g,x+9,feet-8,5,2,'#2a2e34');
+  g.font='7px NeoDGM, sans-serif'; g.textAlign='center'; g.textBaseline='top'; R(g,x-12,feet-44,46,11,'#2a2e34'); g.fillStyle='#fbfaf6'; g.fillText('미끄럼 주의',x+11,feet-43); g.textAlign='left';
+  ell(g,x+30,feet-2,7,2,'rgba(150,190,220,0.45)'); ell(g,x-4,feet+3,5,1,'rgba(150,190,220,0.4)'); }
 function oldTint(img){ var c=cv(img.width,img.height), g=c.getContext('2d'); g.drawImage(img,0,0); g.globalCompositeOperation='source-atop'; g.fillStyle='rgba(150,110,60,0.35)'; g.fillRect(0,0,c.width,c.height); return c; }
 MAP5.DOOR={ x:18*T, y:16*T-80, w:64, h:82 }; MAP5.LOBBY={ c:2, r:3 }; MAP5.ELEV={ x:32, y:0, w:128, h:96 };
 MAP5.HAN_SEAT={ c:19, r:26, face:'down', sit:true, pt:{ x:19*T+14, feet:27*T+6 } };
@@ -2594,6 +2599,6 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, MAP5:MAP5, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, MAP5:MAP5, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();

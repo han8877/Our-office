@@ -1,0 +1,949 @@
+/* Copyright (c) 2026 han8877. All rights reserved. 무단 복제·재사용 금지 — LICENSE 참고 */
+/* 끄적끄적문구 사무실 — 화면 스타일 (index.html에서 옮겨 옴) */
+  /* 둥근모꼴(NeoDunggeunmo) — SIL OFL 1.1, assets/fonts/neodgm-LICENSE.txt. 3층 픽셀 화면의 명패·말풍선 글씨 */
+  @font-face{ font-family:'NeoDGM'; src:url('fonts/neodgm.woff2') format('woff2'); font-display:swap; }
+  html{ -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+  body{ margin:0; padding:14px 10px 90px; background:#F7F4EE; font-family:-apple-system,'Malgun Gothic','Apple SD Gothic Neo',sans-serif; display:flex; flex-direction:column; align-items:center; }
+  h1{ font-size:17px; color:#5c4a3a; margin:0 0 8px; }
+  .row{ width:100%; max-width:1000px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px; }
+  .row.between{ justify-content:space-between; }
+  .stat{ background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; padding:6px 10px; font-size:12.5px; color:#5c4a3a; }
+  .btn{ font-size:12.5px; padding:8px 12px; border-radius:8px; border:1.3px solid #5c4a3a; background:#fff; color:#5c4a3a; cursor:pointer; height:34px; box-sizing:border-box; display:inline-flex; align-items:center; gap:6px; }
+  .btn:active{ transform:scale(0.97); }
+  .btn.active{ background:#5c4a3a; color:#fff; }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; }
+  input[type=text]{ font-size:12.5px; padding:8px 10px; border-radius:8px; border:1.3px solid #5c4a3a; flex:1; min-width:120px; height:34px; box-sizing:border-box; }
+  #stage{ width:100%; max-width:1000px; overflow:hidden; border-radius:12px; background:#fffdf8; position:relative; }
+  #officeSvg, #floor2Svg{ display:block; width:100%; height:auto; }
+  /* 옥상 정원(L층): 그림은 전부 캔버스가 그리고 SVG는 자리만 잡는다 */
+  #roofSvg{ display:block; width:100%; height:auto; }
+  #roofSvg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
+  #roofSvg.pixMode, #roofSvg.pixMode *{ pointer-events:none !important; }
+  /* 지하 1층 구내식당: 마찬가지로 캔버스가 그린다 */
+  #b1Svg, #lab5Svg{ display:block; width:100%; height:auto; }
+  #b1Svg.pixMode, #lab5Svg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
+  #b1Svg.pixMode, #b1Svg.pixMode *, #lab5Svg.pixMode, #lab5Svg.pixMode *{ pointer-events:none !important; }
+  /* 3층 픽셀 화면: 게임은 지금처럼 SVG에서 돌고, 화면은 그 아래 캔버스(#pixOffice)가 그린다.
+     SVG는 투명하게 남겨 두되 전원 패널만 보이게 한다. 누르는 것은 캔버스가 받아 원래 기능으로 넘긴다 */
+  #pixOffice{ position:absolute; left:0; top:0; z-index:0; display:block; }
+  /* 메인(인트로) 화면과 사무실 뒤 도시 배경도 픽셀 그림(assets/pixcity.js)으로 그린다.
+     버튼·말풍선·요약 같은 글자 요소는 그대로 두고 그림 층만 캔버스로 바꾼다 */
+  #introPix{ position:absolute; left:0; top:0; z-index:1; display:block; pointer-events:none; }
+  #introScreen.pixIntro #introSceneBack, #introScreen.pixIntro #introSceneFore, #introScreen.pixIntro #introFacade,
+  #introScreen.pixIntro .introBoss, #introScreen.pixIntro #introGround, #introScreen.pixIntro .introSign span{ visibility:hidden; }
+  #introScreen.pixIntro .introSay span, #introScreen.pixIntro .introSumCard, #introScreen.pixIntro .introFirst,
+  #introScreen.pixIntro .enterBtn{ font-family:'NeoDGM', sans-serif; }
+  #introScreen.pixIntro .introSay span{ border-width:2px; border-radius:6px; }
+  #introScreen.pixIntro .enterBtn{ border-width:2px; border-radius:6px; box-shadow:0 3px 0 #5c4a3a; }
+  #introScreen.pixIntro .introSumCard, #introScreen.pixIntro .introFirst{ border-width:2px; border-radius:6px; }
+  body[data-sky="night"] #introScreen.pixIntro .introCopyright, body[data-sky="dusk"] #introScreen.pixIntro .introCopyright{ color:#e8e2f0; }
+  /* 그림 모듈이 도착하기 전 잠깐 보이는 바탕 (하늘 · 인도) */
+  #introScreen.pixIntro{ background:linear-gradient(#b8c3d6 0%, #dcd8d8 62%, #ddd3c4 62%); }
+  #cityPix{ position:absolute; left:0; top:0; display:block; }
+  #cityBg.pixCity svg{ visibility:hidden; }
+  #officeSvg.pixMode, #floor2Svg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
+  #officeSvg.pixMode, #officeSvg.pixMode *, #floor2Svg.pixMode, #floor2Svg.pixMode *{ pointer-events:none !important; }
+  #officeSvg.pixMode > *, #floor2Svg.pixMode > *{ visibility:hidden; }
+  #officeSvg.pixMode > #powerSubPanel{ visibility:visible; }
+  #officeSvg.pixMode #powerSubPanel, #officeSvg.pixMode #powerSubPanel *{ pointer-events:auto !important; }
+  .office-char{ transition:opacity .9s ease; opacity:0; }
+  .office-char.present{ opacity:1; }
+  .office-char.present.onRoof{ opacity:0; }
+  /* 입구 자동문: 두 짝이 좌우로 갈라지며 열린다 */
+  #doorLeafLeft, #doorLeafRight,
+  #f2DoorLeafLeft, #f2DoorLeafRight{ transition:transform .5s cubic-bezier(.4,0,.2,1); }
+  #doorLeafLeft.open, #f2DoorLeafLeft.open{ transform:translateX(-28px); }
+  #doorLeafRight.open, #f2DoorLeafRight.open{ transform:translateX(28px); }
+  #doorSensorLamp{ transition:fill .25s ease; }
+  @media (prefers-reduced-motion: reduce){
+    #doorLeafLeft, #doorLeafRight,
+    #f2DoorLeafLeft, #f2DoorLeafRight{ transition:none; }
+  }
+  /* ===== AI 연결 진단 (휴대폰에서 원인을 보려고 만든 화면) ===== */
+  #aiDiagBody{ background:#fbf9f4; }
+  .adBtns{ display:flex; gap:6px; margin-bottom:10px; }
+  .adBtns .btn{ flex:1; justify-content:center; height:32px; font-size:12px; }
+  .adCard{ border:1px solid #e3ddcd; border-radius:8px; background:#fff; padding:9px 10px; margin-bottom:8px; }
+  .adWhen{ font-size:10.5px; color:#9a8a72; }
+  .adStep{ font-size:12px; color:#4a3f33; line-height:1.65; margin-top:3px; word-break:break-all; }
+  .adOK{ color:#3f7a46; font-weight:700; }
+  .adNG{ color:#b23b3b; font-weight:700; }
+  .adRaw{ margin-top:5px; padding:7px 8px; background:#f4f1e8; border-radius:6px;
+          font-size:11px; line-height:1.55; color:#3a352c; white-space:pre-wrap; word-break:break-all;
+          max-height:170px; overflow:auto; -webkit-user-select:text; user-select:text; }
+  .adHint{ font-size:11.5px; color:#8a7a63; line-height:1.7; margin:2px 0 10px; }
+  /* ===== 오래된 근무일지 — 옛날 문서 프로그램 창 =====
+     이 게임 안의 물건이 아니라 '남이 쓰던 파일을 열어본 것'처럼 보여야 한다.
+     그래서 창틀·메뉴줄·상태줄을 갖춘 90년대 워드프로세서 모양으로 짰다.
+     모서리는 각지게, 색은 낡은 플라스틱 회색, 글자는 고정폭. */
+  #diaryOverlay .mail-window{
+    max-width:412px; border-radius:0; background:#cfcac0; padding:2px; overflow:visible;
+    border:2px solid; border-color:#efeae0 #7f7a6e #7f7a6e #efeae0;
+    box-shadow:2px 2px 0 rgba(40,36,30,0.35);
+  }
+  /* 제목줄: 파일 이름이 뜬다 */
+  #diaryOverlay .mail-head{
+    background:linear-gradient(90deg,#2a3a66,#5d78a8);
+    color:#f2f0ea; border:0; border-radius:0; padding:3px 3px 3px 7px;
+    font-size:11.5px; font-weight:700; letter-spacing:0.2px;
+  }
+  #diaryOverlay .mail-head button{
+    width:17px; height:15px; font-size:11px; line-height:1; color:#23211d;
+    background:#cfcac0; border:1.5px solid; border-color:#efeae0 #6f6a5e #6f6a5e #efeae0;
+    border-radius:0; padding:0; font-family:inherit;
+  }
+  #diaryOverlay .mail-head button:active{ border-color:#6f6a5e #efeae0 #efeae0 #6f6a5e; }
+  /* 메뉴줄 (장식이다. 눌리지 않는다) */
+  #dyMenuBar{
+    display:flex; gap:13px; padding:3px 8px; background:#cfcac0;
+    border-bottom:1px solid #9a9488; font-size:11px; color:#3a372f; user-select:none;
+  }
+  #dyMenuBar u{ text-underline-offset:1px; }
+  /* 문서가 놓인 작업 영역 */
+  #diaryOverlay .mail-body{
+    max-height:76vh; overflow-y:auto; background:#8f8a7e; padding:9px; display:block;
+  }
+  /* ---- 표지: 문서 정보 대화상자 ---- */
+  .dyCover{ background:#cfcac0; padding:2px; }
+  .dyInfo{
+    background:#cfcac0; padding:10px 11px 11px;
+    border:1.5px solid; border-color:#efeae0 #7f7a6e #7f7a6e #efeae0;
+  }
+  .dyInfoCap{ font-size:11px; font-weight:700; color:#23211d; margin:0 0 8px; }
+  .dyInfoGrid{ display:grid; grid-template-columns:auto 1fr; gap:3px 10px; font-size:11.5px; color:#23211d; }
+  .dyInfoGrid dt{ color:#5a554a; white-space:nowrap; }
+  .dyInfoGrid dd{ margin:0; }
+  .dyInfoGrid dd.dim{ color:#7a7365; }
+  .dyNote2{
+    margin:10px 0 0; padding:8px 9px; background:#fbfaf5; font-size:11.5px; line-height:19px;
+    color:#33302a; border:1.5px solid; border-color:#7f7a6e #efeae0 #efeae0 #7f7a6e; word-break:keep-all;
+  }
+  .dyCoverBtn{
+    margin:11px auto 0; display:block; min-width:118px; height:26px; font-size:11.5px;
+    border-radius:0; background:#cfcac0; color:#23211d; font-family:inherit;
+    border:1.5px solid; border-color:#efeae0 #6f6a5e #6f6a5e #efeae0;
+  }
+  .dyCoverBtn:active:not(:disabled){ border-color:#6f6a5e #efeae0 #efeae0 #6f6a5e; }
+  /* ---- 본문: 표지 문구가 있던 그 자리, 같은 끼움 상자 ---- */
+  .dyPaper{
+    position:relative; overflow:hidden; background:#fbfaf5;
+    padding:10px 11px; margin:10px 0 0;
+    border:1.5px solid; border-color:#7f7a6e #efeae0 #efeae0 #7f7a6e;
+  }
+  /* 단을 종이 너비만큼씩 만들어 놓고 가로로 밀어서 쪽을 넘긴다 (줄바꿈은 브라우저가 한다) */
+  .dyFlow{ height:100%; column-fill:auto; transition:transform .18s ease; }
+  .dyChap{ break-inside:auto; }
+  .dyChap + .dyChap, .dyEnd{ break-before:column; }
+  .dyHead{ break-after:avoid; break-inside:avoid; }
+  /* 옛날 한글 문서 느낌: 고정폭 글꼴. 굴림체·바탕체가 있으면 그게 제일 그 시절 같다 */
+  .dyPaper, .dyPaper *{
+    font-family:'굴림체','GulimChe','바탕체','BatangChe','D2Coding','NanumGothicCoding','Courier New',monospace;
+  }
+  .dyMeta{ font-size:10.5px; line-height:26px; color:#7a7365; margin:0 0 26px; }
+  .dyP{ font-size:12px; line-height:26px; color:#23211d; margin:0; word-break:keep-all; }
+  .dyP.gap{ margin-top:26px; }
+  .dyNote{ font-size:11px; line-height:26px; color:#5a554a; margin:26px 0 0; padding-left:9px; border-left:2px solid #c9c3b5; }
+  /* 마지막 쪽 */
+  .dyEnd{ text-align:center; color:#8a8274; padding-top:52px; }
+  .dyEnd .dyEndMark{ font-size:20px; letter-spacing:5px; line-height:52px; }
+  .dyEnd .dyEndTxt{ font-size:11.5px; line-height:26px; margin:0; }
+
+  /* ---- 넘김 줄: 읽기 단추가 있던 자리 ---- */
+  .dyNav{
+    display:flex; align-items:center; gap:5px; padding:0; background:transparent;
+    margin:11px 0 0;
+  }
+  .dyNav .dyArrow, .dyNav .dyHome{
+    height:21px; flex:none; font-size:11px; line-height:1; color:#23211d; cursor:pointer;
+    background:#cfcac0; border-radius:0; font-family:inherit;
+    border:1.5px solid; border-color:#efeae0 #6f6a5e #6f6a5e #efeae0;
+  }
+  .dyNav .dyArrow{ width:26px; }
+  .dyNav .dyHome{ padding:0 8px; }
+  .dyNav .dyArrow:active:not(:disabled), .dyNav .dyHome:active{ border-color:#6f6a5e #efeae0 #efeae0 #6f6a5e; }
+  .dyNav .dyArrow:disabled{ color:#9a9488; cursor:not-allowed; }
+  .dyPageNo{
+    flex:1; text-align:center; font-size:11px; color:#3a372f; height:21px; line-height:19px;
+    background:#cfcac0; border:1.5px solid; border-color:#7f7a6e #efeae0 #efeae0 #7f7a6e;
+  }
+  .dyPageNo b{ font-weight:700; }
+  /* 좁은 화면: 글자를 한 단계 줄이고 여백도 깎는다.
+     본문 폭이 조금이라도 넓어야 원고에 적힌 줄바꿈이 그대로 남는다 */
+  @media (max-width:440px){
+    #diaryOverlay{ padding:10px; }
+    #diaryOverlay .mail-body{ padding:5px; }
+    .dyInfo{ padding:8px 8px 9px; }
+    .dyPaper{ padding:9px 8px; }
+    .dyP{ font-size:11px; }
+  }
+  /* ===== 결재함 ===== */
+  #apprOverlay .mail-window{ max-width:360px; }
+  #apprOverlay .mail-body{ max-height:60vh; overflow-y:auto; background:#faf7f0; padding:10px; }
+  #apprBudget{ background:#fffdf8; border:1px solid #e3ddcd; border-radius:9px; padding:9px 11px; margin-bottom:10px; }
+  #apprBudget .apprBudTop{ display:flex; justify-content:space-between; align-items:baseline; font-size:12px; color:#6b5a44; }
+  #apprBudget .apprBudTop b{ font-size:13.5px; color:#5c4a3a; }
+  .apprBudBar{ height:7px; background:#ece5d5; border-radius:4px; margin-top:7px; overflow:hidden; }
+  .apprBudFill{ height:100%; background:#8fbf6f; border-radius:4px; transition:width .4s ease; }
+  .apprBudFill.low{ background:#e0a35a; }
+  .apprBudFill.out{ background:#c9736a; }
+  .apprSec{ font-size:11.5px; font-weight:700; color:#8a7a63; margin:12px 2px 6px; }
+  .apprCard{ background:#fffdf8; border:1px solid #e3ddcd; border-radius:10px; padding:10px 11px; margin-bottom:8px; }
+  .apprTop{ display:flex; align-items:center; gap:7px; margin-bottom:6px; }
+  .apprIcon{ font-size:15px; line-height:1; }
+  .apprKind{ font-size:10.5px; font-weight:700; color:#7d6b54; background:#f1ebdc; border-radius:9px; padding:2px 7px; }
+  .apprWho{ font-size:11.5px; color:#8a7a63; margin-left:auto; }
+  .apprTitle{ font-size:13px; font-weight:700; color:#4a3a2c; line-height:1.35; }
+  .apprWhy{ font-size:11.5px; color:#7d6b54; margin-top:3px; line-height:1.4; }
+  .apprCost{ font-size:12px; font-weight:700; color:#5c4a3a; margin-top:6px; }
+  .apprCost .free{ color:#8a7a63; font-weight:500; }
+  .apprBtns{ display:flex; gap:6px; margin-top:9px; }
+  .apprBtns button{ flex:1; border:1px solid #d8d0bd; border-radius:7px; padding:7px 0; font-size:12.5px;
+                    font-family:inherit; cursor:pointer; background:#fffdf8; color:#5c4a3a; }
+  .apprBtns .ok{ background:#eaf3e3; border-color:#b9d3a6; color:#4a6b39; font-weight:700; }
+  .apprBtns .ok:disabled{ background:#f2efe8; border-color:#e0d9c8; color:#b0a794; cursor:not-allowed; font-weight:500; }
+  .apprBtns .no{ background:#f7efee; border-color:#e2c7c3; color:#8f5750; }
+  .apprDone{ opacity:0.72; }
+  .apprStamp{ font-size:11px; font-weight:700; border-radius:8px; padding:2px 8px; margin-left:auto; }
+  .apprStamp.ok{ color:#4a6b39; background:#eaf3e3; }
+  .apprStamp.no{ color:#8f5750; background:#f7efee; }
+  .apprEmpty{ text-align:center; color:#9a8f7c; font-size:12.5px; padding:26px 10px; line-height:1.6; }
+  .apprNote{ font-size:11px; color:#9a8f7c; text-align:center; margin-top:10px; line-height:1.5; }
+
+  .bubble{ }
+  .floater{ font-size:12px; fill:#5c4a3a; animation:floatUp 1.3s ease-out forwards; }
+  @keyframes floatUp{ 0%{ transform:translateY(0); opacity:1; } 100%{ transform:translateY(-26px); opacity:0; } }
+  #toast{ position:fixed; left:50%; bottom:78px; transform:translateX(-50%) translateY(20px); background:#5c4a3a; color:#fff; padding:10px 16px; border-radius:10px; font-size:13px; opacity:0; transition:opacity .35s ease, transform .35s ease; pointer-events:none; z-index:25; max-width:82vw; text-align:center; }
+  #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
+  #panel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:30; padding:16px; }
+  #panel.show{ display:flex; }
+  #panelInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:460px; width:100%; max-height:82vh; overflow-y:auto; border:1.4px solid #5c4a3a; }
+  #panelInner h2{ font-size:14px; margin:0 0 10px; color:#5c4a3a; }
+  .projBtnRow{ display:flex; gap:6px; margin-bottom:10px; flex-wrap:wrap; }
+  #projForm{ display:none; flex-direction:column; gap:6px; background:#f7f4ee; border:1px solid #ddd8cc; border-radius:8px; padding:10px; margin-bottom:10px; }
+  #projForm input, #projForm textarea{ border:1px solid #ddd8cc; border-radius:6px; padding:6px 8px; font-size:12px; font-family:inherit; }
+  #projForm textarea{ min-height:50px; resize:vertical; }
+  #projForm .formActions{ display:flex; justify-content:flex-end; }
+  table#projTable{ width:100%; border-collapse:collapse; font-size:11.5px; }
+  table#projTable th, table#projTable td{ border-bottom:1px dashed #ddd8cc; padding:6px 4px; text-align:left; vertical-align:top; }
+  table#projTable th{ color:#8a8a86; font-weight:600; }
+  .projStatus{ display:inline-block; padding:2px 6px; border-radius:6px; font-size:10.5px; }
+  .projStatus.pending{ background:#f0ece0; color:#8a8a86; }
+  .projStatus.done{ background:#5c4a3a; color:#fff; }
+  .projEmpty{ color:#8a8a86; font-size:12px; padding:10px 2px; }
+  .placeItem{ justify-content:center; height:38px; font-size:12.5px; }
+  .lockerCell{ border:1.3px solid #5c4a3a; border-radius:8px; background:#fffdf8; height:62px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; cursor:pointer; font-family:inherit; color:#5c4a3a; padding:0; transition:transform .15s ease, box-shadow .15s ease; }
+  .lockerCell:hover{ background:#f6efe0; }
+  .lockerCell .lkNum{ font-size:11px; color:#8a8a86; }
+  .lockerCell .lkIcon{ font-size:18px; line-height:1; }
+  /* 물건이 든 칸은 문이 아주 살짝 떠 있다 — 눈여겨보면 보이는 정도 */
+  .lockerCell.hasItem{ transform:translateY(-2px); box-shadow:0 2px 0 #ddd8cc; }
+  /* 사물함: 발견한 물건과 주인 고르기 화면 */
+  #lockerFoundBox, #lockerOwnerBox{ display:none; }
+  #lockerFoundBox.show, #lockerOwnerBox.show{ display:block; }
+  .lkFoundIcon{ font-size:44px; text-align:center; line-height:1.1; margin:6px 0 4px; }
+  .lkFoundName{ font-size:13.5px; font-weight:700; text-align:center; color:#5c4a3a; margin-bottom:5px; }
+  .lkFoundNote{ font-size:12px; color:#8a8a86; text-align:center; line-height:1.6; margin-bottom:12px; }
+  #lkChoices{ display:flex; flex-direction:column; gap:6px; }
+  .lkChoice{ border:1.3px solid #5c4a3a; border-radius:8px; background:#fff; color:#5c4a3a;
+             font-family:inherit; font-size:12.5px; padding:9px 11px; cursor:pointer; text-align:left; }
+  .lkChoice:hover{ background:#f6efe0; }
+  .lkChoice:active{ transform:scale(0.985); }
+  /* 습관 한 줄이 들어가면서 2열로는 폭이 부족해 한 줄에 한 명씩 */
+  #lkOwnerList{ display:flex; flex-direction:column; gap:5px; max-height:52vh; overflow-y:auto; }
+  .lkOwner{ border:1.2px solid #ddd8cc; border-radius:7px; background:#fff; color:#5c4a3a;
+            font-family:inherit; padding:7px 8px; cursor:pointer; text-align:left;
+            display:flex; align-items:center; gap:7px; }
+  .lkOwner:hover{ border-color:#5c4a3a; background:#f6efe0; }
+  .lkOwner .dot{ width:9px; height:9px; border-radius:50%; flex:0 0 auto; }
+  .lkOwner .txt{ display:flex; flex-direction:column; gap:1px; min-width:0; }
+  .lkOwner .lkNm{ font-size:12px; line-height:1.3; }
+  .lkOwner .lkDesc{ font-size:9.5px; color:#a89e8c; line-height:1.35;
+                    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  #lockerTally{ font-size:11px; color:#a89e8c; text-align:center; margin-top:12px; }
+  /* 캐릭터: 눈 깜빡임과 잔잔한 호흡 (주기는 캐릭터마다 JS가 어긋나게 준다) */
+  @keyframes charBlink{
+    0%, 94%, 100% { transform:scaleY(1); }
+    96.5%         { transform:scaleY(0.1); }
+  }
+  .charEyes{
+    transform-box:fill-box; transform-origin:center;
+    animation:charBlink 5.6s ease-in-out infinite;
+  }
+  @keyframes charBreathe{
+    0%, 100% { transform:translateY(0); }
+    50%      { transform:translateY(-0.45px); }
+  }
+  .charBody{ animation:charBreathe 3.6s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){
+    .charEyes, .charBody{ animation:none; }
+  }
+
+  /* R-도우미: 제자리에서 아주 살짝 위아래로 부유 */
+  @keyframes rHelperFloat{
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-2.2px); }
+    100% { transform: translateY(0); }
+  }
+  .rHelperFloat{
+    animation: rHelperFloat 2.6s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .rHelperFloat{ animation: none; }
+  }
+  /* 창밖 새: 왼쪽에서 날아와 창틀에 앉았다가 오른쪽으로 날아간다 */
+  @keyframes birdVisit{
+    0%   { transform: translate(-46px, -16px); opacity:0; }
+    3%   { opacity:1; }
+    9%   { transform: translate(-6px, -5px); opacity:1; }
+    13%  { transform: translate(0, 0); opacity:1; }
+    58%  { transform: translate(0, 0); opacity:1; }
+    63%  { transform: translate(9px, -9px); opacity:1; }
+    70%  { transform: translate(38px, -24px); opacity:0; }
+    100% { transform: translate(38px, -24px); opacity:0; }
+  }
+  /* 앉아 있는 동안 아주 살짝 까딱인다 */
+  @keyframes birdBob{
+    0%   { transform: translateY(0); }
+    50%  { transform: translateY(-0.7px); }
+    100% { transform: translateY(0); }
+  }
+  .bird{
+    animation-name: birdVisit;
+    animation-duration: 42s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    will-change: transform, opacity;
+  }
+  .birdBob{
+    animation-name: birdBob;
+    animation-duration: 1.1s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .bird, .birdBob{ animation: none; }
+    .bird{ opacity:0; }
+  }
+  /* 화분 이파리 살랑임: 밑동을 축으로 좌우로 아주 조금씩 흔들린다 */
+  /* 어항: 물고기 헤엄 + 여과기 기포.
+     위치는 SVG transform 속성이 잡고 움직임은 안쪽 <g>에 CSS로 건다
+     (같은 요소에 둘을 걸면 CSS가 속성을 덮어써 원점으로 튄다) */
+  @keyframes swimA{ 0%,100%{ transform:translate(0,0); } 25%{ transform:translate(16px,-4px); }
+                    50%{ transform:translate(26px,3px); } 75%{ transform:translate(10px,5px); } }
+  @keyframes swimB{ 0%,100%{ transform:translate(0,0); } 33%{ transform:translate(-18px,4px); }
+                    66%{ transform:translate(-8px,-5px); } }
+  @keyframes swimC{ 0%,100%{ transform:translate(0,0); } 50%{ transform:translate(20px,-7px); } }
+  @keyframes swimD{ 0%,100%{ transform:translate(0,0); } 40%{ transform:translate(-14px,6px); }
+                    70%{ transform:translate(-22px,-2px); } }
+  .fishA{ animation:swimA 11s ease-in-out infinite; }
+  .fishB{ animation:swimB 9s ease-in-out infinite; }
+  .fishC{ animation:swimC 13s ease-in-out infinite; }
+  .fishD{ animation:swimD 15s ease-in-out infinite; }
+  @keyframes bubUp{ 0%{ transform:translateY(0); opacity:0; } 12%{ opacity:.8; }
+                    90%{ opacity:.5; } 100%{ transform:translateY(var(--bTop)); opacity:0; } }
+  .bub{ animation:bubUp 2.8s linear infinite; }
+  /* 먹이 알갱이: 수면에서 자갈 쪽으로 천천히 가라앉는다 */
+  @keyframes pelDrop{ 0%{ transform:translateY(0); opacity:0; } 12%{ opacity:1; }
+                      85%{ opacity:.9; } 100%{ transform:translateY(25px); opacity:0; } }
+  #tankFeed{ transition:opacity .4s ease; }
+  #tankFeed.on{ opacity:1; }
+  #tankFeed.on .pel{ animation:pelDrop 3.2s ease-in infinite; }
+  @media (prefers-reduced-motion: reduce){
+    .fishA, .fishB, .fishC, .fishD, .bub, #tankFeed.on .pel{ animation:none; }
+  }
+  @keyframes swayLeaf{
+    0%   { transform: rotate(-1.6deg); }
+    50%  { transform: rotate(1.6deg); }
+    100% { transform: rotate(-1.6deg); }
+  }
+  .sway{
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    animation-name: swayLeaf;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    will-change: transform;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .sway{ animation: none; }
+  }
+  @keyframes popFade{ 0%{ opacity:0; } 8%{ opacity:1; } 82%{ opacity:1; } 100%{ opacity:0; } }
+  .popBubble{ animation:popFade 4.2s ease forwards; }
+  /* 감정 이모지 말풍선: 글자보다 짧게 떴다 사라진다 */
+  .popEmoji{ animation:popFade 2.6s ease forwards; }
+  @media (prefers-reduced-motion: reduce){
+    .popBubble, .popEmoji{ animation:none; opacity:1; }
+  }
+
+  /* 사운드바: 재생/음소거/볼륨을 한 그룹으로 정렬 */
+  #audioBar{ display:flex; align-items:center; gap:10px; background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; padding:0 10px; height:34px; box-sizing:border-box; }
+  #audioBar button{ background:none; border:none; padding:2px; cursor:pointer; display:flex; align-items:center; }
+  #volSlider{ width:80px; accent-color:#5c4a3a; height:34px; }
+  #audioBar button.active svg polygon, #audioBar button.active svg path{ fill:#b06b5a; stroke:#b06b5a; }
+  .trackRow{ display:flex; align-items:center; gap:9px; width:100%; background:#fffdf8;
+             border:1.2px solid #5c4a3a; border-radius:9px; padding:9px 11px; margin-bottom:7px;
+             font-family:inherit; font-size:13px; color:#5c4a3a; cursor:pointer; text-align:left; }
+  .trackRow:hover{ background:#f6efe0; }
+  .trackRow .tNum{ font-weight:700; letter-spacing:1px; }
+  .trackRow .tUse{ font-size:10.5px; color:#8a8a86; }
+  .trackRow.on .tUse{ color:#6f5c48; }
+  .trackRow .tState{ margin-left:auto; font-size:10.5px; color:#8a8a86; padding-left:7px; }
+  .trackRow.on{ background:#f2ead8; box-shadow:inset 0 0 0 1px #5c4a3a; }
+  .trackRow.on .tState{ color:#5c4a3a; font-weight:600; }
+  .trackRow.soon{ opacity:.5; cursor:not-allowed; }
+  .trackRow .tBar{ display:inline-flex; align-items:flex-end; gap:1.5px; height:11px; }
+  .trackRow .tBar i{ width:2.5px; background:#5c4a3a; border-radius:1px; height:4px; }
+  .trackRow.on .tBar i{ animation:tEq .9s ease-in-out infinite; }
+  .trackRow.on .tBar i:nth-child(2){ animation-delay:.18s; }
+  .trackRow.on .tBar i:nth-child(3){ animation-delay:.36s; }
+  @keyframes tEq{ 0%,100%{ height:3px; } 50%{ height:11px; } }
+  @media (prefers-reduced-motion: reduce){ .trackRow.on .tBar i{ animation:none; height:7px; } }
+
+  #prodBarWrap{ flex:1; background:#fff; border:1.3px solid #5c4a3a; border-radius:8px; height:16px; position:relative; overflow:visible; }
+  #prodBarTrack{ position:absolute; inset:2px; border-radius:6px; background:#f2efe6; overflow:hidden; }
+  #prodBarFill{ height:100%; width:0%; background:#5c4a3a; transition:width .4s linear; }
+  .floatPlus{ position:absolute; right:2px; top:-4px; font-size:12px; font-weight:700; color:#5c4a3a; animation:floatUpHtml 1.1s ease-out forwards; pointer-events:none; }
+  @keyframes floatUpHtml{ 0%{ transform:translateY(0); opacity:1; } 100%{ transform:translateY(-22px); opacity:0; } }
+
+  #settingsPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:40; padding:16px; }
+  #settingsPanel.show{ display:flex; }
+  #settingsInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:380px; width:100%; max-height:82vh; overflow-y:auto; border:1.4px solid #5c4a3a; }
+  #settingsInner h2{ font-size:14px; margin:0 0 10px; color:#5c4a3a; }
+  #settingsInner h3{ font-size:12px; margin:14px 0 6px; color:#8a8a86; }
+
+  #settingsHub{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:38; padding:16px; }
+  #settingsHub.show{ display:flex; }
+  #settingsHubInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:320px; width:100%; border:1.4px solid #5c4a3a; }
+  #settingsHubInner h2{ font-size:14px; margin:0 0 12px; color:#5c4a3a; }
+  .hubRow{ display:flex; gap:8px; }
+  .hubRow .btn{ flex:1; justify-content:center; height:44px; }
+
+  #resetConfirmPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:44; padding:16px; }
+  #resetConfirmPanel.show{ display:flex; }
+  #resetConfirmInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:320px; width:100%; border:1.4px solid #5c4a3a; }
+  #resetConfirmInner h2{ font-size:14px; margin:0 0 8px; color:#5c4a3a; }
+  #resetConfirmInner p{ font-size:12px; color:#8a8a86; line-height:1.6; margin:0; }
+
+  #creditsPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:41; padding:16px; }
+  #creditsPanel.show{ display:flex; }
+  #creditsInner{ background:#fffdf8; border-radius:14px; padding:20px; max-width:320px; width:100%; border:1.4px solid #5c4a3a; text-align:center; }
+  #creditsInner h2{ font-size:14px; margin:0 0 10px; color:#5c4a3a; }
+  #creditsInner p{ font-size:12.5px; color:#5c4a3a; line-height:1.6; margin:4px 0; }
+
+  #profilePanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:43; padding:16px; }
+  #profilePanel.show{ display:flex; }
+  #profileInner{ background:#fffdf8; border-radius:14px; padding:20px; max-width:300px; width:100%; border:1.4px solid #5c4a3a; }
+  #profileInner h2{ font-size:15px; margin:0; color:#5c4a3a; }
+  #profileInner .setRow label{ width:auto; flex:1; }
+  #profileInner .setRow span{ font-weight:700; }
+
+  #reportPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:43; padding:16px; }
+  #reportPanel.show{ display:flex; }
+  #reportInner{ background:#fffdf8; border-radius:14px; padding:20px; max-width:340px; width:100%; border:1.4px solid #5c4a3a; }
+  #reportInner h2{ font-size:15px; margin:0 0 2px; color:#5c4a3a; }
+  #reportTable{ width:100%; border-collapse:collapse; font-size:12px; }
+  #reportTable th, #reportTable td{ border-bottom:1px dashed #ddd8cc; padding:5px 4px; text-align:left; }
+  #reportTable th{ color:#8a8a86; font-weight:600; }
+
+  #helpPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:42; padding:16px; }
+  #helpPanel.show{ display:flex; }
+  #helpInner{ background:#fffdf8; border-radius:14px; padding:18px 20px; max-width:460px; width:100%; max-height:84vh; overflow-y:auto; border:1.4px solid #5c4a3a; font-size:12.5px; color:#5c4a3a; line-height:1.6; }
+  #helpInner h2{ font-size:15px; margin:0 0 10px; color:#5c4a3a; }
+  #helpInner h3{ font-size:12.5px; margin:16px 0 6px; color:#5c4a3a; border-top:1px dashed #ddd8cc; padding-top:12px; }
+  #helpInner h3:first-of-type{ border-top:none; padding-top:0; }
+  #helpInner .hDiv{ text-align:center; color:#d9c7a8; font-size:10px; letter-spacing:10px; margin:18px 0 2px; }
+  #helpInner .hDiv + h3{ border-top:none; padding-top:4px; }
+  #helpInner h3 .dg{ display:inline-block; width:22px; margin-right:2px; }
+  #helpInner h3{ background:#f7f1e4; border-radius:8px; padding:6px 8px !important; }
+  #helpInner table{ width:100%; border-collapse:collapse; margin:6px 0; font-size:11.5px; }
+  #helpInner th, #helpInner td{ border-bottom:1px dashed #ddd8cc; padding:5px 4px; text-align:left; vertical-align:top; }
+  #helpInner th{ color:#8a8a86; font-weight:600; }
+  /* 표 첫 열(버튼·공간·손님 이름)은 어절 단위로만 줄바꿈해
+     '랜덤 이 / 동'처럼 글자 중간에서 끊기지 않게 한다 */
+  #helpInner th:first-child, #helpInner td:first-child{ word-break:keep-all; }
+  #helpInner code{ background:#f0ece0; border-radius:4px; padding:1px 5px; font-size:11.5px; }
+  #helpInner ul{ margin:4px 0; padding-left:18px; }
+  #helpInner .helpNote{ background:#f7f4ee; border:1px solid #ddd8cc; border-radius:8px; padding:8px 10px; margin-top:6px; }
+  .setRow{ display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .setRow label{ font-size:11.5px; color:#8a8a86; width:78px; flex-shrink:0; }
+  .setRow input{ border:1px solid #ddd8cc; border-radius:6px; padding:6px 8px; font-size:12px; flex:1; }
+  .settingsActions{ display:flex; gap:8px; margin-top:14px; }
+
+  .mail-overlay{ position:fixed; inset:0; background:rgba(58,58,58,0.45); display:none; align-items:center; justify-content:center; z-index:35; padding:16px; }
+  .mail-overlay.show{ display:flex; }
+  .mail-window{ background:#fffdf8; border:1.4px solid #5c4a3a; border-radius:12px; width:100%; max-width:340px; overflow:hidden; }
+  .mail-head{ display:flex; justify-content:space-between; align-items:center; padding:10px 14px; border-bottom:1px solid #ddd8cc; font-size:13px; color:#5c4a3a; }
+  .mail-head button{ background:none; border:none; font-size:16px; cursor:pointer; color:#5c4a3a; }
+  .mail-body{ padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
+  .mail-field{ display:flex; align-items:center; gap:8px; border-bottom:1px solid #eee5d5; padding-bottom:6px; }
+  .mail-field label{ font-size:11.5px; color:#8a8a86; width:52px; flex-shrink:0; }
+  .mail-field input{ border:none; outline:none; font-size:12.5px; flex:1; background:transparent; height:auto; }
+  .mail-body textarea{ border:1px solid #ddd8cc; border-radius:8px; padding:8px; font-size:12.5px; min-height:70px; resize:vertical; font-family:inherit; }
+  .mail-error{ font-size:11.5px; color:#b23b3b; min-height:14px; }
+  .mail-send{ align-self:flex-end; }
+
+  .msg-badge{ display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px; border-radius:50%; border:2.4px solid #6b9e6b; background:transparent; box-sizing:border-box; margin-left:2px; }
+  .msg-badge.has-count{ border:none; background:#e8935a; color:#fff; font-size:9px; font-weight:600; line-height:1; }
+  .noteBoxBtn{ font-size:11px; color:#5c4a3a; border:1px solid #5c4a3a; border-radius:6px; padding:3px 7px; background:#fff; cursor:pointer; }
+  .mail-head .headRight{ display:flex; gap:6px; align-items:center; }
+  .headLeft{ display:flex; align-items:center; gap:6px; }
+  .backBtn{ background:none; border:none; font-size:19px; line-height:1; cursor:pointer; color:#5c4a3a; padding:0 2px; }
+  /* ===== 메신저 접속자 목록: 메신저 앱 스타일 ===== */
+  .rosterRow{ display:flex; align-items:center; gap:10px; padding:10px 10px; border-bottom:0.5px solid #eef3f7;
+              border-radius:0; margin-bottom:0; transition:background .15s ease; }
+  .rosterRow:hover{ background:#f4f8fb; }
+  .rosterRow:last-child{ border-bottom:none; }
+  .rosterAvatar{ width:38px; height:38px; border-radius:50%; flex-shrink:0;
+                 box-sizing:border-box; position:relative; overflow:hidden; }
+  .rosterDot{ width:10px; height:10px; border-radius:50%; flex-shrink:0;
+              border:2px solid #ffffff; box-sizing:content-box; margin-left:-19px;
+              margin-top:26px; position:relative; z-index:2; }
+  .rosterMeta{ flex:1; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .rosterName{ font-size:13px; font-weight:500; color:#22333f; width:auto; flex-shrink:1;
+               overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rosterStatus{ flex:none; font-size:11.5px; color:#8fa6b6;
+                 overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .rosterNoteBtn{ font-size:10.5px; color:#1B7FB8; background:#E6F1FB; border:none;
+                  border-radius:14px; padding:6px 11px; cursor:pointer; white-space:nowrap;
+                  flex-shrink:0; font-weight:500; transition:background .15s ease; font-family:inherit; }
+  .rosterNoteBtn:hover{ background:#d3e6f7; }
+  #rosterList{ padding:2px; }
+  #messengerOverlay .mail-window{ max-width:330px; }
+  #messengerOverlay .mail-body{ max-height:56vh; overflow-y:auto; padding:6px 6px 8px; background:#fff; }
+  #messengerOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
+  #messengerOverlay .mail-head button{ color:#fff; }
+  #messengerOverlay .mail-head #messengerCloseX{ color:#cfe6f5; }
+  #messengerOverlay .mail-head .noteBoxBtn{ border-color:#8fc4e4; color:#fff; background:rgba(255,255,255,0.14); }
+  #messengerOverlay .mail-head .noteBoxBtn:hover{ background:rgba(255,255,255,0.26); }
+  #messengerOverlay .mail-head #dayLogBtn{ padding:4px 7px; font-size:12px; line-height:1.1; }
+  #chatListOverlay .mail-head, #chatWindowOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
+  #chatListOverlay .mail-head button, #chatWindowOverlay .mail-head button{ color:#fff; }
+  #chatListOverlay .mail-head #chatListCloseX, #chatWindowOverlay .mail-head #chatWindowCloseX{ color:#cfe6f5; }
+  #chatListOverlay .mail-body, #chatWindowOverlay .mail-body{ background:#fff; }
+  #messengerOverlay .mail-head{ padding:8px 10px; font-size:12.5px; }
+  .headRight{ gap:4px; }
+  .noteBoxBtn{ font-size:10.5px; padding:4px 8px; }
+  .mail-head .noteBoxBtn{ background:#fff; border:1px solid #5c4a3a; color:#5c4a3a; font-size:10.5px; padding:4px 8px; border-radius:6px; cursor:pointer; position:relative; }
+  .mail-head .noteBoxBtn.has-alert::after{ content:''; position:absolute; top:-3px; right:-3px; width:7px; height:7px; border-radius:50%; background:#e8935a; border:1px solid #fffdf8; }
+  #dayLogOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
+  #dayLogOverlay .mail-head button{ color:#fff; }
+  #dayLogOverlay .mail-head #dayLogCloseX{ color:#cfe6f5; }
+  #dayLogOverlay .mail-body{ background:#F4F8FB; }
+  #dayLogOverlay .dayLogRow{ color:#22333f; border-bottom:0.5px solid #e3ecf3; background:#fff; border-radius:8px; padding:7px 9px; }
+  .noteItem{ border:0.5px solid #e3ecf3; border-radius:10px; padding:10px 11px; font-size:12.5px; color:#22333f; background:#fff; line-height:1.5; }
+  .noteItem .noteMeta{ font-size:10.5px; color:#8fa6b6; margin-bottom:4px; }
+  .noteItem{ display:flex; gap:10px; align-items:flex-start; }
+  .noteAvatar{ width:34px; height:34px; border-radius:50%; flex-shrink:0; overflow:hidden; }
+  .noteText{ flex:1; min-width:0; word-break:break-all; }
+  #noteBoxOverlay .mail-head, #noteComposeOverlay .mail-head{ background:#1B7FB8; border-bottom:none; color:#fff; }
+  #noteBoxOverlay .mail-head button, #noteComposeOverlay .mail-head button{ color:#fff; }
+  #noteBoxOverlay .mail-head #noteBoxCloseX, #noteComposeOverlay .mail-head #noteComposeCloseX{ color:#cfe6f5; }
+  #noteBoxOverlay .mail-head .noteBoxBtn{ border-color:#8fc4e4; color:#fff; background:rgba(255,255,255,0.14); }
+  #noteBoxOverlay .mail-head .noteBoxBtn:hover{ background:rgba(255,255,255,0.26); }
+  #noteBoxOverlay .mail-body{ background:#F4F8FB; }
+  #noteComposeOverlay .mail-body{ background:#fff; }
+  #noteComposeOverlay .mail-field label{ color:#7f97a8; }
+  #noteComposeOverlay #noteToText{ color:#22333f; }
+  #noteComposeOverlay input, #noteComposeOverlay textarea{ background:#F1F5F9; border:0.5px solid #e3ecf3; border-radius:8px; color:#22333f; }
+  #noteComposeOverlay input::placeholder, #noteComposeOverlay textarea::placeholder{ color:#a8bcc9; }
+  #noteComposeOverlay .mail-send{ background:#1B7FB8; border-color:#1B7FB8; color:#fff; }
+
+  .chatListRow{ display:flex; align-items:center; gap:10px; padding:10px 4px; border-bottom:0.5px solid #eef3f7; cursor:pointer; }
+  .chatListRow:last-child{ border-bottom:none; }
+  .chatListRow:active{ background:#f4f8fb; }
+  .chatListAvatar{ width:38px; height:38px; border-radius:50%; flex-shrink:0; box-sizing:border-box; }
+  .chatListMid{ flex:1; min-width:0; }
+  .chatListName{ font-size:13px; color:#22333f; font-weight:500; }
+  .chatListPreview{ font-size:11.5px; color:#8fa6b6; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:1px; }
+  .chatListRight{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; flex-shrink:0; }
+  .chatListTime{ font-size:10px; color:#a8bcc9; }
+  .chatListDot{ background:#1B7FB8; color:#fff; font-size:10px; min-width:17px; height:17px; border-radius:9px; display:flex; align-items:center; justify-content:center; padding:0 5px; box-sizing:border-box; opacity:0; }
+  .chatListDot.show{ opacity:1; }
+  .chatListSectionHeader{ font-size:11px; color:#8fa6b6; font-weight:500; padding:9px 4px 4px; }
+  .chatListSectionHeader:first-child{ padding-top:2px; }
+  #chatMessages{ display:flex; flex-direction:column; max-height:320px; overflow-y:auto; padding:12px 10px; background:#F4F8FB; border-radius:10px; }
+  .chatMsgRow{ display:flex; gap:8px; margin-bottom:12px; align-items:flex-start; }
+  .chatMsgRow.mine{ flex-direction:row-reverse; }
+  .chatAvatar{ width:30px; height:30px; border-radius:50%; flex-shrink:0; box-sizing:border-box; margin-top:14px; }
+  .chatBubbleWrap{ display:flex; flex-direction:column; max-width:72%; }
+  .chatMsgRow.mine .chatBubbleWrap{ align-items:flex-end; }
+  .chatSenderName{ font-size:10.5px; color:#7f97a8; margin-bottom:3px; }
+  .chatBubble{ background:#fff; border:0.5px solid #e3ecf3; border-radius:4px 14px 14px 14px; padding:8px 11px; font-size:12.5px; color:#22333f; line-height:1.5; word-break:break-word; }
+  .chatMsgRow.mine .chatBubble{ background:#1B7FB8; color:#fff; border-color:#1B7FB8; border-radius:14px 4px 14px 14px; }
+  .chatTime{ font-size:9.5px; color:#b8c8d3; margin-top:3px; }
+  .chatDateChip{ align-self:center; background:#dae6ee; color:#5c7688; font-size:10px; padding:3px 10px; border-radius:10px; margin-bottom:12px; }
+  #chatInputRow{ display:flex; gap:7px; align-items:center; margin-top:8px; }
+  #chatInputRow input{ flex:1; background:#F1F5F9; border:0.5px solid #e3ecf3; border-radius:18px; padding:8px 13px; font-size:12px; color:#22333f; font-family:inherit; box-sizing:border-box; }
+  #chatInputRow input::placeholder{ color:#a8bcc9; }
+  #chatSendBtn{ width:33px; height:33px; min-width:33px; padding:0; border-radius:50%; background:#1B7FB8; border:none; color:#fff; font-size:15px; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
+  .chatBubble.deleted{ color:#a8bcc9; font-style:italic; border-style:dashed; background:#fff; }
+  /* 퇴근(뒤로가기) 확인 — 어떤 창보다 위에 떠야 한다 */
+  #exitOverlay{ position:fixed; inset:0; background:rgba(58,50,40,0.46); display:none;
+                align-items:center; justify-content:center; z-index:60; padding:18px; }
+  #exitOverlay.show{ display:flex; }
+  #exitBox{ background:#fffdf8; border:1.5px solid #5c4a3a; border-radius:14px;
+            width:100%; max-width:292px; padding:20px 18px 16px; text-align:center;
+            box-shadow:0 10px 30px rgba(60,50,40,.22); }
+  #exitBox h3{ margin:0 0 9px; font-size:15.5px; color:#5c4a3a; }
+  #exitBox p{ margin:0 0 16px; font-size:12px; line-height:1.65; color:#7a6a58; }
+  #exitBtns{ display:flex; gap:8px; }
+  #exitBtns .btn{ flex:1; justify-content:center; height:38px; font-size:13px; }
+  #exitLeave{ background:#5c4a3a; color:#fffdf8; }
+  /* 시간대 색조: 창밖 하늘(data-sky)과 같은 기준으로 방 안 공기도 바뀐다.
+     multiply 로 얹으므로 흰색(#fff)은 아무 효과가 없다 = 낮에는 원래 색 그대로. */
+  #roomSkyVeil{ fill:#ffffff; opacity:0; }
+  body[data-sky="dawn"]    #roomSkyVeil{ fill:#c3bede; opacity:0.20; }
+  body[data-sky="morning"] #roomSkyVeil{ fill:#ffe6b4; opacity:0.24; }
+  body[data-sky="day"]     #roomSkyVeil{ fill:#ffffff; opacity:0; }
+  body[data-sky="sunset"]  #roomSkyVeil{ fill:#ffc194; opacity:0.28; }
+  body[data-sky="dusk"]    #roomSkyVeil{ fill:#b7b2d4; opacity:0.18; }
+  body[data-sky="night"]   #roomSkyVeil{ fill:#a3a7d0; opacity:0.22; }
+  /* 창에서 들어오는 빛도 밤에는 잦아든다 */
+  #roomDaylightRect{ opacity:1; transition:opacity .8s ease; }
+  body[data-sky="dawn"]   #roomDaylightRect,
+  body[data-sky="dusk"]   #roomDaylightRect{ opacity:0.35; }
+  body[data-sky="night"]  #roomDaylightRect{ opacity:0.12; }
+
+  /* 입력 중 표시: 상대가 답을 쓰고 있는 동안 점 세 개가 튄다 */
+  .chatTypingBubble{ display:flex; align-items:center; gap:4px; padding:11px 13px; }
+  .chatTypingBubble i{ width:5.5px; height:5.5px; border-radius:50%; background:#b8c8d3;
+                       display:block; animation:chatDot 1.25s ease-in-out infinite; }
+  .chatTypingBubble i:nth-child(2){ animation-delay:.18s; }
+  .chatTypingBubble i:nth-child(3){ animation-delay:.36s; }
+  @keyframes chatDot{ 0%,60%,100%{ transform:translateY(0); opacity:.45; }
+                      30%{ transform:translateY(-4px); opacity:1; } }
+  @media (prefers-reduced-motion: reduce){
+    .chatTypingBubble i{ animation:none; opacity:.7; }
+  }
+  .chatSystemMsg{ text-align:center; font-size:11px; color:#8fa6b6; margin:8px 0; }
+  .quickReplyChip{ font-size:10.5px; color:#1B7FB8; background:#E6F1FB; border:none; border-radius:12px; padding:5px 10px; cursor:pointer; font-family:inherit; }
+  .dayLogRow{ display:flex; gap:8px; font-size:11.5px; color:#5c4a3a; padding:4px 2px; border-bottom:1px dashed #ddd8cc; }
+  .dayLogRow:last-child{ border-bottom:none; }
+  .dayLogTime{ color:#8a8a86; flex-shrink:0; width:34px; }
+
+  /* ===== 접속(인트로) 화면: 회사 건물 앞 =====
+     390x800 무대를 그려두고 화면 높이에 맞춰 통째로 배율만 바꾼다.
+     그래야 계단·사장님 발·간판이 어느 화면에서든 어긋나지 않는다. */
+  #introScreen{ position:fixed; inset:0; display:none; z-index:50; overflow:hidden; }
+  #introScreen.show{ display:block; }
+  /* 인트로가 떠 있는 동안에는 도시 배경만 남기고 게임 화면을 가린다
+     (레이아웃은 그대로 두어 들어갈 때 화면이 튀지 않게 visibility를 쓴다) */
+  body.introOn{ overflow:hidden; }
+  body.introOn > *:not(#introScreen):not(#cityBg){ visibility:hidden; }
+  #introStage{ position:absolute; left:50%; top:50%; width:390px; height:800px; z-index:3;
+               transform:translate(-50%,-50%) scale(var(--introScale,1)); transform-origin:50% 50%; }
+  #introFacade{ position:absolute; left:0; bottom:0; width:390px; height:620px; }
+  /* 인도 바탕. 거리 배경이 미치지 않는 초광폭 화면을 위한 보험이다.
+     윗변이 파사드의 지면선(무대 y=580)과 맞도록 top은 JS가 잡아준다. */
+  #introGround{ position:absolute; left:0; right:0; bottom:0; z-index:1;
+        background:var(--pave); border-top:1.3px solid #5c4a3a; }
+  /* 거리 배경. 무대와 같은 좌표계(지면선 y=580)를 쓰고 좌우로만 넓다.
+     후경(산·남산타워·이웃 건물·보도블럭)은 건물 뒤, 전경(가로등·가로수)은 건물 앞. */
+  .introScene{ position:absolute; left:50%; top:50%; width:1600px; height:800px;
+        transform:translate(-50%,-50%) scale(var(--introScale,1)); transform-origin:50% 50%;
+        pointer-events:none; }
+  .introScene svg{ width:1600px; height:800px; display:block; }
+  #introSceneBack{ z-index:2; }
+  #introSceneFore{ z-index:4; }
+  .mtnFar2 path{ fill:var(--mtn2); }
+  .mtnNear2 path{ fill:var(--mtn2b); }
+  .twr rect, .twr path{ fill:var(--twr); }
+  .farB rect{ fill:var(--farb); }
+  .farB .farW{ fill:var(--farw); opacity:.55; }
+  .nbB rect{ fill:var(--nbb); stroke:var(--nbs); stroke-width:1.3; }
+  .nbW rect{ fill:var(--nbw); stroke:var(--nbs); stroke-width:1; }
+  .lamp rect{ fill:var(--lampBody); stroke:#5c4a3a; stroke-width:1.1; }
+  .lamp circle{ fill:var(--lampBody); stroke:#5c4a3a; stroke-width:1.1; }
+  .lamp .lampGlass{ fill:var(--fw); stroke:#5c4a3a; stroke-width:1.1; }
+  .introScene .shadow{ fill:#3a2a1f; opacity:.13; stroke:none; }
+  .tree .trunk{ fill:var(--trunk); stroke:#5c4a3a; stroke-width:1.1; }
+  .tree .branch{ stroke:var(--trunk); stroke-width:2.2; stroke-linecap:round; fill:none; }
+  .tree .leaf{ fill:var(--leaf); stroke:#5c4a3a; stroke-width:1.1; }
+  .tree .leafD{ fill:var(--leafD); stroke:#5c4a3a; stroke-width:1.1; }
+  .pave rect{ fill:var(--pave); }
+  .paveLine line{ stroke:var(--pave2); stroke-width:1; }
+  .curb rect{ fill:#5c4a3a; opacity:.45; }
+  .introLayer{ position:absolute; left:0; right:0; text-align:center; }
+  #introStage .introSign{ bottom:416px; }
+  #introStage .introSign span{ display:inline-block; background:var(--stone3); border:1.5px solid #5c4a3a;
+        border-radius:4px; padding:5px 20px; font-size:18px; font-weight:700; color:#5c4a3a;
+        letter-spacing:3px; box-shadow:0 1.5px 0 rgba(92,74,58,.2); }
+  #introStage .introBossWrap{ bottom:208px; }
+  #introStage .introBoss{ width:70px; height:auto; display:block; margin:0 auto; }
+  /* 인사 말풍선은 HTML로 그린다. 글자 크기가 기기 설정에 따라 달라져도
+     상자가 글자를 따라 커지므로 글자가 말풍선을 벗어날 수 없다. */
+  #introStage .introSay{ bottom:330px; }
+  #introStage .introSay span{ position:relative; display:inline-block; background:#fffdf8;
+        border:1.4px solid #5c4a3a; border-radius:11px; padding:6px 14px;
+        font-size:12.5px; line-height:1.35; color:#5c4a3a; white-space:nowrap;
+        box-shadow:0 1.5px 0 rgba(92,74,58,.13); }
+  /* 꼬리 — 진한 삼각형 위에 배경색 삼각형을 겹쳐 몸통과 한 덩어리로 보이게 한다 */
+  #introStage .introSay span::before, #introStage .introSay span::after{
+        content:''; position:absolute; left:50%; width:0; height:0;
+        border-left:7px solid transparent; border-right:7px solid transparent; }
+  #introStage .introSay span::before{ bottom:-9px; margin-left:-7px; border-top:9px solid #5c4a3a; }
+  #introStage .introSay span::after{ bottom:-6px; margin-left:-5.5px;
+        border-left-width:5.5px; border-right-width:5.5px; border-top:9px solid #fffdf8; }
+  #introStage .introSum{ bottom:138px; }
+  .introSumCard{ display:inline-flex; background:rgba(255,253,248,.96); border:1.2px solid #5c4a3a;
+        border-radius:10px; overflow:hidden; box-shadow:0 2px 0 rgba(92,74,58,.14); }
+  .introSumCard .col{ padding:6px 15px 7px; }
+  .introSumCard .col + .col{ border-left:1px solid #ddd4c4; }
+  .introSumCard .k{ font-size:9.5px; color:#8a7f70; }
+  .introSumCard .v{ font-size:14px; font-weight:700; color:#5c4a3a; margin-top:1px; }
+  .introFirst{ display:inline-block; background:rgba(255,253,248,.96); border:1.2px solid #5c4a3a;
+        border-radius:10px; padding:8px 18px; font-size:12px; color:#5c4a3a; }
+  #introStage .introBtnRow{ bottom:66px; }
+  #introScreen .enterBtn{ font-size:15px; padding:12px 34px; height:auto; background:#fffdf8;
+        border-width:1.6px; font-weight:600; box-shadow:0 3px 0 rgba(92,74,58,.22); }
+  #introStage .introCopyright{ bottom:14px; font-size:9.5px; color:#7d7466; line-height:1.6; }
+
+  /* ===== 배경: 서울 도시 풍경 (시간대별 하늘) ===== */
+  /* 기본값은 낮. 시각에 따라 body[data-sky]가 바뀌면서 아래 팔레트로 갈아탄다 */
+  :root{
+    --sky-top:#7fb8dd; --sky-mid:#b6dcef; --sky-bot:#e2f1f7;
+    --mtn-far:#a9bcc2; --mtn-near:#8fa6ac; --bldg:#b3c3ca; --bldg2:#c3d0d6;
+    --palace:#a98f7e; --palace-roof:#8a6f66;
+    --river:#a6cde1; --river2:#8fbdd4;
+    --win-op:0; --star-op:0; --sun-op:1; --moon-op:0; --haze:#ffffff; --haze-op:0.30;
+  }
+  body[data-sky="dawn"]{
+    --sky-top:#3a4470; --sky-mid:#8b7fa8; --sky-bot:#e9a98c;
+    --mtn-far:#4a5273; --mtn-near:#3a405c; --bldg:#454b66; --bldg2:#525872;
+    --palace:#4e4459; --palace-roof:#3d3648;
+    --river:#4c5678; --river2:#3e4867;
+    --win-op:0.75; --star-op:0.35; --sun-op:0; --moon-op:0.5; --haze:#f0b58f; --haze-op:0.22;
+  }
+  body[data-sky="morning"]{
+    --sky-top:#8fbfe0; --sky-mid:#cfe4f1; --sky-bot:#f8e6d6;
+    --mtn-far:#a8b7bb; --mtn-near:#8fa2a6; --bldg:#b4c1c7; --bldg2:#c6d1d6;
+    --palace:#ad9382; --palace-roof:#8e746a;
+    --river:#aed0e2; --river2:#95bcd2;
+    --win-op:0; --star-op:0; --sun-op:1; --moon-op:0; --haze:#ffe6cc; --haze-op:0.32;
+  }
+  body[data-sky="day"]{
+    --sky-top:#7fb8dd; --sky-mid:#b6dcef; --sky-bot:#e2f1f7;
+    --mtn-far:#a9bcc2; --mtn-near:#8fa6ac; --bldg:#b3c3ca; --bldg2:#c3d0d6;
+    --palace:#a98f7e; --palace-roof:#8a6f66;
+    --river:#a6cde1; --river2:#8fbdd4;
+    --win-op:0; --star-op:0; --sun-op:1; --moon-op:0; --haze:#ffffff; --haze-op:0.30;
+  }
+  body[data-sky="sunset"]{
+    --sky-top:#7b93b8; --sky-mid:#f0b184; --sky-bot:#f2c9a0;
+    --mtn-far:#8a7080; --mtn-near:#6e5768; --bldg:#9c7b78; --bldg2:#b08d85;
+    --palace:#9c7566; --palace-roof:#7d5a52;
+    --river:#e0a684; --river2:#c98a70;
+    --win-op:0.35; --star-op:0; --sun-op:1; --moon-op:0; --haze:#ffcf9e; --haze-op:0.34;
+  }
+  body[data-sky="dusk"]{
+    --sky-top:#2f3a63; --sky-mid:#5c5480; --sky-bot:#9c6f8e;
+    --mtn-far:#3b3c5c; --mtn-near:#2e2f4a; --bldg:#3a3852; --bldg2:#474463;
+    --palace:#4a3f4e; --palace-roof:#3a313f;
+    --river:#3c3f68; --river2:#323454;
+    --win-op:0.9; --star-op:0.5; --sun-op:0; --moon-op:1; --haze:#8f7aa0; --haze-op:0.20;
+  }
+  body[data-sky="night"]{
+    --sky-top:#141d33; --sky-mid:#22304d; --sky-bot:#33415f;
+    --mtn-far:#1a2138; --mtn-near:#121728; --bldg:#1b2338; --bldg2:#252e46;
+    --palace:#2b2536; --palace-roof:#1f1a29;
+    --river:#18213c; --river2:#131a30;
+    --win-op:1; --star-op:1; --sun-op:0; --moon-op:1; --haze:#3b4a6e; --haze-op:0.18;
+  }
+  /* 인트로 건물의 석재·창 조명 톤. 하늘이 어두워지면 벽과 인도도 같이 어두워지고
+     창·문 유리·벽등에는 불이 들어온다. */
+  :root{
+    --fw:#cfe0e8; --fg:#e8f1f4; --lampBody:#4f5a63;
+    --mtn2:#b6c4c9; --mtn2b:#9fb2b8; --twr:#8fa1a8; --farb:#c3ced3; --farw:#dbe4e8;
+    --nbb:#ded9cf; --nbw:#c6d8e1; --nbs:#7d6b58;
+    --leaf:#8fb877; --leafD:#6f9b5e; --trunk:#9a7550;
+    --stone:#fffdf8; --stone2:#f2ead8; --stone3:#f7f1e2; --stone4:#e2d7c2;
+    --pave:#ddd6c8; --pave2:#c9c1b1; --roof:#8d99a3;
+  }
+  body[data-sky="dawn"]{
+    --fw:#ffdca0; --fg:#fdf0d8; --lampBody:#3d4650;
+    --mtn2:#5b6480; --mtn2b:#474e68; --twr:#4e5670; --farb:#4d5470; --farw:#ffd98a;
+    --nbb:#b4ada0; --nbw:#ffd98a; --nbs:#6b5a48;
+    --leaf:#5c7360; --leafD:#4a5e50; --trunk:#6b5540;
+    --stone:#e6e0d9; --stone2:#d9d0c2; --stone3:#dfd8c9; --stone4:#cabfae;
+    --pave:#bfb9ad; --pave2:#aba497; --roof:#6c7783;
+  }
+  body[data-sky="morning"]{
+    --fw:#cfe0e8; --fg:#e8f1f4; --lampBody:#4f5a63;
+    --mtn2:#b8c5c8; --mtn2b:#a1b3b6; --twr:#92a2a6; --farb:#c5cfd1; --farw:#e2e8e6;
+    --nbb:#e2dbcd; --nbw:#cadbe0; --nbs:#7d6b58;
+    --leaf:#93bb79; --leafD:#739e60; --trunk:#9a7550;
+    --stone:#fffdf8; --stone2:#f2ead8; --stone3:#f7f1e2; --stone4:#e2d7c2;
+    --pave:#ddd6c8; --pave2:#c9c1b1; --roof:#8d99a3;
+  }
+  body[data-sky="day"]{
+    --fw:#cfe0e8; --fg:#e8f1f4; --lampBody:#4f5a63;
+    --mtn2:#b6c4c9; --mtn2b:#9fb2b8; --twr:#8fa1a8; --farb:#c3ced3; --farw:#dbe4e8;
+    --nbb:#ded9cf; --nbw:#c6d8e1; --nbs:#7d6b58;
+    --leaf:#8fb877; --leafD:#6f9b5e; --trunk:#9a7550;
+    --stone:#fffdf8; --stone2:#f2ead8; --stone3:#f7f1e2; --stone4:#e2d7c2;
+    --pave:#ddd6c8; --pave2:#c9c1b1; --roof:#8d99a3;
+  }
+  body[data-sky="sunset"]{
+    --fw:#ffdca0; --fg:#fdf0d8; --lampBody:#4a4750;
+    --mtn2:#a58893; --mtn2b:#8a6f80; --twr:#8d7484; --farb:#b09090; --farw:#ffe0a8;
+    --nbb:#dbcabb; --nbw:#ffdca0; --nbs:#7a6355;
+    --leaf:#84907a; --leafD:#6b7864; --trunk:#8a6a4f;
+    --stone:#f8ebdd; --stone2:#ecdec9; --stone3:#f1e4cf; --stone4:#dacbb5;
+    --pave:#d4c9b9; --pave2:#beb3a1; --roof:#87818d;
+  }
+  body[data-sky="dusk"]{
+    --fw:#ffd98a; --fg:#fdeecf; --lampBody:#343c46;
+    --mtn2:#333c5a; --mtn2b:#262e4a; --twr:#2f3754; --farb:#2c3450; --farw:#ffd98a;
+    --nbb:#aaa498; --nbw:#ffd98a; --nbs:#655544;
+    --leaf:#4f6058; --leafD:#3e4c46; --trunk:#5a4838;
+    --stone:#d6d1cc; --stone2:#c8c0b4; --stone3:#cfc7ba; --stone4:#b9b0a0;
+    --pave:#afaa9f; --pave2:#9a9488; --roof:#5c6672;
+  }
+  body[data-sky="night"]{
+    --fw:#ffd98a; --fg:#fdeecf; --lampBody:#313943;
+    --mtn2:#2b3450; --mtn2b:#1f2740; --twr:#28304a; --farb:#252d46; --farw:#ffd98a;
+    --nbb:#a6a094; --nbw:#ffd98a; --nbs:#615140;
+    --leaf:#4a5a52; --leafD:#3a4842; --trunk:#5a4838;
+    --stone:#d3cec9; --stone2:#c5bdb1; --stone3:#ccc4b7; --stone4:#b6ad9d;
+    --pave:#aca79c; --pave2:#979185; --roof:#59636f;
+  }
+  #introFacade *, .introScene svg *{ transition:fill .9s ease, stroke .9s ease; }
+  @media (prefers-reduced-motion: reduce){ #introFacade *, .introScene svg *{ transition:none; } }
+  /* 원경답게 채도를 조금 낮춰 사무실이 계속 주인공으로 보이게 한다 */
+  #cityBg{ position:fixed; inset:0; z-index:-1; pointer-events:none; filter:saturate(0.88); }
+  #cityBg svg{ width:100%; height:100%; display:block; }
+  #cityBg .skyStop1{ stop-color:var(--sky-top); }
+  #cityBg .skyStop2{ stop-color:var(--sky-mid); }
+  #cityBg .skyStop3{ stop-color:var(--sky-bot); }
+  #cityBg .mtnFar{ fill:var(--mtn-far); }
+  #cityBg .mtnNear{ fill:var(--mtn-near); }
+  #cityBg .bldg{ fill:var(--bldg); }
+  #cityBg .bldg2{ fill:var(--bldg2); }
+  #cityBg .palace{ fill:var(--palace); }
+  #cityBg .palaceRoof{ fill:var(--palace-roof); }
+  #cityBg .river{ fill:var(--river); }
+  #cityBg .river2{ fill:var(--river2); }
+  #cityBg .winLight{ fill:#ffd98a; opacity:var(--win-op); }
+  #cityBg .star{ fill:#fff; opacity:var(--star-op); }
+  #cityBg #bgSun{ opacity:var(--sun-op); }
+  #cityBg #bgMoon{ opacity:var(--moon-op); }
+  #cityBg .haze{ fill:var(--haze); opacity:var(--haze-op); }
+  /* 색 전환은 천천히 — 시간대가 넘어갈 때 툭 끊기지 않게 */
+  #cityBg *{ transition:fill .9s ease, opacity .9s ease, stop-color .9s ease; }
+  @media (prefers-reduced-motion: reduce){ #cityBg *{ transition:none; } }
+  /* 배경 위에 떠 있도록 사무실 카드에 그림자 */
+  #stage{ box-shadow:0 6px 22px rgba(40,50,70,.16); }
+  #sideBar{ box-shadow:0 4px 16px rgba(40,50,70,.13); }
+
+  /* ===== 3단 레이아웃: 왼쪽 세로바 / 사무실 / 오른쪽 로그 ===== */
+  #appShell{ width:100%; max-width:1094px; display:flex; align-items:flex-start; gap:10px; }
+  #mainCol{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; }
+  #sideBar{ flex:0 0 74px; width:74px; position:sticky; top:14px; background:#fffdf8;
+            border:1.3px solid #5c4a3a; border-radius:10px; padding:7px 0;
+            display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .sideBtn{ width:62px; padding:6px 2px 5px; border:1px solid transparent; border-radius:8px;
+            background:none; color:#5c4a3a; font-family:inherit; font-size:9.5px; line-height:1.25;
+            cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+            position:relative; text-align:center; }
+  .sideBtn:hover{ background:#f6efe0; }
+  .sideBtn:active{ transform:scale(0.96); }
+  .sideBtn.active{ background:#5c4a3a; color:#fff; }
+  .sideBtn.active svg [stroke]{ stroke:#fff; }
+  .sideBtn:disabled{ opacity:.4; cursor:not-allowed; }
+  .sideBtn svg{ flex:0 0 auto; }
+  .sideSep{ width:44px; height:1px; background:#e6e0d2; margin:3px 0; flex:0 0 auto; }
+  /* 엘리베이터 층 버튼 */
+  #elevGrid{ display:grid; grid-template-columns:repeat(9,1fr); gap:4px; }
+  .floorBtn{ height:40px; padding:0; border:1.2px solid #d8cdb6; border-radius:8px; background:#fffdf8;
+             color:#8a8a86; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+  .floorBtn.open{ border-color:#5c4a3a; color:#5c4a3a; }
+  .floorBtn.open:hover{ background:#f4ecdc; }
+  .floorBtn.here{ background:#5c4a3a; border-color:#5c4a3a; color:#fffdf8; }
+  #elevNow{ font-size:12px; color:#8a8a86; text-align:center; margin-top:2px; }
+  #elevMsg{ font-size:12.5px; color:#b0553f; text-align:center; min-height:18px; }
+  /* 음원 조절은 세로바 맨 아래에 붙인다 */
+  #sideBar #audioBar{ flex-direction:column; height:auto; width:62px; gap:5px;
+                      padding:6px 3px 7px; border-radius:8px; }
+  #sideBar #audioBar .audioBtns{ display:flex; align-items:center; gap:9px; }
+  #sideBar #volSlider{ width:52px; height:14px; }
+  #sideScrim{ display:none; position:fixed; inset:0; background:rgba(58,50,40,.3); z-index:25; }
+  #sideScrim.show{ display:block; }
+  #sideToggle{ display:none; }
+
+  /* 오른쪽 가장자리 접이식 로그 */
+  #logTab{ position:fixed; right:0; top:50%; transform:translateY(-50%); z-index:22;
+           background:#fffdf8; border:1.3px solid #5c4a3a; border-right:none;
+           border-radius:9px 0 0 9px; padding:13px 5px 13px 4px; cursor:pointer;
+           display:flex; flex-direction:column; align-items:center; gap:7px;
+           box-shadow:-2px 0 8px rgba(92,74,58,.07); font-family:inherit; color:#5c4a3a; }
+  #logTab:active{ transform:translateY(-50%) scale(0.97); }
+  #logTab .vtxt{ writing-mode:vertical-rl; font-size:11px; letter-spacing:2px; }
+  #logTabBadge{ min-width:16px; height:16px; border-radius:9px; background:#c8553d; color:#fff;
+                font-size:9px; font-weight:700; display:none; align-items:center;
+                justify-content:center; padding:0 4px; box-sizing:border-box; }
+  #logTabBadge.show{ display:flex; }
+  #logPanel{ position:fixed; top:0; right:0; bottom:0; width:302px; z-index:24;
+             background:#fffdf8; border-left:1.4px solid #5c4a3a;
+             box-shadow:-8px 0 20px rgba(92,74,58,.13);
+             transform:translateX(100%); transition:transform .32s cubic-bezier(.4,0,.2,1);
+             display:flex; flex-direction:column; }
+  #logPanel.open{ transform:translateX(0); }
+  #logHead{ display:flex; align-items:center; justify-content:space-between; flex:0 0 auto;
+            padding:13px 14px 10px; border-bottom:1px solid #e6e0d2; }
+  #logHead h2{ font-size:13.5px; margin:0; }
+  #logCloseX{ background:none; border:none; font-size:19px; line-height:1; color:#8a8a86;
+              cursor:pointer; padding:0 2px; font-family:inherit; }
+  #logBody{ flex:1; overflow-y:auto; padding:6px 12px 22px; }
+  .logRow{ display:flex; gap:8px; padding:7px 2px; border-bottom:1px dashed #ece6d8; }
+  .logRow:last-child{ border-bottom:none; }
+  .logRowTime{ font-size:10px; color:#b3ab97; flex:0 0 32px; padding-top:2px; }
+  .logRowText{ font-size:11.5px; line-height:1.55; word-break:break-word; }
+  .logDaySep{ display:flex; align-items:center; gap:7px; font-size:10px; color:#b3ab97;
+              padding:13px 0 5px; }
+  .logDaySep::before, .logDaySep::after{ content:''; flex:1; height:1px; background:#ece6d8; }
+  .logEmpty{ color:#8a8a86; font-size:12px; padding:16px 2px; text-align:center; line-height:1.7; }
+
+  @media (prefers-reduced-motion: reduce){
+    #logPanel{ transition:none; }
+  }
+
+  /* 좁은 화면: 세로바는 서랍으로, 로그는 전체화면으로 */
+  @media (max-width:1100px){
+    #appShell{ max-width:1000px; gap:0; }
+    #sideBar{ position:fixed; top:0; left:0; bottom:0; z-index:26; width:158px; flex-basis:158px;
+              border-radius:0; border-top:none; border-bottom:none; border-left:none;
+              transform:translateX(-100%); transition:transform .28s cubic-bezier(.4,0,.2,1);
+              align-items:stretch; padding:12px 0; overflow-y:auto; gap:0; }
+    #sideBar.open{ transform:translateX(0); }
+    .sideBtn{ width:auto; flex-direction:row; justify-content:flex-start; gap:10px;
+              padding:10px 15px; font-size:12.5px; border-radius:0; text-align:left; }
+    .sideBtn.active{ background:#f3ead6; color:#5c4a3a; }
+    .sideBtn.active svg [stroke]{ stroke:#5c4a3a; }
+    .sideSep{ width:auto; margin:4px 15px; }
+    #sideBar #audioBar{ flex-direction:row; width:auto; margin:4px 15px 2px; padding:5px 9px;
+                        gap:10px; height:34px; }
+    #sideBar #volSlider{ flex:1 1 0; width:auto; min-width:0; }
+    #sideToggle{ display:inline-flex; }
+    #logPanel{ width:100%; border-left:none; }
+    #logTab{ padding:10px 4px; }
+    #logTab .vtxt{ font-size:10px; letter-spacing:1px; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    #sideBar{ transition:none; }
+  }
+
+
+  /* 좁은 화면: 사무실을 화면 높이에 꽉 채우고 가로로 넘겨 본다 */
+  @media (max-width:760px){
+    body{ padding-bottom:18px; }
+    #stage{ overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
+            overscroll-behavior-x:contain; scrollbar-width:none; -ms-overflow-style:none; }
+    #stage::-webkit-scrollbar{ display:none; }
+    #officeSvg, #floor2Svg, #roofSvg, #b1Svg, #lab5Svg{ height:var(--officeH,56vh); width:auto; max-width:none; }
+    /* 사무실이 화면을 꽉 채우니 세로 탭은 가로 알약으로 바꿔 구석에 둔다 */
+    #logTab{ top:auto; bottom:12px; right:10px; transform:none; flex-direction:row;
+             border-right:1.3px solid #5c4a3a; border-radius:999px; padding:8px 13px; gap:6px;
+             box-shadow:0 2px 10px rgba(92,74,58,.18); }
+    #logTab:active{ transform:scale(0.97); }
+    #logTab .vtxt{ writing-mode:horizontal-tb; font-size:11.5px; letter-spacing:0; }
+  }
