@@ -292,7 +292,9 @@ function poll(F,now){
       // 걸어 나가던 중이면 엘리베이터까지 마저 걸어가서 사라진다
       var walkOff = a.staff ? wasAway : !!a.path;
       if(!walkOff){ a.visible=false; a.goal=null; }
-      else { a.leaving=true; a.stepMs=170; a.leaveUntil=now+24000; a.pend=null; setGoal(F,a,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now); }
+      else { a.leaving=true; a.stepMs=170; a.leaveUntil=now+24000; a.pend=null; setGoal(F,a,{ c:F.lobby.c, r:F.lobby.r, face:'down' },now);
+        // 이미 엘리베이터 앞에 서 있으면(가던 목적지가 그대로라 새 길이 안 생긴다) 바로 탄 것으로 한다 — 옥상·야근 식사 가는 사람이 문 앞에서 정면 보고 멈춰 있던 문제
+        if(!a.path){ a.visible=false; a.leaving=false; a.goal=null; } }
     }
     readBubble(a, F.bubble(id));
   }
@@ -406,7 +408,22 @@ var MEET5_TIMES=[10*60+30, 14*60+10, 16*60+40];
 var MEET5_QA=[[['이번 달 색견본','다 모았습니다'],['수고했네.','37번은 비워 두게.']],[['한지 결 테스트','결과가 좋아요'],['기록해 두게.']],[['3층 팀이','새 노트를 낸대요'],['색은?','…먹색 17호겠지.']],
   [['캡슐 온도가','조금 올랐어요'],['R-0에게','확인시키지.']],[['1층 매장에서','리소 포스터가 인기래요'],['종이가 좋으니까.']],[['오늘 습도 48%,','종이한테 딱이에요'],['좋아.','다음 안건.']],
   [['금박 봉투 재고가','바닥났어요'],['주문 넣게.']],[['교수님,','서버실은 요즘…'],['그건','다음에 이야기하지.']],[['선반이 또','밀려 있었어요'],['…흠.','누가 봤을까.']],
-  [['은행잎 노랑,','가을 한정으로 낼까요?'],['좋은 생각이야.']],[['새 봉투 견본','들어왔어요'],['크림색이','제일이더군.']],[['쪽빛 샘플이','하나 비어요'],['비워 둔 거야.']]];
+  [['은행잎 노랑,','가을 한정으로 낼까요?'],['좋은 생각이야.']],[['새 봉투 견본','들어왔어요'],['크림색이','제일이더군.']],[['쪽빛 샘플이','하나 비어요'],['비워 둔 거야.']],
+  // 세 마디(남박사 → 한교수 → 남박사)도 섞는다. 미스터리는 흘리기만 하고 풀지 않는다
+  [['교수님, 어젯밤에','캡슐 불이 깜빡였어요'],['몇 번?'],['…세 번이요.']],[['예비-02 기록지가','또 비어 있어요'],['비어 있는 게','기록이야.']],
+  [['3층에 누가','일지를 읽는 것 같아요'],['알고 있네.','계속 지켜보게.']],[['5시 46분에','시계가 또 멈췄어요'],['시계는 멈춰도','시간은 가지.']],
+  [['6층 버튼을','누가 눌렀대요'],['…6층은 없네.'],['네? 그럼 그 버튼은…']],[['R-0가 저보고','"관찰 대상"이래요'],['틀린 말은','아니지.']],
+  [['수납장 뒤 스위치,','먼지가 하나도 없었어요'],['…누가 닦았군.']],[['호환율이','38%로 올랐어요'],['너무 빨라.','속도를 늦추게.']],
+  [['각지본색이','무슨 뜻이에요?'],['각자 지닌','본래의 색.'],['…그게 다예요?']],[['옥상 부엉이가','교수님을 닮았어요'],['닮은 게 아니라…','아니, 됐네.']],
+  [['사장님이 서버실에','관심을 보이세요'],['아직은','종이 가게라고 하게.']],[['관찰일지 32쪽이','찢겨 있어요'],['찢은 게 아니라','접은 거야.']],
+  [['캐리어는','언제 푸세요?'],['돌아갈 곳이','정해지면.']],[['2층 손님들,','매일 같은 자리예요'],['같은 자리가','편한 이들도 있지.']],
+  [['어항 물고기가','하나 늘었어요'],['내일 다시','세어 보게.'],['…어제도 그러셨잖아요.']],[['빈 서랍 이름표,','써 넣을까요?'],['아직.','이름이 오지 않았어.']],
+  [['메모 보드에','제 이름도 있던데요'],['모두의 이름이','있지.']],[['최실장님이','5층 번호를 물었어요'],['없다고 하게.']],
+  [['이 먹색,','어제랑 달라요'],['종이가 달라진 거야.','색은 그대로지.']],[['R-0 바퀴 마모율이','92%래요'],['R-0는','바퀴가 없는데.'],['…네?']],
+  [['어제 서버실 안에서','노크 소리가 났어요'],['…몇 시에?'],['5시 46분이요.']],[['조형물 눈이','또 움직였대요'],['눈은 원래','움직이는 거야.']],
+  [['캡슐 하나는','왜 비워 두세요?'],['손님용이야.'],['…손님이요?']],[['다음 달 색은','뭘로 할까요?'],['아직 오지 않은 색.']],
+  [['재고창고 화살표가','혼자 켜졌대요'],['혼자 켜지는 건','없네.']],[['예비-03 불빛이','빨갛게 바뀌었어요'],['…준비가','끝났다는 뜻이지.']],
+  [['교수님은 퇴근하면','어디로 가세요?'],['강철 문 너머.'],['거긴 서버실인데요…']],[['오늘 3층에서','팩스가 왔어요'],['3층엔','팩스가 없네.']]];
 function lab5Meet(F,now,t,nam,han,M,d){
   var dk=d.toDateString(); if(F.meetDay!==dk){ F.meetDay=dk; F.meetDone={}; }
   if(!F.meeting){
@@ -424,8 +441,9 @@ function lab5Meet(F,now,t,nam,han,M,d){
   [nam,han].forEach(function(a){ if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; } });
   if(nam.path || han.path) return;                                                 // 둘 다 앉으면 번갈아 이야기
   if(!F.meetNext) F.meetNext=now+1500;
-  if(now>F.meetNext){ var qa=F.meetQ[(F.meetI=(F.meetI||0)+1)%F.meetQ.length]; nam.bubble=qa[0]; nam.talkUntil=now+3200; F.meetReply=qa[1]; F.meetReplyAt=now+3400; F.meetNext=now+9000+Math.random()*4000; }
-  if(F.meetReplyAt && now>F.meetReplyAt){ han.bubble=F.meetReply; han.talkUntil=now+3200; F.meetReplyAt=0; }
+  if(now>F.meetNext){ var qa=F.meetQ[(F.meetI=(F.meetI||0)+1)%F.meetQ.length]; nam.bubble=qa[0]; nam.talkUntil=now+3200; F.meetReply=qa[1]; F.meetReplyAt=now+3400; F.meetFollow=qa[2]||null; F.meetFollowAt=0; F.meetNext=now+(qa[2]?13000:9000)+Math.random()*4000; }
+  if(F.meetReplyAt && now>F.meetReplyAt){ han.bubble=F.meetReply; han.talkUntil=now+3200; F.meetReplyAt=0; if(F.meetFollow){ F.meetFollowAt=now+3400; } }
+  if(F.meetFollowAt && now>F.meetFollowAt){ nam.bubble=F.meetFollow; nam.talkUntil=now+3200; F.meetFollowAt=0; F.meetFollow=null; }
 }
 function lab5Pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function lab5Seat(S){ return { c:S.c, r:S.r, face:S.face, sit:true, pt:{ x:S.pt.x, feet:S.pt.feet } }; }
@@ -1271,7 +1289,7 @@ function catchUp(now){
     ['nam','han'].forEach(function(k){ var n=F5.actors[k]; if(!n) return; n.ph=null; n.path=null; n.pend=null; n.wait=false; n.leaving=false; n.onFurn=false; n.bubble=null; n.emo=null; n.talkUntil=0; n.until=0; });
     if(F5.vac){ F5.vac.path=null; F5.vac.booted=false; F5.vac.until=0; F5.vac.bubble=null; }
     if(F5.robot){ F5.robot.path=null; F5.robot.nextMove=0; F5.robot.bubble=null; }
-    F5.meeting=false; F5.meetReplyAt=0; F5.doorHold=0; F5.doorClickUntil=0; F5.steelUntil=0; PO.STATE.lab5Door=0; PO.STATE.lab5Steel=0;
+    F5.meeting=false; F5.meetReplyAt=0; F5.meetFollowAt=0; F5.doorHold=0; F5.doorClickUntil=0; F5.steelUntil=0; PO.STATE.lab5Door=0; PO.STATE.lab5Steel=0;
   }
 }
 var lastFrameT=0;

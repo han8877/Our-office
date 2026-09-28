@@ -2539,7 +2539,9 @@ function pCapsule(kind){ return obj(40,98,function(g){ ell(g,20,92,19,5,'#5a646e
   if(kind<2) for(var b=0;b<4;b++) P(g,10+((b*13+kind*7)%20),18+((b*23)%60),'#e6fff6');
   ell(g,20,8,18,5,'#8a949c'); ell(g,20,6,16,4,'#b8c2c8'); ell(g,20,5,10,2,'#dfe6ea'); }, true); }
 [0,1,2].forEach(function(k){ onTile(pCapsule(k),17+k*2,21,18+k*2,23); });
-things.push({sy:24*T-1, draw:function(g){ [0,1,2].forEach(function(k){ var cx=18*T+k*64; R(g,cx-18,24*T-14,36,10,'#2a3038'); tx(g,'예비-0'+(k+1),cx,24*T-9,7,k===2?'#ff8a8a':'#6affb0','center'); }); }});
+things.push({sy:24*T+1, draw:function(g){ [0,1,2].forEach(function(k){ var cx=18*T+k*64, y=24*T-30;                // 이름표: 캡슐 유리 앞에 붙은 금속판 (캡슐보다 나중에 그려야 보인다)
+  R(g,cx-20,y,40,13,'#8f9aa5'); R(g,cx-19,y+1,38,11,'#2a3038'); R(g,cx-19,y+1,38,1,'#4a5460'); P(g,cx-18,y+2,'#c3ccd4'); P(g,cx+17,y+2,'#c3ccd4');
+  tx(g,'예비-0'+(k+1),cx,y+7,8,k===2?'#ff8a8a':'#6affb0','center'); }); }});
 things.push({sy:24*T+6, draw:function(g){ g.fillStyle='rgba(190,226,240,0.35)'; g.fillRect(17*T,24*T-2,6*T,14); R(g,17*T,24*T-4,6*T,3,'#8f9aa5'); R(g,17*T,24*T-4,6*T,1,'#c3ccd4'); for(var x=17*T+8;x<23*T;x+=40) R(g,x,24*T,2,8,'rgba(255,255,255,0.7)'); }});
 block(17,21,22,23);
 // 새장 · 우산꽂이 · 안 뜯은 어항 상자
