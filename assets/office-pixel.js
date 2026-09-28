@@ -506,15 +506,22 @@ var F1_STAFF={
   f1seo:{ name:'서 스태프', look:{id:'f1seo',kind:'sheep',shirt:'#bff2e4',pants:'#5a5a66',apron:'#ff5f9e'}, shop:'store', home:{c:13,r:4,face:'down'},
     spots:[{c:6,r:5,face:'up'},{c:9,r:5,face:'up'},{c:15,r:4,face:'right'},{c:8,r:5,face:'down'},{c:11,r:4,face:'down'}],
     lines:[['커스텀 노트','재단 중이에요'],['리소 잉크가','잘 먹었네'],['이번 판화는','주황 한 도'],['종이학','하나 더 접어야지'],['이름 각인은','10분이면 돼요']] },
-  f1jin:{ name:'바리스타 진', look:{id:'f1jin',kind:'elephant',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:27,r:3,face:'down'},
+  f1jin:{ name:'바리스타 진', look:{id:'f1jin',kind:'elephant',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:27,r:3,face:'down'}, rest:{c:33,r:4,face:'down',sit:true}, restLines:[['이 책','재밌다'],['잠깐','숨 돌리자'],['쿠션','폭신~']],
+    floor:[{c:24,r:7,face:'up'},{c:27,r:13,face:'up'},{c:22,r:12,face:'left'},{c:25,r:21,face:'up'}], floorLines:[['맛있게 드세요~'],['리필 필요하신 분~'],['원두 향','어떠세요?']],
     spots:[{c:25,r:3,face:'down'},{c:24,r:3,face:'up'},{c:22,r:3,face:'up'},{c:27,r:3,face:'down'}],
     lines:[['원두 향 좋다~'],['달빛 라떼','하나요!'],['오늘 원두는','에티오피아예요'],['얼음 채워 둘게요']] },
-  f1ryu:{ name:'바리스타 류', look:{id:'f1ryu',kind:'duck',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:31,r:3,face:'down'},
+  f1ryu:{ name:'바리스타 류', look:{id:'f1ryu',kind:'duck',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:31,r:3,face:'down'}, rest:{c:34,r:4,face:'down',sit:true}, restLines:[['꽥…','아니 하품이야'],['콜드브루','한 모금'],['고양이 쿠션','귀여워']],
+    floor:[{c:30,r:7,face:'up'},{c:29,r:13,face:'up'},{c:31,r:16,face:'left'},{c:28,r:25,face:'down'}], floorLines:[['필요한 거 있으면','불러주세요~'],['컵 치워 드릴게요'],['자리 괜찮으세요?']],
     spots:[{c:32,r:3,face:'down'},{c:31,r:3,face:'down'},{c:30,r:3,face:'down'}],
     lines:[['픽업대로','와 주세요~'],['나인 콜드브루','추천해요'],['시럽 넣어 드릴까요?']] },
-  f1woo:{ name:'가드너 우', look:{id:'f1woo',kind:'hippo',shirt:'#e8efe4',pants:'#6a5a4a',apron:'#d8825a'}, shop:'cafe', home:{c:28,r:19,face:'left'},
-    spots:[{c:22,r:16,face:'right'},{c:28,r:16,face:'left'},{c:25,r:21,face:'up'},{c:19,r:21,face:'left'},{c:32,r:21,face:'right'},{c:19,r:17,face:'left'},{c:32,r:24,face:'right'}],
-    lines:[['레몬이','노랗게 익었네~'],['극락조 잎이','또 났어요'],['물은 흙이 마르면','흠뻑!'],['몬스테라는','햇빛을 좋아해요'],['식물 벽','분무 완료']] }
+  f1woo:{ name:'우서빙', look:{id:'f1woo',kind:'hippo',shirt:'#e8efe4',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:28,r:19,face:'left'}, rest:{c:33,r:6,face:'up',sit:true}, busyMs:[6000,12000],
+    tasks:[{sp:{c:22,r:16,face:'right'},lines:[['레몬나무','물 줄 시간~'],['잎 먼지','닦아 줘야지'],['레몬이','노랗게 익었네~']]},{sp:{c:19,r:17,face:'left'},lines:[['극락조 잎이','또 났어요'],['화분 흙이','말랐네']]},
+      {sp:{c:32,r:21,face:'right'},lines:[['몬스테라는','햇빛을 좋아해요'],['물은 흙이 마르면','흠뻑!']]},{sp:{c:19,r:21,face:'left'},lines:[['식물 벽','분무 완료']]},
+      {sp:{c:25,r:13,face:'up'},lines:[['테이블','반짝반짝~'],['컵 자국','닦아야지']]},{sp:{c:21,r:23,face:'left'},lines:[['테이블 닦을게요~'],['의자 줄 맞추기']]},{sp:{c:28,r:16,face:'right'},lines:[['4인 테이블','정리 완료']]},
+      {sp:{c:32,r:9,face:'right'},lines:[['쓰레기통','비워야지'],['분리수거','완료!'],['컵 수거함이','가득 찼네']]},
+      {sp:{c:20,r:20,face:'up'},lines:[['그림 액자가','살짝 비뚤었네'],['그림 조명','각도 조절~'],['액자 먼지','털어야지']]},{sp:{c:21,r:9,face:'left'},lines:[['이젤 그림','바꿔 걸 때 됐나'],['카카오 그림','인기 많네']]}],
+    lines:[['필요한 거 있으면','불러주세요'],['천천히','쉬다 가세요'],['오늘 추천은','달빛 라떼예요']],
+    restLines:[['뜨개질','한 코 한 코…'],['목도리','반쯤 떴다'],['식물 책','읽어야지']] }
 };
 var F1_BROWSE=[{c:4,r:12,face:'up'},{c:9,r:12,face:'up'},{c:14,r:12,face:'up'},{c:4,r:14,face:'down'},{c:9,r:14,face:'down'},{c:14,r:14,face:'down'},{c:2,r:11,face:'left'},{c:2,r:13,face:'left'},{c:2,r:19,face:'left'},
   {c:4,r:19,face:'up'},{c:8,r:19,face:'up'},{c:12,r:19,face:'up'},{c:14,r:19,face:'up'},{c:4,r:22,face:'up'},{c:4,r:25,face:'up'},{c:10,r:27,face:'up'},{c:14,r:24,face:'right'},{c:4,r:28,face:'up'},{c:13,r:21,face:'up'},{c:6,r:6,face:'right'},{c:11,r:6,face:'left'}];
@@ -565,6 +572,8 @@ var F1_WHY_LINES={
 var F1_SEC_LINES=[['1층 순찰!','이상 무!'],['출입문','확인 완료!'],['매장 동선','이상 없습니다!'],['비상구','확인 완료!'],['소화기 위치','확인!'],['장바구니 정리','상태 양호!']];
 var F1_VG_LINES=[['1층 한 바퀴','돌아볼까'],['유리문','잠금 이상 없고'],['레몬나무','오늘도 싱싱하네'],['매장 조명','이상 없음'],['카페 의자','정리돼 있고']];
 var F1_BOSS_LINES=[['매출은','좀 어때요?'],['진열이','깔끔하네요'],['이 노트','잘 나가요?'],['라떼 향','좋다~'],['손님이 많네요,','좋아요'],['레몬나무','잘 크고 있네'],['네컷 부스','반응 좋죠?'],['포장지 색','예쁘다'],['함 매니저님,','수고 많아요'],['커피 한 잔','마시고 올라갈까']];
+var F1_QA=[['화장실 어디예요?','엘리베이터 옆이에요~'],['와이파이 비번 있어요?','moon9coffee 예요!'],['이 그림 누가 그렸어요?','이달의 작가 작품이에요'],['레몬 진짜예요?','네! 곧 수확해요'],
+  ['디카페인 되나요?','키오스크에서 고르시면 돼요'],['콘센트 있어요?','노트북 존에 있어요'],['리필 돼요?','아메리카노는 돼요!'],['이 식물 이름 뭐예요?','극락조예요~']];
 var F1_BOSS_REPLY={ f1ham:['사장님 오셨어요!','오늘 무늬 노트 잘 나가요!','포장 요청이 많아요'], f1jin:['사장님, 라떼 한 잔 드릴까요?','오늘 원두 좋아요!'], f1woo:['레몬 곧 딸 수 있어요!'], f1seo:['리소 포스터 새로 뽑았어요!'] };
 var F1_STORE_SPOTS=[{c:4,r:12,face:'up'},{c:9,r:14,face:'down'},{c:14,r:12,face:'up'},{c:8,r:19,face:'up'},{c:12,r:19,face:'up'},{c:4,r:25,face:'up'},{c:14,r:24,face:'right'},{c:2,r:13,face:'left'},{c:11,r:6,face:'left'}];
 var F1_CAFE_SPOTS=[{c:22,r:16,face:'right'},{c:25,r:18,face:'up'},{c:28,r:14,face:'up'},{c:21,r:12,face:'up'},{c:26,r:21,face:'up'},{c:31,r:7,face:'up'},{c:24,r:26,face:'down'}];
@@ -635,21 +644,36 @@ function f1Robot(F,now,off){ var rb=F.robot;                                   /
 function f1Tick(F,now,off){
   var d=new Date(), t=d.getHours()*60+d.getMinutes(), M=F.map, O=f1Open(t), A=F.actors;
   if(!off && !F.f1Font && PO.fontReady && PO.fontReady()){ F.f1Font=true; if(!M.fontOK){ try{ F.map=M=PO.buildMap1(); }catch(e){} } }   // 글꼴이 늦게 오면 한 번 다시 그린다
-  var hamPos=null;
+  var hamPos=null, nC0=0; for(var ck in A){ var cg=A[ck]; if(cg.guest && cg.visible && cg.shop==='cafe') nC0++; }
+  if(nC0>0 || !O.cafe) F.qSince=0; else if(!F.qSince) F.qSince=now;
+  var quiet = !!F.qSince && now-F.qSince>15000;                                   // 카페 손님이 15초째 없다 → 직원 쉼터로
   // 직원
   Object.keys(F1_STAFF).forEach(function(id){ var S=F1_STAFF[id], a=npcActor(F,id,S.look,S.name), on=S.shop==='store'?O.storeStaff:O.cafeStaff;
     if(!a.ph){ if(on){ a.ph='work'; a.visible=true; placeAt(F,a,S.home); a.until=now+8000+Math.random()*12000; a.nextTalk=now+3000+Math.random()*9000; } else { a.ph='off'; a.visible=false; } }
     if(a.ph==='off' && on){ a.ph='in'; a.visible=true; a.stepMs=300; placeAt(F,a,{c:M.LOBBY.c,r:M.LOBBY.r,face:'down'}); setGoal(F,a,S.home,now); a.bubble=['출근했습니다~']; a.talkUntil=now+2400; }
     if(a.ph==='in' && !a.path){ a.ph='work'; a.until=now+15000+Math.random()*15000; }
-    if((a.ph==='work'||a.ph==='roam'||a.ph==='in') && !on){ a.ph='out'; a.bubble=['내일 또 봬요~']; a.talkUntil=now+2400; a.leaving=true; a.stepMs=280; setGoal(F,a,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!a.path){ a.visible=false; a.leaving=false; } }
+    if(a.ansAt && now>a.ansAt){ a.bubble=a.ans; a.talkUntil=now+3000; a.ansAt=0; }
+    if(S.rest){                                                                    // 카페 직원: 손님이 없으면 쉼터에서 뜨개질·책, 손님이 오면 제자리로
+      if((a.ph==='work'||a.ph==='roam') && quiet && on){ a.ph='toRest'; a.task=null; a.stepMs=320; setGoal(F,a,{c:S.rest.c,r:S.rest.r,face:S.rest.face,sit:true},now); if(Math.random()<0.5){ a.bubble=['손님 없을 때','잠깐 쉬어야지']; a.talkUntil=now+2400; } }
+      else if(a.ph==='toRest'){ if(!quiet){ a.ph='work'; setGoal(F,a,S.home,now); a.until=now+15000; } else if(!a.path){ a.ph='rest'; a.nextTalk=now+5000+Math.random()*8000; } }
+      else if(a.ph==='rest'){ if(!quiet){ a.ph='work'; a.bubble=['손님 오셨다!']; a.talkUntil=now+2200; a.stepMs=280; setGoal(F,a,S.home,now); a.until=now+15000; } else lab5Talk(a,now,S.restLines,['sleepy','happy','cool'],15000,30000); }
+    }
+    if((a.ph==='work'||a.ph==='roam'||a.ph==='in'||a.ph==='toRest'||a.ph==='rest') && !on){ a.ph='out'; a.bubble=['내일 또 봬요~']; a.talkUntil=now+2400; a.leaving=true; a.stepMs=280; setGoal(F,a,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!a.path){ a.visible=false; a.leaving=false; } }
     if(a.ph==='out'){ if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; } if(!a.visible){ a.ph='off'; a.bubble=null; } return; }
     if(a.ph==='work'){
-      if(now>a.until && !a.path && !(id==='f1ham' && F.payWait)){ a.ph='roam'; var sp=lab5Pick(S.spots); a.stepMs=320; setGoal(F,a,sp,now); a.until=now+5000+Math.random()*6000; }
+      if(now>a.until && !a.path && !(id==='f1ham' && F.payWait)){ a.ph='roam'; a.stepMs=320; a.said=false;
+        if(S.tasks){ a.task=lab5Pick(S.tasks); setGoal(F,a,a.task.sp,now); }                                         // 우서빙: 식물 · 테이블 · 쓰레기통 · 그림
+        else if(S.floor && Math.random()<0.3){ a.task={sp:lab5Pick(S.floor), lines:S.floorLines}; setGoal(F,a,a.task.sp,now); }   // 바리스타도 가끔 카페를 한 바퀴
+        else { a.task=null; setGoal(F,a,lab5Pick(S.spots),now); }
+        a.until=now+(S.busyMs?S.busyMs[0]+Math.random()*(S.busyMs[1]-S.busyMs[0]):5000+Math.random()*6000); }
       else if(!a.path && a.tile && (a.tile.c!==S.home.c||a.tile.r!==S.home.r) && !a.goal) setGoal(F,a,S.home,now);
       lab5Talk(a,now,S.lines,null,14000,30000); }
     else if(a.ph==='roam'){ if(id==='f1ham' && F.payWait){ a.ph='work'; setGoal(F,a,S.home,now); a.until=now+20000; }
-      else if(!a.path && now>a.until){ a.ph='work'; setGoal(F,a,S.home,now); a.until=now+20000+Math.random()*25000; }
-      lab5Talk(a,now,S.lines,null,14000,30000); }
+      else if(!a.path && now>a.until){ a.ph='work'; a.task=null; setGoal(F,a,S.home,now); a.until=now+(S.tasks?4000+Math.random()*6000:20000+Math.random()*25000); }
+      else if(!a.path && a.task && !a.said){ a.said=true; a.bubble=lab5Pick(a.task.lines); a.talkUntil=now+3000;
+        var near=null; for(var gk in A){ var gq=A[gk]; if(gq.guest && gq.visible && gq.shop==='cafe' && gq.tile && !gq.talkUntil && Math.abs(gq.tile.c-a.tile.c)+Math.abs(gq.tile.r-a.tile.r)<=4){ near=gq; break; } }
+        if(near && Math.random()<(S.tasks?0.55:0.3)){ var qa=lab5Pick(F1_QA); near.bubble=[qa[0]]; near.talkUntil=now+2600; a.bubble=null; a.talkUntil=0; a.ansAt=now+1700; a.ans=[qa[1]]; } }   // 손님 질문에 대답
+      else if(!a.task) lab5Talk(a,now,S.lines,null,14000,30000); }
     if(id==='f1ham') hamPos=a;
   });
   F.payWait=false;
@@ -658,7 +682,8 @@ function f1Tick(F,now,off){
   var hr=d.getHours(), busy=(hr>=12&&hr<14)||(hr>=17&&hr<20)?1.6:1;
   if(!F.f1Next) F.f1Next=now+1500;
   if(now>F.f1Next){ F.f1Next=now+(6000+Math.random()*12000)/busy;
-    var wantS=O.store && nS<Math.round(4*busy), wantC=O.cafe && nC<Math.round(5*busy);
+    var peak=(hr>=11&&hr<14)||(hr>=17&&hr<20);
+    var wantS=O.store && nS<Math.round(4*busy), wantC=O.cafe && (peak ? nC<Math.round(5*busy) : (nC<2 && Math.random()<0.45));
     if(wantS && (!wantC || Math.random()<0.5)) f1Guest(F,now,'store'); else if(wantC) f1Guest(F,now,'cafe'); }
   if(!F.f1Warm && (O.store||O.cafe)){ F.f1Warm=true; for(var w=0;w<3;w++){ var wg=f1Guest(F,now,O.store&&(w<2||!O.cafe)?'store':'cafe'); if(wg.todo.length){ var wt=wg.todo.shift(); wg.cur=wt; placeAt(F,wg,wt.seat?{c:wt.seat[0],r:wt.seat[1],face:wt.seat[2],sit:true}:{c:wt.g.c,r:wt.g.r,face:wt.g.face}); wg.ph='stay'; wg.until=now+3000+Math.random()*6000; } } }   // 이미 영업 중이면 손님 몇 명은 벌써 구경 중
   f1Visitors(F,now,off,O,t); f1Robot(F,now,off);
@@ -1276,7 +1301,7 @@ function frame(now){
   else if(F.key==='B1') b1Trays(F,list,now);
   if((F.key==='B1'||F.key==='5'||F.key==='1') && (roofWx==='rain'||roofWx==='snow')) list.push({sy:5*T-1, draw:function(gg){ PO.drawWetSign(gg,T+16,5*T); }});   // 비·눈 오는 날: 엘리베이터 앞 '미끄럼 주의'
   if(F.key==='5' && F.vac){ var vv=F.vac; list.push({ sy:vv.feet-14, draw:function(gg){ PO.drawVacuum(gg,Math.round(vv.x)+15,Math.round(vv.feet)-6,now,!!vv.path); } }); }
-  for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:a.feet}); }
+  for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:(F.key==='1' && a.onFurn && !a.path && a.dir==='down') ? a.feet+8 : a.feet}); }   // 1층: 앞을 보고 앉은 사람은 의자 등받이 앞에
   if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
   list.sort(function(p,q){ return p.sy-q.sy; });
   list.forEach(function(it){
@@ -1303,7 +1328,7 @@ function frame(now){
       g.fillStyle='#5e3a24'; g.fillText(nm,1,1); g.fillStyle='#fff6e6'; g.fillText(nm,0,0); g.restore(); g.textAlign='left'; }
     B.staff.forEach(function(s){ var S=PO.SEATS[s.id]; if(S) drawPlate(g,S.plateX,S.plateY,s.name); });
   } else if(F.key==='L'||F.key==='B1'||F.key==='1') {
-    for(var rid in F.actors){ var ra=F.actors[rid]; if(ra.visible&&ra.name) drawPlate(g,Math.round(ra.x)+17,b1TopSit(ra)?Math.round(ra.feet)-72:Math.round(ra.feet)+6-sitLift(ra),ra.name,true); }   // 식당 테이블 안쪽에 앉은 사람은 머리 위에 (식판을 가리지 않게)
+    for(var rid in F.actors){ var ra=F.actors[rid]; if(ra.visible&&ra.name&&!(F.key==='1'&&ra.ph==='rest')) drawPlate(g,Math.round(ra.x)+17,b1TopSit(ra)?Math.round(ra.feet)-72:Math.round(ra.feet)+6-sitLift(ra),ra.name,true); }   // 식당 테이블 안쪽에 앉은 사람은 머리 위에 (식판을 가리지 않게)
   } else {
     drawPlate(g,POSTS2.yun.plateX,POSTS2.yun.plateY,'윤안내'); drawPlate(g,POSTS2.kang.plateX,POSTS2.kang.plateY,'강안내');
     drawPlate(g,POSTS2.guard.plateX,POSTS2.guard.plateY,'보안');
@@ -1353,9 +1378,9 @@ var NPC_INFO={
   robot:    { name:'R-도우미', role:'쾌적한 환경 담당 로봇', bio:'온도·습도·미세먼지를 살피며 층을 돌아다녀요. 식당에선 식사 예절도 챙겨요.', hours:'언제나 근무 중' },
   f1ham:    { name:'함 매니저', role:'1층 끄적끄적문구 스토어 · 매니저', bio:'코알라. 계산대를 지키며 손님을 맞고, 틈틈이 진열대를 정리해요. 선물 포장 솜씨가 좋아요.', hours:'매일 09:40 출근 · 21:10 퇴근 (영업 10~21시)' },
   f1seo:    { name:'서 스태프', role:'1층 아틀리에 · 스태프', bio:'양. 커튼 너머 공방에서 리소 인쇄를 하고 커스텀 노트를 재단해요. 종이학 접기가 특기예요.', hours:'매일 09:40 출근 · 21:10 퇴근' },
-  f1jin:    { name:'바리스타 진', role:'1층 MOON 9 COFFEE · 바리스타', bio:'코끼리. 에스프레소 머신 담당. 긴 코로 원두 향을 제일 먼저 맡아요.', hours:'매일 07:40 출근 · 22:10 퇴근 (영업 8~22시)' },
+  f1jin:    { name:'바리스타 진', role:'1층 MOON 9 COFFEE · 바리스타', bio:'코끼리. 에스프레소 머신 담당. 긴 코로 원두 향을 제일 먼저 맡아요. 손님이 없으면 직원 쉼터에서 책을 읽어요.', hours:'매일 07:40 출근 · 22:10 퇴근 (영업 8~22시)' },
   f1ryu:    { name:'바리스타 류', role:'1층 MOON 9 COFFEE · 바리스타', bio:'오리. 픽업대에서 음료 이름을 또박또박 불러 줘요. 나인 콜드브루를 제일 좋아해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
-  f1woo:    { name:'가드너 우', role:'1층 MOON 9 COFFEE · 가드너', bio:'하마. 레몬나무와 큰 화분, 식물 벽을 돌봐요. 물 주는 시간을 절대 잊지 않아요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
+  f1woo:    { name:'우서빙', role:'1층 MOON 9 COFFEE · 홀 서빙', bio:'하마. 식물에 물을 주고, 테이블을 닦고, 쓰레기통을 비우고, 갤러리 그림도 챙겨요. 손님 질문엔 뭐든 대답해 줘요. 쉴 땐 직원 쉼터에서 뜨개질을 해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
   f1shopper:{ name:'손님', role:'1층 스토어 손님', bio:'베이지 장바구니를 들고 진열대를 구경해요.', hours:'영업 10~21시' },
   f1cafeguest:{ name:'손님', role:'1층 카페 손님', bio:'키오스크에서 주문하고 픽업대에서 음료를 받아요.', hours:'영업 8~22시' },
   visitor:  { name:'방문객', role:'2층 로비 손님', bio:'로비를 둘러보며 작품을 보거나 바에서 음료를 마셔요.', hours:'평일 09:00~18:00' }
