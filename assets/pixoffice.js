@@ -928,6 +928,9 @@ function drawHat(g,p,dir,cx,cy,rx,ry){
   if(p.chef){ var top0=cy-ry-2, wc='#fbfbf8', wd='#dcdcd6';          // 하얀 요리사 모자
     disc(g,cx-5,top0-1,5,wc); disc(g,cx+5,top0-1,5,wc); disc(g,cx,top0-3,6,wc); P(g,cx-2,top0-6,'#ffffff');
     R(g,cx-rx+2,top0+2,rx*2-3,5,wc); R(g,cx-rx+2,top0+6,rx*2-3,1,wd); R(g,cx-4,top0-1,1,3,wd); R(g,cx+4,top0-1,1,3,wd); return; }
+  if(p.beanie){ var bc=p.beanie, bt=cy-ry-1, bl=sh(bc,0.25), bdk=sh(bc,-0.25);          // 1층 손님: 방울 달린 뜨개 모자
+    ell(g,cx,bt+4,rx-1,5,bc); R(g,cx-rx+1,bt+5,rx*2-1,3,bc); for(var q=cx-rx+2;q<cx+rx-1;q+=2) R(g,q,bt+6,1,2,bdk); R(g,cx-rx+1,bt+8,rx*2-1,1,bdk); R(g,cx-4,bt+1,6,1,bl);
+    disc(g,dir==='left'?cx+1:cx,bt-1,2,'#fbfaf6'); return; }
   if(!p.hat) return;
   var c=p.hat, dk=sh(c,-0.3), lt=sh(c,0.3), top=cy-ry-2;
   ell(g,cx,top+4,rx-1,4,c); R(g,cx-rx+1,top+4,rx*2-1,3,c); R(g,cx-rx+3,top+1,rx*2-5,1,lt);
@@ -943,6 +946,22 @@ function drawShell(g,dir){                                             // 거북
     R(g,8,31,1,2,dk); R(g,23,31,1,2,dk); R(g,9,37,14,1,rim); return; }
   if(dir==='left'){ ell(g,22,31,5,8,dk); ell(g,22,30,4,7,c); R(g,22,25,2,3,lt); R(g,21,29,5,1,dk); R(g,21,34,4,1,dk); R(g,18,24,2,14,rim); return; }
   ell(g,16,31,10,8,dk); ell(g,16,30,9,7,c); R(g,6,28,2,6,lt); R(g,24,28,2,6,sh(c,-0.1)); }
+// 1층 손님 옷차림: 줄무늬 티 · 후드티 · 멜빵바지 · 크로스백 (사원증 없이, 직원과 한눈에 달라 보이게)
+function drawFit(g,p,dir,s,sD){ var f=p.fit, c=p.fitC||'#ffffff', side=dir==='left', x0=side?12:10, w=side?10:12;
+  if(f==='stripe'){ [28,31,34].forEach(function(y){ R(g,x0,y,w,1,c); }); }
+  else if(f==='hoodie'){ var hd=sh(s,-0.28);
+    if(dir==='up'){ R(g,11,26,10,5,hd); R(g,12,27,8,3,sh(s,-0.12)); }
+    else if(side){ R(g,18,25,4,5,hd); R(g,19,26,2,3,sh(s,-0.12)); R(g,13,33,6,3,sh(s,-0.15)); }
+    else { R(g,11,25,10,2,hd); R(g,14,27,1,4,c); R(g,17,27,1,4,c); R(g,12,32,8,3,sh(s,-0.15)); R(g,12,32,8,1,hd); } }
+  else if(f==='overall'){ var od=sh(c,-0.25);
+    if(dir==='up'){ R(g,12,27,1,6,c); R(g,19,27,1,6,c); R(g,10,33,12,4,c); R(g,10,33,12,1,od); }
+    else if(side){ R(g,12,31,10,6,c); R(g,15,26,1,5,c); R(g,12,31,10,1,od); }
+    else { R(g,12,26,1,3,c); R(g,19,26,1,3,c); R(g,12,29,8,8,c); R(g,13,30,6,3,od); P(g,12,29,'#e8c46a'); P(g,19,29,'#e8c46a'); } }
+  if(p.xbag){ var b=p.xbag, bd=sh(b,-0.3);
+    if(dir==='up'){ for(var i=0;i<9;i++) P(g,20-i,27+i,bd); }
+    else if(side){ R(g,15,26,1,8,bd); R(g,13,33,6,5,b); R(g,13,33,6,1,sh(b,0.25)); }
+    else { for(var j=0;j<9;j++) P(g,11+j,27+j,bd); R(g,18,34,6,5,b); R(g,18,34,6,1,sh(b,0.25)); P(g,20,36,'#e8c46a'); } }
+}
 function drawBody(g,K,p,dir,frame,sit){
   if(p.shell && dir==='down') drawShell(g,'down');                     // 앞에선 몸 뒤로 껍질 가장자리만
   var s=p.shirt, sD=sh(s,-0.22), sL=sh(s,0.28), pa=p.pantsC, pD=sh(pa,-0.28), sho='#5a4034', shoL='#7e5e4c', hand=K.f;
@@ -952,6 +971,7 @@ function drawBody(g,K,p,dir,frame,sit){
     else { R(g,17+legA[1],36,4,4,pD); R(g,16+legA[1],40,6,3,sh(sho,-0.1));
     R(g,14+legA[0],36,4,4,pa); R(g,13+legA[0],40,6,3,sho); R(g,13+legA[0],40,6,1,shoL); }
     R(g,12,26,10,11,s); R(g,13,25,8,2,s); R(g,20,27,2,10,sD); R(g,12,36,10,1,sD); R(g,13,26,2,8,sL);
+    if(p.fit) drawFit(g,p,'left',s,sD);
     var ax = frame===1 ? -2 : frame===2 ? 2 : 0;
     if(p.bag) R(g,19,27,5,10,p.bag);
     R(g,14+ax,28,4,7,sD); R(g,14+ax,35,4,3,hand); R(g,14+ax,35,4,1,sh(hand,0.25));
@@ -966,6 +986,7 @@ function drawBody(g,K,p,dir,frame,sit){
   if(!sit){ R(g,11,36,4,4+L[0],pa); R(g,17,36,4,4+L[1],pa); R(g,14,36,1,4,pD); R(g,20,36,1,4,pD);
   R(g,10,40+L[0],6,3,sho); R(g,10,40+L[0],6,1,shoL); R(g,16,40+L[1],6,3,sho); R(g,16,40+L[1],6,1,shoL); }
   R(g,10,27,12,10,s); R(g,11,26,10,2,s); R(g,20,28,2,9,sD); R(g,10,36,12,1,sD); R(g,10,28,2,7,sL);
+  if(p.fit) drawFit(g,p,dir,s,sD);
   if(sit&&dir==='down'){ R(g,10,37,12,2,pa); R(g,15,37,2,2,pD); R(g,10,39,5,2,sho); R(g,17,39,5,2,sho); R(g,10,39,5,1,shoL); R(g,17,39,5,1,shoL); }   // 앉음: 무릎과 구두 끝
   if(dir==='down'){ R(g,13,26,6,2,sL); P(g,15,28,sL); P(g,16,28,sL); P(g,16,31,sD); P(g,16,34,sD); }   // 옷깃과 단추
   if(p.apron&&dir!=='up'){ R(g,11,32,10,8,p.apron); R(g,11,32,10,1,sh(p.apron,0.3)); R(g,10,31,12,1,sh(p.apron,-0.2)); }

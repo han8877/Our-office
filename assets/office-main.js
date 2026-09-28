@@ -1793,6 +1793,50 @@
   }
   setInterval(function(){ if(Math.random() < 0.12) startSnackTrip(); }, 60000);
 
+  // ===== 1층 판매샵·카페 다녀오기 =====
+  // 근무 중 가끔 한 명이 재고 확인·트렌드 조사·손님 취향 살피기·물건 사기·커피 사기로 1층에 내려간다.
+  // 내려가 있는 동안은 3층 그림에서 빠지고(onRoof), 1층 그림(__f1Guests)에 나타나 그 일과 관련된 혼잣말을 한다
+  var F1_GO = { stock:['1층 재고 확인하고 올게요', '매장 재고 좀 보고 올게요'], trend:['1층 가서 트렌드 조사 좀 하고 올게요', '요즘 뭐가 잘 나가나 보고 올게요'],
+    taste:['손님들 반응 좀 보고 올게요', '1층 손님들 취향 조사 다녀올게요'], buy:['1층에서 뭐 좀 사 올게요', '펜 하나 사러 1층 다녀올게요'], coffee:['커피 사러 1층 다녀올게요', '달빛 라떼 수혈하고 올게요'] };
+  var F1_BACK = { stock:['재고 확인 완료!', '모듈 3번 채워 달라고 해야겠다'], trend:['요즘은 파스텔이 대세더라', '아이디어 좀 얻어 왔어요'], taste:['손님들 무늬 노트 좋아하더라', '만년필 코너 인기 많던데요'],
+    buy:['득템!', '또 사 버렸다..'], coffee:['커피 수혈 완료', '역시 달빛 라떼'] };
+  var F1_WHY_LOG = { stock:'재고 확인하러', trend:'트렌드 조사하러', taste:'손님 취향 살피러', buy:'물건 사러', coffee:'커피 사러' };
+  var f1TripOn = false;
+  function f1GuestQ(){ return (window.__f1Guests = window.__f1Guests || {}); }
+  function startF1Trip(){
+    var d = new Date(), t = d.getHours()*60 + d.getMinutes();
+    if(overtimeMode || isNonWorkingDay() || f1TripOn || wanderOn) return;
+    if(t < 10*60 || t >= 17*60+40 || (t >= 11*60+50 && t < 13*60+5)) return;        // 매장이 열려 있는 근무시간 (점심 제외)
+    var pool = staff.filter(function(s){
+      var el = charEl(s.id);
+      return el && el.classList.contains('present') && !el.classList.contains('onRoof')
+        && !isBusy(s.id) && !stretchIds[s.id] && !errandActive[s.id] && !roofTrip[s.id];
+    });
+    if(!pool.length) return;
+    var s = pool[Math.floor(Math.random()*pool.length)], el = charEl(s.id), key = 'f1_' + s.id;
+    var whys = ['stock','trend','taste','buy','coffee'], why = whys[Math.floor(Math.random()*whys.length)];
+    f1TripOn = true; markBusy(s.id); raiseChar(s);
+    showBubble(s, F1_GO[why][Math.floor(Math.random()*F1_GO[why].length)]);
+    if(typeof logDayEvent === 'function') logDayEvent(why === 'coffee' ? '☕' : '🛍️', josa(s.name,'이/가') + ' 1층에 ' + F1_WHY_LOG[why] + ' 내려갔습니다');
+    function done(){ clearBusy(s.id); f1TripOn = false; }
+    travelTo(s, {x:ENTRANCE.x, y:ENTRANCE.y}, 62, function(){
+      if(!el.classList.contains('present')){ done(); return; }
+      el.classList.add('onRoof');
+      f1GuestQ()[key] = { kind:'staff', id:s.id, name:s.name, why:why };
+      var t0 = Date.now();
+      (function wait(){
+        var q = f1GuestQ()[key];
+        if(q && !q.done && Date.now()-t0 < 8*60000){ setTimeout(wait, 1000); return; }
+        delete f1GuestQ()[key];
+        el.classList.remove('onRoof');
+        if(!el.classList.contains('present')){ done(); return; }
+        showBubble(s, F1_BACK[why][Math.floor(Math.random()*F1_BACK[why].length)]);
+        travelTo(s, {x:s.x, y:s.y}, 62, function(){ lowerChar(s); if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y}; done(); });
+      })();
+    });
+  }
+  setInterval(function(){ if(Math.random() < 0.14) startF1Trip(); }, 60000);
+
   function cancelErrandsInProgress(){
     Object.keys(errandActive).forEach(function(id){
       var s = staffMap[id];
@@ -3700,6 +3744,7 @@
   function maybeTriggerBossVisit(){
     if(visitorEventActive) return;
     if(window.__bossAtB1) return;          // 사장님은 지금 지하 식당에서 점심 중
+    if(window.__bossAtF1) return;          // 1층 매장을 둘러보는 중
     if(lifetime.breaks <= 0 || lifetime.breaks % 10 !== 0) return;
     visitorEventActive = true;
 
@@ -4693,6 +4738,7 @@
       return;
     }
     if(window.__bossAtB1){ toast('사장님은 지금 구내식당에서 점심 중이세요'); return; }
+    if(window.__bossAtF1){ toast('사장님은 지금 1층 매장을 둘러보고 계세요'); return; }
 
     multiBusy = true;
     visitorEventActive = true;
@@ -9630,6 +9676,37 @@
             if(!w._on){ gPatrol.busy = false; return; }          // 그사이 퇴근 시간이 됐다
             f2RideIn(w, function(){
               f2Say('guard', '옥상 이상 무!');
+              f2StaffGo('guard', [F2_HOME.guard], function(){ gPatrol.busy = false; });
+            });
+          })();
+        });
+      });
+    }, 5000);
+
+    // ---- 보안요원 1층 순찰 (11:30 · 14:30 · 17:30 · 20:30) ----
+    // 엘리베이터로 내려가 판매샵과 카페를 한 바퀴 돌고(1층 그림 __f1Guests) 다시 경비석으로 돌아온다
+    var secF1Slot = null;
+    setInterval(function(){
+      var d = new Date(), h = d.getHours(), m = d.getMinutes();
+      if([11,14,17,20].indexOf(h) < 0 || m < 30 || m > 33) return;
+      var slot = d.toDateString()+' '+h;
+      if(secF1Slot === slot) return;
+      var w = f2Walker.guard;
+      if(!w._on || !f2Visible('guard') || gPatrol.busy || !guardAtPost()) return;
+      secF1Slot = slot; gPatrol.busy = true;
+      f2Say('guard', '1층 매장 순찰 다녀오겠습니다!');
+      f2StaffGo('guard', [F2_ELEV], function(){
+        f2RideOut(w, function(){
+          var Q = (window.__f1Guests = window.__f1Guests || {}), who = f2GuardToday();
+          Q.sec = { kind:'sec', name:who.name, look: who.key === 'leo' ? 'guardLeo' : 'guard' };
+          var t0 = Date.now();
+          (function wait(){
+            var q = Q.sec;
+            if(q && !q.done && Date.now()-t0 < 240000){ w._f1T = setTimeout(wait, 1000); return; }
+            delete Q.sec;
+            if(!w._on){ gPatrol.busy = false; return; }
+            f2RideIn(w, function(){
+              f2Say('guard', '1층 이상 무!');
               f2StaffGo('guard', [F2_HOME.guard], function(){ gPatrol.busy = false; });
             });
           })();
