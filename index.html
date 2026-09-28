@@ -15386,7 +15386,8 @@ function lab5Tick(F,now,off){
   if(han.ph==='out'){ if(han.talkUntil && now>han.talkUntil){ han.bubble=null; han.talkUntil=0; } if(!han.visible){ han.ph='off'; han.bubble=null; } }
   if(off){ if(nam.path) step(nam,now); if(han.path) step(han,now); }
   // 비밀 문: 누군가 문 앞을 지나가려 하거나, 선반을 눌렀을 때 문 앞 선반이 왼쪽으로 밀린다
-  function nearDoor(a){ if(!a.visible||!a.path) return false; for(var k=a.step;k<=Math.min(a.step+3,a.path.length-1);k++){ var q=a.path[k]; if(q.r>=14&&q.r<=17&&q.c>=17&&q.c<=20) return true; } return false; }
+  // 문 칸(선반 자리 15행·칸막이 틈 16행, 18~19열)을 실제로 지나가는 길일 때만 연다. 문 앞을 옆으로 지나가기만 하면 그대로
+  function nearDoor(a){ if(!a.visible||!a.path) return false; for(var k=a.step;k<=Math.min(a.step+3,a.path.length-1);k++){ var q=a.path[k]; if((q.r===15||q.r===16)&&(q.c===18||q.c===19)) return true; } return false; }
   if(nearDoor(nam)||nearDoor(han)) F.doorHold=now+1400;
   var dt=Math.min(100,now-(F.lab5T||now)); F.lab5T=now;
   var want=(now<(F.doorHold||0) || now<(F.doorClickUntil||0)) ? 1 : 0, dv=PO.STATE.lab5Door||0;
