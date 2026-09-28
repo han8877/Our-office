@@ -3,7 +3,7 @@
 const { open, enter, goFloor, clickArt, suite } = require('./lib');
 (async () => {
   const T = suite('lab5');
-  const { browser, page, errors } = await open({ time: '2026-09-22T20:55:00' });
+  let { browser, page, errors } = await open({ time: '2026-09-22T20:55:00' }); let errs2 = [];
   await enter(page); await goFloor(page, '5'); await page.waitForTimeout(2500);
   const S = () => page.evaluate(() => { const F = window.__pixOffice.floors['5'], st = window.PixOffice.STATE, h = F.actors.han;
     return { light: st.lab5Light, charging: st.vacCharging, vacBubble: F.vac.bubble, han: h && h.ph, hanVis: h && h.visible }; });
@@ -25,6 +25,16 @@ const { open, enter, goFloor, clickArt, suite } = require('./lib');
   const vp = await page.evaluate(() => { const v = window.__pixOffice.floors['5'].vac; return { x: v.x + 15, y: v.feet - 6 }; });
   await clickArt(page, vp.x, vp.y); await page.waitForTimeout(400);
   T.check('밤에 청소기를 누르면 한교수 지시만 따른다고 한다', /한교수/.test(((await S()).vacBubble || []).join(' ')));
-  T.check('페이지 오류 없음', errors.length === 0, errors.join(' / '));
+  await browser.close();
+  // 평일 10:30: 남박사와 한교수가 회의 테이블에 마주 앉아 번갈아 이야기한다
+  ({ browser, page, errors: errs2 } = await open({ time: '2026-09-28T10:30:05' }));
+  await enter(page); await goFloor(page, '5');
+  let m = null, talked = { nam: false, han: false };
+  for (let i = 0; i < 20; i++) { await page.waitForTimeout(2000);
+    m = await page.evaluate(() => { const A = window.__pixOffice.floors['5'].actors, n = A.nam, h = A.han; return { n: n && n.ph + '@' + (n.tile ? n.tile.c + ',' + n.tile.r : '') + (n.onFurn ? 's' : ''), h: h && h.ph + '@' + (h.tile ? h.tile.c + ',' + h.tile.r : '') + (h.onFurn ? 's' : ''), nb: !!(n && n.bubble), hb: !!(h && h.bubble) }; });
+    if (m.n === 'meet@11,19s' && m.h === 'meet@15,19s') { if (m.nb) talked.nam = true; if (m.hb) talked.han = true; if (talked.nam && talked.han) break; } }
+  T.check('10:30 회의: 남박사·한교수가 회의 테이블에 마주 앉는다', m.n === 'meet@11,19s' && m.h === 'meet@15,19s', JSON.stringify(m));
+  T.check('회의 중 번갈아 이야기한다', talked.nam && talked.han, JSON.stringify(talked));
+  T.check('페이지 오류 없음', errors.length === 0 && errs2.length === 0, errors.concat(errs2).join(' / '));
   await browser.close(); T.done();
 })();

@@ -389,9 +389,9 @@ var HAN_LINES=[['3층 적응도','정상 범위.'],['오늘도','5시 46분이�
   ['적응도 그래프,','오늘은 완만하군.'],['3층 누군가','질문이 많아졌어.'],['질문은 좋은 거야.','대답은 나중에.'],['기억은 종이와 같지.','접으면 자국이 남아.'],['시계는','멈춰도 시간은 가지.'],['5시 46분…','그날도 비가 왔지.'],['수납장 뒤를','누가 봤다고?'],['재고창고','화살표는 켜 둬.'],['조스티는','겁이 많아.'],['김팀장은','최실장과 가깝지.'],
   ['사장님은 오늘도','외부 약속인가.'],['옥상 부엉이는…','나랑 닮았지.'],['부리는','말보다 무겁다.'],['기록 한 줄이','사람 하나를 만든다.'],['이름 없는 파일은','가장 무거워.'],['호환이 끝나면…','그때 알게 되겠지.'],['R-0,','숫자를 다시 세 봐.'],['오늘의 색은','먹색 17호라더군.'],['차는 식기 전에.'],['엘리베이터 5층 불이','오늘따라 밝군.'],
   ['창고의 상자들,','어디로 가는지 알아?'],['2층 손님들,','같은 자리 같은 표정.'],['흠…','다시 처음부터.'],['눈을 뜨고 자는 게','부엉이 특기지.'],['관찰일지 32쪽…','흥미롭군.'],['빨간 스위치는','하나면 충분해.']];
-var HAN_SPOTS=[{c:12,r:19,face:'up'},{c:19,r:24,face:'up'},{c:10,r:25,face:'up'},{c:21,r:17,face:'up'},{c:9,r:19,face:'left'},{c:14,r:25,face:'right'},{c:13,r:21,face:'down'}];
+var HAN_SPOTS=[{c:13,r:20,face:'up'},{c:19,r:24,face:'up'},{c:10,r:25,face:'up'},{c:21,r:17,face:'up'},{c:9,r:19,face:'left'},{c:14,r:25,face:'right'},{c:13,r:21,face:'down'}];
 var NAM_SPOTS=[{c:13,r:5,face:'up'},{c:9,r:8,face:'left'},{c:13,r:9,face:'down'},{c:17,r:8,face:'up'},{c:17,r:12,face:'up'},{c:15,r:13,face:'down'},{c:10,r:13,face:'left'},
-  {c:21,r:20,face:'up'},{c:9,r:19,face:'left'},{c:18,r:24,face:'up'},{c:11,r:25,face:'up'},{c:12,r:19,face:'up'},{c:16,r:20,face:'down'}];
+  {c:21,r:20,face:'up'},{c:9,r:19,face:'left'},{c:18,r:24,face:'up'},{c:11,r:25,face:'up'},{c:13,r:20,face:'up'},{c:16,r:20,face:'down'}];
 var R0_LINES=[['…관찰 대상 수:','36. 아니, 37.'],['호환 진행률','37%'],['삐빅…','기록 중'],['정전 없음.'],['스위치 상태:','이상 없음'],['…5시 46분'],['예비 전력','충분'],['일지 파일','접근 기록 1건'],
   ['R-0 가동 중.','R-도우미는… 후속 모델.'],['공기질: 측정 불가.','측정할 필요 없음.'],['3층 조명','꺼짐… 켜짐.'],['동기화 중…','동기화 중…'],['빈 책상','주인 부재.'],['근무일지.doc','마지막 저장: 알 수 없음'],['서버 온도','정상.'],['관찰 대상 37번,','위치 확인 불가.'],['호환 작업은','중단할 수 없음.'],['삐—','삐—'],
   ['오류: 기억 용량','부족'],['재부팅… 취소.'],['빨간 스위치','1회 작동 기록.'],['조형물 카메라','정상.'],['예비-02','심박… 없음.'],['6층 접근 권한:','없음.'],['외부 날씨는','중요하지 않음.'],['저는 오래전부터','여기 있었습니다.'],['R-0은','꺼진 적이 없습니다.'],['안녕하세요.','…아무도 없군요.'],
@@ -401,6 +401,32 @@ var R0_SPOTS=[[30,17],[27,12],[31,21],[32,19],[30,9],[26,15]];
 var HAN_SRV_SPOTS=[{c:28,r:21,face:'up'},{c:28,r:21,face:'up'},{c:26,r:13,face:'left'},{c:28,r:5,face:'up'},{c:32,r:14,face:'right'},{c:30,r:13,face:'left'}];
 var HAN_SRV_LINES=[['…37%.','아직이군'],['기록은','거짓말을 하지 않는다'],['이 선이 맞다면…'],['5시 46분.','또 그 시각이군'],['관계도를','다시 그려야겠어'],['남박사에겐','아직 비밀로'],['서버 온도 정상.'],['R-0,','오늘 관찰 수는?'],['누군가','일지를 읽고 있다'],['스위치 쪽은','아직 아무도 몰라'],['36… 아니, 37.'],['호환이 끝나면','무엇이 남을까']];
 var R0_HELLO=[['교수님.','관찰 수 37.'],['삐빅.','출입 기록 1건'],['교수님,','호환 37%입니다']];
+// 회의: 평일 10:30 · 14:10 · 16:40쯤, 둘 다 연구실에 있으면 회의 테이블에 마주 앉아 5분쯤 이야기한다
+var MEET5_TIMES=[10*60+30, 14*60+10, 16*60+40];
+var MEET5_QA=[[['이번 달 색견본','다 모았습니다'],['수고했네.','37번은 비워 두게.']],[['한지 결 테스트','결과가 좋아요'],['기록해 두게.']],[['3층 팀이','새 노트를 낸대요'],['색은?','…먹색 17호겠지.']],
+  [['캡슐 온도가','조금 올랐어요'],['R-0에게','확인시키지.']],[['1층 매장에서','리소 포스터가 인기래요'],['종이가 좋으니까.']],[['오늘 습도 48%,','종이한테 딱이에요'],['좋아.','다음 안건.']],
+  [['금박 봉투 재고가','바닥났어요'],['주문 넣게.']],[['교수님,','서버실은 요즘…'],['그건','다음에 이야기하지.']],[['선반이 또','밀려 있었어요'],['…흠.','누가 봤을까.']],
+  [['은행잎 노랑,','가을 한정으로 낼까요?'],['좋은 생각이야.']],[['새 봉투 견본','들어왔어요'],['크림색이','제일이더군.']],[['쪽빛 샘플이','하나 비어요'],['비워 둔 거야.']]];
+function lab5Meet(F,now,t,nam,han,M,d){
+  var dk=d.toDateString(); if(F.meetDay!==dk){ F.meetDay=dk; F.meetDone={}; }
+  if(!F.meeting){
+    MEET5_TIMES.forEach(function(m,i){ if(F.meeting || F.meetDone[i] || t<m || t>=m+6) return;
+      if(nam.ph!=='work' || !nam.visible || han.ph!=='sit' || !han.visible || han.talkUntil) return;
+      F.meetDone[i]=1; F.meeting=true; F.meetEnd=now+5*60000; F.meetNext=0; F.meetQ=MEET5_QA.slice().sort(function(){ return Math.random()-0.5; });
+      nam.ph='meet'; nam.wait=false; nam.stepMs=320; nam.bubble=['한교수님,','회의 시간이에요']; nam.emo=null; nam.talkUntil=now+2600; setGoal(F,nam,M.MEET[0],now);
+      han.ph='meet'; han.stepMs=380; setGoal(F,han,M.MEET[1],now); });
+    return; }
+  var here=nam.visible && han.visible && nam.ph==='meet' && han.ph==='meet';
+  if(!here || now>F.meetEnd){ F.meeting=false;
+    if(nam.ph==='meet'){ nam.ph='work'; nam.wait=false; nam.bubble=['그럼 이만,','연구실로!']; nam.talkUntil=now+2600; nam.until=now+3000; var sp=lab5Pick(NAM_SPOTS); setGoal(F,nam,{c:sp.c,r:sp.r,face:sp.face},now); }
+    if(han.ph==='meet'){ han.ph='back'; han.bubble=['오늘 회의는','여기까지.']; han.talkUntil=now+2600; setGoal(F,han,lab5Seat(M.HAN_SEAT),now); if(!han.path) placeAt(F,han,lab5Seat(M.HAN_SEAT)); }
+    return; }
+  [nam,han].forEach(function(a){ if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; } });
+  if(nam.path || han.path) return;                                                 // 둘 다 앉으면 번갈아 이야기
+  if(!F.meetNext) F.meetNext=now+1500;
+  if(now>F.meetNext){ var qa=F.meetQ[(F.meetI=(F.meetI||0)+1)%F.meetQ.length]; nam.bubble=qa[0]; nam.talkUntil=now+3200; F.meetReply=qa[1]; F.meetReplyAt=now+3400; F.meetNext=now+9000+Math.random()*4000; }
+  if(F.meetReplyAt && now>F.meetReplyAt){ han.bubble=F.meetReply; han.talkUntil=now+3200; F.meetReplyAt=0; }
+}
 function lab5Pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function lab5Seat(S){ return { c:S.c, r:S.r, face:S.face, sit:true, pt:{ x:S.pt.x, feet:S.pt.feet } }; }
 // 감시 모니터에 비칠 다른 층 (한 번 그려 두고 1분마다 새로)
@@ -422,11 +448,13 @@ function lab5Tick(F,now,off){
   if(!off && (!F.snapT || now-F.snapT>60000)){ F.snapT=now; try{ lab5Screens(); }catch(e){} }
   if(!F.nameT || now-F.nameT>5000){ F.nameT=now; var nm={}; (B.staff||[]).forEach(function(s){ nm[s.id]=s.name; }); PO.STATE.lab5Names=nm; }
   var nam=npcActor(F,'nam',NAM_LOOK,'남박사'), han=npcActor(F,'han',HAN_LOOK,'한교수');
+  if(nam.ph && han.ph) lab5Meet(F,now,t,nam,han,M,d);
   // 남박사: 출근 → 돌아다니기 → 퇴근
   var namIn = 8*60 + PO.hash(d.toDateString()+'nam')%31;                            // 출근: 날마다 8:00~8:30 사이 한 시각
   var namHere = work && t>=namIn && t<18*60+30;
   if(!nam.ph){ if(namHere){ nam.ph='work'; nam.visible=true; var s0=lab5Pick(NAM_SPOTS); placeAt(F,nam,{c:s0.c,r:s0.r,face:s0.face}); nam.until=now+3000; nam.nextTalk=now+4000; } else { nam.ph='off'; nam.visible=false; } }
   if(nam.ph==='off' && namHere){ nam.ph='work'; nam.visible=true; nam.stepMs=320; placeAt(F,nam,{c:M.LOBBY.c,r:M.LOBBY.r,face:'down'}); nam.bubble=['좋은 아침!','오늘의 색은…']; nam.talkUntil=now+2600; nam.until=now+1500; nam.wait=false; }
+  if(nam.ph==='meet' && !namHere){ nam.ph='work'; F.meeting=false; }
   if(nam.ph==='work'){
     if(!namHere){ nam.ph='out'; nam.bubble=['오늘도 수고했다','종이들아']; nam.talkUntil=now+2600; nam.leaving=true; nam.stepMs=280; setGoal(F,nam,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!nam.path){ nam.visible=false; nam.leaving=false; nam.ph='off'; } }
     else {
@@ -1243,7 +1271,7 @@ function catchUp(now){
     ['nam','han'].forEach(function(k){ var n=F5.actors[k]; if(!n) return; n.ph=null; n.path=null; n.pend=null; n.wait=false; n.leaving=false; n.onFurn=false; n.bubble=null; n.emo=null; n.talkUntil=0; n.until=0; });
     if(F5.vac){ F5.vac.path=null; F5.vac.booted=false; F5.vac.until=0; F5.vac.bubble=null; }
     if(F5.robot){ F5.robot.path=null; F5.robot.nextMove=0; F5.robot.bubble=null; }
-    F5.doorHold=0; F5.doorClickUntil=0; F5.steelUntil=0; PO.STATE.lab5Door=0; PO.STATE.lab5Steel=0;
+    F5.meeting=false; F5.meetReplyAt=0; F5.doorHold=0; F5.doorClickUntil=0; F5.steelUntil=0; PO.STATE.lab5Door=0; PO.STATE.lab5Steel=0;
   }
 }
 var lastFrameT=0;
@@ -1302,7 +1330,7 @@ function frame(now){
   else if(F.key==='B1') b1Trays(F,list,now);
   if((F.key==='B1'||F.key==='5'||F.key==='1') && (roofWx==='rain'||roofWx==='snow')) list.push({sy:5*T-1, draw:function(gg){ PO.drawWetSign(gg,T+16,5*T); }});   // 비·눈 오는 날: 엘리베이터 앞 '미끄럼 주의'
   if(F.key==='5' && F.vac){ var vv=F.vac; list.push({ sy:vv.feet-14, draw:function(gg){ PO.drawVacuum(gg,Math.round(vv.x)+15,Math.round(vv.feet)-6,now,!!vv.path); } }); }
-  for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:(F.key==='1' && a.onFurn && !a.path && a.dir!=='up') ? a.feet+8 : a.feet}); }   // 1층: 앞·옆을 보고 앉은 사람은 의자 등받이 앞에
+  for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:((F.key==='1' || a.ph==='meet') && a.onFurn && !a.path && a.dir!=='up') ? a.feet+8 : a.feet}); }   // 1층: 앞·옆을 보고 앉은 사람은 의자 등받이 앞에
   if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
   list.sort(function(p,q){ return p.sy-q.sy; });
   list.forEach(function(it){

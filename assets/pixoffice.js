@@ -2670,6 +2670,18 @@ function drawWetSign(g,x,feet){                                       // 비·�
   g.font='7px NeoDGM, sans-serif'; g.textAlign='center'; g.textBaseline='top'; R(g,x-12,feet-44,46,11,'#2a2e34'); g.fillStyle='#fbfaf6'; g.fillText('미끄럼 주의',x+11,feet-43); g.textAlign='left';
   ell(g,x+30,feet-2,7,2,'rgba(150,190,220,0.45)'); ell(g,x-4,feet+3,5,1,'rgba(150,190,220,0.4)'); }
 function oldTint(img){ var c=cv(img.width,img.height), g=c.getContext('2d'); g.drawImage(img,0,0); g.globalCompositeOperation='source-atop'; g.fillStyle='rgba(150,110,60,0.35)'; g.fillRect(0,0,c.width,c.height); return c; }
+// ---- 회의 테이블 (아래 연구실, 모니터 책상 앞 빈자리): 남박사와 한교수가 마주 앉아 회의한다 ----
+function pMeet5Table(){ return obj(96,34,function(g){ R(g,0,4,96,18,WD2); R(g,0,4,96,2,WDL); R(g,0,22,96,4,WDD); R(g,4,26,4,8,WDD); R(g,88,26,4,8,WDD);
+  [[10,'#c83a3a'],[17,'#2f5fd0'],[24,'#1f9a6a'],[31,'#e8c46a'],[38,'#23262e']].forEach(function(c){ R(g,c[0],8,6,8,'#f4efe6'); R(g,c[0]+1,9,4,4,c[1]); });   // 색견본 카드
+  R(g,48,7,16,11,'#f4efe6'); R(g,49,9,10,1,'#b8b0a4'); R(g,49,11,12,1,'#b8b0a4'); R(g,49,13,8,1,'#b8b0a4'); R(g,56,6,10,12,'#fbf8f0'); R(g,58,9,6,1,'#c83a3a');   // 회의 자료
+  R(g,72,9,6,6,'#f4efe6'); R(g,73,10,4,2,'#8a6a3a'); R(g,84,10,6,6,'#f4efe6'); R(g,85,11,4,2,'#6a8a4a');   // 찻잔 둘
+  R(g,68,5,2,5,'#2e1c12'); }); }
+function pMeet5Chair(face){ var c=obj(28,36,function(g){ var cu='#8a3a34';                                   // 등받이 높은 원목 의자 (옆모습)
+  R(g,2,0,6,30,WD); R(g,2,0,6,2,WDL); R(g,6,2,2,28,WDD); R(g,2,18,24,8,cu); R(g,2,18,24,2,sh(cu,0.3)); R(g,2,26,24,3,WD2); R(g,4,29,3,7,WDD); R(g,21,29,3,7,WDD); });
+  if(face==='left'){ var f=cv(c.width,c.height), fg=f.getContext('2d'); fg.translate(c.width,0); fg.scale(-1,1); fg.drawImage(c,0,0); return f; } return c; }
+onTile(pMeet5Table(),12,19,14,19); onTile(pMeet5Chair('right'),11,19,11,19); onTile(pMeet5Chair('left'),15,19,15,19);
+MAP5.MEET=[{ c:11, r:19, face:'right', sit:true }, { c:15, r:19, face:'left', sit:true }];
+
 MAP5.DOOR={ x:18*T, y:16*T-80, w:64, h:82 }; MAP5.LOBBY={ c:2, r:3 }; MAP5.ELEV={ x:32, y:0, w:128, h:96 };
 MAP5.HAN_SEAT={ c:19, r:26, face:'down', sit:true, pt:{ x:19*T+14, feet:27*T+6 } };
 MAP5.NAM_SEAT={ c:19, r:18, face:'down', sit:true, pt:{ x:19*T+14, feet:19*T+6 } };
