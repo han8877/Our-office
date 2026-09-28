@@ -1098,7 +1098,7 @@ onTile(pRoundTable(),30,8,32,9); onTile(pChairS('#b89478'),30,10,30,10); onTile(
 onTile(pPlant('monstera','#f4f1ea'),29,9,29,9); put(pBookshelf(4),29*T+10,5*T-80,5*T,[29,3,30,4]); onTile(pTrash(),34,9,34,9);
 // 노트팀
 onTile(pDrawers(),10,8,10,9); onTile(pPlant('bush','#9fd4c0'),10,12,10,12);
-onTile(pWorkTable(),4,5,7,6); onTile(pPaperRack(),1,8,2,9); onTile(pPlant('tall','#f4f1ea'),1,12,1,12);
+onTile(pWorkTable(),4,5,7,6); onTile(pPaperRack(),1,7,2,8); onTile(pPlant('tall','#f4f1ea'),1,12,1,12);
 // 다목적실
 // 흰 의자 3개씩 두 줄, 의자 사이 8px
 for(var cr=0; cr<2; cr++) for(var cc=0; cc<3; cc++){ var chx=14*T+20+cc*36, chy=9*T+cr*42;
@@ -1112,7 +1112,7 @@ onTile(pLoungeSofa(),26,14,29,14); onTile(pBookshelf(3),31,13,32,14); onTile(pBo
 // 경영지원팀
 onTile(pDrawers(),11,17,11,18); onTile(pPlant('tall','#9fd4c0'),1,21,1,21); onTile(pCopier(),9,17,10,17);
 // 스티커팀
-onTile(pPlant('bush','#f5b8c8'),14,21,14,21); onTile(pPlotter(),14,18,15,18); onTile(pFlatFile(),14,23,15,23); onTile(pDrawers(),23,18,23,19); onTile(pCopier(),23,21,24,21);
+onTile(pPlant('bush','#f5b8c8'),14,20,14,20); onTile(pPlotter(),14,18,15,18); onTile(pFlatFile(),14,22,15,22); onTile(pDrawers(),23,18,23,19); onTile(pCopier(),23,21,24,21);
 // 재고창고
 onTile(pShelf(1),28,18,30,19); onTile(pShelf(5),32,18,34,19); onTile(pShelf(8),28,21,30,22); onTile(pShelf(12),32,21,34,22);
 // 홍보팀
@@ -1129,11 +1129,11 @@ blocked[26][29]=0;   // 탕비실 위쪽 의자 칸은 비켜 지나갈 수 있�
 // ---- 일반 사무실 소품 ----
 wallItem(pCorkBoard(),26*T+4,26);
 // 노트팀: 공용 프린터, 서류 캐비닛
-onTile(pPrinterStand(),9,5,10,5); onTile(pFiling(),1,11,2,11);
+onTile(pPrinterStand(),9,6,10,6); onTile(pFiling(),1,11,2,11);
 // 경영지원팀: 서류 캐비닛 · 금고 · 세단기 · 옷걸이 · 소화기 (18행은 통로로 비워 둔다)
 onTile(pFiling(),1,17,2,17); onTile(pSafe(),3,17,3,17); onTile(pShredder(),6,17,6,17); onTile(pCoatRack(),7,17,7,17); onTile(pExtinguisher(),11,21,11,21);
 // 다목적실: 플립차트, 물·컵 테이블
-onTile(pFlipChart(),13,6,13,7); onTile(pWaterTable(),13,10,14,10);
+onTile(pFlipChart(),13,6,13,7); onTile(pWaterTable(),19,10,20,10);
 // 재고창고: 상자 더미와 손수레
 onTile(pBoxStack(),26,17,27,18); onTile(pHandTruck(),26,20,26,20);
 
