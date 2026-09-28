@@ -3049,6 +3049,14 @@ function pPlanterBox(w){ return obj(w,48,function(g){ R(g,0,20,w,28,'#fbfaf7'); 
 onTile(pPlanterBox(4*T),24,20,27,20); onTile(pPlanterBox(3*T),29,20,31,20);
 [20,23,26,29].forEach(function(c){ onTile(pChairN(SAGE),c,22,c,22); onTile(pMarbleTable(),c,23,c,23); onTile(pChairS('#f2e6d4'),c,24,c,24); });
 
+// ---- 레몬나무 오른쪽 4인 테이블 (원목 상판 · 가운데 작은 레몬 화분) ----
+function pFourTable(){ return obj(60,44,function(g){ R(g,0,6,60,24,OAKL); R(g,0,6,60,3,'#fbeed4'); for(var y=12;y<30;y+=6) R(g,0,y,60,1,'#e6d0ac'); R(g,0,30,60,5,OAKD);
+  R(g,4,35,4,9,BRASS); R(g,52,35,4,9,BRASS); R(g,4,35,4,1,'#e8cc8a'); R(g,52,35,4,1,'#e8cc8a');
+  R(g,26,10,8,8,'#fbfaf7'); R(g,26,10,8,2,'#e8e2d8'); leafClump(g,30,8,4,3); disc(g,28,6,1,'#f5d63a'); disc(g,32,8,1,'#f5d63a');   // 작은 레몬 화분
+  R(g,8,12,8,7,'#ffffff'); R(g,8,12,8,2,SAGED); R(g,44,20,8,7,'#fff4dc'); R(g,44,20,8,2,'#8a5a3a'); R(g,40,11,12,6,'#f4efe6'); R(g,41,12,10,1,'#d8cfc0'); }); }
+onTile(pFourTable(),29,16,30,16);
+[29,30].forEach(function(c){ onTile(pChairN(SAGE),c,15,c,15); onTile(pChairS('#f2e6d4'),c,17,c,17); });
+
 // ---- 끄적 바 (창가: 엽서 쓰는 자리 · 무료 펜) ----
 function pWindowBar(w){ return obj(w,40,function(g){ R(g,0,0,w,12,OAKL); R(g,0,0,w,2,'#fbeed4'); R(g,0,12,w,4,OAKD); for(var x=16;x<w;x+=64) R(g,x,16,4,24,BRASS);
   for(var k=0;k*32+24<w;k++){ var px=12+k*32; R(g,px,2,12,8,'#ffffff'); R(g,px+2,4,7,1,'#b8b0a8'); R(g,px+14,1,2,9,[SKY,POT,SAGED][k%3]); } }); }
