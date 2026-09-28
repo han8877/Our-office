@@ -1,0 +1,67 @@
+Copyright (c) 2026 han8877. All rights reserved.
+끄적끄적문구 사무실 (Our-office)
+
+────────────────────────────────────────
+[한국어]
+
+이 저장소와 https://han8877.github.io/Our-office 에 공개된
+게임 「끄적끄적문구 사무실」의 모든 구성 요소에 대한 권리는
+저작권자(han8877)에게 있습니다.
+
+보호 대상에는 다음이 포함됩니다.
+  - 소스 코드 (index.html, pixel.html, assets/*.js 등)
+  - 캐릭터 디자인과 픽셀 그림 (코드로 그려진 그림 포함)
+  - 캐릭터 이름·설정·대사, 근무일지 등 모든 글
+  - 세계관, 지도·공간 구성, 화면 디자인, 아이콘과 이미지
+
+저작권자의 사전 서면 허락 없이 다음 행위를 금지합니다.
+  1. 전부 또는 일부를 복제·수정·배포·재게시하는 행위
+  2. 캐릭터·그림·글을 다른 게임, 서비스, 상품, 콘텐츠에 사용하는 행위
+  3. 상업적 목적으로 이용하는 행위
+  4. 이 저작물을 인공지능 학습용 데이터로 수집·사용하는 행위
+
+허용되는 이용
+  - 공개된 웹페이지에서 게임을 개인적으로 즐기는 것
+  - 출처(끄적끄적문구 사무실, han8877)를 밝히고 원본 링크를 함께 걸어
+    게임을 소개·추천하는 것 (스크린샷 포함)
+
+GitHub에 코드가 공개되어 있다는 사실이
+위 권리를 포기하거나 이용을 허락한다는 뜻은 아닙니다.
+
+제3자 자료
+  assets/fonts/ 의 글꼴(Neo둥근모)은 동봉된 neodgm-LICENSE.txt
+  (SIL Open Font License)를 따르며, 그 밖에 저작권자가 만들지 않은
+  자료는 각 원저작자의 라이선스를 따릅니다.
+
+이용 허락 문의: https://github.com/han8877
+
+────────────────────────────────────────
+[English]
+
+All rights to the game "Kkeojeok Kkeojeok Stationery Office"
+(this repository and https://han8877.github.io/Our-office),
+including its source code, character designs and pixel art (including
+art rendered by code), character names, profiles and dialogue, diary
+text, setting, maps, UI design, icons and images, are reserved by the
+copyright holder (han8877).
+
+Without prior written permission from the copyright holder, you may NOT:
+  1. copy, modify, distribute or republish this work in whole or in part;
+  2. use its characters, art or text in any other game, service, product
+     or content;
+  3. use it for any commercial purpose;
+  4. collect or use it as training data for artificial intelligence.
+
+You MAY play the game on the public website for personal use, and
+introduce or recommend it with credit ("Our-office by han8877") and a
+link to the original, including screenshots.
+
+The public availability of the source code on GitHub does not grant any
+license or waive any rights.
+
+Third-party materials: the font in assets/fonts/ (NeoDunggeunmo) is
+licensed under the SIL Open Font License (see neodgm-LICENSE.txt). Any
+other material not created by the copyright holder remains subject to
+its own license.
+
+Permission requests: https://github.com/han8877

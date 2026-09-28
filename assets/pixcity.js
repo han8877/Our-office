@@ -1,3 +1,4 @@
+/* Copyright (c) 2026 han8877. All rights reserved. 무단 복제·재사용 금지 — LICENSE 참고 */
 /* 끄적끄적문구 픽셀 바깥 풍경 — 메인(인트로) 화면과 사무실 뒤 도시 배경
    assets/pixoffice.js 의 그리기 도구를 같이 쓴다. 좌표 단위는 '그림 한 칸'(인트로 무대 2px). */
 (function(){
