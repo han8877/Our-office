@@ -8649,12 +8649,13 @@
   var roofSvgEl = byId('roofSvg');
   var b1SvgEl = byId('b1Svg');
   var lab5SvgEl = byId('lab5Svg');
+  var f1SvgEl = byId('f1Svg');
   var curFloor = '3';                 // 사무실이 3층
   function isNarrowView(){
     return !!(window.matchMedia && window.matchMedia('(max-width:760px)').matches);
   }
   function floorSvgs(){
-    return [officeSvgEl, floor2SvgEl, roofSvgEl, b1SvgEl, lab5SvgEl].filter(Boolean);
+    return [officeSvgEl, floor2SvgEl, roofSvgEl, b1SvgEl, lab5SvgEl, f1SvgEl].filter(Boolean);
   }
   function fitOfficeStage(){
     if(!stageEl || !officeSvgEl) return;
@@ -9714,7 +9715,7 @@
     { k:'7',  name:'건물주' },
     { k:'L',  name:'옥상정원' }
   ];
-  var OPEN_FLOORS = ['B1', '2', '3', '5', 'L'];
+  var OPEN_FLOORS = ['B1', '1', '2', '3', '5', 'L'];
   var elevOverlay = byId('elevOverlay');
   var elevGrid = byId('elevGrid');
   var elevNow = byId('elevNow');
@@ -9748,6 +9749,7 @@
     if(roofSvgEl) roofSvgEl.style.display = (k === 'L') ? 'block' : 'none';
     if(b1SvgEl) b1SvgEl.style.display = (k === 'B1') ? 'block' : 'none';
     if(lab5SvgEl) lab5SvgEl.style.display = (k === '5') ? 'block' : 'none';
+    if(f1SvgEl) f1SvgEl.style.display = (k === '1') ? 'block' : 'none';
     syncElevUI();
     fitOfficeStage();
   }
@@ -9761,7 +9763,7 @@
     showFloor(k);
     if(window.__sfx) window.__sfx('ding');
     elevOverlay.classList.remove('show');
-    toast(k === '2' ? '2층 안내·휴게 공간에 도착했어요' : k === 'L' ? '옥상 정원에 올라왔어요' : k === 'B1' ? '지하 1층 구내식당에 내려왔어요' : k === '5' ? '5층 연구소에 올라왔어요' : '3층 사무실로 돌아왔어요');
+    toast(k === '2' ? '2층 안내·휴게 공간에 도착했어요' : k === 'L' ? '옥상 정원에 올라왔어요' : k === 'B1' ? '지하 1층 구내식당에 내려왔어요' : k === '5' ? '5층 연구소에 올라왔어요' : k === '1' ? '1층 판매샵·카페에 내려왔어요' : '3층 사무실로 돌아왔어요');
   }
   if(elevOverlay){
     byId('elevBtn').addEventListener('click', function(){

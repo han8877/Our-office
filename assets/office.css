@@ -20,9 +20,9 @@
   #roofSvg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
   #roofSvg.pixMode, #roofSvg.pixMode *{ pointer-events:none !important; }
   /* 지하 1층 구내식당: 마찬가지로 캔버스가 그린다 */
-  #b1Svg, #lab5Svg{ display:block; width:100%; height:auto; }
-  #b1Svg.pixMode, #lab5Svg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
-  #b1Svg.pixMode, #b1Svg.pixMode *, #lab5Svg.pixMode, #lab5Svg.pixMode *{ pointer-events:none !important; }
+  #b1Svg, #lab5Svg, #f1Svg{ display:block; width:100%; height:auto; }
+  #b1Svg.pixMode, #lab5Svg.pixMode, #f1Svg.pixMode{ position:relative; z-index:1; aspect-ratio:1152/960; }
+  #b1Svg.pixMode, #b1Svg.pixMode *, #lab5Svg.pixMode, #lab5Svg.pixMode *, #f1Svg.pixMode, #f1Svg.pixMode *{ pointer-events:none !important; }
   /* 3층 픽셀 화면: 게임은 지금처럼 SVG에서 돌고, 화면은 그 아래 캔버스(#pixOffice)가 그린다.
      SVG는 투명하게 남겨 두되 전원 패널만 보이게 한다. 누르는 것은 캔버스가 받아 원래 기능으로 넘긴다 */
   #pixOffice{ position:absolute; left:0; top:0; z-index:0; display:block; }
@@ -939,7 +939,7 @@
     #stage{ overflow-x:auto; overflow-y:hidden; -webkit-overflow-scrolling:touch;
             overscroll-behavior-x:contain; scrollbar-width:none; -ms-overflow-style:none; }
     #stage::-webkit-scrollbar{ display:none; }
-    #officeSvg, #floor2Svg, #roofSvg, #b1Svg, #lab5Svg{ height:var(--officeH,56vh); width:auto; max-width:none; }
+    #officeSvg, #floor2Svg, #roofSvg, #b1Svg, #lab5Svg, #f1Svg{ height:var(--officeH,56vh); width:auto; max-width:none; }
     /* 사무실이 화면을 꽉 채우니 세로 탭은 가로 알약으로 바꿔 구석에 둔다 */
     #logTab{ top:auto; bottom:12px; right:10px; transform:none; flex-direction:row;
              border-right:1.3px solid #5c4a3a; border-radius:999px; padding:8px 13px; gap:6px;
