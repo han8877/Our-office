@@ -2321,10 +2321,10 @@ for(var r=3;r<=15;r++) for(var c=8;c<=22;c++){ var x=c*T, y=r*T, b=(c+r)%2?'#8e8
 for(var r2=16;r2<=28;r2++) for(var c2=8;c2<=22;c2++){ var x2=c2*T, y2=r2*T, b2=(c2+r2)%2?'#e8efee':'#e0e8e7';   // 비밀 연구실: 민트 타일
   R(bgc,x2,y2,T,T,b2); R(bgc,x2,y2,T,1,'#cfdad8'); R(bgc,x2,y2,1,T,'#cfdad8'); R(bgc,x2+1,y2+1,T-2,1,'#f6fbfa'); }
 carpet(bgc,17,26,22,28,'#b9b3cc');                                               // 한교수 방
-for(var r3=3;r3<=28;r3++) for(var c3=23;c3<=34;c3++){ var x3=c3*T, y3=r3*T, b3=(c3+r3)%2?'#1c2433':'#1a2130';   // 관제실: 남색 판
+for(var r3=3;r3<=28;r3++) for(var c3=23;c3<=34;c3++){ var x3=c3*T, y3=r3*T, b3=(c3+r3)%2?'#1c2433':'#1a2130';   // 서버실: 남색 판
   R(bgc,x3,y3,T,T,b3); R(bgc,x3,y3,T,1,'#253046'); R(bgc,x3,y3,1,T,'#253046'); P(bgc,x3+2,y3+2,'#2c3850'); }
 paintOuterWalls(bgc);
-// 윗벽: 복도는 건물 기본 벽, 연구소는 미색 회벽 + 짙은 나무 판벽, 관제실은 어두운 강판
+// 윗벽: 복도는 건물 기본 벽, 연구소는 미색 회벽 + 짙은 나무 판벽, 서버실은 어두운 강판
 R(bgc,8*T,FACE_TOP,15*T,FACE_BOT-FACE_TOP,'#efe6d2'); for(var wx=8*T; wx<23*T; wx+=4) P(bgc,wx+(wx%12),FACE_TOP+10+(wx%23),'#e6dcc6');
 R(bgc,8*T,FACE_BOT-20,15*T,20,WD); R(bgc,8*T,FACE_BOT-20,15*T,2,WDL); for(var px=8*T; px<23*T; px+=32) R(bgc,px,FACE_BOT-18,1,18,WDD);
 R(bgc,23*T,FACE_TOP,12*T,FACE_BOT-FACE_TOP,'#141a26'); R(bgc,23*T,FACE_BOT-18,12*T,18,'#0e131c'); for(var sx=23*T; sx<35*T; sx+=48) R(bgc,sx,FACE_TOP,1,FACE_BOT-FACE_TOP,'#1c2433');
@@ -2489,11 +2489,13 @@ function pMiniCopier(){ return obj(40,44,function(g){                    // 작�
   R(g,37,16,3,28,sh(body,-0.2)); R(g,29,19,8,4,'#7a8088'); }); }
 onTile(pMiniCopier(),15,25,16,26);
 onTile(pGlobe(),17,26,17,26); onTile(pSuitcase(),17,28,17,28); onTile(pSculpture(),18,27,18,28); onTile(pPlant('monstera','#f4f1ea'),22,26,22,26);
-// 강철 문 (관제실로) — 한교수 방 안쪽 벽
-things.push({sy:28*T, draw:function(g){ var x=23*T+5, y=26*T-8; R(g,x,y,22,72,'#3a4254'); R(g,x+2,y+2,18,68,'#56607a'); R(g,x+2,y+34,18,2,'#2a3142'); disc(g,x+11,y+14,3,'#e8323c'); disc(g,x+11,y+14,1,'#ffaaaa');
+// 강철 문 (서버실로) — 한교수 방 안쪽 벽. 한교수가 드나들 때만 위로 열린다
+things.push({sy:28*T, draw:function(g){ var x=23*T+5, y=26*T-8, op=STATE.lab5Steel||0, sl=Math.round(op*56);
+  R(g,x,y,22,72,'#3a4254'); R(g,x+2,y+2,18,68,op>0?'#06080c':'#56607a'); if(op>0){ g.fillStyle='rgba(60,255,160,'+(0.18*op).toFixed(2)+')'; g.fillRect(x+2,y+2,18,68); }
+  R(g,x+2,y+2,18,68-sl,'#56607a'); R(g,x+2,y+34-sl,18,2,'#2a3142'); R(g,x+2,y+68-sl,18,2,'#2a3142'); disc(g,x+11,y+14,3,op>0?'#3ae890':'#e8323c'); disc(g,x+11,y+14,1,op>0?'#c8ffe0':'#ffaaaa');
   R(g,x-16,y+22,12,18,'#2e3440'); for(var kp=0;kp<6;kp++) R(g,x-14+(kp%2)*5,y+25+Math.floor(kp/2)*5,3,3,'#8a929c'); }});
 
-// ---------------- ④ 관제실 ----------------
+// ---------------- ④ 서버실 ----------------
 things.push({sy:1, draw:function(g){ var x=24*T+4, y=6, w=246, h=80;
   R(g,x,y,w,h,'#0a0d12'); R(g,x+4,y+4,w-8,h-8,'#061014'); g.fillStyle='rgba(60,255,160,0.07)'; g.fillRect(x+4,y+4,w-8,h-8);
   tx(g,'호환프로그램 작업 중이므로',x+w/2,y+18,11,'#6affb0','center'); tx(g,'기다려주십시오.',x+w/2,y+33,11,'#6affb0','center');
@@ -2512,10 +2514,33 @@ onTile(pRack(30),27,23,28,25); onTile(pRack(31),29,23,30,25);
 put(pDesk(hash('empty')%97),28*T,14*T-16,14*T+32,[28,14,29,14]); things.push({img:pChairBack('#7a6a8a'),x:28*T+44,y:14*T+10-32,sy:14*T+9});
 things.push({sy:14*T+33, draw:function(g){ var x=28*T+18, y=14*T-34; R(g,x,y,30,22,'#dfe3e6'); R(g,x+2,y+2,26,16,'#fbfaf6'); tx(g,'근무일지',x+15,y+7,7,'#3a3040','center'); tx(g,'.doc',x+15,y+14,7,'#3a3040','center');
   R(g,28*T+18,14*T+22,28,9,'#2e2430'); R(g,28*T+19,14*T+23,26,7,'#3c3040'); }});
-// 바닥 케이블 (관제실)
+// 한교수의 메모 보드 (서버실 가운데 세운 코르크 보드): 연구 필기 · 쪽지 · 인물관계도 (빨간 실)
+function pMemoBoard(){ return obj(172,112,function(g){ var nm=STATE.lab5Names||{};
+  function scrib(x,y,w,n,c){ for(var l=0;l<n;l++){ var ww=w-((l*7)%Math.max(4,w/3)); for(var i=0;i<ww;i++) P(g,x+i,y+l*4+Math.round(Math.sin(i*0.9+l*2)*0.6),c); } }
+  function paper(x,y,w,h,col,rot){ R(g,x+1,y+1,w,h,'rgba(0,0,0,0.25)'); R(g,x,y,w,h,col||'#f6f2e6'); R(g,x,y,w,1,'#ffffff'); disc(g,x+Math.floor(w/2),y+2,1,rot||'#d8323a'); }
+  function pin(x,y){ disc(g,x,y,2,'#d8323a'); P(g,x-1,y-1,'#ff9a9a'); }
+  R(g,4,96,4,16,'#3a3f46'); R(g,164,96,4,16,'#3a3f46'); R(g,0,108,20,4,'#2a2e34'); R(g,152,108,20,4,'#2a2e34');                                   // 받침 다리
+  R(g,0,0,172,98,'#4a3a2e'); R(g,0,0,172,2,'#6a5444'); R(g,4,4,164,90,'#b88a58');                                                             // 틀 · 코르크
+  for(var k=0;k<260;k++) P(g,5+Math.floor(rnd(k*1.3)*162),5+Math.floor(rnd(k*2.7)*88),rnd(k)>0.5?'#a87a4a':'#c89a68');
+  // 왼쪽: 연구 필기
+  paper(8,8,46,34); tx(g,'호환 진행률',31,16,7,'#2a3a6a','center'); tx(g,'37% → ?',31,26,8,'#b8323a','center'); scrib(12,33,38,2,'#4a5a8a');
+  paper(10,46,40,26,'#fbf3a8','#3a7ac0'); tx(g,'5:46',30,56,9,'#2a2a30','center'); scrib(14,64,32,1,'#5a5a40');
+  paper(8,76,50,16); scrib(11,80,44,3,'#3a4a7a');
+  paper(58,8,34,26,'#e8f0f8'); for(var gx=0;gx<5;gx++) R(g,61+gx*6,13,1,17,'#b8c8d8'); for(var gy=0;gy<3;gy++) R(g,61,13+gy*6,26,1,'#b8c8d8'); line(g,72,20,78,26,'#d8323a'); line(g,78,20,72,26,'#d8323a');   // 도면 · X 표시
+  paper(60,40,32,20,'#fbe0e8','#3ae890'); tx(g,'36 → 37',76,49,7,'#6a2a3a','center');
+  paper(58,66,36,26,'#f6f2e6'); tx(g,'스위치',76,74,7,'#2a3a6a','center'); tx(g,'≠ 조명',76,84,7,'#b8323a','center');
+  // 오른쪽: 인물관계도 (이름 카드 + 빨간 실)
+  var who=[['사장님',108,18],[nm.kobujang||'최실장',150,18],['남박사',104,72],['R-0',150,74],['???',128,46]];
+  var links=[[4,0],[4,1],[4,2],[4,3],[0,1],[1,3],[2,3]];
+  links.forEach(function(l){ var a=who[l[0]], b=who[l[1]]; line(g,a[1],a[2],b[1],b[2],'#c8202a'); });
+  who.forEach(function(w,i){ var cw=i===4?26:30; R(g,w[1]-cw/2+1,w[2]-7,cw,14,'rgba(0,0,0,0.25)'); R(g,w[1]-cw/2,w[2]-8,cw,14,i===4?'#2a2a30':'#fbfaf6'); tx(g,w[0],w[1],w[2]-1,7,i===4?'#ff6a70':'#2a2a30','center'); pin(w[1],w[2]-8); });
+  tx(g,'?',116,32,8,'#fbfaf6','center'); tx(g,'?',140,62,8,'#fbfaf6','center'); tx(g,'관찰 대상',128,92,7,'#3a2a20','center');
+}); }
+lazyItem(pMemoBoard,26*T-6,21*T-112,21*T,function(){ return JSON.stringify(STATE.lab5Names||{}); }); block(26,20,30,20);
+// 바닥 케이블 (서버실)
 [[33*T,10*T,29*T+8,14*T+30],[25*T,12*T,28*T,14*T+30],[33*T,20*T,30*T,18*T]].forEach(function(cb){ bgc.strokeStyle='#2a3448'; bgc.lineWidth=4; bgc.beginPath(); bgc.moveTo(cb[0],cb[1]); bgc.bezierCurveTo((cb[0]+cb[2])/2,cb[1]+50,(cb[0]+cb[2])/2,cb[3]+50,cb[2],cb[3]); bgc.stroke(); bgc.strokeStyle='#3a465e'; bgc.lineWidth=1; bgc.stroke(); });
 
-// 한지 등 · 관제실 어둠 · 빈 책상 조명 (사람 위에 그린다)
+// 한지 등 · 서버실 어둠 · 빈 책상 조명 (사람 위에 그린다)
 var LANTERNS5=[[11*T,5*T+20,26],[17*T+16,5*T+16,22],[20*T+10,9*T+30,28]];
 function drawLab5Fx(g,now){ var lit=STATE.lab5Light!==false;
   if(!lit){ g.fillStyle='rgba(14,16,30,0.62)'; g.fillRect(8*T,0,15*T,16*T); }                                   // 조명을 끄면 색채·종이 연구소만 어두워진다
@@ -2527,6 +2552,7 @@ function drawLab5Fx(g,now){ var lit=STATE.lab5Light!==false;
     for(var a=-3;a<=3;a++){ var yy=y+Math.round(a*r/4), hw=Math.round(Math.sqrt(Math.max(0,r*r-(a*r/4)*(a*r/4)))); R(g,x-hw+2,yy,2*hw-4,1,'rgba(190,170,130,0.35)'); }
     ring(g,x,y,r,'#d8ccb0'); R(g,x-4,y-r-2,8,3,'#8a6a48'); R(g,x-3,y+r-1,6,2,'#8a6a48'); });
   g.fillStyle='rgba(40,90,90,0.05)'; g.fillRect(8*T,16*T+50,15*T,13*T);
+  var bl=g.createRadialGradient(28*T+16,19*T,6,28*T+16,19*T,110); bl.addColorStop(0,'rgba(255,236,190,0.20)'); bl.addColorStop(1,'rgba(255,236,190,0)'); g.fillStyle=bl; g.fillRect(24*T,15*T,10*T,8*T);   // 메모 보드 조명
   var sp=g.createRadialGradient(29*T,14*T,10,29*T,14*T,160); sp.addColorStop(0,'rgba(255,240,200,0.22)'); sp.addColorStop(1,'rgba(255,240,200,0)'); g.fillStyle=sp; g.fillRect(24*T,8*T,11*T,12*T);
   var gl=g.createRadialGradient(28*T,3*T,10,28*T,3*T,300); gl.addColorStop(0,'rgba(60,255,160,0.14)'); gl.addColorStop(1,'rgba(60,255,160,0)'); g.fillStyle=gl; g.fillRect(23*T+10,3*T,12*T,12*T);
   g.save(); g.beginPath(); g.rect(23*T+10,3*T,12*T,26*T); g.clip(); var vg=g.createRadialGradient(29*T,15*T,140,29*T,15*T,520); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.45)'); g.fillStyle=vg; g.fillRect(23*T,3*T,12*T,26*T); g.restore();
@@ -2555,7 +2581,7 @@ function oldTint(img){ var c=cv(img.width,img.height), g=c.getContext('2d'); g.d
 MAP5.DOOR={ x:18*T, y:16*T-80, w:64, h:82 }; MAP5.LOBBY={ c:2, r:3 }; MAP5.ELEV={ x:32, y:0, w:128, h:96 };
 MAP5.HAN_SEAT={ c:19, r:26, face:'down', sit:true, pt:{ x:19*T+14, feet:27*T+6 } };
 MAP5.NAM_SEAT={ c:19, r:18, face:'down', sit:true, pt:{ x:19*T+14, feet:19*T+6 } };
-MAP5.STEEL={ c:22, r:27 }; MAP5.VDOCK=VDOCK; MAP5.LIGHTSW=LAB5SW; MAP5.KIOSK={ x:6*T-4, y:8*T-72, w:40, h:72 }; MAP5.RULES=KIOSK5_RULES;
+MAP5.STEEL={ c:22, r:27 }; MAP5.STEEL_IN={ c:24, r:27 }; MAP5.BOARD={ c:28, r:21, face:'up' }; MAP5.VDOCK=VDOCK; MAP5.LIGHTSW=LAB5SW; MAP5.KIOSK={ x:6*T-4, y:8*T-72, w:40, h:72 }; MAP5.RULES=KIOSK5_RULES;
 
 useMap(MAP3);
 

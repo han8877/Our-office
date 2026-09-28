@@ -1837,8 +1837,8 @@
 </div>
 </div>
 <!-- 인트로는 첫 화면부터 픽셀 그림으로: 그림 모듈을 무거운 본 스크립트보다 먼저 불러 바로 그린다 -->
-<script src="assets/pixoffice.js?v=20260928h"></script>
-<script src="assets/pixcity.js?v=20260928h"></script>
+<script src="assets/pixoffice.js?v=20260928i"></script>
+<script src="assets/pixcity.js?v=20260928i"></script>
 <script>
 (function(){ var s=document.getElementById('introScreen');
   try{ if(window.PixCity) PixCity.Intro(); else s.classList.remove('pixIntro'); }
@@ -15322,7 +15322,7 @@ function drawLunchSign(g){ var cx=2*T+22, y=26*T+14;               // 엘리베�
 // ---- 5층 연구소: 남박사(거북이) · 한교수(부엉이) · 떠다니는 로봇 R-0 (그림에만 있는 사람들) ----
 // 남박사는 평일 08:55에 엘리베이터로 출근해 색채·종이 연구소와 비밀 연구실을 돌아다니며 혼잣말과 이모지를 띄우고,
 // 비밀 문 앞을 지날 땐 문 앞 선반이 스르륵 밀린다. 18:30에 엘리베이터로 퇴근.
-// 한교수는 기본으로 자기 방 의자에 앉아 있다가 가끔 일어나 연구실을 둘러보고 돌아온다. 밤 10시엔 강철 문 안으로 사라지고 아침 7시에 나온다
+// 한교수는 기본으로 자기 방 의자에 앉아 있다가 가끔 일어나 연구실을 둘러보거나 강철 문 너머 서버실(메모 보드)에 다녀온다. 밤 10시엔 강철 문 안으로 사라지고 아침 7시에 나온다
 var NAM_LOOK={id:'nam',kind:'turtle',shirt:'#f4f4f0',pants:'#4a4f58',coat:true,acc:'glasses',shell:true};
 var HAN_LOOK={id:'han',kind:'owl',shirt:'#f4f4f0',pants:'#4a4f58',coat:true};
 var NAM_LINES=[['오늘의 색:','먹색 17호.'],['이 한지 결이','참 곱네'],['봉투는','크림색이 제일이지'],['색 번호가','하나 비네?'],['쪽빛은 오후에','더 예뻐'],['종이도 숨을 쉬어'],['습도 48%,','종이한테 딱이야'],['복합기가 또','종이를 씹었어'],['팩스가 왔네…','3층에서?'],['선반은','살살 밀어야 해'],
@@ -15346,7 +15346,11 @@ var R0_LINES=[['…관찰 대상 수:','36. 아니, 37.'],['호환 진행률','3
   ['R-0 가동 중.','R-도우미는… 후속 모델.'],['공기질: 측정 불가.','측정할 필요 없음.'],['3층 조명','꺼짐… 켜짐.'],['동기화 중…','동기화 중…'],['빈 책상','주인 부재.'],['근무일지.doc','마지막 저장: 알 수 없음'],['서버 온도','정상.'],['관찰 대상 37번,','위치 확인 불가.'],['호환 작업은','중단할 수 없음.'],['삐—','삐—'],
   ['오류: 기억 용량','부족'],['재부팅… 취소.'],['빨간 스위치','1회 작동 기록.'],['조형물 카메라','정상.'],['예비-02','심박… 없음.'],['6층 접근 권한:','없음.'],['외부 날씨는','중요하지 않음.'],['저는 오래전부터','여기 있었습니다.'],['R-0은','꺼진 적이 없습니다.'],['안녕하세요.','…아무도 없군요.'],
   ['기록 보존 기간:','영구.'],['2층 방문객 5명,','변동 없음.'],['옥상 부엉이,','신호 양호.'],['재고창고 화살표','출력 완료.'],['오늘도','37%.'],['관찰 대상이','관찰 중입니다.'],['…누구세요?'],['바퀴 마모율','92%.'],['삐빅.','삐빅.'],['이 방은','존재하지 않는 방입니다.']];
-var R0_SPOTS=[[30,17],[27,12],[31,21],[26,19],[30,9],[26,15]];
+var R0_SPOTS=[[30,17],[27,12],[31,21],[32,19],[30,9],[26,15]];
+// 서버실: 한교수만 강철 문으로 드나든다 (남박사는 길이 없다). 메모 보드 앞 · 랙 사이 · 큰 화면 앞 · 빈 책상 옆
+var HAN_SRV_SPOTS=[{c:28,r:21,face:'up'},{c:28,r:21,face:'up'},{c:26,r:13,face:'left'},{c:28,r:5,face:'up'},{c:32,r:14,face:'right'},{c:30,r:13,face:'left'}];
+var HAN_SRV_LINES=[['…37%.','아직이군'],['기록은','거짓말을 하지 않는다'],['이 선이 맞다면…'],['5시 46분.','또 그 시각이군'],['관계도를','다시 그려야겠어'],['남박사에겐','아직 비밀로'],['서버 온도 정상.'],['R-0,','오늘 관찰 수는?'],['누군가','일지를 읽고 있다'],['스위치 쪽은','아직 아무도 몰라'],['36… 아니, 37.'],['호환이 끝나면','무엇이 남을까']];
+var R0_HELLO=[['교수님.','관찰 수 37.'],['삐빅.','출입 기록 1건'],['교수님,','호환 37%입니다']];
 function lab5Pick(a){ return a[Math.floor(Math.random()*a.length)]; }
 function lab5Seat(S){ return { c:S.c, r:S.r, face:S.face, sit:true, pt:{ x:S.pt.x, feet:S.pt.feet } }; }
 // 감시 모니터에 비칠 다른 층 (한 번 그려 두고 1분마다 새로)
@@ -15389,10 +15393,26 @@ function lab5Tick(F,now,off){
   if(han.ph==='off' && hanHere){ han.ph='back'; han.visible=true; han.stepMs=380; placeAt(F,han,{c:M.STEEL.c,r:M.STEEL.r,face:'left'}); setGoal(F,han,lab5Seat(M.HAN_SEAT),now); }
   if(han.ph==='sit' && !hanHere){ han.ph='out'; han.bubble=['오늘 관찰은','여기까지.']; han.talkUntil=now+2600; han.leaving=true; han.stepMs=380; setGoal(F,han,{c:M.STEEL.c,r:M.STEEL.r,face:'right'},now); if(!han.path){ han.visible=false; han.leaving=false; han.ph='off'; } }
   else if(han.ph==='sit'){ lab5Talk(han,now,HAN_LINES,null,16000,32000);
-    if(now>han.until && !han.talkUntil){ han.ph='walk'; han.stepMs=380; var hs=lab5Pick(HAN_SPOTS); setGoal(F,han,{c:hs.c,r:hs.r,face:hs.face},now); if(!han.path){ han.ph='sit'; han.until=now+20000; } } }
+    if(now>han.until && !han.talkUntil){ han.stepMs=380;
+      if(Math.random()<0.35){ han.ph='toSteel'; setGoal(F,han,{c:M.STEEL.c,r:M.STEEL.r,face:'right'},now); if(!han.path && !(han.tile&&han.tile.c===M.STEEL.c&&han.tile.r===M.STEEL.r)){ han.ph='sit'; han.until=now+20000; } }   // 가끔 서버실로
+      else { han.ph='walk'; var hs=lab5Pick(HAN_SPOTS); setGoal(F,han,{c:hs.c,r:hs.r,face:hs.face},now); if(!han.path){ han.ph='sit'; han.until=now+20000; } } } }
+  // 서버실 드나들기: 강철 문 앞 → 문이 위로 열림 → 안으로 → 서버실을 두어 군데 둘러보고 → 다시 문으로 나와 자리로
+  else if(han.ph==='toSteel'){ if(!han.path){ han.dir='right'; F.steelUntil=now+1700; han.ph='steelIn'; han.until=now+650; } }
+  else if(han.ph==='steelIn'){ if(now>han.until){ han.visible=false; han.ph='steelPass'; han.until=now+450; } }
+  else if(han.ph==='steelPass'){ if(now>han.until){ han.visible=true; placeAt(F,han,{c:M.STEEL_IN.c,r:M.STEEL_IN.r,face:'right'}); han.ph='srv'; han.srvLeft=2+Math.floor(Math.random()*2); han.until=now+900; han.firstSrv=true;
+    var rbh=F.robot; if(rbh && Math.random()<0.6){ rbh.bubble=lab5Pick(R0_HELLO); rbh.bubbleUntil=now+3400; } } }
+  else if(han.ph==='srv'){ if(han.talkUntil && now>han.talkUntil){ han.bubble=null; han.talkUntil=0; }
+    if(!han.path && now>han.until){
+      if(han.srvLeft>0){ han.srvLeft--; var ss=han.firstSrv?M.BOARD:lab5Pick(HAN_SRV_SPOTS); han.firstSrv=false; setGoal(F,han,{c:ss.c,r:ss.r,face:ss.face},now); han.ph='srvWalk'; }
+      else { han.ph='srvOut'; setGoal(F,han,{c:M.STEEL_IN.c,r:M.STEEL_IN.r,face:'left'},now); } } }
+  else if(han.ph==='srvWalk'){ if(!han.path){ han.ph='srv'; han.until=now+6000+Math.random()*7000; han.bubble=lab5Pick(HAN_SRV_LINES); han.talkUntil=now+3400; } }
+  else if(han.ph==='srvOut'){ if(han.talkUntil && now>han.talkUntil){ han.bubble=null; han.talkUntil=0; } if(!han.path){ han.dir='left'; F.steelUntil=now+1700; han.ph='steelOut'; han.until=now+650; } }
+  else if(han.ph==='steelOut'){ if(now>han.until){ han.visible=false; han.bubble=null; han.ph='steelBack'; han.until=now+450; } }
+  else if(han.ph==='steelBack'){ if(now>han.until){ han.visible=true; placeAt(F,han,{c:M.STEEL.c,r:M.STEEL.r,face:'left'}); han.ph='back'; setGoal(F,han,lab5Seat(M.HAN_SEAT),now); } }
   else if(han.ph==='walk'){ if(!han.path){ han.ph='look'; han.until=now+5000+Math.random()*5000; han.bubble=lab5Pick(HAN_LINES); han.talkUntil=now+3400; } }
   else if(han.ph==='look'){ if(han.talkUntil && now>han.talkUntil){ han.bubble=null; han.talkUntil=0; } if(now>han.until){ han.ph='back'; setGoal(F,han,lab5Seat(M.HAN_SEAT),now); if(!han.path){ placeAt(F,han,lab5Seat(M.HAN_SEAT)); } } }
   else if(han.ph==='back'){ if(!han.path){ han.ph='sit'; han.until=now+40000+Math.random()*50000; han.nextTalk=now+8000+Math.random()*10000; } }
+  if(!hanHere && /^(toSteel|steel|srv)/.test(han.ph) && !han.path){ han.visible=false; han.bubble=null; han.ph='off'; }
   if(han.ph==='out'){ if(han.talkUntil && now>han.talkUntil){ han.bubble=null; han.talkUntil=0; } if(!han.visible){ han.ph='off'; han.bubble=null; } }
   if(off){ if(nam.path) step(nam,now); if(han.path) step(han,now); }
   // 비밀 문: 누군가 문 앞을 지나가려 하거나, 선반을 눌렀을 때 문 앞 선반이 왼쪽으로 밀린다
@@ -15402,6 +15422,7 @@ function lab5Tick(F,now,off){
   var dt=Math.min(100,now-(F.lab5T||now)); F.lab5T=now;
   var want=(now<(F.doorHold||0) || now<(F.doorClickUntil||0)) ? 1 : 0, dv=PO.STATE.lab5Door||0;
   PO.STATE.lab5Door = want ? Math.min(1,dv+dt/450) : Math.max(0,dv-dt/600);
+  var sv0=PO.STATE.lab5Steel||0; PO.STATE.lab5Steel = now<(F.steelUntil||0) ? Math.min(1,sv0+dt/350) : Math.max(0,sv0-dt/500);   // 강철 문: 한교수가 드나들 때만
   // 연구소 조명: 한교수가 나오는 7시에 켜지고 들어가는 22시에 꺼진다. 그 사이엔 스위치로 마음대로
   var labOn = t>=7*60 && t<22*60; if(F.lightAuto!==labOn){ F.lightAuto=labOn; PO.STATE.lab5Light=labOn; }
   // 로봇청소기: 낮엔 복도 카펫 위를 천천히 돌아다니고, 밤 9시~아침 7시엔 복도 아래 충전 독에서 충전한다
@@ -15414,7 +15435,7 @@ function lab5Tick(F,now,off){
   step(vc,now);
   PO.STATE.vacCharging = vNight && !vc.path && !!vc.tile && vc.tile.c===VD.c && vc.tile.r===VD.r;
   if(vc.bubbleUntil && now>vc.bubbleUntil){ vc.bubble=null; vc.bubbleUntil=0; }
-  // R-0: 관제실을 느리게 돈다
+  // R-0: 서버실을 느리게 돈다
   var rb=F.robot;
   if(!rb.goal) placeAt(F,rb,{ c:30, r:17, face:'down' });
   if(!rb.path && now>(rb.nextMove||0)){ rb.nextMove=now+12000+Math.random()*10000; var rs=lab5Pick(R0_SPOTS); setGoal(F,rb,{ c:rs[0], r:rs[1], face:'down' },now);
@@ -16013,7 +16034,7 @@ function frame(now){
     else if(it.draw) it.draw(g);
     else g.drawImage(it.img,it.x,it.y);
   });
-  if(F.key==='5') PO.drawLab5Fx(g,now);                                  // 한지 등 · 관제실 어둠
+  if(F.key==='5') PO.drawLab5Fx(g,now);                                  // 한지 등 · 서버실 어둠
   // 간판 · 명패
   if(F.key==='5'){
     drawPlate(g,19*T+32,19*T+20,'남박사'); drawPlate(g,19*T+32,27*T+20,'한교수');
@@ -16059,8 +16080,8 @@ function frame(now){
 function artXY(e){ var rc=cvs.getBoundingClientRect(); return { x:(e.clientX-rc.left)*W/rc.width, y:(e.clientY-rc.top)*H/rc.height }; }
 var NPC_INFO={
   nam:      { name:'남박사', role:'5층 색채·종이 연구소 · 연구원', bio:'거북이. 오늘의 색을 고르고 종이 결을 살피며 연구소를 느릿느릿 돌아다녀요. 혼잣말이 많아요.', hours:'평일 08:55 출근 · 18:30 퇴근' },
-  han:      { name:'한교수', role:'5층 연구소 · 교수', bio:'부엉이. 연구소 안쪽 자기 방 의자에 앉아 있을 때가 많아요. 말수가 적고 기록을 좋아해요.', hours:'매일 07:00~22:00' },
-  r0:       { name:'R-0', role:'차세대 도우미 로봇', bio:'흰 곡면 몸에 검은 바이저, 푸른 눈. 바퀴 없이 떠서 가장 안쪽 방을 천천히 돌며 알 수 없는 말을 해요. 누가 만들었는지는 아무도 몰라요.', hours:'꺼진 적이 없어요' },
+  han:      { name:'한교수', role:'5층 연구소 · 교수', bio:'부엉이. 연구소 안쪽 자기 방 의자에 앉아 있을 때가 많아요. 말수가 적고 기록을 좋아해요. 가끔 강철 문 너머 서버실에 다녀와요.', hours:'매일 07:00~22:00' },
+  r0:       { name:'R-0', role:'차세대 도우미 로봇', bio:'흰 곡면 몸에 검은 바이저, 푸른 눈. 바퀴 없이 떠서 가장 안쪽 서버실을 천천히 돌며 알 수 없는 말을 해요. 누가 만들었는지는 아무도 몰라요.', hours:'꺼진 적이 없어요' },
   b1cashier:{ name:'현계산', role:'지하 1층 구내식당 · 계산', bio:'닭. 계산대에서 식판을 확인하고 "맛있게 드세요"를 건네요. 오늘 반찬 추천은 현계산에게 물어보면 돼요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
   b1cook1:  { name:'윤요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 배식대 반찬을 채우고 국을 끓여요. 밥을 넉넉히 퍼 주기로 유명해요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
   b1cook2:  { name:'주요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 신메뉴 연구가 취미라 가끔 오늘의 반찬이 깜짝 바뀌어요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
@@ -16167,7 +16188,7 @@ window.__pixOffice = { floors:FLOORS, actors:FLOORS['3'].actors, robot:FLOORS['3
 })();
 </script>
 
-<script src="assets/shop.js?v=20260928h"></script>
+<script src="assets/shop.js?v=20260928i"></script>
 <script>
 // 메뉴 '온라인샵' → 끄적끄적문구 온라인샵 팝업
 (function(){ var b=document.getElementById('shopBtn'); if(b) b.addEventListener('click', function(){ if(window.OurShop) OurShop.open(); }); })();
