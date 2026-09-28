@@ -417,6 +417,11 @@
   #settingsHubInner h2{ font-size:14px; margin:0 0 12px; color:#5c4a3a; }
   .hubRow{ display:flex; gap:8px; }
   .hubRow .btn{ flex:1; justify-content:center; height:44px; }
+  #settingsHubInner .hubRow{ margin-top:7px; }
+  #settingsHubInner .hubRow .btn{ height:38px; min-width:0; padding:0 8px; font-size:13px; white-space:nowrap; }
+  #settingsHubInner .hubSub{ font-size:12px; margin:14px 0 0; color:#8a7560; font-weight:normal; }
+  #settingsHubInner #backupHint{ margin:6px 2px 0; font-size:11px; line-height:1.5; opacity:.75; }
+  #settingsHubInner .hubLast{ margin-top:14px; }
 
   #resetConfirmPanel{ position:fixed; inset:0; background:rgba(58,58,58,0.4); display:none; align-items:center; justify-content:center; z-index:44; padding:16px; }
   #resetConfirmPanel.show{ display:flex; }
