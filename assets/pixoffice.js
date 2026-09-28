@@ -692,7 +692,7 @@ var KIND = {
   pup:     {f:'#c9906a',F:'#f0d8bc',d:'#8e603f',ears:'floppy'},
   greycat: {f:'#b9b2a6',F:'#ebe6dc',d:'#8a847c',ears:'pointed',mark:'cat'},
   goat:    {f:'#c49a6c',F:'#ecd8bc',d:'#8a6a48',ears:'horns'},
-  owl:     {f:'#8a6a4a',F:'#efe0c4',d:'#5a4028',ears:'pointed',mark:'owl'},    // 5층 한교수
+  owl:     {f:'#8e6a48',F:'#f2e4c8',d:'#5a3e26',ears:'tuft',mark:'owl'},       // 5층 한교수: 깃털 귀, 고글 같은 얼굴판, 큰 노란 눈, 갈고리 부리
   turtle:  {f:'#8fb87a',F:'#e4efc6',d:'#5a7a4a'},                                // 5층 남박사
   camel:   {f:'#d6aa6c',F:'#f2e0bf',d:'#9a6e40',ears:'camel',mark:'camel'},   // 낙타: 정수리 털뭉치, 옆으로 난 작은 귀, 긴 주둥이, 졸린 눈꺼풀
   guardmk: {f:'#a9765a',F:'#f0d2b0',d:'#744a30',ears:'side',mark:'monkey'},
@@ -738,6 +738,9 @@ function drawEarsBehind(g,K,dir,cx){
     ell(g,ox,16,mr-2,11,sh(mc,0.15)); if(!side){ disc(g,cx-9,8,3,K.f); disc(g,cx+9,8,3,K.f); } return; }
   if(K.ears==='camel'){ if(side){ tri(g,cx+5,12,cx+10,8,cx+8,13,f); P(g,cx+8,11,d); return; }            // 작고 뾰족한 귀가 뒤로 누워 있다
     tri(g,cx-7,11,cx-12,8,cx-8,13,f); tri(g,cx+7,11,cx+12,8,cx+8,13,f); if(!back){ P(g,cx-9,11,d); P(g,cx+9,11,d); } }
+  if(K.ears==='tuft'){ var tl=sh(f,0.18), tdk=sh(f,-0.2);                    // 부엉이 깃털 귀: 작고 비스듬히
+    if(side){ tri(g,cx+3,12,cx+7,3,cx+9,11,f); line(g,cx+6,6,cx+7,10,tdk); return; }
+    tri(g,cx-11,13,cx-9,3,cx-4,9,f); tri(g,cx+11,13,cx+9,3,cx+4,9,f); if(!back){ line(g,cx-9,6,cx-8,10,tl); line(g,cx+9,6,cx+8,10,tl); } return; }
   if(K.ears==='comb'){ var cc='#e0483a'; if(side){ disc(g,cx-1,5,3,cc); disc(g,cx+2,3,3,cc); disc(g,cx+5,5,3,cc); return; }   // 닭 볏
     disc(g,cx-3,5,3,cc); disc(g,cx,3,3,cc); disc(g,cx+3,5,3,cc); P(g,cx-1,2,sh(cc,0.35)); }
   if(K.ears==='hedgehog' && !back){ var s=d;
@@ -769,10 +772,18 @@ function drawHead(g,K,p,dir,blink){
     if(K.mark==='badger') R(g,cx-2,cy-9,4,11,F);
     if(K.mark==='raccoon'){ R(g,cx-8,cy+3,16,2,d); }
     if(K.mark==='calico'){ ell(g,cx-5,cy-4,4,3,'#e89a4a'); ell(g,cx+5,cy-2,4,3,'#3a302c'); }
+    if(K.mark==='owl'){ [[-5,-5],[0,-7],[5,-4],[-7,0],[7,1],[-2,-2],[3,2],[-4,4],[5,5]].forEach(function(q){ P(g,cx+q[0],cy+q[1],sh(f,0.3)); P(g,cx+q[0]+1,cy+q[1]+1,sh(f,-0.2)); }); }
     drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return;
   }
   if(dir==='left'){                                 // 옆얼굴 (오른쪽은 좌우 반전)
     var mx = cx-9, my = cy+4;
+    if(K.mark==='owl'){                               // 부엉이 옆얼굴: 둥근 얼굴판 · 큰 눈 · 앞으로 굽은 부리
+      [[2,-6],[6,-3],[4,2],[8,3],[1,-8]].forEach(function(q){ P(g,cx+q[0],cy+q[1],sh(f,0.3)); });
+      disc(g,cx-4,cy+1,6,sh(F,-0.08)); disc(g,cx-4,cy+1,5,F); ring(g,cx-4,cy+1,6,sh(f,-0.15));
+      disc(g,cx-5,cy,3,'#f5c030'); if(blink) R(g,cx-7,cy,4,1,eye); else { R(g,cx-6,cy-1,2,2,'#1a1410'); P(g,cx-6,cy-1,'#ffffff'); }
+      tri(g,cx-12,cy+3,cx-8,cy+1,cx-8,cy+6,'#d8902a'); P(g,cx-11,cy+4,'#b8701a'); P(g,cx-9,cy+2,'#f0b050');
+      R(g,cx-1,cy+5,2,1,blush);
+      drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return; }
     if(K.mark==='monkey') ell(g,cx-3,cy+1,7,6,F);
     ell(g,mx,my,5,3,F); if(K.mark==='horse') ell(g,mx-1,my+1,6,4,F); if(K.mark==='camel'){ ell(g,mx,my+2,7,4,sh(F,-0.1)); ell(g,mx,my+1,6,4,F); }
     if(K.mark==='fox'||K.mark==='cat'||K.cheeks) ell(g,cx-4,cy+5,4,3,F);
@@ -813,6 +824,16 @@ function drawHead(g,K,p,dir,blink){
   if(K.mark==='badger'){ R(g,cx-2,cy-9,4,13,F); R(g,cx-7,cy-8,4,10,d); R(g,cx+4,cy-8,4,10,d); ell(g,cx-9,cy+3,2,2,F); ell(g,cx+9,cy+3,2,2,F); }
   if(K.mark==='calico'){ ell(g,cx-6,cy-5,4,3,'#e89a4a'); ell(g,cx+6,cy-6,3,2,'#3a302c'); }
   if(K.mark==='meerkat'){ ell(g,cx-5,cy,3,3,d); ell(g,cx+5,cy,3,3,d); }
+  if(K.mark==='owl'){                                                                                // 부엉이: 고글 같은 얼굴판 · 큰 노란 눈 · 갈고리 부리
+    [[-6,-6],[-2,-7],[3,-7],[7,-5],[-9,-2],[9,-1]].forEach(function(q){ P(g,cx+q[0],cy+q[1],sh(f,0.3)); });
+    disc(g,cx-4,cy+1,5,sh(F,-0.08)); disc(g,cx+4,cy+1,5,sh(F,-0.08)); disc(g,cx-4,cy+1,4,F); disc(g,cx+4,cy+1,4,F);
+    R(g,cx-9,cy-4,4,1,d); R(g,cx-5,cy-3,3,1,d); R(g,cx-2,cy-2,4,1,d); R(g,cx+2,cy-3,3,1,d); R(g,cx+5,cy-4,4,1,d);   // V자 눈썹깃
+    [cx-4, cx+4].forEach(function(ex){ disc(g,ex,cy+1,3,'#f5c030'); ring(g,ex,cy+1,3,'#c8901a');
+      if(blink) R(g,ex-2,cy+1,5,1,eye); else { R(g,ex-1,cy,2,2,'#1a1410'); P(g,ex-1,cy,'#ffffff'); } });
+    tri(g,cx-2,cy+4,cx+2,cy+4,cx,cy+9,'#d8902a'); P(g,cx-1,cy+4,'#f0b050'); P(g,cx,cy+8,'#b8701a');
+    R(g,cx-10,cy+5,2,1,blush); R(g,cx+9,cy+5,2,1,blush);
+    drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return;
+  }
   if(K.mark==='camel'){                                                                              // 낙타: 길쭉한 주둥이
     ell(g,cx,cy+6,6,5,sh(F,-0.1)); ell(g,cx,cy+5,5,4,F);
     [cx-5, cx+4].forEach(function(ex){ var ey=cy-1;
