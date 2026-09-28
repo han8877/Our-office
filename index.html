@@ -14942,6 +14942,7 @@
   window.__officeBridge = {
     staff: staff, staffMap: staffMap, charEl: charEl, currentXY: currentXY, openProfile: function(id){ openProfile(id); }, openNpcProfile: function(o){ openNpcProfile(o); },
     weather: function(){ return weatherState; },
+    toast: function(m){ toast(m); },
     doorOpen: function(){ return doorIsOpen; },
     robotLine: function(){ return rLine(); },
     workDay: function(){ return !isNonWorkingDay(); },
@@ -15322,7 +15323,7 @@ function drawLunchSign(g){ var cx=2*T+22, y=26*T+14;               // 엘리베�
 // 남박사는 평일 08:55에 엘리베이터로 출근해 색채·종이 연구소와 비밀 연구실을 돌아다니며 혼잣말과 이모지를 띄우고,
 // 비밀 문 앞을 지날 땐 문 앞 선반이 스르륵 밀린다. 18:30에 엘리베이터로 퇴근.
 // 한교수는 기본으로 자기 방 의자에 앉아 있다가 가끔 일어나 연구실을 둘러보고 돌아온다. 21시엔 강철 문 안으로 사라지고 아침 8시에 나온다
-var NAM_LOOK={id:'nam',kind:'turtle',shirt:'#f4f4f0',pants:'#4a4f58',coat:true,acc:'glasses'};
+var NAM_LOOK={id:'nam',kind:'turtle',shirt:'#f4f4f0',pants:'#4a4f58',coat:true,acc:'glasses',shell:true};
 var HAN_LOOK={id:'han',kind:'owl',shirt:'#f4f4f0',pants:'#4a4f58',coat:true};
 var NAM_LINES=[['오늘의 색:','먹색 17호.'],['이 한지 결이','참 곱네'],['봉투는','크림색이 제일이지'],['색 번호가','하나 비네?'],['쪽빛은 오후에','더 예뻐'],['종이도 숨을 쉬어'],['습도 48%,','종이한테 딱이야'],['복합기가 또','종이를 씹었어'],['팩스가 왔네…','3층에서?'],['선반은','살살 밀어야 해'],
   ['쉿, 여긴 그냥','종이 가게야'],['먹 냄새 좋다'],['오늘은 연두 기분'],['금박 봉투','재고 확인!'],['한교수님은','또 앉아만 계시네'],['손님이 오면','웃으면서 인사'],['이 빨강,','너무 빨갛다'],['색은','거짓말을 안 하지'],['천천히, 천천히'],['파란 잉크','다 떨어졌나'],
@@ -15390,6 +15391,11 @@ function lab5Tick(F,now,off){
   var dt=Math.min(100,now-(F.lab5T||now)); F.lab5T=now;
   var want=(now<(F.doorHold||0) || now<(F.doorClickUntil||0)) ? 1 : 0, dv=PO.STATE.lab5Door||0;
   PO.STATE.lab5Door = want ? Math.min(1,dv+dt/450) : Math.max(0,dv-dt/600);
+  // 로봇청소기: 복도 카펫 위를 천천히 돌아다닌다
+  var vc=F.vac; if(!vc){ vc=F.vac={ id:'vac5', robot:true, visible:true, x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null, dir:'down', frame:0, blinkUntil:0, nextBlink:1e15, stepMs:520, until:0 }; placeAt(F,vc,{ c:3, r:10, face:'down' }); }
+  if(!vc.path && now>vc.until){ var vt=null; for(var tr=0; tr<8 && !vt; tr++){ var cc=1+Math.floor(Math.random()*6), rr=4+Math.floor(Math.random()*24); if(!M.blocked[rr][cc]) vt={c:cc,r:rr}; }
+    if(vt) setGoal(F,vc,{ c:vt.c, r:vt.r, face:'down' },now); vc.until=now+2000+Math.random()*3000; }
+  step(vc,now);
   // R-0: 관제실을 느리게 돈다
   var rb=F.robot;
   if(!rb.goal) placeAt(F,rb,{ c:30, r:17, face:'down' });
@@ -15931,6 +15937,7 @@ function frame(now){
     if(F.lunchOn) list.push({sy:26*T+14, draw:drawLunchSign}); }
   else if(F.key==='2') list.push({sy:28*T+0.5, draw:function(gg){ PO.drawBigTank(gg,now); }});
   else if(F.key==='B1') b1Trays(F,list,now);
+  else if(F.key==='5' && F.vac){ var vv=F.vac; list.push({ sy:vv.feet-14, draw:function(gg){ PO.drawVacuum(gg,Math.round(vv.x)+15,Math.round(vv.feet)-6,now,!!vv.path); } }); }
   for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:a.feet}); }
   if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
   list.sort(function(p,q){ return p.sy-q.sy; });
@@ -16079,6 +16086,7 @@ cvs.addEventListener('click', function(e){
   var p=artXY(e);
   if(secretClick(F,p)){ e.stopPropagation(); return; }
   if(F.key==='5' && inRect(p,PO.MAP5.DOOR)){ e.stopPropagation(); F.doorClickUntil=performance.now()+8000; return; }   // 문 앞 선반만 왼쪽으로 밀린다
+  if(F.key==='5' && inRect(p,PO.MAP5.KIOSK)){ e.stopPropagation(); F.ruleI=((F.ruleI||0)%PO.MAP5.RULES.length)+1; if(B.toast) B.toast('연구소 유의사항 '+F.ruleI+' — '+PO.MAP5.RULES[F.ruleI-1]); return; }
   if(onSwitch(F,p)){ e.stopPropagation(); var sw=byId(F.switchEl); if(sw) sw.dispatchEvent(new MouseEvent('click',{bubbles:true})); return; }
   if(onElevator(F,p)){ e.stopPropagation(); var eb=byId('elevBtn'); if(eb && !eb.disabled) eb.click(); return; }
   var id=hitProfile(F,p); if(!id) return;
@@ -16086,7 +16094,7 @@ cvs.addEventListener('click', function(e){
   else if(id.npc && NPC_INFO[id.npc]){ var info={}; for(var k in NPC_INFO[id.npc]) info[k]=NPC_INFO[id.npc][k]; if(id.name) info.name=id.name; B.openNpcProfile(info); }
 });
 cvs.addEventListener('mousemove', function(e){ var F=activeFloor(); if(!F) return; var p=artXY(e);
-  var sw=(F.key==='3' && SECRET.openAt && !SECRET.closeAt && !SECRET.seqAt && inRect(p,PO.HIDDEN_SW,4)) || (F.key==='5' && inRect(p,PO.MAP5.DOOR));
+  var sw=(F.key==='3' && SECRET.openAt && !SECRET.closeAt && !SECRET.seqAt && inRect(p,PO.HIDDEN_SW,4)) || (F.key==='5' && (inRect(p,PO.MAP5.DOOR)||inRect(p,PO.MAP5.KIOSK)));
   cvs.style.cursor=(sw||onSwitch(F,p)||onElevator(F,p)||hitProfile(F,p))?'pointer':'default'; });
 
 requestAnimationFrame(frame);

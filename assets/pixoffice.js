@@ -780,7 +780,7 @@ function drawHead(g,K,p,dir,blink){
     if(K.mark==='owl'){                               // 부엉이 옆얼굴: 둥근 얼굴판 · 큰 눈 · 앞으로 굽은 부리
       [[2,-6],[6,-3],[4,2],[8,3],[1,-8]].forEach(function(q){ P(g,cx+q[0],cy+q[1],sh(f,0.3)); });
       disc(g,cx-4,cy+1,6,sh(F,-0.08)); disc(g,cx-4,cy+1,5,F); ring(g,cx-4,cy+1,6,sh(f,-0.15));
-      disc(g,cx-5,cy,3,'#f5c030'); if(blink) R(g,cx-7,cy,4,1,eye); else { R(g,cx-6,cy-1,2,2,'#1a1410'); P(g,cx-6,cy-1,'#ffffff'); }
+      disc(g,cx-5,cy,3,'#f5c030'); if(blink) R(g,cx-7,cy,4,1,eye); else { R(g,cx-7,cy-1,3,3,'#1a1410'); P(g,cx-7,cy-1,'#ffffff'); }
       tri(g,cx-12,cy+3,cx-8,cy+1,cx-8,cy+6,'#d8902a'); P(g,cx-11,cy+4,'#b8701a'); P(g,cx-9,cy+2,'#f0b050');
       R(g,cx-1,cy+5,2,1,blush);
       drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return; }
@@ -829,7 +829,7 @@ function drawHead(g,K,p,dir,blink){
     disc(g,cx-4,cy+1,5,sh(F,-0.08)); disc(g,cx+4,cy+1,5,sh(F,-0.08)); disc(g,cx-4,cy+1,4,F); disc(g,cx+4,cy+1,4,F);
     R(g,cx-9,cy-4,4,1,d); R(g,cx-5,cy-3,3,1,d); R(g,cx-2,cy-2,4,1,d); R(g,cx+2,cy-3,3,1,d); R(g,cx+5,cy-4,4,1,d);   // V자 눈썹깃
     [cx-4, cx+4].forEach(function(ex){ disc(g,ex,cy+1,3,'#f5c030'); ring(g,ex,cy+1,3,'#c8901a');
-      if(blink) R(g,ex-2,cy+1,5,1,eye); else { R(g,ex-1,cy,2,2,'#1a1410'); P(g,ex-1,cy,'#ffffff'); } });
+      if(blink) R(g,ex-2,cy+1,5,1,eye); else { R(g,ex-1,cy,3,3,'#1a1410'); P(g,ex-1,cy,'#ffffff'); } });
     tri(g,cx-2,cy+4,cx+2,cy+4,cx,cy+9,'#d8902a'); P(g,cx-1,cy+4,'#f0b050'); P(g,cx,cy+8,'#b8701a');
     R(g,cx-10,cy+5,2,1,blush); R(g,cx+9,cy+5,2,1,blush);
     drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return;
@@ -875,7 +875,15 @@ function drawHat(g,p,dir,cx,cy,rx,ry){
   if(dir==='left'){ R(g,cx-rx-3,top+6,rx+3,2,dk); return; }
   R(g,cx-rx,top+6,rx*2+1,2,dk);
 }
+function drawShell(g,dir){                                             // 거북이 등껍질 (남박사)
+  var c='#5f8f45', lt='#86b862', dk='#3e6630', rim='#c8a860';
+  if(dir==='up'){ ell(g,16,31,9,8,dk); ell(g,16,30,8,7,c); ell(g,14,27,4,2,lt);
+    R(g,13,27,6,1,dk); R(g,13,27,1,6,dk); R(g,18,27,1,6,dk); R(g,13,33,6,1,dk); line(g,13,27,9,25,dk); line(g,18,27,22,25,dk); line(g,13,33,10,36,dk); line(g,18,33,22,36,dk);
+    R(g,8,31,1,2,dk); R(g,23,31,1,2,dk); R(g,9,37,14,1,rim); return; }
+  if(dir==='left'){ ell(g,22,31,5,8,dk); ell(g,22,30,4,7,c); R(g,22,25,2,3,lt); R(g,21,29,5,1,dk); R(g,21,34,4,1,dk); R(g,18,24,2,14,rim); return; }
+  ell(g,16,31,10,8,dk); ell(g,16,30,9,7,c); R(g,6,28,2,6,lt); R(g,24,28,2,6,sh(c,-0.1)); }
 function drawBody(g,K,p,dir,frame,sit){
+  if(p.shell && dir==='down') drawShell(g,'down');                     // 앞에선 몸 뒤로 껍질 가장자리만
   var s=p.shirt, sD=sh(s,-0.22), sL=sh(s,0.28), pa=p.pantsC, pD=sh(pa,-0.28), sho='#5a4034', shoL='#7e5e4c', hand=K.f;
   if(dir==='left'){
     var legA = frame===1 ? [-3,2] : frame===2 ? [2,-3] : [0,0];
@@ -890,6 +898,7 @@ function drawBody(g,K,p,dir,frame,sit){
     if(p.apron){ R(g,11,32,9,8,p.apron); R(g,11,32,9,1,sh(p.apron,0.3)); }
     if(p.badge) drawBadge(g,'left');
     drawCarry(g,p,'left',14+ax);
+    if(p.shell) drawShell(g,'left');
     return;
   }
   var L = frame===1 ? [1,-1] : frame===2 ? [-1,1] : [0,0];
@@ -913,6 +922,7 @@ function drawBody(g,K,p,dir,frame,sit){
   if(p.scarf&&dir==='up'){ R(g,11,25,10,2,p.scarf); }
   if(p.badge) drawBadge(g,dir);
   if(dir==='down') drawCarry(g,p,'down',22);
+  if(p.shell && dir==='up') drawShell(g,'up');
 }
 // 사원증: 남색 목줄에 흰 카드 (앞: 가슴에 달랑 · 옆: 몸 앞쪽 · 뒤: 목덜미 줄만)
 var LANYARD='#2f4a8a', LANYARD_L='#4a6ab0';
@@ -2204,7 +2214,14 @@ function lazyItem(build,x,y,sy,key){ var img=null, k0=null; things.push({sy:sy, 
 function tx(g,s,x,y,size,col,align){ g.font=size+'px '+FN; g.fillStyle=col; g.textAlign=align||'left'; g.textBaseline='middle'; g.fillText(s,x,y); g.textAlign='left'; }
 
 // ---------------- 바닥 ----------------
-stoneFloor(bgc,1,3,7,28);                                                      // 복도: 대리석
+(function(){ var x0=T, y0=3*T, w=7*T, h=26*T, base='#5a2432', b2='#4e1e2a', gold='#c8a25a', gl='#e2c27e';          // 복도: 짙은 자줏빛 고급 카펫
+  R(bgc,x0,y0,w,h,base);
+  for(var yy=0; yy<h; yy+=16) for(var xx=((yy/16)%2)*8; xx<w; xx+=16){ var cx=x0+xx+8, cy=y0+yy+8; P(bgc,cx,cy-3,b2); P(bgc,cx-1,cy-2,b2); P(bgc,cx+1,cy-2,b2); P(bgc,cx-2,cy-1,b2); P(bgc,cx+2,cy-1,b2); P(bgc,cx-1,cy,b2); P(bgc,cx+1,cy,b2); P(bgc,cx,cy+1,b2); P(bgc,cx,cy-1,'#6e3040'); }
+  for(var k=0;k<2400;k++){ P(bgc,x0+Math.floor(rnd(k*1.7)*w),y0+Math.floor(rnd(k*2.3+9)*h),rnd(k)>0.5?'#632a38':'#521f2c'); }
+  R(bgc,x0+6,y0+6,w-12,2,gold); R(bgc,x0+6,y0+h-8,w-12,2,gold); R(bgc,x0+6,y0+6,2,h-12,gold); R(bgc,x0+w-8,y0+6,2,h-12,gold);
+  R(bgc,x0+10,y0+10,w-20,1,gl); R(bgc,x0+10,y0+h-11,w-20,1,gl); R(bgc,x0+10,y0+10,1,h-20,gl); R(bgc,x0+w-11,y0+10,1,h-20,gl);
+  for(var yc=y0+48; yc<y0+h-40; yc+=96){ var mx=x0+w/2; for(var d2=0; d2<10; d2++){ P(bgc,mx-d2,yc-10+d2,gold); P(bgc,mx+d2,yc-10+d2,gold); P(bgc,mx-d2,yc+10-d2,gold); P(bgc,mx+d2,yc+10-d2,gold); } P(bgc,mx,yc,gl); }
+})();
 for(var r=3;r<=15;r++) for(var c=8;c<=22;c++){ var x=c*T, y=r*T, b=(c+r)%2?'#8e8a84':'#86827c';     // 색채·종이 연구소: 회색 돌
   R(bgc,x,y,T,T,b); R(bgc,x,y,T,1,'#7a766f'); R(bgc,x,y,1,T,'#7a766f'); R(bgc,x+1,y+1,T-2,1,sh(b,0.12)); var v=rnd(c*11+r*5); P(bgc,x+6+Math.floor(v*18),y+8+Math.floor(v*14),sh(b,-0.12)); }
 for(var r2=16;r2<=28;r2++) for(var c2=8;c2<=22;c2++){ var x2=c2*T, y2=r2*T, b2=(c2+r2)%2?'#e8efee':'#e0e8e7';   // 비밀 연구실: 민트 타일
@@ -2236,7 +2253,16 @@ things.push({sy:6*T, draw:function(g){ var x=7*T+9, y=4*T; g.fillStyle='rgba(190
 var ELEV5=pElevator(false,5); things.push({sy:3*T-1, draw:function(g){ g.drawImage(ELEV5,T-1,-1); }});
 function pStandSign(){ return obj(120,76,function(g){ R(g,58,40,4,34,'#8a7a64'); ell(g,60,74,16,2,'#6a5a4a'); R(g,0,0,120,42,'#8a6048'); R(g,2,2,116,38,'#fbf6ea'); R(g,4,4,112,1,'#ffffff'); R(g,2,37,116,2,'#e2d4bc');
   tx(g,'색채 · 종이 연구소',60,15,11,'#4a3a2e','center'); tx(g,'COLOR & PAPER LAB  →',60,29,8,'#8a7a64','center'); }); }
-lazyItem(pStandSign,2*T+4,8*T-76,8*T); block(2,7,5,7); onTile(pBench(),2,15,4,15); onTile(pPlant('tall','#f4f1ea'),6,4,6,4); onTile(pPlant('monstera','#f4f1ea'),1,27,1,27); onTile(pExtinguisher(),6,22,6,22);
+// 입구 옆 연구소 유의사항 키오스크 (누르면 한 줄씩 읽어 준다)
+var KIOSK5_RULES=['연구소 안에서는 조용히 걸어 주세요','종이 샘플은 장갑을 끼고 만져 주세요','선반을 함부로 밀지 마세요','한지 등은 만지지 마세요','관계자 외 안쪽 출입 금지','5시 46분에는 시계를 보지 마세요','기록되지 않은 일은 일어나지 않은 일입니다'];
+function pRuleKiosk(){ return obj(40,72,function(g){ ell(g,20,69,14,3,'#3a2a24'); R(g,15,34,10,34,'#d8dce0'); R(g,15,34,2,34,'#f4f6f8'); R(g,23,34,2,34,'#a8b0b8'); R(g,10,64,20,5,'#c8a25a'); R(g,10,64,20,1,'#e2c27e');
+  R(g,0,0,40,34,'#2a2e34'); R(g,0,0,40,2,'#4a5058'); R(g,38,2,2,32,'#1c1f24'); R(g,2,31,36,3,'#c8a25a'); }); }
+function drawRuleKiosk(g,x,y,t){ var sx=x+3, sy=y+3, i=Math.floor(t/2500)%KIOSK5_RULES.length;
+  R(g,sx,sy,34,27,'#f4f1e8'); R(g,sx,sy,34,9,'#7a2a38'); tx(g,'연구소',sx+17,sy+5,8,'#f2e2c0','center');
+  tx(g,'유의사항',sx+17,sy+16,8,'#3a3040','center');
+  for(var k=0;k<KIOSK5_RULES.length;k++) R(g,sx+5+k*4,sy+23,2,2,k===i?'#7a2a38':'#c8bca8');
+  if(Math.floor(t/700)%2) R(g,sx+30,sy+11,2,2,'#3ae890'); }
+onTileFx(pRuleKiosk(),6,6,6,7,drawRuleKiosk); onTile(pBench(),2,15,4,15); onTile(pPlant('tall','#f4f1ea'),6,4,6,4); onTile(pPlant('monstera','#f4f1ea'),1,27,1,27); onTile(pExtinguisher(),6,22,6,22);
 function pExitSign(){ return obj(48,18,function(g){ R(g,0,0,48,18,'#2e8a4a'); R(g,1,1,46,16,'#3aa05a'); tx(g,'비상구',24,9,9,'#e8fff0','center'); }); }
 lazyItem(pExitSign,3*T+8,29*T-18,29*T);
 
@@ -2403,11 +2429,16 @@ function drawLab5Fx(g,now){
   var gl=g.createRadialGradient(28*T,3*T,10,28*T,3*T,300); gl.addColorStop(0,'rgba(60,255,160,0.14)'); gl.addColorStop(1,'rgba(60,255,160,0)'); g.fillStyle=gl; g.fillRect(23*T+10,3*T,12*T,12*T);
   g.save(); g.beginPath(); g.rect(23*T+10,3*T,12*T,26*T); g.clip(); var vg=g.createRadialGradient(29*T,15*T,140,29*T,15*T,520); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.45)'); g.fillStyle=vg; g.fillRect(23*T,3*T,12*T,26*T); g.restore();
 }
+function drawVacuum(g,x,y,t,moving){                                  // 원반형 납작한 로봇청소기 (x,y = 가운데 바닥)
+  ell(g,x,y+2,13,4,'rgba(20,10,20,0.3)'); ell(g,x,y,12,6,'#2e3238'); ell(g,x,y-1,12,6,'#3e434a'); ell(g,x,y-2,10,4,'#50565e'); ell(g,x-3,y-3,4,1,'#6a7078');
+  R(g,x-2,y-2,4,1,'#1c1f24'); P(g,x+5,y-2,(Math.floor(t/500)%2)?'#3ae890':'#1a5a3a');
+  var a=(t/90)%(Math.PI*2), bx=x-9, by=y+3; line(g,bx,by,bx+Math.round(Math.cos(a)*3),by+Math.round(Math.sin(a)*2),'#8a929c'); line(g,bx,by,bx-Math.round(Math.cos(a)*3),by-Math.round(Math.sin(a)*2),'#8a929c');
+  if(moving) P(g,x-12+Math.floor(t/60)%3,y+4,'rgba(255,255,255,0.35)'); }
 function oldTint(img){ var c=cv(img.width,img.height), g=c.getContext('2d'); g.drawImage(img,0,0); g.globalCompositeOperation='source-atop'; g.fillStyle='rgba(150,110,60,0.35)'; g.fillRect(0,0,c.width,c.height); return c; }
 MAP5.DOOR={ x:18*T, y:16*T-80, w:64, h:82 }; MAP5.LOBBY={ c:2, r:3 }; MAP5.ELEV={ x:32, y:0, w:128, h:96 };
 MAP5.HAN_SEAT={ c:19, r:26, face:'down', sit:true, pt:{ x:19*T+14, feet:27*T+6 } };
 MAP5.NAM_SEAT={ c:19, r:18, face:'down', sit:true, pt:{ x:19*T+14, feet:19*T+6 } };
-MAP5.STEEL={ c:22, r:27 };
+MAP5.STEEL={ c:22, r:27 }; MAP5.KIOSK={ x:6*T-4, y:8*T-72, w:40, h:72 }; MAP5.RULES=KIOSK5_RULES;
 
 useMap(MAP3);
 
@@ -2418,6 +2449,6 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, MAP5:MAP5, drawLab5Fx:drawLab5Fx, oldTint:oldTint, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, MAP5:MAP5, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();
