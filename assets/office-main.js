@@ -7744,6 +7744,39 @@
     if(e.target.closest('.sideBtn')) closeSideBar();
   });
 
+  // ===== 좁은 화면: 아래 핫바 (자주 쓰는 네 개 + 더보기) =====
+  // 핫바 버튼은 옆 메뉴의 진짜 버튼을 대신 누른다. 글자(랜덤 이동 ↔ 제자리로 등) · 켜짐 · 막힘 · 알림 딱지는 진짜 버튼을 따라간다
+  (function(){
+    var bar = byId('hotBar'), more = byId('hotMore');
+    if(!bar || !more) return;
+    [].slice.call(bar.querySelectorAll('.hotBtn[data-for]')).forEach(function(hb){
+      var src = byId(hb.getAttribute('data-for'));
+      if(!src) return;
+      src.classList.add('inHot');
+      var lab = hb.querySelector('.lab'), bd = hb.querySelector('.hb');
+      function sync(){
+        var sp = src.querySelector('span'), txt = '';
+        if(sp) [].slice.call(sp.childNodes).forEach(function(n){ if(n.nodeType === 3) txt += n.textContent; });
+        txt = txt.trim() || src.getAttribute('aria-label') || '';
+        if(lab.textContent !== txt) lab.textContent = txt;
+        hb.disabled = !!src.disabled;
+        hb.classList.toggle('active', src.classList.contains('active'));
+        var b = src.querySelector('.msg-badge'), html = b ? b.outerHTML.replace(/ id="[^"]*"/, '') : '';
+        if(bd.innerHTML !== html) bd.innerHTML = html;
+      }
+      sync();
+      if(window.MutationObserver) new MutationObserver(sync).observe(src, { subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:['class','style','disabled'] });
+      hb.addEventListener('click', function(){ closeSideBar(); src.click(); });
+    });
+    function syncMore(){ more.classList.toggle('open', sideBar.classList.contains('open')); }
+    more.addEventListener('click', function(){
+      if(sideBar.classList.contains('open')) closeSideBar();
+      else { sideBar.classList.add('open'); sideScrim.classList.add('show'); }
+      syncMore();
+    });
+    if(window.MutationObserver) new MutationObserver(syncMore).observe(sideBar, { attributes:true, attributeFilter:['class'] });
+  })();
+
   var dayLogOverlay = byId('dayLogOverlay');
   function renderDayLog(){
     var wrap = byId('dayLogList');
