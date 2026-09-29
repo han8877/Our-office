@@ -8516,6 +8516,14 @@
     settingsHub.classList.remove('show');
     creditsPanel.classList.add('show');
   });
+  var intentPanel = byId('intentPanel');
+  byId('hubIntentBtn').addEventListener('click', function(){
+    settingsHub.classList.remove('show');
+    byId('intentBody').scrollTop = 0;
+    intentPanel.classList.add('show');
+  });
+  byId('intentCloseBtn').addEventListener('click', function(){ intentPanel.classList.remove('show'); });
+  intentPanel.addEventListener('click', function(e){ if(e.target===intentPanel) intentPanel.classList.remove('show'); });
   byId('creditsCloseBtn').addEventListener('click', function(){
     creditsPanel.classList.remove('show');
   });
@@ -10048,7 +10056,7 @@
   // 그 칸이 소비될 때(popstate) 대신 창을 닫거나 확인을 띄운다.
   var DISMISSABLE = '.mail-overlay.show, #panel.show, #helpPanel.show, #settingsPanel.show,'
                   + ' #settingsHub.show, #reportPanel.show, #profilePanel.show,'
-                  + ' #creditsPanel.show, #logPanel.open, #sideBar.open';
+                  + ' #creditsPanel.show, #intentPanel.show, #logPanel.open, #sideBar.open';
   var exitOverlay = byId('exitOverlay');
 
   // 겹쳐 열렸을 때 실제로 맨 위에 있는 것을 고른다
