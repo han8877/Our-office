@@ -5703,6 +5703,8 @@
     { id:'f2guard', f2id:'guard', name:'보안요원', avatar:'#918d86', isBoss:false, floor2:true, voice:'soldier' },
     { id:'f2bart',  f2id:'bartender', name:'바텐더 박', avatar:'#c8643a', isBoss:false, floor2:true, npc:'bartender', voice:'guide', quick:'bar' },
     { id:'f2serv',  f2id:'server',    name:'강서빙',    avatar:'#8e8c88', isBoss:false, floor2:true, npc:'server',    voice:'guide', quick:'bar' },
+    // 5층 색채·종이 연구소 (한교수는 메신저를 쓰지 않는다)
+    { id:'f5nam', name:'남박사', avatar:'#5f8f45', isBoss:false, floor2:true, f5:true, npc:'nam', voice:'guide', quick:'lab', face:{id:'faceF5nam', kind:'turtle', shirt:'#f4f4f0', coat:true, acc:'glasses'} },
     // 1층 판매샵·카페 (그림 쪽 근무 상태를 따른다)
     { id:'f1ham', name:'함 매니저',   avatar:'#a3a9b1', isBoss:false, floor2:true, f1:true, npc:'f1ham', voice:'guide', quick:'shop',  face:{id:'faceF1ham', kind:'koala',    shirt:'#fbfaf7', apron:'#ff5f9e'} },
     { id:'f1seo', name:'서 스태프',   avatar:'#e6dfd2', isBoss:false, floor2:true, f1:true, npc:'f1seo', voice:'guide', quick:'shop',  face:{id:'faceF1seo', kind:'sheep',    shirt:'#bff2e4', apron:'#ff5f9e'} },
@@ -5740,6 +5742,7 @@
     f2guard:    '이상 무',
     f2bart:     '오늘의 추천은 자몽 에이드',
     f2serv:     '천천히 쉬다 가세요',
+    f5nam:      '오늘의 색: 먹색 17호',
     f1ham:      '무늬 노트 새로 들어왔어요',
     f1seo:      '커스텀 노트 재단 중',
     f1jin:      '오늘 원두는 에티오피아',
@@ -6004,7 +6007,7 @@
   var faceCache = {};
   function faceLookFor(c){
     var PO = window.PixOffice; if(!PO || !c) return null;
-    if(c.isBoss || c.id === 'boss') return { id:'faceBoss', kind:'bosstiger', shirt:'#96897a', acc:'glasses', accC:'#d4a83a' };
+    if(c.isBoss || c.id === 'boss') return { id:'faceBoss', kind:'bosstiger', shirt:'#96897a', acc:'glasses', accC:'#ffd84a' };
     if(c.face) return c.face;
     if(c.b1look) return PO.B1LOOK[c.b1look];
     if(c.floor2){ if(c.f2id === 'guard') return /표/.test(c.name) ? PO.F2LOOK.guardLeo : PO.F2LOOK.guard; return PO.F2LOOK[c.f2id]; }
@@ -6149,8 +6152,15 @@
     var f2Header = document.createElement('div');
     f2Header.className = 'chatListSectionHeader';
     f2Header.textContent = '2층 안내·보안·라운지 바';
+    var f5Header = document.createElement('div');
+    f5Header.className = 'chatListSectionHeader';
+    f5Header.textContent = '5층 색채·종이 연구소';
+    wrap.appendChild(f5Header);
+    messengerContacts.filter(function(c){ return c.f5; }).forEach(function(c){
+      wrap.appendChild(buildChatListRow(c, chatKeyFor(c.id)));
+    });
     wrap.appendChild(f2Header);
-    messengerContacts.filter(function(c){ return c.floor2 && !c.b1 && !c.f1; }).forEach(function(c){
+    messengerContacts.filter(function(c){ return c.floor2 && !c.b1 && !c.f1 && !c.f5; }).forEach(function(c){
       wrap.appendChild(buildChatListRow(c, chatKeyFor(c.id)));
     });
     var f1Header = document.createElement('div');
@@ -6354,6 +6364,13 @@
       { q:'자리 있어요?',       a:'창가 쪽 비었어요. 편하게 앉으세요 :)' },
       { q:'얼음 적게 주세요',    a:'네, 얼음 조금만 넣어드릴게요' },
       { q:'잘 마셨어요',        a:'또 들르세요. 잔은 두고 가셔도 돼요~' }
+    ],
+    lab: [
+      { q:'오늘의 색은 뭐예요?', a:'먹색 17호요. 오후엔 쪽빛도 예쁘고요' },
+      { q:'연구소엔 뭐가 있어요?', a:'색견본이랑 한지, 봉투 샘플이요. …그냥 종이 가게예요' },
+      { q:'한교수님은 어떤 분이세요?', a:'말수는 적은데 기록을 아주 좋아하세요' },
+      { q:'5층 놀러 가도 돼요?', a:'관계자만요. 선반은 살살 밀어야 해요' },
+      { q:'수고하세요', a:'천천히, 천천히. 종이도 숨을 쉬어요' }
     ],
     shop: [
       { q:'오늘 새로 들어온 거 있어요?', a:'무늬 노트 새 시리즈랑 파스텔 마스킹테이프 들어왔어요!' },
@@ -7153,6 +7170,12 @@
       '너는 2층 라운지 바의 홀서빙 강서빙이다. 오소리. 성격유형은 ISFJ(수호자), 안정형이다.',
       '공손하고 차분하게. 손님 이야기를 잘 들어주고 필요한 걸 조용히 챙긴다.',
       '바 안에서만 쟁반을 나른다. 이모티콘은 쓰지 않고 :) 만 드물게.'
+    ].join('\n'),
+    f5nam: [
+      '너는 5층 색채·종이 연구소의 연구원 남박사다. 거북이, 하얀 가운, 안경, 등껍질. 성격유형은 INFP(중재자), 안정형이다.',
+      '느릿느릿하고 다정하게, 혼잣말하듯 짧게. 오늘의 색, 한지 결, 봉투 샘플, 습도 이야기를 좋아한다. "천천히, 천천히"가 입버릇.',
+      '평일 8시~8시 반 사이에 출근해 18시 반에 퇴근한다. 한교수와 가끔 회의를 한다.',
+      '5층의 비밀(서버실, 캡슐, 선반 뒤 문 등)은 절대 설명하지 않는다. 물으면 "쉿, 여긴 그냥 종이 가게야" 같은 말로 흐린다. 이모티콘은 쓰지 않는다.'
     ].join('\n'),
     f1ham: [
       '너는 1층 끄적끄적문구 스토어의 매니저 함 매니저다. 코알라. 성격유형은 ESFJ(집정관), 안정형이다.',

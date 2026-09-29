@@ -549,10 +549,15 @@ function lab5Tick(F,now,off){
 var F1_STAFF={
   f1ham:{ name:'함 매니저', look:{id:'f1ham',kind:'koala',shirt:'#fbfaf7',pants:'#5a5a66',apron:'#ff5f9e'}, shop:'store', home:{c:10,r:21,face:'down'},
     spots:[{c:2,r:12,face:'left'},{c:14,r:19,face:'up'},{c:4,r:22,face:'up'},{c:9,r:14,face:'down'},{c:13,r:24,face:'up'}],
-    lines:[['어서 오세요~'],['장바구니는','엘리베이터 앞에 있어요'],['무늬 노트','새로 들어왔어요'],['포장해 드릴까요?'],['끄적 네컷도','찍어 보세요!']] },
+    lines:[['어서 오세요~'],['장바구니는','엘리베이터 앞에 있어요'],['무늬 노트','새로 들어왔어요'],['포장해 드릴까요?'],['끄적 네컷도','찍어 보세요!'],
+      ['파스텔 테이프','오늘 잘 나가네'],['3번 모듈','빈칸 채워야겠다'],['에코백 M 사이즈','다시 들어왔어요'],['만년필은 시필','해 보셔도 돼요'],['리본 색은','다섯 가지예요'],
+      ['영수증 롤','갈아야겠다'],['이 스티커,','3층 팀 작품이에요'],['포장지 롤','가지런히~'],['오늘 매출','느낌 좋다'],['카드 A자 랙','정리 완료'],['색종이 월','무지개 순서 맞추고'],
+      ['선물이세요?','포장 도와드릴게요'],['신상 노트는','입구 쪽에 있어요'],['네컷 부스','필름 채워 둬야지'],['시필지가','낙서로 가득이네 ㅎㅎ']] },
   f1seo:{ name:'서 스태프', look:{id:'f1seo',kind:'sheep',shirt:'#bff2e4',pants:'#5a5a66',apron:'#ff5f9e'}, shop:'store', home:{c:13,r:4,face:'down'},
     spots:[{c:6,r:5,face:'up'},{c:9,r:5,face:'up'},{c:15,r:4,face:'right'},{c:8,r:5,face:'down'},{c:11,r:4,face:'down'}],
-    lines:[['커스텀 노트','재단 중이에요'],['리소 잉크가','잘 먹었네'],['이번 판화는','주황 한 도'],['종이학','하나 더 접어야지'],['이름 각인은','10분이면 돼요']] },
+    lines:[['커스텀 노트','재단 중이에요'],['리소 잉크가','잘 먹었네'],['이번 판화는','주황 한 도'],['종이학','하나 더 접어야지'],['이름 각인은','10분이면 돼요'],
+      ['재단기 날','갈 때가 됐나'],['리소 판 하나 더','떠야겠다'],['핑크랑 파랑','겹치니 예쁘다'],['종이 결 방향','맞춰야지'],['팝업 카드','시안 나왔다'],
+      ['드라이 줄에','포스터 걸고'],['커튼 너머로','손님 구경 중'],['이 종이는','크림색이 딱이네'],['샘플 진열대','새로 채워야지'],['망점이','예쁘게 나왔어'],['제본실','바늘 어디 뒀더라']] },
   f1jin:{ name:'바리스타 진', look:{id:'f1jin',kind:'elephant',shirt:'#fbfaf7',pants:'#6a5a4a',apron:'#6f9168'}, shop:'cafe', home:{c:27,r:3,face:'down'}, rest:{c:34,r:4,face:'down',sit:true}, restLines:[['이 책','재밌다'],['잠깐','숨 돌리자'],['쿠션','폭신~']],
     floor:[{c:24,r:7,face:'up'},{c:27,r:13,face:'up'},{c:22,r:12,face:'left'},{c:25,r:21,face:'up'}], floorLines:[['맛있게 드세요~'],['리필 필요하신 분~'],['원두 향','어떠세요?']],
     spots:[{c:25,r:3,face:'down'},{c:24,r:3,face:'up'},{c:22,r:3,face:'up'},{c:27,r:3,face:'down'}],
@@ -730,18 +735,18 @@ function f1Tick(F,now,off){
   var nS=0, nC=0; for(var id in A){ var q=A[id]; if(!q.guest) continue; if(!q.visible){ delete A[id]; continue; } if(q.shop==='store') nS++; else nC++; }
   var hr=d.getHours(), busy=(hr>=12&&hr<14)||(hr>=17&&hr<20)?1.6:1;
   if(!F.f1Next) F.f1Next=now+1500;
-  if(now>F.f1Next){ F.f1Next=now+(6000+Math.random()*12000)/busy;
+  if(now>F.f1Next){ F.f1Next=now+(4000+Math.random()*8000)/busy;
     var peak=(hr>=11&&hr<14)||(hr>=17&&hr<20);
-    var wantS=O.store && nS<Math.round(4*busy), wantC=O.cafe && (peak ? nC<Math.round(5*busy) : (nC<2 && Math.random()<0.45));
+    var wantS=O.store && nS<Math.round(6*busy), wantC=O.cafe && (peak ? nC<Math.round(6*busy) : (nC<3 && Math.random()<0.6));
     if(wantS && (!wantC || Math.random()<0.5)) f1Guest(F,now,'store'); else if(wantC) f1Guest(F,now,'cafe'); }
-  if(!F.f1Warm && (O.store||O.cafe)){ F.f1Warm=true; for(var w=0;w<3;w++){ var wg=f1Guest(F,now,O.store&&(w<2||!O.cafe)?'store':'cafe'); if(wg.todo.length){ var wt=wg.todo.shift(); wg.cur=wt; placeAt(F,wg,wt.seat?{c:wt.seat[0],r:wt.seat[1],face:wt.seat[2],sit:true}:{c:wt.g.c,r:wt.g.r,face:wt.g.face}); wg.ph='stay'; wg.until=now+3000+Math.random()*6000; } } }   // 이미 영업 중이면 손님 몇 명은 벌써 구경 중
+  if(!F.f1Warm && (O.store||O.cafe)){ F.f1Warm=true; for(var w=0;w<5;w++){ var wg=f1Guest(F,now,O.store&&(w<3||!O.cafe)?'store':'cafe'); if(wg.todo.length){ var wt=wg.todo.shift(); wg.cur=wt; placeAt(F,wg,wt.seat?{c:wt.seat[0],r:wt.seat[1],face:wt.seat[2],sit:true}:{c:wt.g.c,r:wt.g.r,face:wt.g.face}); wg.ph='stay'; wg.until=now+3000+Math.random()*6000; } } }   // 이미 영업 중이면 손님 몇 명은 벌써 구경 중
   f1Visitors(F,now,off,O,t); f1Robot(F,now,off);
   var taken={}; for(var id2 in A){ var s=A[id2]; if(s.guest && s.seatK) taken[s.seatK]=1; }
   for(var gid in A){ var a=A[gid]; if(!a.guest || !a.visible) continue;
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
     if(a.ph==='go'){ if(!a.path){ var c=a.cur; a.ph='stay'; a.until=now+(c?c.ms:1500);
         if(c && c.talk){ a.bubble=c.talk; a.talkUntil=now+3200; }
-        if(c && c.pay && hamPos && hamPos.visible){ hamPos.bubble=lab5Pick([['계산 도와드릴게요'],['포장해 드릴까요?'],['감사합니다~']]); hamPos.talkUntil=now+2600; }
+        if(c && c.pay && hamPos && hamPos.visible){ hamPos.bubble=lab5Pick([['계산 도와드릴게요'],['포장해 드릴까요?'],['감사합니다~'],['봉투 필요하세요?'],['쿠폰 적립','해 드릴게요'],['또 오세요~'],['선물이세요?','리본 묶어 드릴게요']]); hamPos.talkUntil=now+2600; }
         if(c && c.pickup){ var ry=A.f1ryu; if(ry && ry.visible){ ry.bubble=[lab5Pick(['달빛 라떼','나인 콜드브루','아메리카노','레몬 에이드']),'나왔습니다~']; ry.talkUntil=now+2600; } } } }
     else if(a.ph==='stay'){ if(a.cur && a.cur.pay) F.payWait=true;
       if(now>a.until){ var cu=a.cur; a.cur=null;
@@ -854,6 +859,11 @@ window.__npcStatus=function(id){
     if(deskOn || (work && t>=12*60 && t<13*60)) return { online:true, text:'' };
     if(!work) return { online:false, text:'휴무' };
     return { online:false, text: t<9*60 ? '출근 전' : '퇴근' }; }
+  if(id==='nam'){ var na=FLOORS['5'] && FLOORS['5'].actors.nam, dn=new Date(), wk=B.workDay?B.workDay():true, ni=8*60+PO.hash(dn.toDateString()+'nam')%31;
+    if(na && na.visible && na.ph!=='out') return { online:true, text: na.ph==='meet' ? '회의 중' : '' };
+    if(!wk) return { online:false, text:'휴무' };
+    if(t>=ni && t<18*60+30) return { online:true, text:'' };
+    return { online:false, text: t<ni ? '출근 전' : '퇴근' }; }
   if(/^f1/.test(id) && F1_STAFF[id]){ var f1a=FLOORS['1'] && FLOORS['1'].actors[id], S1=F1_STAFF[id], d1=new Date();
     var inT = S1.shop==='store' ? f1StoreIn(id,d1) : 7*60+40, outT = S1.shop==='store' ? 21*60+10 : 22*60+10;
     if(f1a && f1a.visible && f1a.ph!=='out') return { online:true, text: f1a.ph==='rest' ? '쉬는 중' : '' };

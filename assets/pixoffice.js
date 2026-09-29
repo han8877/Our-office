@@ -1089,7 +1089,7 @@ STAFF.forEach(function(p){ p.badge=true; });   // 우리 회사 직원만 사원
 
 // ---- 방문객 생김새 (본편 방문객 id → 그림) ----
 var VISITORS={
-  visitorBoss:    {id:'visitorBoss',    kind:'bosstiger', shirt:'#96897a', pants:'#4a4038', acc:'glasses', accC:'#d4a83a'},   // 사장님: 금테 안경
+  visitorBoss:    {id:'visitorBoss',    kind:'bosstiger', shirt:'#96897a', pants:'#4a4038', acc:'glasses', accC:'#ffd84a'},   // 사장님: 금테 안경
   visitorCourier: {id:'visitorCourier', kind:'pup',     shirt:'#3a7ac0', pants:'#2f4a6a', hat:'#3a7ac0', carry:'box'},
   visitorVendor:  {id:'visitorVendor',  kind:'greycat', shirt:'#5c8f5c', pants:'#3e4a44'},
   visitorFixer:   {id:'visitorFixer',   kind:'goat',    shirt:'#6f8196', pants:'#3e4c5c', hat:'#9aa2a8', carry:'tool'},
