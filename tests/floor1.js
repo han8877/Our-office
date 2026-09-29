@@ -3,7 +3,7 @@
 const { open, enter, goFloor, clickArt, suite } = require('./lib');
 (async () => {
   const T = suite('floor1');
-  const { browser, page, errors } = await open({ time: '2026-09-28T13:00:00' });
+  let { browser, page, errors } = await open({ time: '2026-09-28T13:00:00' }); let e2 = [];
   await enter(page); await goFloor(page, '1'); await page.waitForTimeout(2500);
   const S = () => page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors, out = { staff: [], guests: [] };
     for (const id in A) { const a = A[id]; if (!a.visible) continue; if (a.guest) out.guests.push({ id, shop: a.shop, ph: a.ph, sit: a.onFurn, todo: a.todo.length, c: a.tile && a.tile.c, r: a.tile && a.tile.r }); else out.staff.push(id); }
@@ -35,6 +35,9 @@ const { open, enter, goFloor, clickArt, suite } = require('./lib');
   T.check('R-도우미가 1층을 돌아다닌다', v.robot);
   let back = false; for (let i = 0; i < 30 && !back; i++) { await page.waitForTimeout(4000); back = await page.evaluate(() => { const Q = window.__f1Guests; return !!(Q.t1 && Q.t1.done) && !!(Q.sec && Q.sec.done); }); }
   T.check('둘러본 뒤엔 엘리베이터로 올라가고 끝났다고 알린다', back);
+  // 손님은 정문으로만 드나든다: 엘리베이터 앞에 손님이 없다
+  const lift = await page.evaluate(() => { const F = window.__pixOffice.floors['1'], L = F.map.LOBBY; return Object.values(F.actors).filter(a => a.guest && a.visible && a.tile && Math.abs(a.tile.c - L.c) + Math.abs(a.tile.r - L.r) <= 1).length; });
+  T.check('손님은 엘리베이터가 아니라 정문으로 다닌다', lift === 0, lift);
   // 카페 손님이 없으면 진·류·우서빙은 메뉴판 아래 직원 쉼터에 앉아 쉬고, 손님이 오면 제자리로
   await page.evaluate(() => { const F = window.__pixOffice.floors['1']; F.f1Next = performance.now() + 1e9; for (const k in F.actors) { const a = F.actors[k]; if (a.guest && a.shop === 'cafe') delete F.actors[k]; } });
   let rest = null; for (let i = 0; i < 12; i++) { await page.waitForTimeout(3000); rest = await page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors; return ['f1jin', 'f1ryu', 'f1woo'].map(k => A[k].ph + '@' + (A[k].tile ? A[k].tile.c + ',' + A[k].tile.r : '')); }); if (rest.every(x => /^rest@(34,4|33,5|34,6)$/.test(x))) break; }
@@ -48,6 +51,12 @@ const { open, enter, goFloor, clickArt, suite } = require('./lib');
   await page.waitForTimeout(1500);
   const s3 = await S();
   T.check('밤 11시: 직원도 손님도 없다', s3.staff.length === 0 && s3.guests.length === 0, JSON.stringify(s3));
+  await browser.close();
+  // 아침 8:41: 판매샵 직원(8:30~8:40 출근)은 이미 나와 있다
+  ({ browser, page, errors: e2 } = await open({ time: '2026-09-29T08:41:00' })); await enter(page); await goFloor(page, '1'); await page.waitForTimeout(2500);
+  const am = await page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors; return ['f1ham', 'f1seo'].filter(k => A[k] && A[k].visible); });
+  T.check('8:41: 함 매니저·서 스태프 출근 완료', am.length === 2, am.join(','));
+  errors.push(...e2);
   T.check('페이지 오류 없음', errors.length === 0, errors.join(' / '));
   await browser.close(); T.done();
 })();

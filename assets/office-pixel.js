@@ -577,6 +577,8 @@ var F1_CAFE_LINES=[['달빛 라떼','맛있다'],['레몬나무','진짜 레몬�
 var F1_POS={c:10,r:24,face:'up'}, F1_KIOSK=[{c:19,r:8,face:'up'},{c:20,r:8,face:'up'}], F1_RETURN={c:32,r:9,face:'right'};
 var F1_SEATS=[[24,9,'down'],[26,9,'down'],[28,9,'down'],[30,9,'down'],[24,12,'up'],[26,12,'up'],[28,12,'up'],[30,12,'up'],[20,22,'down'],[23,22,'down'],[26,22,'down'],[29,22,'down'],[20,24,'up'],[23,24,'up'],[26,24,'up'],[29,24,'up'],[29,15,'down'],[30,15,'down'],[29,17,'up'],[30,17,'up']];
 var F1_KINDS=null, F1_LOOKS={};
+// 판매샵 직원 출근: 날마다 사람마다 8:30~8:40 사이 한 시각 (문 여는 10시 전에 진열·재고 준비)
+function f1StoreIn(id,d){ return 8*60+30 + PO.hash(d.toDateString()+id)%11; }
 function f1Open(t){ return { store:t>=10*60&&t<21*60, cafe:t>=8*60&&t<22*60, storeStaff:t>=9*60+40&&t<21*60+10, cafeStaff:t>=7*60+40&&t<22*60+10 }; }
 // 손님: 동물은 직원과 겹칠 수 있어도 옷차림이 확 다르다 (사원증 없이 줄무늬·후드·멜빵 + 크로스백 + 모자·비니)
 function f1Look(i,item){ if(!F1_KINDS){ F1_KINDS=Object.keys(PO.KIND).filter(function(k){ return !PO.KIND[k].nk && ['owl','turtle','bosstiger','guardmk'].indexOf(k)<0; }); }
@@ -595,8 +597,8 @@ function f1Guest(F,now,shop){
   var a=F.actors[id]={ id:id, guest:true, shop:shop, look:li, spr:f1Look(li,shop==='store'?'basket':null), staff:false, seat:null, visible:true, leaving:false, sitting:false, onFurn:false,
     x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null, dir:'down', frame:0, blinkUntil:0, nextBlink:now+2000, bubble:null, emo:null, stepMs:300+Math.floor(Math.random()*80), name:'',
     until:0, talkUntil:0, todo:[] };
-  var M=F.map, fromLift=Math.random()<0.3, st=fromLift?M.LOBBY:M.DOOR; a.exit=Math.random()<0.7?M.DOOR:M.LOBBY;
-  placeAt(F,a,{c:st.c,r:st.r,face:fromLift?'down':'up'});
+  var M=F.map; a.exit=M.DOOR;                                                     // 손님은 정문으로만 드나든다 (엘리베이터는 직원만)
+  placeAt(F,a,{c:M.DOOR.c,r:M.DOOR.r,face:'up'});
   if(shop==='store'){ var k=2+Math.floor(Math.random()*3), pool=F1_BROWSE.slice(); for(var i=0;i<k;i++){ var j=Math.floor(Math.random()*pool.length); a.todo.push({g:pool.splice(j,1)[0], ms:5000+Math.random()*8000, talk:Math.random()<0.35?lab5Pick(F1_BUY_LINES):null}); }
     if(Math.random()<0.75) a.todo.push({g:F1_POS, ms:4500, pay:true}); }
   else { a.todo.push({g:lab5Pick(F1_KIOSK), ms:3500}); a.todo.push({g:{c:27+Math.floor(Math.random()*4),r:6,face:'up'}, ms:5000+Math.random()*4000, pickup:true}); }
@@ -695,7 +697,7 @@ function f1Tick(F,now,off){
   if(nC0>0 || !O.cafe) F.qSince=0; else if(!F.qSince) F.qSince=now;
   var quiet = !!F.qSince && now-F.qSince>15000;                                   // 카페 손님이 15초째 없다 → 직원 쉼터로
   // 직원
-  Object.keys(F1_STAFF).forEach(function(id){ var S=F1_STAFF[id], a=npcActor(F,id,S.look,S.name), on=S.shop==='store'?O.storeStaff:O.cafeStaff;
+  Object.keys(F1_STAFF).forEach(function(id){ var S=F1_STAFF[id], a=npcActor(F,id,S.look,S.name), on=S.shop==='store'?(t>=f1StoreIn(id,d) && t<21*60+10):O.cafeStaff;
     if(!a.ph){ if(on){ a.ph='work'; a.visible=true; placeAt(F,a,S.home); a.until=now+8000+Math.random()*12000; a.nextTalk=now+3000+Math.random()*9000; } else { a.ph='off'; a.visible=false; } }
     if(a.ph==='off' && on){ a.ph='in'; a.visible=true; a.stepMs=300; placeAt(F,a,{c:M.LOBBY.c,r:M.LOBBY.r,face:'down'}); setGoal(F,a,S.home,now); a.bubble=['출근했습니다~']; a.talkUntil=now+2400; }
     if(a.ph==='in' && !a.path){ a.ph='work'; a.until=now+15000+Math.random()*15000; }
@@ -1423,8 +1425,8 @@ var NPC_INFO={
   visitorGuard:{ name:'경비', role:'건물 경비', bio:'원숭이. 30분마다 옥상을 돌고, 주말엔 당직 직원과 함께 사무실을 지켜요. 어항 밥은 경비 담당.', hours:'매시 15분·45분 옥상 순찰' },
   boss:     { name:'사장님', role:'(주)끄적끄적문구 대표', bio:'호랑이. 외부 약속이 많아서 구내식당엔 일주일에 세 번쯤 오세요.', hours:'' },
   robot:    { name:'R-도우미', role:'쾌적한 환경 담당 로봇', bio:'온도·습도·미세먼지를 살피며 층을 돌아다녀요. 식당에선 식사 예절도 챙겨요.', hours:'언제나 근무 중' },
-  f1ham:    { name:'함 매니저', role:'1층 끄적끄적문구 스토어 · 매니저', bio:'코알라. 계산대를 지키며 손님을 맞고, 틈틈이 진열대를 정리해요. 선물 포장 솜씨가 좋아요.', hours:'매일 09:40 출근 · 21:10 퇴근 (영업 10~21시)' },
-  f1seo:    { name:'서 스태프', role:'1층 아틀리에 · 스태프', bio:'양. 커튼 너머 공방에서 리소 인쇄를 하고 커스텀 노트를 재단해요. 종이학 접기가 특기예요.', hours:'매일 09:40 출근 · 21:10 퇴근' },
+  f1ham:    { name:'함 매니저', role:'1층 끄적끄적문구 스토어 · 매니저', bio:'코알라. 계산대를 지키며 손님을 맞고, 틈틈이 진열대를 정리해요. 선물 포장 솜씨가 좋아요.', hours:'매일 08:30~08:40 사이 출근 · 21:10 퇴근 (영업 10~21시)' },
+  f1seo:    { name:'서 스태프', role:'1층 아틀리에 · 스태프', bio:'양. 커튼 너머 공방에서 리소 인쇄를 하고 커스텀 노트를 재단해요. 종이학 접기가 특기예요.', hours:'매일 08:30~08:40 사이 출근 · 21:10 퇴근' },
   f1jin:    { name:'바리스타 진', role:'1층 MOON 9 COFFEE · 바리스타', bio:'코끼리. 에스프레소 머신 담당. 긴 코로 원두 향을 제일 먼저 맡아요. 손님이 없으면 직원 쉼터에서 책을 읽어요.', hours:'매일 07:40 출근 · 22:10 퇴근 (영업 8~22시)' },
   f1ryu:    { name:'바리스타 류', role:'1층 MOON 9 COFFEE · 바리스타', bio:'오리. 픽업대에서 음료 이름을 또박또박 불러 줘요. 나인 콜드브루를 제일 좋아해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
   f1woo:    { name:'우서빙', role:'1층 MOON 9 COFFEE · 홀 서빙', bio:'하마. 식물에 물을 주고, 테이블을 닦고, 쓰레기통을 비우고, 갤러리 그림도 챙겨요. 손님 질문엔 뭐든 대답해 줘요. 쉴 땐 직원 쉼터에서 뜨개질을 해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
