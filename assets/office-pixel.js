@@ -454,7 +454,7 @@ function lab5Snap(M,staff){ var c=document.createElement('canvas'); c.width=W; c
   list.sort(function(p,q){ return p.sy-q.sy; }); list.forEach(function(it){ try{ if(it.img) g.drawImage(it.img,it.x,it.y); else if(it.draw) it.draw(g); }catch(e){} });
   return c; }
 function lab5Screens(){ var c3=lab5Snap(PO.MAP3,true);
-  PO.STATE.lab5Screens=[{img:c3,sx:0,sy:0,sw:W,sh:H,label:'3F'},{img:lab5Snap(M2,false),sx:0,sy:0,sw:W,sh:H,label:'2F'},{img:lab5Snap(PO.MAPR,false),sx:0,sy:0,sw:W,sh:H,label:'L'},{img:lab5Snap(PO.MAPB,false),sx:0,sy:0,sw:W,sh:H,label:'B1'},{img:c3,sx:26*T,sy:16*T,sw:300,sh:230,label:''}];
+  PO.STATE.lab5Screens=[{img:c3,sx:0,sy:0,sw:W,sh:H,label:'3F'},{img:lab5Snap(M2,false),sx:0,sy:0,sw:W,sh:H,label:'2F'},{img:lab5Snap(PO.MAPR,false),sx:0,sy:0,sw:W,sh:H,label:'R'},{img:lab5Snap(PO.MAPB,false),sx:0,sy:0,sw:W,sh:H,label:'B1'},{img:c3,sx:26*T,sy:16*T,sw:300,sh:230,label:''}];
   PO.STATE.lab5Sketch=c3; }
 function lab5Talk(a,now,lines,emos,gapMin,gapMax){
   if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.emo=null; a.talkUntil=0; a.nextTalk=now+gapMin+Math.random()*(gapMax-gapMin); }

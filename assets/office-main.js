@@ -9956,7 +9956,7 @@
   })();
 
   // ===== 엘리베이터: 층을 오간다 =====
-  // 지금 열려 있는 층은 2층(안내·휴게) · 3층(사무실) · 옥상 정원(L)이고,
+  // 지금 열려 있는 층은 2층(안내·휴게) · 3층(사무실) · 옥상 정원(R)이고,
   // 나머지는 눌러도 '관계자 외 출입금지'만 뜬다.
   var FLOORS = [
     { k:'B1', name:'구내식당' },
@@ -9986,7 +9986,7 @@
   if(elevGrid){
     elevGrid.innerHTML = FLOORS.map(function(f){
       return '<button type="button" class="floorBtn' + (isOpenFloor(f.k) ? ' open' : '') +
-             '" data-floor="' + f.k + '" title="' + floorLabel(f.k) + '">' + f.k + '</button>';
+             '" data-floor="' + f.k + '" title="' + floorLabel(f.k) + '">' + (f.k === 'L' ? 'R' : f.k) + '</button>';   // 옥상은 R(Roof)로 보인다 (내부 키는 L 그대로)
     }).join('');
   }
   function syncElevUI(){

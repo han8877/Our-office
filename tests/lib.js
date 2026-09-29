@@ -37,7 +37,7 @@ async function enter(page) {
 async function goFloor(page, key) {
   await page.evaluate(() => document.getElementById('elevBtn').click());
   await page.waitForTimeout(300);
-  await page.evaluate(k => { [...document.querySelectorAll('#elevGrid button')].find(b => b.textContent.trim() === k).click(); }, key);
+  await page.evaluate(k => { [...document.querySelectorAll('#elevGrid button')].find(b => b.getAttribute('data-floor') === k).click(); }, key);
   await page.waitForTimeout(600);
 }
 
