@@ -467,12 +467,13 @@ function lab5Tick(F,now,off){
   if(!F.nameT || now-F.nameT>5000){ F.nameT=now; var nm={}; (B.staff||[]).forEach(function(s){ nm[s.id]=s.name; }); PO.STATE.lab5Names=nm; }
   var nam=npcActor(F,'nam',NAM_LOOK,'남박사'), han=npcActor(F,'han',HAN_LOOK,'한교수');
   if(nam.ph && han.ph) lab5Meet(F,now,t,nam,han,M,d);
+  if(nam.ph) f5Visits(F,now,off,nam,M);
   // 남박사: 출근 → 돌아다니기 → 퇴근
   var namIn = 8*60 + PO.hash(d.toDateString()+'nam')%31;                            // 출근: 날마다 8:00~8:30 사이 한 시각
   var namHere = work && t>=namIn && t<18*60+30;
   if(!nam.ph){ if(namHere){ nam.ph='work'; nam.visible=true; var s0=lab5Pick(NAM_SPOTS); placeAt(F,nam,{c:s0.c,r:s0.r,face:s0.face}); nam.until=now+3000; nam.nextTalk=now+4000; } else { nam.ph='off'; nam.visible=false; } }
   if(nam.ph==='off' && namHere){ nam.ph='work'; nam.visible=true; nam.stepMs=320; placeAt(F,nam,{c:M.LOBBY.c,r:M.LOBBY.r,face:'down'}); nam.bubble=['좋은 아침!','오늘의 색은…']; nam.talkUntil=now+2600; nam.until=now+1500; nam.wait=false; }
-  if(nam.ph==='meet' && !namHere){ nam.ph='work'; F.meeting=false; }
+  if((nam.ph==='meet'||nam.ph==='chat') && !namHere){ nam.ph='work'; nam.plateDy=0; F.meeting=false; }
   if(nam.ph==='work'){
     if(!namHere){ nam.ph='out'; nam.bubble=['오늘도 수고했다','종이들아']; nam.talkUntil=now+2600; nam.leaving=true; nam.stepMs=280; setGoal(F,nam,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!nam.path){ nam.visible=false; nam.leaving=false; nam.ph='off'; } }
     else {
@@ -760,6 +761,98 @@ function f1Tick(F,now,off){
   if(off){ for(var sid in F1_STAFF){ var sa=A[sid]; if(sa && sa.visible && sa.path) step(sa,now); } }
 }
 
+// ---- 2층 로비 협업 회의: 3층 직원이 내려와 거래처 손님과 로비 곳곳에서 회의한다 (window.__f2Guests) ----
+var F2M_VENUES=[
+  { name:'sofa',   a:{c:11,r:10,face:'down',sit:true,pt:{x:11*T+32-17,feet:11*T+1}}, b:{c:13,r:10,face:'down',sit:true,pt:{x:11*T+96-17,feet:11*T+1}}, open:[['소파가','편하네요'],['여기 분위기','좋죠?']] },
+  { name:'sofa2',  a:{c:11,r:18,face:'up',sit:true,pt:{x:11*T+32-17,feet:18*T+26}}, b:{c:13,r:18,face:'up',sit:true,pt:{x:11*T+96-17,feet:18*T+26}}, open:[['조형물 보면서','얘기하시죠'],['금빛 고양이,','인상적이네요']] },
+  { name:'bar',    a:{c:27,r:13,face:'up',sit:true,pt:{x:27*T+16-17,feet:13*T+28}}, b:{c:29,r:13,face:'up',sit:true,pt:{x:29*T+16-17,feet:13*T+28}}, open:[['자몽 에이드','한 잔 하시죠'],['바에서 미팅이라니','좋은데요?']] },
+  { name:'tank',   a:{c:11,r:23,face:'down'}, b:{c:13,r:23,face:'down'}, open:[['어항 보면서 하니까','머리가 맑아지네요'],['물고기 색 조합,','시안에 쓰고 싶어요']] },
+  { name:'art',    a:{c:26,r:4,face:'up'}, b:{c:28,r:4,face:'up'}, open:[['이 그림처럼','색을 대담하게 가 볼까요?'],['파랑이','아주 깊네요']] },
+  { name:'garden', a:{c:25,r:20,face:'right'}, b:{c:26,r:20,face:'left'}, open:[['정원 쪽이','조용하네요'],['석등이','운치 있어요']] }
+];
+var F2M_TALK=[[['오늘 와 주셔서','감사합니다'],['저희가 더 감사하죠.','로비가 멋지네요']],[['콜라보 노트','시안 가져왔어요'],['오, 표지 패턴이','정말 좋네요']],
+  [['납기는','다음 달 말이면 될까요?'],['네, 2주 여유 두고','진행하시죠']],[['샘플은 몇 부','보내 드릴까요?'],['색상별로','세 부씩이요']],
+  [['초도 수량은','3천 부로 생각해요'],['반응 보고','추가 생산하시죠']],[['포장은 친환경','소재로 가려고요'],['좋네요.','인증서도 챙겨 드릴게요']],
+  [['팝업 스토어','같이 하실래요?'],['1층 매장에서요?','너무 좋죠!']],[['로고 위치는','오른쪽 아래로 할게요'],['브랜드 가이드에','맞춰 보겠습니다']],
+  [['단가 조정','가능할까요?'],['물량을 늘리면','검토해 볼게요']],[['이번 시즌','키 컬러는요?'],['먹색이랑','은행잎 노랑이요']],
+  [['금박','가능할까요?'],['박은 한 도까지만','추천드려요']],[['계약서 초안','메일로 보낼게요'],['검토하고','회신 드릴게요']],
+  [['MOON 9 컵에','저희 패턴 넣으면 어때요?'],['카페랑 굿즈라니,','재밌겠네요']],[['시즌 한정으로','갈까요, 상시로 갈까요?'],['한정이 반응이','더 좋더라고요']],
+  [['리소 인쇄로','포스터 뽑아 볼까요?'],['1층 공방에서','바로 되죠?']],[['가격대는','만 원 안쪽이 좋겠어요'],['선물용이면','조금 올려도 돼요']]];
+var F2M_TEAM={
+  note:[[['노트 제본은','실제본으로 가요'],['펼침성이','좋겠네요']],[['내지 줄 간격','7mm 어때요?'],['필기엔 딱이죠']],[['표지 두께를','한 단계 올릴까요?'],['들었을 때','묵직한 게 좋아요']]],
+  sticker:[[['스티커 칼선','샘플이에요'],['모서리 라운드가','귀엽네요']],[['홀로그램 용지','써 볼까요?'],['빛 받으면','예쁘겠어요']],[['씰 스티커도','세트로 갈까요?'],['다이어리 꾸미기용으로','딱이네요']]],
+  pr:[[['SNS 캠페인','같이 하시죠'],['해시태그는','#끄적끄적 어때요?']],[['보도자료 문구','확인 부탁드려요'],['제목이','딱 좋네요']],[['인플루언서 협찬','리스트 드릴게요'],['문구 덕후분들로','부탁드려요']]],
+  biz:[[['정산은','월말 기준이에요'],['세금계산서','바로 발행할게요']],[['견적서','다시 드릴게요'],['부가세 포함으로','부탁드려요']],[['결제 조건은','60일로 가능할까요?'],['30일이면','바로 진행돼요']]],
+  lead:[[['전체 톤은','차분하게 가죠'],['디자인실장님 감각','믿습니다']],[['브랜드 방향이','명확하네요'],['각지본색이','저희 원칙이라서요']],[['패턴은 굵게,','색은 두 가지만'],['덜어낼수록','세련되네요']]]
+};
+var F2M_BYE=[[['그럼 다음 주에','다시 뵐게요'],['좋습니다,','연락드릴게요']],[['샘플 나오면','바로 보내 드릴게요'],['기대하겠습니다!']],[['오늘 회의','정말 좋았어요'],['저도요.','잘 부탁드립니다']]];
+var F2M_CLIENTS=[['7사 문대리','fox3'],['8사 오과장','bear3'],['디자인랩 한실장','calico'],['9사 이팀장','dog3'],['브랜드 협업 차대표','greycat'],['인쇄소 곽실장','goat'],['유통사 백과장','rabbit3'],['굿즈 스튜디오 모실장','pup']];
+function f2mClient(i){ var cl=F2M_CLIENTS[i%F2M_CLIENTS.length], sh=['#3a4a6a','#5a5f6a','#4a3a3a','#2e3440','#6a5a4a'][i%5];
+  return { name:cl[0], look:{ id:'f2client'+i, kind:cl[1], shirt:sh, pants:'#2e3038', tie:['#c8403a','#e8c46a','#5a8a6a','#8aa0c0'][i%4], item:'case' } }; }
+function f2Meets(F,now,off){
+  var Q=window.__f2Guests=window.__f2Guests||{}, A=F.actors;
+  for(var key in Q){ var q=Q[key]; if(q.done) continue;
+    var sid='m_'+key, cid='mc_'+key, s=A[sid], c=A[cid];
+    if(!s){ var look=STAFFLOOK[q.id]; if(!look){ q.done=true; continue; }
+      var used={}; for(var k in A){ if(A[k].venue) used[A[k].venue.name]=1; }
+      var free=F2M_VENUES.filter(function(v){ return !used[v.name]; }); if(!free.length){ q.done=true; continue; }
+      var ven=lab5Pick(free), ci=Math.floor(Math.random()*F2M_CLIENTS.length), cl=f2mClient(ci), cp={}; for(var kk in look) cp[kk]=look[kk];
+      s=npcActor(F,sid,cp,staffName(q.id)); s.sid=q.id; s.venue=ven; s.visible=true; s.stepMs=300; placeAt(F,s,{c:F.lobby.c,r:F.lobby.r,face:'down'}); setGoal(F,s,ven.a,now);
+      c=npcActor(F,cid,cl.look,cl.name); c.plateDy=16; c.venue=ven; c.visible=false; c.stepMs=320; c.until=now+2600;
+      var talk=F2M_TALK.slice().sort(function(){ return Math.random()-0.5; }).slice(0,6), team=F2M_TEAM[q.team]||[];
+      if(team.length) talk.splice(2,0,lab5Pick(team),lab5Pick(team));
+      s.script=[ven.open].concat(talk).concat([lab5Pick(F2M_BYE)]); s.si=0; s.ph='go'; s.next=0; }
+    if(!c.visible && now>c.until && s.ph==='go'){ c.visible=true; placeAt(F,c,{c:F.lobby.c,r:F.lobby.r,face:'down'}); setGoal(F,c,s.venue.b,now); }   // 손님은 조금 뒤에 엘리베이터에서
+    if(off){ if(s.path) step(s,now); if(c.path) step(c,now); }
+    [s,c].forEach(function(a){ if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; } });
+    if(s.ph==='go' && c.visible && !s.path && !c.path){ s.ph='talk'; s.next=now+800; }
+    else if(s.ph==='talk'){
+      if(now>s.next){ if(s.si>=s.script.length){ s.ph='out'; s.leaving=true; c.leaving=true; s.stepMs=280; c.stepMs=300; setGoal(F,s,{c:F.lobby.c,r:F.lobby.r,face:'up'},now); setGoal(F,c,{c:F.lobby.c,r:F.lobby.r+1,face:'up'},now); if(!s.path) s.visible=false; if(!c.path) c.visible=false; }
+        else { var ex=s.script[s.si++], first=(s.si%3===0)?c:s, second=first===s?c:s; first.bubble=ex[0]; first.talkUntil=now+3300; s.reply=ex[1]; s.replyBy=second; s.replyAt=now+3500; s.next=now+8200+Math.random()*2500; } }
+      if(s.replyAt && now>s.replyAt){ s.replyBy.bubble=s.reply; s.replyBy.talkUntil=now+3300; s.replyAt=0; } }
+    else if(s.ph==='out'){ if(!s.visible && !c.visible){ delete A[sid]; delete A[cid]; q.done=true; } }
+  }
+}
+
+// ---- 5층 방문: 최실장·팀장이 올라와 색채·종이 연구소에서 남박사와 이야기한다 (window.__f5Guests) ----
+var F5V_PAIRS=[{ n:{c:16,r:8,face:'left'}, g:{c:15,r:8,face:'right'} },{ n:{c:20,r:12,face:'left'}, g:{c:19,r:12,face:'right'} },{ n:{c:11,r:13,face:'right'}, g:{c:12,r:13,face:'left'} }];
+var F5V_WORK=[[['남박사님, 가을 노트','표지색 받으러 왔어요'],['은행잎 노랑 17번이','제일 곱지요']],[['봉투 종이 80그램이면','너무 얇을까요?'],['편지지는 80, 봉투는 100.','천천히, 천천히.']],
+  [['스티커 용지 광택이','너무 세요'],['무광 코팅 견본을','드릴게요']],[['먹색 17호가','인쇄하면 탁해져요'],['종이가 숨 쉬게','한 톤만 빼 보세요']],
+  [['신상 노트 시안','봐 주실래요?'],['쪽빛은 오후에','더 예뻐요']],[['한지 결 방향이','인쇄에 영향 있나요?'],['결대로 찢어야 예뻐요.','인쇄도 마찬가지고요']],
+  [['홍보용 엽서','색감 좀 봐 주세요'],['빨강이 너무 빨갛네요.','조금만 식혀요']],[['단가 때문에','종이를 바꿔야 할 것 같아요'],['싼 종이는','색을 먹어요']],
+  [['내년 컬러 트렌드','어떻게 보세요?'],['흙색이 돌아와요.','먹색이랑 같이']],[['1층 매장 포장지','색 좀 골라 주세요'],['크림색 바탕에','쪽빛 리본이요']]];
+var F5V_MYST=[[['여기 올 때마다','선반 위치가 달라요'],['…선반은 원래','움직이는 거예요']],[['엘리베이터에 6층 불이','잠깐 켜졌어요'],['6층은…','아직이에요']],
+  [['아까 복도에서','노크 소리 들었어요'],['종이가','숨 쉬는 소리예요']],[['R-도우미가 5층엔','안 오네요'],['여긴 다른 친구가','있어서요']],
+  [['이 색 번호는','왜 비어 있어요?'],['비워 둔 거예요.','이름이 오면 채우죠']],[['남박사님은','몇 년째 여기 계세요?'],['…글쎄요.','5시 46분부터?']],
+  [['아래층 문은','늘 잠겨 있네요'],['거긴 종이 창고예요.','…그냥 창고']],[['캡슐이라는 게','뭐예요?'],['캡슐 커피 얘기죠?','하하, 천천히.']]];
+var F5V_HAN=[[['한교수님은','잘 계세요?'],['쉿…','다른 직원들에게는 비밀입니다']],[['한교수님','요즘 건강하시죠?'],['쉿.','다른 직원들에게는 비밀입니다']],[['혹시 한교수님','오늘 나오셨어요?'],['…쉿,','다른 직원들에게는 비밀입니다']]];
+var F5V_BYE=[[['그럼 내려가 볼게요'],['천천히, 천천히.','조심히 가요']],[['샘플 감사합니다!'],['색은 거짓말을','안 해요']],[['다음에 또 올게요'],['선반은','살살 밀고 가요']]];
+function f5Visits(F,now,off,nam,M){
+  var Q=window.__f5Guests=window.__f5Guests||{}, A=F.actors;
+  for(var key in Q){ var q=Q[key]; if(q.done) continue;
+    var vid='v5_'+key, v=A[vid];
+    if(!v){ var look=STAFFLOOK[q.id]; if(!look){ q.done=true; continue; }
+      var cp={}; for(var kk in look) cp[kk]=look[kk];
+      v=npcActor(F,vid,cp,staffName(q.id)); v.sid=q.id; v.visible=true; v.stepMs=300; placeAt(F,v,{c:M.LOBBY.c,r:M.LOBBY.r,face:'down'});
+      v.pair=lab5Pick(F5V_PAIRS); setGoal(F,v,v.pair.g,now); v.ph='go';
+      var sc=F5V_WORK.slice().sort(function(){ return Math.random()-0.5; }).slice(0,4).concat(F5V_MYST.slice().sort(function(){ return Math.random()-0.5; }).slice(0,2));
+      sc.sort(function(){ return Math.random()-0.5; }); if(Math.random()<0.65) sc.splice(2+Math.floor(Math.random()*3),0,lab5Pick(F5V_HAN));   // 가끔 한교수 안부 → 비밀입니다
+      v.script=sc.concat([lab5Pick(F5V_BYE)]); v.si=0; }
+    if(off && v.path) step(v,now);
+    [v,nam].forEach(function(a){ if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; } });
+    if(v.ph==='go' && !v.path){
+      if(nam.visible && (nam.ph==='work' || nam.ph==='chat')){ if(nam.ph!=='chat'){ nam.ph='chat'; nam.plateDy=16; nam.wait=false; nam.stepMs=320; setGoal(F,nam,v.pair.n,now); } v.ph='wait'; v.until=now+25000; }
+      else { v.bubble=['남박사님','바쁘신가 보네']; v.talkUntil=now+2600; v.ph='out'; v.leaving=true; setGoal(F,v,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!v.path) v.visible=false; } }
+    else if(v.ph==='wait'){ if(nam.ph==='chat' && !nam.path){ v.ph='talk'; v.next=now+600; nam.bubble=[staffName(q.id)+'님,','어서 와요']; nam.talkUntil=now+2400; } else if(now>v.until || nam.ph!=='chat'){ v.ph='bye'; v.si=v.script.length; v.next=0; } }
+    else if(v.ph==='talk' || v.ph==='bye'){
+      if(now>v.next){ if(v.si>=v.script.length){ v.ph='out'; v.leaving=true; v.stepMs=280; setGoal(F,v,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!v.path) v.visible=false;
+          if(nam.ph==='chat'){ nam.ph='work'; nam.plateDy=0; nam.wait=false; nam.until=now+4000; } }
+        else { var ex=v.script[v.si++]; v.bubble=ex[0]; v.talkUntil=now+3300; v.reply=ex[1]; v.replyAt=now+3500; v.next=now+8500+Math.random()*2500; } }
+      if(v.replyAt && now>v.replyAt){ nam.bubble=v.reply; nam.talkUntil=now+3300; v.replyAt=0; } }
+    else if(v.ph==='out'){ if(!v.visible){ delete A[vid]; q.done=true; if(nam.ph==='chat'){ nam.ph='work'; nam.plateDy=0; nam.wait=false; } } }
+  }
+}
+
 // ---- 한 프레임 ----
 function activeFloor(){
   for(var k in FLOORS){ var F=FLOORS[k]; if(F.svg && getComputedStyle(F.svg).display!=='none') return F; }
@@ -860,7 +953,7 @@ window.__npcStatus=function(id){
     if(!work) return { online:false, text:'휴무' };
     return { online:false, text: t<9*60 ? '출근 전' : '퇴근' }; }
   if(id==='nam'){ var na=FLOORS['5'] && FLOORS['5'].actors.nam, dn=new Date(), wk=B.workDay?B.workDay():true, ni=8*60+PO.hash(dn.toDateString()+'nam')%31;
-    if(na && na.visible && na.ph!=='out') return { online:true, text: na.ph==='meet' ? '회의 중' : '' };
+    if(na && na.visible && na.ph!=='out') return { online:true, text: na.ph==='meet' ? '회의 중' : na.ph==='chat' ? '손님과 이야기 중' : '' };
     if(!wk) return { online:false, text:'휴무' };
     if(t>=ni && t<18*60+30) return { online:true, text:'' };
     return { online:false, text: t<ni ? '출근 전' : '퇴근' }; }
@@ -1298,6 +1391,8 @@ function catchUp(now){
   }
   var F2=FLOORS['2']; if(F2 && F2.actors){ ['npcBartender','npcServer'].forEach(function(k){ var n=F2.actors[k]; if(n && n.path){ n.stepStart=now-60000; } }); }   // 걷던 길은 끝까지 간 것으로
   // 5층: 남박사·한교수는 다음 틱에 지금 시각대로 다시 자리 잡고(근무 중이면 연구소, 아니면 없음), 청소기는 밤이면 충전 독에, R-0는 제자리에서 다시
+  var FT=FLOORS['2']; if(FT && FT.actors){ var Q2=window.__f2Guests||{}; for(var k3 in FT.actors){ if(/^mc?_/.test(k3)){ var m3=FT.actors[k3]; delete FT.actors[k3]; } } for(var q2 in Q2) Q2[q2].done=true; }
+  var FV=FLOORS['5']; if(FV && FV.actors){ var Q5=window.__f5Guests||{}; for(var k5 in FV.actors){ if(/^v5_/.test(k5)) delete FV.actors[k5]; } for(var q5 in Q5) Q5[q5].done=true; }
   var F1=FLOORS['1'];
   if(F1 && F1.actors){ for(var k1 in F1.actors){ var n1=F1.actors[k1]; if(n1.guest) delete F1.actors[k1]; else { n1.ph=null; n1.path=null; n1.pend=null; n1.leaving=false; n1.bubble=null; n1.talkUntil=0; n1.until=0; } } F1.f1Warm=false; F1.f1Next=0;
     var Q1=window.__f1Guests||{}; for(var k2 in F1.actors){ var v1=F1.actors[k2]; if(v1.qkey){ if(Q1[v1.qkey]) Q1[v1.qkey].done=true; delete F1.actors[k2]; } } if(F1.robot){ F1.robot.path=null; F1.robot.nextMove=0; F1.robot.bubble=null; } }
@@ -1335,7 +1430,7 @@ function frame(now){
   if(FLOORS['1'] && FLOORS['1'].svg){ try{ f1Tick(FLOORS['1'],now,F!==FLOORS['1']); }catch(e){ if(window.console) console.warn('pixOffice f1', e); } }
   if(FLOORS['5'] && FLOORS['5'].svg){ try{ lab5Tick(FLOORS['5'],now,F!==FLOORS['5']); }catch(e){ if(window.console) console.warn('pixOffice lab5', e); } }
   if(FLOORS.L && FLOORS.L.svg){ try{ roofTick(FLOORS.L,now,F!==FLOORS.L); }catch(e){ if(window.console) console.warn('pixOffice roof', e); } }
-  if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
+  if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); f2Meets(FLOORS['2'],now,F!==FLOORS['2']); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
   var moving=false;
   for(var id in F.actors){ var ma=F.actors[id]; if(ma.visible){ step(ma,now); if(ma.path || (ma.tx!=null && Math.abs(ma.x-ma.tx)>=1)) moving=true; } }
   step(F.robot,now); if(F.robot && F.robot.path) moving=true;
@@ -1384,7 +1479,7 @@ function frame(now){
   // 간판 · 명패
   if(F.key==='5'){
     drawPlate(g,19*T+32,19*T+20,'남박사'); drawPlate(g,19*T+32,27*T+20,'한교수');
-    for(var lid in F.actors){ var la=F.actors[lid]; if(la.visible&&la.name&&!(la.onFurn&&!la.path)) drawPlate(g,Math.round(la.x)+17,Math.round(la.feet)+3,la.name,true); }
+    for(var lid in F.actors){ var la=F.actors[lid]; if(la.visible&&la.name&&!(la.onFurn&&!la.path)) drawPlate(g,Math.round(la.x)+17,Math.round(la.feet)+3+(la.plateDy||0),la.name,true); }
   } else if(F.key==='3'){
     var sg=PO.SIGNS[0];
     if(sg){ g.font=FONT; g.textBaseline='middle'; g.textAlign='center'; var nm=F.company||sg[0];
@@ -1396,7 +1491,7 @@ function frame(now){
   } else {
     drawPlate(g,POSTS2.yun.plateX,POSTS2.yun.plateY,'윤안내'); drawPlate(g,POSTS2.kang.plateX,POSTS2.kang.plateY,'강안내');
     drawPlate(g,POSTS2.guard.plateX,POSTS2.guard.plateY,'보안');
-    for(var vid in F.actors){ var va=F.actors[vid]; if(va.visible&&va.name) drawPlate(g,Math.round(va.x)+17,Math.round(va.feet)+(va.onFurn&&!va.path?6-sitLift(va):3),va.name,true); }
+    for(var vid in F.actors){ var va=F.actors[vid]; if(va.visible&&va.name) drawPlate(g,Math.round(va.x)+17,Math.round(va.feet)+(va.onFurn&&!va.path?6-sitLift(va):3)+(va.plateDy||0),va.name,true); }   // plateDy: 나란히 선 둘의 이름표가 겹치지 않게
   }
   // 말풍선 · 감정
   var talkers=[]; for(var tid in F.actors){ var ta=F.actors[tid]; if(ta.visible&&(ta.bubble||ta.emo)) talkers.push(ta); }
@@ -1451,6 +1546,7 @@ var NPC_INFO={
 };
 // 그림 속 사람을 눌렀을 때: 직원이면 원래 프로필, 아니면 짧은 소개 카드
 function actorWho(F,a){
+  if((F.key==='2'||F.key==='5') && a.sid) return {staff:a.sid};
   if(F.key==='2'){ if(a.id==='npcBartender') return {npc:'bartender'}; if(a.id==='npcServer') return {npc:'server'}; if(a.id==='yun'||a.id==='kang') return {npc:a.id};
     if(a.id==='guard') return {npc:a.lookId==='guardLeo'?'guardLeo':'guard'}; return {npc:'visitor', name:a.name}; }
   if(F.key==='5'){ return NPC_INFO[a.id] ? {npc:a.id} : null; }

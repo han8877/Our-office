@@ -2,7 +2,7 @@
 // 테스트 전부 돌리기:  node tests/run-all.js
 const { spawnSync } = require('child_process');
 const path = require('path');
-const TESTS = ['smoke', 'reach', 'sprites', 'cafeteria', 'lab5', 'floor1', 'menu', 'backup'];
+const TESTS = ['smoke', 'reach', 'sprites', 'cafeteria', 'lab5', 'floor1', 'visits', 'menu', 'backup'];
 let failed = [];
 for (const t of TESTS) {
   console.log('\n▶ ' + t);

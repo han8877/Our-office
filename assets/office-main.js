@@ -1837,6 +1837,69 @@
   }
   setInterval(function(){ if(Math.random() < 0.14) startF1Trip(); }, 60000);
 
+  // ===== 2층 로비에서 거래처와 협업 회의 · 5층 연구소에 들르기 =====
+  // 2층: 근무 중 가끔 한 명이 내려가 거래처 손님과 로비 곳곳(소파·바·어항 앞·아트 월 앞·독서 코너)에서 회의하고 온다 (__f2Guests)
+  // 5층: 최실장·팀장들이 가끔 올라가 남박사와 색채·종이 이야기를 나누고 온다 (__f5Guests, 남박사가 연구소에 있을 때만)
+  var F2M_GO = ['2층에서 거래처 미팅 있어요', '협업 회의 다녀올게요', '로비에서 손님 만나고 올게요', '샘플 들고 미팅 다녀옵니다'];
+  var F2M_BACK = ['미팅 잘 끝났어요!', '협업 건 진행하기로 했어요', '샘플 반응 좋았어요', '다음 주에 한 번 더 보기로 했어요'];
+  var F5V_GO = ['5층 연구소 좀 다녀올게요', '남박사님께 색 샘플 받으러 가요', '종이 견본 확인하고 올게요'];
+  var F5V_BACK = ['색 샘플 받아 왔어요', '남박사님은 여전하시네', '…5층은 늘 조용하네요', '종이 견본 확정했어요'];
+  var LEAD_IDS = ['kobujang', 'kimnote', 'nabujang', 'jungsti', 'yoohongbo'];
+  var tripF2On = false, tripF5On = false, f5Day = '', f5Count = 0;
+  function floorTrip(s, qname, key, q, maxMin, goLines, backLines, emoji, logText, done){
+    var el = charEl(s.id);
+    markBusy(s.id); raiseChar(s);
+    showBubble(s, goLines[Math.floor(Math.random()*goLines.length)]);
+    if(typeof logDayEvent === 'function') logDayEvent(emoji, josa(s.name,'이/가') + ' ' + logText);
+    function fin(){ clearBusy(s.id); done(); }
+    travelTo(s, {x:ENTRANCE.x, y:ENTRANCE.y}, 62, function(){
+      if(!el.classList.contains('present')){ fin(); return; }
+      el.classList.add('onRoof');
+      var Q = window[qname] = window[qname] || {}; Q[key] = q;
+      var t0 = Date.now();
+      (function wait(){
+        var cur = Q[key];
+        if(cur && !cur.done && Date.now()-t0 < maxMin*60000){ setTimeout(wait, 1000); return; }
+        delete Q[key];
+        el.classList.remove('onRoof');
+        if(!el.classList.contains('present')){ fin(); return; }
+        showBubble(s, backLines[Math.floor(Math.random()*backLines.length)]);
+        travelTo(s, {x:s.x, y:s.y}, 62, function(){ lowerChar(s); if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y}; fin(); });
+      })();
+    });
+  }
+  function tripPool(ids){
+    return staff.filter(function(s){
+      if(ids && ids.indexOf(s.id) < 0) return false;
+      var el = charEl(s.id);
+      return el && el.classList.contains('present') && !el.classList.contains('onRoof')
+        && !isBusy(s.id) && !stretchIds[s.id] && !errandActive[s.id] && !roofTrip[s.id];
+    });
+  }
+  function workHours(){ var d = new Date(), t = d.getHours()*60 + d.getMinutes();
+    return !overtimeMode && !isNonWorkingDay() && !wanderOn && t >= 10*60 && t < 17*60+30 && !(t >= 11*60+50 && t < 13*60+5); }
+  function startF2Meeting(){
+    if(tripF2On || !workHours()) return;
+    var pool = tripPool(null); if(!pool.length) return;
+    var s = pool[Math.floor(Math.random()*pool.length)];
+    tripF2On = true;
+    floorTrip(s, '__f2Guests', 'meet_' + s.id, { kind:'meet', id:s.id, name:s.name, team:s.teamKey }, 10, F2M_GO, F2M_BACK, '🤝',
+      '2층 로비에서 거래처와 협업 회의를 합니다', function(){ tripF2On = false; });
+  }
+  function startF5Visit(){
+    var dk = dateKey(); if(f5Day !== dk){ f5Day = dk; f5Count = 0; }
+    if(tripF5On || f5Count >= 4 || !workHours()) return;
+    var ns = (typeof window.__npcStatus === 'function') ? window.__npcStatus('nam') : null;
+    if(!ns || !ns.online || ns.text) return;                                      // 남박사가 연구소에 있고 회의 중이 아닐 때만
+    var pool = tripPool(LEAD_IDS); if(!pool.length) return;
+    var s = pool[Math.floor(Math.random()*pool.length)];
+    tripF5On = true; f5Count++;
+    floorTrip(s, '__f5Guests', 'visit_' + s.id, { kind:'visit', id:s.id, name:s.name, team:s.teamKey }, 8, F5V_GO, F5V_BACK, '🎨',
+      '5층 색채·종이 연구소에 다녀옵니다', function(){ tripF5On = false; });
+  }
+  setInterval(function(){ if(Math.random() < 0.12) startF2Meeting(); }, 60000);
+  setInterval(function(){ if(Math.random() < 0.07) startF5Visit(); }, 60000);
+
   function cancelErrandsInProgress(){
     Object.keys(errandActive).forEach(function(id){
       var s = staffMap[id];
