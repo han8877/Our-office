@@ -854,6 +854,11 @@ window.__npcStatus=function(id){
     if(deskOn || (work && t>=12*60 && t<13*60)) return { online:true, text:'' };
     if(!work) return { online:false, text:'휴무' };
     return { online:false, text: t<9*60 ? '출근 전' : '퇴근' }; }
+  if(/^f1/.test(id) && F1_STAFF[id]){ var f1a=FLOORS['1'] && FLOORS['1'].actors[id], S1=F1_STAFF[id], d1=new Date();
+    var inT = S1.shop==='store' ? f1StoreIn(id,d1) : 7*60+40, outT = S1.shop==='store' ? 21*60+10 : 22*60+10;
+    if(f1a && f1a.visible && f1a.ph!=='out') return { online:true, text: f1a.ph==='rest' ? '쉬는 중' : '' };
+    if(t>=inT && t<outT) return { online:true, text:'' };
+    return { online:false, text: t<inT ? '출근 전' : '퇴근' }; }
   var n=FLOORS.B1 && FLOORS.B1.actors[id];
   if(n && n.visible) return { online:true, text:'' };
   return { online:false, text: t<8*60 ? '출근 전' : '퇴근' };

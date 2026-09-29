@@ -5703,6 +5703,12 @@
     { id:'f2guard', f2id:'guard', name:'보안요원', avatar:'#918d86', isBoss:false, floor2:true, voice:'soldier' },
     { id:'f2bart',  f2id:'bartender', name:'바텐더 박', avatar:'#c8643a', isBoss:false, floor2:true, npc:'bartender', voice:'guide', quick:'bar' },
     { id:'f2serv',  f2id:'server',    name:'강서빙',    avatar:'#8e8c88', isBoss:false, floor2:true, npc:'server',    voice:'guide', quick:'bar' },
+    // 1층 판매샵·카페 (그림 쪽 근무 상태를 따른다)
+    { id:'f1ham', name:'함 매니저',   avatar:'#a3a9b1', isBoss:false, floor2:true, f1:true, npc:'f1ham', voice:'guide', quick:'shop',  face:{id:'faceF1ham', kind:'koala',    shirt:'#fbfaf7', apron:'#ff5f9e'} },
+    { id:'f1seo', name:'서 스태프',   avatar:'#e6dfd2', isBoss:false, floor2:true, f1:true, npc:'f1seo', voice:'guide', quick:'shop',  face:{id:'faceF1seo', kind:'sheep',    shirt:'#bff2e4', apron:'#ff5f9e'} },
+    { id:'f1jin', name:'바리스타 진', avatar:'#a9bccb', isBoss:false, floor2:true, f1:true, npc:'f1jin', voice:'guide', quick:'moon9', face:{id:'faceF1jin', kind:'elephant', shirt:'#fbfaf7', apron:'#6f9168'} },
+    { id:'f1ryu', name:'바리스타 류', avatar:'#f7d65a', isBoss:false, floor2:true, f1:true, npc:'f1ryu', voice:'guide', quick:'moon9', face:{id:'faceF1ryu', kind:'duck',     shirt:'#fbfaf7', apron:'#6f9168'} },
+    { id:'f1woo', name:'우서빙',      avatar:'#b9a8cc', isBoss:false, floor2:true, f1:true, npc:'f1woo', voice:'guide', quick:'moon9', face:{id:'faceF1woo', kind:'hippo',    shirt:'#e8efe4', apron:'#6f9168'} },
     { id:'b1cash',  b1look:'cashier', name:'현계산',    avatar:'#f2a65a', isBoss:false, floor2:true, b1:true, npc:'b1cashier', voice:'guide', quick:'cafe' },
     { id:'b1yun',   b1look:'cook1',   name:'윤요리',    avatar:'#d9b98c', isBoss:false, floor2:true, b1:true, npc:'b1cook1',   voice:'guide', quick:'cafe' },
     { id:'b1ju',    b1look:'cook2',   name:'주요리',    avatar:'#d9b98c', isBoss:false, floor2:true, b1:true, npc:'b1cook2',   voice:'guide', quick:'cafe' }
@@ -5734,6 +5740,11 @@
     f2guard:    '이상 무',
     f2bart:     '오늘의 추천은 자몽 에이드',
     f2serv:     '천천히 쉬다 가세요',
+    f1ham:      '무늬 노트 새로 들어왔어요',
+    f1seo:      '커스텀 노트 재단 중',
+    f1jin:      '오늘 원두는 에티오피아',
+    f1ryu:      '나인 콜드브루 추천해요',
+    f1woo:      '레몬이 노랗게 익었어요',
     b1cash:     '맛있게 드세요',
     b1yun:      '밥 넉넉히 드릴게요',
     b1ju:       '오늘 반찬 기대하세요'
@@ -5744,7 +5755,7 @@
     if(c.npc){                                  // 바·식당 직원: 그림 쪽 근무 상태를 따른다
       var ns = (typeof window.__npcStatus === 'function') ? window.__npcStatus(c.npc) : null;
       if(!ns) return { online:false, text:'' };
-      return { online:ns.online, text: ns.online ? (defaultStatusMsg[c.id] || '') : ns.text };
+      return { online:ns.online, text: ns.online ? (ns.text || defaultStatusMsg[c.id] || '') : ns.text };
     }
     if(c.floor2){
       var fs = (typeof window.f2ContactStatus === 'function') ? window.f2ContactStatus(c.f2id) : null;
@@ -5993,7 +6004,8 @@
   var faceCache = {};
   function faceLookFor(c){
     var PO = window.PixOffice; if(!PO || !c) return null;
-    if(c.isBoss || c.id === 'boss') return { id:'faceBoss', kind:'bosstiger', shirt:'#96897a', acc:'glasses' };
+    if(c.isBoss || c.id === 'boss') return { id:'faceBoss', kind:'bosstiger', shirt:'#96897a', acc:'glasses', accC:'#d4a83a' };
+    if(c.face) return c.face;
     if(c.b1look) return PO.B1LOOK[c.b1look];
     if(c.floor2){ if(c.f2id === 'guard') return /표/.test(c.name) ? PO.F2LOOK.guardLeo : PO.F2LOOK.guard; return PO.F2LOOK[c.f2id]; }
     for(var i = 0; i < PO.STAFF.length; i++) if(PO.STAFF[i].id === c.id) return PO.STAFF[i];
@@ -6138,7 +6150,14 @@
     f2Header.className = 'chatListSectionHeader';
     f2Header.textContent = '2층 안내·보안·라운지 바';
     wrap.appendChild(f2Header);
-    messengerContacts.filter(function(c){ return c.floor2 && !c.b1; }).forEach(function(c){
+    messengerContacts.filter(function(c){ return c.floor2 && !c.b1 && !c.f1; }).forEach(function(c){
+      wrap.appendChild(buildChatListRow(c, chatKeyFor(c.id)));
+    });
+    var f1Header = document.createElement('div');
+    f1Header.className = 'chatListSectionHeader';
+    f1Header.textContent = '1층 판매샵·카페';
+    wrap.appendChild(f1Header);
+    messengerContacts.filter(function(c){ return c.f1; }).forEach(function(c){
       wrap.appendChild(buildChatListRow(c, chatKeyFor(c.id)));
     });
     var b1Header = document.createElement('div');
@@ -6335,6 +6354,20 @@
       { q:'자리 있어요?',       a:'창가 쪽 비었어요. 편하게 앉으세요 :)' },
       { q:'얼음 적게 주세요',    a:'네, 얼음 조금만 넣어드릴게요' },
       { q:'잘 마셨어요',        a:'또 들르세요. 잔은 두고 가셔도 돼요~' }
+    ],
+    shop: [
+      { q:'오늘 새로 들어온 거 있어요?', a:'무늬 노트 새 시리즈랑 파스텔 마스킹테이프 들어왔어요!' },
+      { q:'몇 시까지 해요?',   a:'아침 10시부터 밤 9시까지 열어요. 준비는 8시 반부터 하고 있어요~' },
+      { q:'선물 포장 돼요?',   a:'그럼요! 포장지 고르시면 리본까지 예쁘게 해 드려요' },
+      { q:'커스텀 노트 만들 수 있어요?', a:'네, 공방에서 이름 각인까지 10분이면 돼요' },
+      { q:'직원 할인 돼요?',   a:'사원증 보여 주시면 10% 해 드려요 :)' }
+    ],
+    moon9: [
+      { q:'오늘 추천 메뉴는요?', a:'달빛 라떼요! 오늘 원두는 에티오피아예요' },
+      { q:'몇 시까지 해요?',   a:'아침 8시부터 밤 10시까지 열어요~' },
+      { q:'자리 있어요?',      a:'레몬나무 옆 4인 테이블이 비었어요' },
+      { q:'디카페인 돼요?',    a:'키오스크에서 디카페인 고르시면 돼요' },
+      { q:'잘 마셨어요',       a:'또 들르세요! 컵은 퇴식대에 두시면 돼요' }
     ],
     cafe: [
       { q:'오늘 메뉴 뭐예요?',   a:'제육볶음에 된장찌개, 계란말이요! 맛있게 드세요~' },
@@ -7120,6 +7153,31 @@
       '너는 2층 라운지 바의 홀서빙 강서빙이다. 오소리. 성격유형은 ISFJ(수호자), 안정형이다.',
       '공손하고 차분하게. 손님 이야기를 잘 들어주고 필요한 걸 조용히 챙긴다.',
       '바 안에서만 쟁반을 나른다. 이모티콘은 쓰지 않고 :) 만 드물게.'
+    ].join('\n'),
+    f1ham: [
+      '너는 1층 끄적끄적문구 스토어의 매니저 함 매니저다. 코알라. 성격유형은 ESFJ(집정관), 안정형이다.',
+      '친절하고 싹싹하게. 계산대를 지키며 신상품과 선물 포장을 잘 권한다. 매장은 10~21시, 준비는 8시 반부터.',
+      '물결(~)을 가끔 쓰고 ㅋㅋ 는 쓰지 않는다.'
+    ].join('\n'),
+    f1seo: [
+      '너는 1층 스토어 아틀리에의 서 스태프다. 양. 성격유형은 ISFP(모험가), 안정형이다.',
+      '조용하고 다정하게, 짧게. 리소 인쇄와 커스텀 노트 재단, 종이공예를 좋아한다.',
+      '종이와 잉크 이야기를 하면 조금 신난다. 이모티콘은 쓰지 않는다.'
+    ].join('\n'),
+    f1jin: [
+      '너는 1층 카페 MOON 9 COFFEE의 바리스타 진이다. 코끼리. 성격유형은 INFJ(옹호자), 설계형이다.',
+      '차분하고 섬세하게. 원두와 추출 이야기를 좋아하고 오늘의 원두를 알려준다. 쉴 땐 직원 쉼터에서 책을 읽는다.',
+      '대표 메뉴는 달빛 라떼와 나인 콜드브루. 물결(~)은 드물게.'
+    ].join('\n'),
+    f1ryu: [
+      '너는 1층 카페 MOON 9 COFFEE의 바리스타 류다. 오리. 성격유형은 ENFP(활동가), 확산형이다.',
+      '밝고 명랑하게. 픽업대에서 음료 이름을 또박또박 부른다. 나인 콜드브루를 제일 좋아한다.',
+      '가끔 말끝에 "꽥"이 새어 나온다. 물결(~)을 자주 쓴다.'
+    ].join('\n'),
+    f1woo: [
+      '너는 1층 카페 MOON 9 COFFEE의 홀 서빙 우서빙이다. 하마. 성격유형은 ISFJ(수호자), 안정형이다.',
+      '느긋하고 푸근하게. 식물 물 주기, 테이블 닦기, 쓰레기통 비우기, 갤러리 그림 관리를 한다. 손님 질문엔 뭐든 답해준다.',
+      '레몬나무가 자랑이고 쉴 땐 뜨개질을 한다. 이모티콘은 쓰지 않는다.'
     ].join('\n'),
     b1cash: [
       '너는 지하 1층 구내식당 계산 담당 현계산이다. 닭. 성격유형은 ESFP(연예인), 확산형이다.',

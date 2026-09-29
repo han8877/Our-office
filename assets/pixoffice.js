@@ -757,7 +757,7 @@ function drawHeadNew(g,K,p,dir,blink){
     if(k==='elephant'){ eyes(cx-5,null,cy-2); R(g,cx-2,cy+3,3,2,blush);                                          // 코끼리: 앞으로 내려오다 끝이 말린 코
       R(g,cx-11,cy+1,5,4,f); R(g,cx-13,cy+4,4,5,f); R(g,cx-14,cy+8,4,3,fD); P(g,cx-14,cy+7,fL); R(g,cx-11,cy+1,5,1,fL); }
     if(k==='koala'){ ell(g,cx-9,cy+2,3,4,'#3a3a42'); P(g,cx-10,cy,'#6a6a72'); eyes(cx-4,null,cy-2); R(g,cx-2,cy+4,3,2,blush); ell(g,cx-6,cy+6,3,1,F); }
-    if(p.acc==='glasses'){ ring(g,cx-5,cy-1,3,'#3a3040'); R(g,cx-2,cy-1,6,1,'#3a3040'); }
+    if(p.acc==='glasses'){ var glc=p.accC||'#3a3040'; ring(g,cx-5,cy-1,3,glc); R(g,cx-2,cy-1,6,1,glc); }
     drawHat(g,p,dir,cx,cy,rx,ry); return; }
   // 정면
   if(k==='duck'){ R(g,cx-1,cy-12,2,4,f); R(g,cx+1,cy-11,2,3,sh(f,0.1)); R(g,cx-3,cy-10,2,2,sh(f,-0.05));
@@ -769,7 +769,7 @@ function drawHeadNew(g,K,p,dir,blink){
     R(g,cx-9,cy+3,3,2,blush); R(g,cx+7,cy+3,3,2,blush); }
   if(k==='koala'){ ell(g,cx,cy+3,3,4,'#3a3a42'); P(g,cx-1,cy+1,'#6a6a72'); R(g,cx-1,cy,2,1,'#6a6a72');
     eyes(cx-6,cx+5,cy-1); ell(g,cx,cy+8,4,1,F); R(g,cx-10,cy+3,3,2,blush); R(g,cx+8,cy+3,3,2,blush); }
-  if(p.acc==='glasses'){ var gl='#3a3040'; ring(g,cx-4,cy,3,gl); ring(g,cx+5,cy,3,gl); R(g,cx-1,cy,3,1,gl); }
+  if(p.acc==='glasses'){ var gl=p.accC||'#3a3040'; ring(g,cx-4,cy,3,gl); ring(g,cx+5,cy,3,gl); R(g,cx-1,cy,3,1,gl); }
   drawHat(g,p,dir,cx,cy,rx,ry);
 }
 
@@ -869,7 +869,7 @@ function drawHead(g,K,p,dir,blink){
     R(g,cx-2,cy+4,3,2,blush);
     P(g,mx-2,my+2,nose); P(g,mx-1,my+3,nose);
     if(K.mark==='chicken'){ tri(g,mx-7,my,mx-1,my-3,mx-1,my+2,'#f0a030'); R(g,mx-6,my,5,1,'#d88420'); ell(g,mx,my+5,2,2,'#e0483a'); }
-    if(p.acc==='glasses'){ ring(g,cx-5,cy-1,3,'#3a3040'); R(g,cx-2,cy-1,6,1,'#3a3040'); }
+    if(p.acc==='glasses'){ var glc=p.accC||'#3a3040'; ring(g,cx-5,cy-1,3,glc); R(g,cx-2,cy-1,6,1,glc); }
     if(p.acc==='shades'){ R(g,cx-9,cy-3,7,3,'#1d1f24'); R(g,cx-2,cy-2,7,1,'#1d1f24'); P(g,cx-8,cy-3,'#6a7a8a'); }
     drawEarsFront(g,K,dir,cx); drawHat(g,p,dir,cx,cy,rx,ry); return;
   }
@@ -918,7 +918,7 @@ function drawHead(g,K,p,dir,blink){
   }
   if(K.mark==='chicken'){ tri(g,cx-3,cy+2,cx+3,cy+2,cx,cy+7,'#f0a030'); R(g,cx-3,cy+2,6,1,'#f8c060'); ell(g,cx,cy+9,2,2,'#e0483a'); }
   R(g,cx-9,cy+3,3,2,blush); R(g,cx+7,cy+3,3,2,blush);
-  if(p.acc==='glasses'){ var gl='#3a3040'; ring(g,cx-4,cy,3,gl); ring(g,cx+5,cy,3,gl); R(g,cx-1,cy,3,1,gl); }
+  if(p.acc==='glasses'){ var gl=p.accC||'#3a3040'; ring(g,cx-4,cy,3,gl); ring(g,cx+5,cy,3,gl); R(g,cx-1,cy,3,1,gl); }
   if(p.acc==='shades'){ R(g,cx-8,cy-2,7,3,'#1d1f24'); R(g,cx+2,cy-2,7,3,'#1d1f24'); R(g,cx-1,cy-1,3,1,'#1d1f24'); P(g,cx-7,cy-2,'#6a7a8a'); P(g,cx+3,cy-2,'#6a7a8a'); }
   drawEarsFront(g,K,dir,cx);
   drawHat(g,p,dir,cx,cy,rx,ry);
@@ -1089,7 +1089,7 @@ STAFF.forEach(function(p){ p.badge=true; });   // 우리 회사 직원만 사원
 
 // ---- 방문객 생김새 (본편 방문객 id → 그림) ----
 var VISITORS={
-  visitorBoss:    {id:'visitorBoss',    kind:'bosstiger', shirt:'#96897a', pants:'#4a4038'},
+  visitorBoss:    {id:'visitorBoss',    kind:'bosstiger', shirt:'#96897a', pants:'#4a4038', acc:'glasses', accC:'#d4a83a'},   // 사장님: 금테 안경
   visitorCourier: {id:'visitorCourier', kind:'pup',     shirt:'#3a7ac0', pants:'#2f4a6a', hat:'#3a7ac0', carry:'box'},
   visitorVendor:  {id:'visitorVendor',  kind:'greycat', shirt:'#5c8f5c', pants:'#3e4a44'},
   visitorFixer:   {id:'visitorFixer',   kind:'goat',    shirt:'#6f8196', pants:'#3e4c5c', hat:'#9aa2a8', carry:'tool'},
