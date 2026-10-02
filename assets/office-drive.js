@@ -33,7 +33,7 @@ var SHARED=[
   { id:'b1',      name:'지하 1층 구내식당',         icon:'🍱', who:['b1cashier','b1cook1','b1cook2'], hours:[8*60,21*60] }
 ];
 var SHARED_BY={}; SHARED.forEach(function(f){ SHARED_BY[f.id]=f; });
-var LEADS={ kobujang:1, kimnote:1, nabujang:1, jungsti:1, yoohongbo:1 };            // 팀장급부터 최실장: 8301, 나머지 9401
+var LEADS={ kobujang:1, kimnote:1, nabujang:1, jungsti:1, yoohongbo:1, f1ham:1 };   // 팀장급부터 최실장(1층 함 매니저 포함): 8301, 나머지 9401
 var PW_LEAD='8301', PW_STAFF='9401';
 function personalGroups(){
   var st=B.staff||[], f3=st.map(function(s){ return s.id; });

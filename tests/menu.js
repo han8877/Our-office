@@ -40,10 +40,11 @@ const { open, enter, suite } = require('./lib');
   await openF('이노트'); await page.fill('.drvPw', '1234'); await page.click('.drvCard .ok'); dv.wrong = await page.evaluate(() => document.querySelector('.drvErr').textContent);
   await page.fill('.drvPw', '9401'); await page.click('.drvCard .ok'); dv.staff = await page.evaluate(() => /이노트 님의 폴더/.test(document.querySelector('.drvCrumb').textContent));
   await page.click('.drvBack'); await openF('최실장'); await page.fill('.drvPw', '8301'); await page.click('.drvCard .ok'); dv.lead = await page.evaluate(() => /최실장 님의 폴더/.test(document.querySelector('.drvCrumb').textContent));
+  await page.click('.drvBack'); await openF('함 매니저'); await page.fill('.drvPw', '8301'); await page.click('.drvCard .ok'); dv.ham = await page.evaluate(() => /함 매니저 님의 폴더/.test(document.querySelector('.drvCrumb').textContent));
   await page.click('.drvBack'); await openF('사장님'); dv.boss = await page.evaluate(() => document.querySelector('.drvCMsg').textContent); await page.click('.drvCard .ok');
   await openF('한교수'); dv.han = await page.evaluate(() => document.querySelector('.drvCMsg').textContent); await page.click('.drvCard .ok');
-  T.check('공유드라이브: 공유폴더는 바로 · 다운로드는 57~89%에서 오류 · 개인 폴더 9401/8301 · 사장님·한교수 열람권한 없음',
-    dv.shared && dv.dl && dv.wrong === '비밀번호가 일치하지 않습니다.' && dv.staff && dv.lead && dv.boss === '열람권한이 없습니다.' && dv.han === '열람권한이 없습니다.', JSON.stringify(dv));
+  T.check('공유드라이브: 공유폴더는 바로 · 다운로드는 57~89%에서 오류 · 개인 폴더 9401/8301(함 매니저 8301) · 사장님·한교수 열람권한 없음',
+    dv.shared && dv.dl && dv.wrong === '비밀번호가 일치하지 않습니다.' && dv.staff && dv.lead && dv.ham && dv.boss === '열람권한이 없습니다.' && dv.han === '열람권한이 없습니다.', JSON.stringify(dv));
   await page.evaluate(() => document.getElementById('apprCloseX').click());
   T.check('페이지 오류 없음', errors.length === 0, errors.join(' / '));
   await browser.close(); T.done();
