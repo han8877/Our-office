@@ -439,7 +439,7 @@ function pRollMonitor(){ return obj(36,80,function(g){        // 회의용 이�
 
 // 아트코너 조형물이 눈으로 변한다: look -1(왼쪽) ~ 1(오른쪽)
 function drawArtEye(g,look,open){
-  var cx=16*T+16, cy=15*T-72+16, dx=Math.round(look*5);
+  var cx=16*T+16, cy=14*T-72+16, dx=Math.round(look*5);
   disc(g,cx,cy,12,'#f07a4a'); disc(g,cx,cy,11,'#d8603a');
   var ry=Math.max(1,Math.round(7*open));
   ell(g,cx,cy,10,ry,'#fbfaf6'); ell(g,cx,cy+1,10,Math.max(1,ry-1),'#fbfaf6');
@@ -448,9 +448,9 @@ function drawArtEye(g,look,open){
   R(g,cx-8,cy+ry,16,1,'#b84a2a');
 }
 // 아트코너 모니터에 재고창고 쪽을 가리키는 빨간 화살표 (화면 가운데 → 재고창고 가운데 방향으로 기울인다)
-var ARROW_ANG=Math.atan2(20*T-(15*T-49), 30.5*T-(13*T+32));
+var ARROW_ANG=Math.atan2(20*T-(14*T-49), 30.5*T-(13*T+32));
 function drawArtArrow(g,now){
-  var sx=13*T+16, sy=15*T-60+2, w=32, h=18;
+  var sx=13*T+16, sy=14*T-60+2, w=32, h=18;
   R(g,sx,sy,w,h,'#14161c');
   if(Math.floor(now/90)%23===0) return;                                                         // 가끔 지지직
   var ca=Math.cos(ARROW_ANG), sa=Math.sin(ARROW_ANG), off=Math.floor(now/260)%3-1, cx=sx+w/2, cy=sy+h/2;
@@ -1128,10 +1128,10 @@ var STAFF = [
   {id:'nabujang',  name:'나팀장', kind:'bear',    shirt:'#6aaac4', desk:[3,20],  team:'biz'},
   {id:'choiinsa',  name:'최인사', kind:'cat',     shirt:'#ec94ae', desk:[6,20],  team:'biz'},
   {id:'parkhoegye',name:'박회계', kind:'rabbit',  shirt:'#a6c86a', desk:[9,20], team:'biz'},
-  {id:'jungsti',   name:'정팀장', kind:'monkey',  shirt:'#5a8ac4', desk:[17,19], team:'sticker'},
-  {id:'hansti',    name:'손스티', kind:'horse',   shirt:'#f08aa0', desk:[20,19], team:'sticker'},
-  {id:'yoosti',    name:'유스티', kind:'cow',     shirt:'#8cc07a', desk:[17,22], team:'sticker'},
-  {id:'chosti',    name:'조스티', kind:'frog',    shirt:'#f2b64a', desk:[20,22], team:'sticker'},
+  {id:'jungsti',   name:'정팀장', kind:'monkey',  shirt:'#5a8ac4', desk:[17,18], team:'sticker'},
+  {id:'hansti',    name:'손스티', kind:'horse',   shirt:'#f08aa0', desk:[20,18], team:'sticker'},
+  {id:'yoosti',    name:'유스티', kind:'cow',     shirt:'#8cc07a', desk:[17,21], team:'sticker'},
+  {id:'chosti',    name:'조스티', kind:'frog',    shirt:'#f2b64a', desk:[20,21], team:'sticker'},
   {id:'yoohongbo', name:'유팀장', kind:'hedgehog',shirt:'#e87a6a', desk:[7,27],  team:'pr'},
   {id:'seohongbo', name:'서홍보', kind:'fox2',    shirt:'#7ab2dc', desk:[10,27],  team:'pr'},
   {id:'minhongbo', name:'민홍보', kind:'bear2',   shirt:'#f4d06a', desk:[13,27], team:'pr'}
@@ -1171,10 +1171,10 @@ paintWoodFloor(bgc);
 stoneFloor(bgc,23,3,28,10);   // 제품 쇼룸
 carpet(bgc,29,3,34,10);   // 디자인실장실
 carpet(bgc,1,5,11,14);   // 노트 디자인팀
-carpet(bgc,13,6,21,11);   // 다목적실
+carpet(bgc,13,6,21,10);   // 다목적실 (11행은 비워 아트코너·스티커팀을 한 줄씩 올리고 23행에 복도를 냈다)
 carpet(bgc,23,13,34,15);   // 라운지
 carpet(bgc,1,16,11,22);   // 경영지원팀 (12열은 복도)
-carpet(bgc,13,16,24,23);   // 스티커 디자인팀
+carpet(bgc,13,15,24,22);   // 스티커 디자인팀
 concrete(bgc,26,17,34,22);                     // 재고창고
 carpet(bgc,6,24,14,28);   // 홍보팀
 stoneFloor(bgc,1,25,5,28); stoneFloor(bgc,5,23,5,24);   // 엘리베이터 홀과 사무실로 이어지는 복도
@@ -1201,8 +1201,8 @@ block(22,11,24,11); block(27,11,32,11); block(34,11,34,11);
 // 회의실: 유리 (23행, 18~19열은 문)
 put(glassWall(3*T),15*T,24*T+2,24*T+48); put(glassWall(5*T),20*T,24*T+2,24*T+48); block(15,24,17,24); block(20,24,24,24);   // 문: 18~19열
 put(vWall(5*T-4,true),15*T+11,24*T+4,29*T); block(15,25,15,28);
-// 탕비실 (23행, 26~27열은 문)
-put(hWall(T),25*T,23*T+2,23*T+48); put(hWall(7*T),28*T,23*T+2,23*T+48); block(25,23,25,23); block(28,23,34,23);
+// 탕비실 (23행, 25~27열은 트였다: 스티커팀 아래 복도가 이어진다)
+put(hWall(7*T),28*T,23*T+2,23*T+48); block(28,23,34,23);
 put(vWall(6*T,false),25*T+11,23*T+4,29*T); block(25,24,25,28);
 // 엘리베이터
 var ELEV=[pElevator(false),pElevator(true)];
@@ -1243,13 +1243,13 @@ for(var cr=0; cr<2; cr++) for(var cc=0; cc<3; cc++){ var chx=14*T+20+cc*36, chy=
 block(14,8,17,9);
 onTile(pTV(),19,7,20,8); onTile(pPlant('tall','#d9794a'),21,10,21,10);
 // 아트코너
-onTile(pImacDesk(),13,14,14,14); onTile(pSculpture(),16,13,16,14); onTile(pSofa('#9cbcd0'),18,14,21,14);
+onTile(pImacDesk(),13,13,14,13); onTile(pSculpture(),16,12,16,13); onTile(pSofa('#9cbcd0'),18,13,21,13);
 // 라운지
 onTile(pLoungeSofa(),26,14,29,14); onTile(pBookshelf(3),31,13,32,14); onTile(pBookshelf(9),33,13,34,14); onTile(pPlant('monstera','#f5b8c8'),25,14,25,14); onTile(pFloorLamp(),23,14,23,14); onTile(pChairN('#e2cfa6'),24,14,24,14);
 // 경영지원팀
 onTile(pDrawers(),11,17,11,18); onTile(pPlant('tall','#9fd4c0'),1,21,1,21); onTile(pCopier(),9,17,10,17);
 // 스티커팀
-onTile(pPlant('bush','#f5b8c8'),14,20,14,20); onTile(pPlotter(),14,18,15,18); onTile(pFlatFile(),14,22,15,22); onTile(pDrawers(),23,18,23,19); onTile(pCopier(),23,21,24,21);
+onTile(pPlant('bush','#f5b8c8'),14,19,14,19); onTile(pPlotter(),14,17,15,17); onTile(pFlatFile(),14,21,15,21); onTile(pDrawers(),23,17,23,18); onTile(pCopier(),23,20,24,20);
 // 재고창고
 onTile(pShelf(1),28,18,30,19); onTile(pShelf(5),32,18,34,19); onTile(pShelf(8),28,21,30,22); onTile(pShelf(12),32,21,34,22);
 // 홍보팀
@@ -1288,8 +1288,8 @@ function vFrost(c,r0,r1,doors,dx){ doors=doors||[]; var r=r0;
 vFrost(12,3,14,[5,6]); hFrost(1,11,14,[4,5]);
 // 경영지원팀: 위 벽(4~5열 문), 아래 벽, 오른쪽 벽 (1~4열 아래는 엘리베이터 홀 벽)
 hFrost(1,11,16,[4,5]); hFrost(5,11,22); vFrost(12,16,22);
-// 스티커 디자인팀: 위 벽(18~19열 문), 양옆 벽, 왼쪽 아래 짧은 벽 (나머지 아래쪽은 회의실 유리벽)
-hFrost(13,24,16,[18,19]); vFrost(13,16,24); vFrost(25,16,24);
+// 스티커 디자인팀: 위 벽(15행, 18~19열 문), 아래 벽(22행, 18~19열 문), 양옆 벽. 아래 벽과 회의실 유리벽(24행) 사이 23행은 복도
+hFrost(13,24,15,[18,19]); hFrost(13,24,22,[18,19]); vFrost(13,15,23); vFrost(25,15,23);
 // 홍보팀: 위 벽(10~11열 문), 왼쪽 벽 (오른쪽은 회의실 벽)
 hFrost(6,14,24,[10,11]); vFrost(6,24,29,[],-5);
 // 제품 쇼룸 | 디자인실장실
