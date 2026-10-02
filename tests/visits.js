@@ -25,5 +25,18 @@ const { open, enter, goFloor, suite } = require('./lib');
   const src = require('fs').readFileSync(require('path').join(__dirname, '..', 'assets', 'office-pixel.js'), 'utf8');
   T.check('5층: 한교수 안부엔 "다른 직원들에게는 비밀입니다"', /한교수님[^\n]*다른 직원들에게는 비밀입니다/.test(src));
   T.check('페이지 오류 없음', errors.length === 0, errors.join(' / '));
-  await browser.close(); T.done();
+  await browser.close();
+  // 금요일 17시 옥상 첼로 연주회: 조 · 사장님 · 5층 · 2층 · 1층 · 지하 식당 식구가 옥상에 앉고, 3층 직원도 올라온다
+  const C = await open({ time: '2026-10-02T17:03:00' });
+  await enter(C.page); await C.page.waitForTimeout(25000);
+  const cc = await C.page.evaluate(() => { const A = window.__pixOffice.floors.L.actors, ids = Object.keys(A).filter(k => /^cc_/.test(k));
+    return { phase: window.__concertPhase(), jo: !!A.cc_jo, boss: !!A.cc_boss, nam: !!A.cc_nam, han: !!A.cc_han, fixed: ids.filter(k => !/^cc_s_/.test(k)).length, f3: ids.filter(k => /^cc_s_/.test(k)).length,
+      away: Object.keys(window.__ccAway || {}).length, st: window.__npcStatus('f1jin').text }; });
+  T.check('연주회: 금요일 17시대는 연주 중', cc.phase === 'play', cc.phase);
+  T.check('연주회: 조 · 사장님 · 남박사 · 한교수가 옥상에', cc.jo && cc.boss && cc.nam && cc.han, JSON.stringify(cc));
+  T.check('연주회: 다른 층 직원 15명이 올라와 자기 층에선 빠진다', cc.fixed >= 17 && cc.away === 15, JSON.stringify(cc));
+  T.check('연주회: 3층 직원도 올라온다', cc.f3 >= 4, JSON.stringify(cc));
+  T.check('연주회: 메신저 상태는 "옥상 연주회"', cc.st === '옥상 연주회', cc.st);
+  T.check('연주회: 페이지 오류 없음', C.errors.length === 0, C.errors.join(' / '));
+  await C.browser.close(); T.done();
 })();

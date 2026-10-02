@@ -350,7 +350,7 @@ var EMO_BAL={ happy:'heart', sleepy:'zzz', angry:'excl', sad:'sweat', surprised:
 // 앉은 사람을 좌석 쿠션 높이로 올린다: 엉덩이가 방석에, 무릎·구두는 앞턱에 걸치고 등받이는 몸 뒤에 온다
 // (뒤돌아 앉으면 뒤통수와 어깨가 등받이 위로 보이게)
 var SIT_LIFT={ down:11, left:7, right:7, up:12 };
-function sitLift(a){ return (a.onFurn && !a.path && a.spr.sit) ? (SIT_LIFT[a.dir]||0) : 0; }
+function sitLift(a){ if(a.ccLift!=null && a.onFurn && !a.path) return a.ccLift; return (a.onFurn && !a.path && a.spr.sit) ? (SIT_LIFT[a.dir]||0) : 0; }
 function drawActor(g,a,now){
   var img=(a.sitting&&now<a.blinkUntil)?a.spr.blink:a.spr[a.dir][(a.path||a.walking)?a.frame:0];   // walking: 길찾기 없이 선을 따라 걷는 사람 (식당·바 직원)
   var X=Math.round(a.x), Y=Math.round(a.feet)-48;
@@ -650,6 +650,7 @@ function f1Visitors(F,now,off,O,t){
   // 사장님: 날마다 정해진 7~8번 (10~21시), 3층이나 지하 식당에 계시면 건너뛴다
   if(F.bossDay!==dk){ F.bossDay=dk; F.bossSlots=[]; var nb=7+(PO.hash(dk+'b1n')%2); for(var i=0;i<nb;i++) F.bossSlots.push(10*60+i*Math.floor(640/nb)+PO.hash(dk+'boss'+i)%40); F.bossDone={}; }
   var bossBusy=(B.visitorPresent && B.visitorPresent('visitorBoss')) || window.__bossAtB1;
+  if(window.__concertHold && window.__concertHold()) bossBusy=true;   // 금요일 연주회 땐 옥상에 계신다
   F.bossSlots.forEach(function(m,i){ if(t>=m && t<m+4 && !F.bossDone[i] && !Q.boss && !bossBusy){ F.bossDone[i]=1; Q.boss={ kind:'boss', own:true }; } });
   // 경비: 평일 11:05 · 15:05 · 19:05쯤 한 바퀴 (3층에 나와 있거나 옥상 순찰 중이면 건너뛴다)
   var vgSlot=[11*60+5,15*60+5,19*60+5].filter(function(m){ return t>=m && t<m+3; })[0];
@@ -696,6 +697,16 @@ function f1Robot(F,now,off){ var rb=F.robot;                                   /
     if(Math.random()<0.45){ rb.bubble=lab5Pick(R1_LINES); rb.bubbleUntil=now+3400; } }
   if(rb.bubbleUntil && now>rb.bubbleUntil){ rb.bubble=null; rb.bubbleUntil=0; }
   if(off) step(rb,now); }
+// 1층 직원 점심: 카페 13:30~14:00 · 스토어 14:00~14:20, 지하 식당에서 (window.__b1Guests 로 식당 그림에 나타난다)
+var F1_LUNCH_GO=[['점심 먹고 올게요~'],['밥 먹으러 갑니다!'],['지하 식당 다녀올게요'],['오늘 메뉴 뭐려나']];
+var F1_LUNCH_BACK=[['잘 먹었습니다~'],['다시 시작!'],['배부르다~'],['오늘 제육 최고였어요']];
+function f1LunchNow(shop,t){ return shop==='store' ? (t>=14*60 && t<14*60+20) : (t>=13*60+30 && t<14*60); }
+function f1LunchGo(id,S,d,boot){
+  var Q=window.__b1Guests=window.__b1Guests||{}, key='f1l_'+id, dk=d.toDateString(), t=d.getHours()*60+d.getMinutes(), end=S.shop==='store'?14*60+20:14*60;
+  if(Q[key] && Q[key].day===dk) return;
+  if(boot && t>=end-4) return;                                                     // 접속했을 때 거의 끝났으면 내려가 있는 것으로만
+  Q[key]={ kind:'dinner', id:id, name:S.name, group:'f1'+S.shop, day:dk, leaveAt:(end-3)*60+(['f1ham','f1jin'].indexOf(id)>=0?0:25), crew:S.shop==='store'?'f1store':'f1cafe', meal:'lunch' };
+}
 function f1Tick(F,now,off){
   var d=new Date(), t=d.getHours()*60+d.getMinutes(), M=F.map, O=f1Open(t), A=F.actors;
   if(!off && !F.f1Font && PO.fontReady && PO.fontReady()){ F.f1Font=true; if(!M.fontOK){ try{ F.map=M=PO.buildMap1(); }catch(e){} } }   // 글꼴이 늦게 오면 한 번 다시 그린다
@@ -704,8 +715,9 @@ function f1Tick(F,now,off){
   var quiet = !!F.qSince && now-F.qSince>15000;                                   // 카페 손님이 15초째 없다 → 직원 쉼터로
   // 직원
   Object.keys(F1_STAFF).forEach(function(id){ var S=F1_STAFF[id], a=npcActor(F,id,S.look,S.name), on=S.shop==='store'?(t>=f1StoreIn(id,d) && t<21*60+10):O.cafeStaff;
+    var lunch=on && f1LunchNow(S.shop,t); if(lunch){ on=false; f1LunchGo(id,S,d,!a.ph); }   // 점심시간: 지하 식당에 내려가 있다
     if(!a.ph){ if(on){ a.ph='work'; a.visible=true; placeAt(F,a,S.home); a.until=now+8000+Math.random()*12000; a.nextTalk=now+3000+Math.random()*9000; } else { a.ph='off'; a.visible=false; } }
-    if(a.ph==='off' && on){ a.ph='in'; a.visible=true; a.stepMs=300; placeAt(F,a,{c:M.LOBBY.c,r:M.LOBBY.r,face:'down'}); setGoal(F,a,S.home,now); a.bubble=['출근했습니다~']; a.talkUntil=now+2400; }
+    if(a.ph==='off' && on){ a.ph='in'; a.visible=true; a.stepMs=300; placeAt(F,a,{c:M.LOBBY.c,r:M.LOBBY.r,face:'down'}); setGoal(F,a,S.home,now); a.bubble=a.atLunch?lab5Pick(F1_LUNCH_BACK):['출근했습니다~']; a.atLunch=false; a.talkUntil=now+2400; }
     if(a.ph==='in' && !a.path){ a.ph='work'; a.until=now+15000+Math.random()*15000; }
     if(a.ansAt && now>a.ansAt){ a.bubble=a.ans; a.talkUntil=now+3000; a.ansAt=0; }
     if(S.rest){                                                                    // 카페 직원: 손님이 없으면 쉼터에서 뜨개질·책, 손님이 오면 제자리로
@@ -713,7 +725,7 @@ function f1Tick(F,now,off){
       else if(a.ph==='toRest'){ if(!quiet){ a.ph='work'; setGoal(F,a,S.home,now); a.until=now+15000; } else if(!a.path){ a.ph='rest'; a.nextTalk=now+5000+Math.random()*8000; } }
       else if(a.ph==='rest'){ if(!quiet){ a.ph='work'; a.bubble=['손님 오셨다!']; a.talkUntil=now+2200; a.stepMs=280; setGoal(F,a,S.home,now); a.until=now+15000; } else lab5Talk(a,now,S.restLines,['sleepy','happy','cool'],15000,30000); }
     }
-    if((a.ph==='work'||a.ph==='roam'||a.ph==='in'||a.ph==='toRest'||a.ph==='rest') && !on){ a.ph='out'; a.bubble=['내일 또 봬요~']; a.talkUntil=now+2400; a.leaving=true; a.stepMs=280; setGoal(F,a,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!a.path){ a.visible=false; a.leaving=false; } }
+    if((a.ph==='work'||a.ph==='roam'||a.ph==='in'||a.ph==='toRest'||a.ph==='rest') && !on){ a.ph='out'; a.atLunch=lunch; a.bubble=lunch?lab5Pick(F1_LUNCH_GO):['내일 또 봬요~']; a.talkUntil=now+2400; a.leaving=true; a.stepMs=280; setGoal(F,a,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!a.path){ a.visible=false; a.leaving=false; } }
     if(a.ph==='out'){ if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; } if(!a.visible){ a.ph='off'; a.bubble=null; } return; }
     if(a.ph==='work'){
       if(now>a.until && !a.path && !(id==='f1ham' && F.payWait)){ a.ph='roam'; a.stepMs=320; a.said=false;
@@ -871,6 +883,14 @@ function npcActor(F,id,look,name){
     x:0, feet:0, tile:null, path:null, step:0, stepStart:0, goal:null, dir:'down', frame:0, blinkUntil:0, nextBlink:performance.now()+2000,
     bubble:null, emo:null, stepMs:280, name:name, until:0, arrived:0, talkUntil:0, nextTalk:0 };
 }
+// 1층 직원 · 주방 식구 점심 이야기
+var B1_CREW_TALK={
+  f1cafe:{ lines:['오늘 라떼 몇 잔 뽑았지','점심 장사 끝나서 다행','원두 새로 들어온 거 맛봤어요?','우서빙 오늘 화분 물 다 줬대','밥 먹고 바로 디저트 진열!','콜드브루 오늘 다 나갔어요','남이 해 준 밥이 제일 맛있어','레몬나무 열매 하나 떨어졌던데'],
+    qa:[['오후엔 손님 많을까요?','다섯 시쯤 또 몰릴걸요'],['오늘의 원두 뭐였죠?','에티오피아요!'],['쉼터 쿠션 누가 바꿨어요?','우서빙이 뜨개질한 거래요'],['진, 커피 말고 밥은 좀 먹어요','먹고 있잖아요~']] },
+  f1store:{ lines:['오늘 무늬 노트 잘 나갔어요','포장지 롤 또 갈아야겠다','리소 인쇄 잉크 주문해야지','네컷 부스 필름 채웠어요?','신상 스티커 반응 좋아요','밥 먹고 진열 다시 해야겠다','손님이 펜 시필지에 그림 그렸더라','선물 포장만 열 번 했어요'],
+    qa:[['오후 입고 몇 시예요?','세 시쯤이요'],['에코백 M 남았어요?','두 개 남았어요'],['오늘 매출 어때요?','느낌 좋아요!'],['커스텀 노트 주문 들어왔어요','재단은 제가 할게요']] },
+  kitchen:{ lines:['드디어 우리 차례!','남은 반찬이 제일 맛있어','오늘 제육 다 나갔네','다리 좀 펴자','저녁 준비 전에 한숨 돌리고','내일 메뉴는 뭘로 하지','국은 역시 식어도 맛있어','손님 없는 식당 조용하다'],
+    qa:[['내일 반찬 뭐 할까요?','도라지무침 어때요?'],['오늘 몇 그릇 나갔어요?','백 그릇은 넘었어요'],['밥 더 줄까요?','아뇨 배불러요~'],['저녁엔 몇 명 올까요?','야근 팀 서너 명이요']] } };
 var B1_BAR_LINES=['점심 장사 끝!','오늘 자몽 에이드 잘 나갔어요','바에서 먹는 밥이랑은 또 다르네','오후엔 뭐 새로 만들어볼까','쟁반 나르느라 팔 아파요','잔 닦다 보면 시간 금방 가요'];
 var B1_BAR_QA=[['오늘 자몽 에이드 몇 잔 나갔어요?','서른 잔은 넘었을걸요'],['오후엔 뭐 준비해요?','레몬 좀 더 썰어놔야죠'],['손님들 오늘 많았죠?','점심 끝나고 확 몰렸어요'],['신메뉴 언제 나와요?','다음 주에 선보일게요!']];
 function barLunchGo(id,name){                                         // 13~14시: 지하 식당에서 둘이 같이 먹는다 (13:56쯤 일어난다)
@@ -960,12 +980,17 @@ window.__npcStatus=function(id){
   if(/^f1/.test(id) && F1_STAFF[id]){ var f1a=FLOORS['1'] && FLOORS['1'].actors[id], S1=F1_STAFF[id], d1=new Date();
     var inT = S1.shop==='store' ? f1StoreIn(id,d1) : 7*60+40, outT = S1.shop==='store' ? 21*60+10 : 22*60+10;
     if(f1a && f1a.visible && f1a.ph!=='out') return { online:true, text: f1a.ph==='rest' ? '쉬는 중' : '' };
+    if(t>=inT && t<outT && f1LunchNow(S1.shop,t)) return { online:false, text:'점심시간' };
     if(t>=inT && t<outT) return { online:true, text:'' };
     return { online:false, text: t<inT ? '출근 전' : '퇴근' }; }
   var n=FLOORS.B1 && FLOORS.B1.actors[id];
   if(n && n.visible) return { online:true, text:'' };
+  if(/^b1c/.test(id) && t>=15*60 && t<15*60+20) return { online:true, text:'점심시간' };   // 주방 식구는 식당에서 먹는다
   return { online:false, text: t<8*60 ? '출근 전' : '퇴근' };
 };
+(function(){ var base=window.__npcStatus, MAP={ nam:'5:nam', han:'5:han', bartender:'2:npcBartender', server:'2:npcServer', b1cashier:'B1:b1cashier', b1cook1:'B1:b1cook1', b1cook2:'B1:b1cook2',
+    f1ham:'1:f1ham', f1seo:'1:f1seo', f1jin:'1:f1jin', f1ryu:'1:f1ryu', f1woo:'1:f1woo' };
+  window.__npcStatus=function(id){ var k=MAP[id]; if(k && window.__ccAway && window.__ccAway[k]) return { online:true, text:'옥상 연주회' }; return base(id); }; })();   // 금요일 연주회를 듣는 중
 function barStep(a,now){                                          // 바텐더: 카운터 뒤를 옆으로만 오간다
   if(!a||!a.visible||a.onBar===false) return;
   var dt=Math.min(100,now-(a.lastT||now)), dx=a.tx-a.x; a.lastT=now;
@@ -977,6 +1002,7 @@ function barStep(a,now){                                          // 바텐더: 
 var ROOF_LINES=[['도시락 맛있다'],['바람 좋다~'],['여기가 명당이네'],['하늘 좀 봐요'],['참새 귀엽다'],['남산타워 보인다'],['오후도 힘내자'],['커피 한 모금'],['졸리다..'],['꽃 예쁘게 폈네']];
 function roofTick(F,now,off){
   roofGuests(F,now,off);
+  concertTick(F,now,off);
   var d=new Date(), wd=d.getDay(), wx=B.weather(), on=wd>=1&&wd<=5&&d.getHours()===12&&wx!=='rain'&&wx!=='snow';
   var key=d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate();
   if(!on){ for(var k in F.actors) if(/^roof/.test(k)) F.actors[k].visible=false; return; }
@@ -1071,6 +1097,272 @@ function drawTorches(F,g,ph){
   g.restore();
 }
 
+// ---- 금요일 17시 옥상 첼로 연주회 ----
+// 근무일인 금요일 17:00~17:15, 연주자 조가 연못 위쪽에 의자를 놓고 첼로를 켠다.
+// 16:55부터 그날 나와 있는 사람이 모두 옥상으로 올라와 연못 둘레(벤치 · 돗자리 · 방석)에 앉아 듣는다:
+// 3층 직원(office-main 이 window.__concertQ 로 보낸다, 연차·출장·조퇴로 없는 사람은 빠진다) · 사장님 · 5층 남박사와 한교수 ·
+// 2층 안내·보안·바 직원 · 1층 매장·카페 직원 · 지하 식당 식구. 올라와 있는 동안 자기 층 그림에선 빠진다(window.__ccAway).
+// 곡은 금요일마다 순서가 바뀌고, 옥상을 보고 있으면(배경음악을 켜 둔 상태에서) 첼로 소리를 즉석에서 만들어 들려준다.
+var CC_GATHER=16*60+55, CC_START=17*60, CC_END=17*60+15, CC_OUT=17*60+19;
+function ccDay(d){ return d.getDay()===5 && (!B.workDay || B.workDay()); }
+function ccSec(d){ return d.getHours()*3600+d.getMinutes()*60+d.getSeconds()+d.getMilliseconds()/1000; }
+function concertPhase(){ var d=new Date(); if(!ccDay(d)) return null; var s=ccSec(d);
+  return s<CC_GATHER*60 ? null : s<CC_START*60 ? 'gather' : s<CC_END*60 ? 'play' : s<CC_OUT*60 ? 'leave' : null; }
+window.__concertPhase=concertPhase;
+window.__concertHold=function(){ var d=new Date(), t=d.getHours()*60+d.getMinutes(); return ccDay(d) && t>=16*60+48 && t<CC_OUT+1; };   // 이 사이엔 다른 층 나들이를 새로 시작하지 않는다
+
+// 악보: '음이름옥타브:박' (R=쉼표, 화음은 +로 잇는다)
+var CC_NOTE={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+function ccParse(str,tr){ var out=[]; str.trim().split(/\s+/).forEach(function(tok){ var p=tok.split(':'), b=p[1]?parseFloat(p[1]):1;
+  if(p[0]==='R'){ out.push({m:[],b:b}); return; }
+  out.push({ b:b, m:p[0].split('+').map(function(n){ var mm=/^([A-G])([#b]?)(\d)$/.exec(n); return 12*(+mm[3]+1)+CC_NOTE[mm[1]]+(mm[2]==='#'?1:mm[2]==='b'?-1:0)+(tr||0); }) }); }); return out; }
+function cc16(s){ return s.split(' ').map(function(n){ return n+':.25'; }).join(' '); }
+function ccTwice(s){ return s+' '+s; }
+var CC_BACH=[ccTwice('G2 D3 B3 A3 B3 D3 B3 D3'),ccTwice('G2 E3 C4 B3 C4 E3 C4 E3'),ccTwice('G2 F#3 C4 B3 C4 F#3 C4 F#3'),ccTwice('G2 G3 B3 A3 B3 G3 B3 G3'),
+  'G2 E3 B3 A3 B3 G3 F#3 G3 E3 G3 F#3 G3 B2 D3 C#3 B2',ccTwice('C#3 G3 A3 G3 A3 G3 A3 G3'),'F#3 A3 D4 C#4 D4 A3 G3 A3 F#3 A3 G3 A3 D3 F#3 E3 D3',ccTwice('E2 B2 G3 F#3 G3 B2 G3 B2')].map(cc16);
+var CC_CANON={ bass:'D3:2 A2:2 B2:2 F#2:2 G2:2 D2:2 G2:2 A2:2', m1:'F#4:2 E4:2 D4:2 C#4:2 B3:2 A3:2 B3:2 C#4:2', m2:'D4:2 C#4:2 B3:2 A3:2 G3:2 F#3:2 G3:2 E3:2',
+  v1:'D3 F#3 A3 G3 F#3 D3 F#3 E3 D3 B2 D3 A3 G3 B3 A3 G3' };
+var CC_BRAHMS='E4:.5 E4:.5 G4:2 E4:.5 E4:.5 G4:2 E4:.5 G4:.5 C5:1 B4:1.5 A4:.5 A4:1 G4:1 D4:.5 E4:.5 F4:1 D4:1 D4:.5 E4:.5 F4:2 D4:.5 F4:.5 B4:.5 A4:.5 G4:1 B4:1 C5:2 '+
+  'C4:.5 C4:.5 C5:2 A4:.5 F4:.5 G4:2 E4:.5 C4:.5 F4:1 G4:1 A4:1 G4:2 C4:.5 C4:.5 C5:2 A4:.5 F4:.5 G4:2 E4:.5 C4:.5 F4:1 E4:1 D4:1 C4:3';
+var CC_ODE='E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 E4:1.5 D4:.5 D4:2 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4:1.5 C4:.5 C4:2 '+
+  'D4 D4 E4 C4 D4 E4:.5 F4:.5 E4 C4 D4 E4:.5 F4:.5 E4 D4 C4 D4 G3:2 E4 E4 F4 G4 G4 F4 E4 D4 C4 C4 D4 E4 D4:1.5 C4:.5 C4:2';
+var CC_GRACE='D3 G3:2 B3:.5 G3:.5 B3:2 A3 G3:2 E3 D3:2 D3 G3:2 B3:.5 G3:.5 B3:2 A3 D4:3 D4:2 B3 D4:1.5 B3:.5 G3 B3:2 A3 G3:2 E3 D3:2 D3 G3:2 B3:.5 G3:.5 B3:2 A3 G3:3';
+var CC_ELISE={ a:'E4:.25 D#4:.25 E4:.25 D#4:.25 E4:.25 B3:.25 D4:.25 C4:.25 A3:.75 C3:.25 E3:.25 A3:.25 B3:.75 E3:.25 G#3:.25 B3:.25 C4:.75 E3:.25 '+
+  'E4:.25 D#4:.25 E4:.25 D#4:.25 E4:.25 B3:.25 D4:.25 C4:.25 A3:.75 C3:.25 E3:.25 A3:.25 B3:.75 E3:.25 C4:.25 B3:.25 A3:1',
+  b:'B3:.25 C4:.25 D4:.25 E4:.75 G3:.25 F4:.25 E4:.25 D4:.75 F3:.25 E4:.25 D4:.25 C4:.75 E3:.25 D4:.25 C4:.25 B3:1' };
+var CC_TWINKLE='C4 C4 G4 G4 A4 A4 G4:2 F4 F4 E4 E4 D4 D4 C4:2 G4 G4 F4 F4 E4 E4 D4:2 G4 G4 F4 F4 E4 E4 D4:2 C4 C4 G4 G4 A4 A4 G4:2 F4 F4 E4 E4 D4 D4 C4:2';
+function ccEighths(s){ return s.split(' ').map(function(t){ var p=t.split(':'), b=p[1]?parseFloat(p[1]):1, n=Math.round(b*2), o=[]; for(var i=0;i<n;i++) o.push(p[0]+':.5'); return o.join(' '); }).join(' '); }
+// 즉흥곡: 그 금요일만의 곡 (솔 오음음계로 3박자 산책, 4마디마다 솔·레에서 쉰다)
+function ccImprov(seed){
+  var sc=['G2','A2','B2','D3','E3','G3','A3','B3','D4','E4'], rng=function(){ seed=(seed*16807)%2147483647; return seed/2147483647; }, i=5, out=[];
+  var RH=[[1,1,1],[2,1],[1.5,.5,1],[1,.5,.5,1]];
+  for(var bar=0;bar<24;bar++){
+    if(bar%4===3){ out.push((rng()<0.5?'G3':'D3')+':3'); i=rng()<0.5?5:3; continue; }
+    RH[Math.floor(rng()*RH.length)].forEach(function(b){ i=Math.max(0,Math.min(sc.length-1,i+[-2,-1,-1,1,1,2,0][Math.floor(rng()*7)])); out.push(sc[i]+':'+b); }); }
+  out.push('G2+D3+B3:4'); return out.join(' '); }
+var CC_PIECES={
+  bach:   { title:['바흐','무반주 첼로 모음곡 1번'], bpm:60, src:function(){ return CC_BACH.join(' ')+' '+CC_BACH.join(' ')+' '+CC_BACH.slice(0,4).join(' ')+' G2+D3+B3:3'; } },
+  canon:  { title:['파헬벨','캐논'], bpm:58, src:function(){ var c=CC_CANON; return [c.bass,c.bass,c.m1,c.m2,c.v1,c.v1,c.m1,c.m2,'D3+A3+F#4:4'].join(' '); } },
+  brahms: { title:['브람스','자장가'], bpm:70, tr:-5, src:function(){ return CC_BRAHMS+' R:1 '+CC_BRAHMS+' R:1 C4+G4:3'; } },
+  ode:    { title:['베토벤','환희의 송가'], bpm:84, src:function(){ return ccParseTr(CC_ODE,-10)+' R:1 '+ccParseTr(CC_ODE,2)+' D3+A3+F#4:4'; }, raw:true },
+  grace:  { title:['어메이징 그레이스'], bpm:58, src:function(){ return CC_GRACE+' R:1 '+CC_GRACE+' G2+D3+B3:3'; } },
+  elise:  { title:['베토벤','엘리제를 위하여'], bpm:56, src:function(){ var e=CC_ELISE; return [e.a,e.a,e.b,e.a,e.b,e.a,'A2+E3+C4:3'].join(' '); } },
+  twinkle:{ title:['모차르트','작은 별 변주곡'], bpm:96, src:function(){ return ccParseTr(CC_TWINKLE,-10)+' '+ccParseTr(ccEighths(CC_TWINKLE),-10)+' '+ccParseTr(CC_TWINKLE,2)+' D3+A3+F#4:4'; }, raw:true }
+};
+function ccParseTr(s,tr){ return ccParse(s,tr).map(function(n){ return n.m.length ? n.m.map(ccName).join('+')+':'+n.b : 'R:'+n.b; }).join(' '); }
+function ccName(m){ return ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'][m%12]+(Math.floor(m/12)-1); }
+function ccNotes(src,bpm,tr){ var sp=60/bpm, t=0; return ccParse(src,tr).map(function(n){ var o={ t:t, d:n.b*sp, m:n.m }; t+=n.b*sp; return o; }); }
+var CC_POOL=['bach','canon','brahms','ode','grace','elise','twinkle'];
+var CC_INTRO=[['안녕하세요, 연주자 조입니다','금요일 다섯 시, 편하게 들어 주세요'],['한 주 고생 많으셨어요','첼로로 주말을 열어 볼게요'],['오늘도 와 주셔서 고마워요','연못 물소리랑 같이 들어 주세요'],
+  ['바람이 좋네요','오늘은 이 곡들로 준비했어요'],['다들 앉으셨죠?','그럼 시작할게요']];
+var CC_NEXT=[['다음 곡은'],['이번엔'],['이어서'],['좋아하실 것 같아서'],['조금 분위기를 바꿔서']];
+var CC_THANKS=[['감사합니다'],['박수 고마워요!'],['다들 잘 들어 주셔서','힘이 나네요'],['이 곡, 저도 좋아해요'],['연못 잉어도','듣고 있었네요']];
+var CC_OUTRO=[['오늘 연주는 여기까지!','좋은 주말 보내세요'],['다음 주 금요일','다섯 시에 또 만나요'],['한 주 마무리','잘 하세요~'],['들어 주셔서','정말 고마웠어요']];
+var CC_ENC=[['앙코르!'],['한 곡 더!'],['앙코르~'],['조금만 더요!']];
+var CC_CLAP=[['짝짝짝!'],['브라보!'],['와아~'],['최고예요!'],['짝짝'],['앙코르는요?'],['소름 돋았어요'],['좋다..']];
+// 조가 하루 동안 쓸 프로그램: 금요일마다 곡 순서가 바뀌고, 마지막은 즉흥곡 앙코르
+var CC_PROG=null;
+function ccProgram(d){
+  var dk=d.toDateString(); if(CC_PROG && CC_PROG.dk===dk) return CC_PROG;
+  var seed=PO.hash(dk+'cello')||7, rng=function(){ seed=(seed*16807)%2147483647; return seed/2147483647; };
+  var pool=CC_POOL.slice(); for(var i=pool.length-1;i>0;i--){ var j=Math.floor(rng()*(i+1)), tmp=pool[i]; pool[i]=pool[j]; pool[j]=tmp; }
+  var segs=[], t=0, intro=CC_INTRO[Math.floor(rng()*CC_INTRO.length)];
+  function add(s){ s.t0=t; t+=s.dur; segs.push(s); }
+  add({ kind:'talk', dur:14, line:intro });
+  var enc=ccNotes(ccImprov(PO.hash(dk+'improv')||11),66), encDur=enc[enc.length-1].t+enc[enc.length-1].d+1.5;
+  var budget=900-14-(5+5+encDur+8)-12;
+  pool.forEach(function(k,ix){ var P=CC_PIECES[k], notes=ccNotes(P.src(),P.bpm,P.raw?0:(P.tr||0)), dur=notes[notes.length-1].t+notes[notes.length-1].d+1.5;
+    if(t+6+dur+8>budget) return;
+    if(ix>0 || segs.length>1) add({ kind:'talk', dur:6, line:CC_NEXT[Math.floor(rng()*CC_NEXT.length)].concat([P.title.join(' — ')]) });
+    add({ kind:'piece', key:k, title:P.title, notes:notes, dur:dur });
+    add({ kind:'clap', dur:8, line:CC_THANKS[Math.floor(rng()*CC_THANKS.length)] }); });
+  add({ kind:'encore', dur:5 });
+  add({ kind:'talk', dur:5, line:['앙코르 고마워요!','즉흥으로 한 곡만 더'] });
+  add({ kind:'piece', key:'improv', title:['조의 즉흥곡','금요일 다섯 시'], notes:enc, dur:encDur });
+  add({ kind:'clap', dur:8, line:['감사합니다!'] });
+  add({ kind:'talk', dur:Math.max(6,900-t), line:CC_OUTRO[Math.floor(rng()*CC_OUTRO.length)] });
+  CC_PROG={ dk:dk, segs:segs }; return CC_PROG;
+}
+function ccSegNow(d){ var el=ccSec(d)-CC_START*60, P=ccProgram(d); if(el<0||el>=900) return null;
+  for(var i=0;i<P.segs.length;i++){ var s=P.segs[i]; if(el>=s.t0 && el<s.t0+s.dur) return { seg:s, el:el-s.t0, i:i }; } return null; }
+
+// 첼로 소리: 톱니파 + 삼각파를 낮은 대역 통과 필터로 둥글게, 활 긋는 느낌으로 천천히 부풀고 비브라토를 건다
+var CELLO={ ctx:null, key:'', t0:0, idx:0, master:null };
+function celloStop(){ var c=CELLO.ctx, m=CELLO.master; if(m && c){ try{ m.gain.cancelScheduledValues(c.currentTime); m.gain.setTargetAtTime(0.0001,c.currentTime,0.12); setTimeout(function(){ try{ m.disconnect(); }catch(e){} },900); }catch(e){} }
+  CELLO.master=null; CELLO.key=''; if(window.__bgmDuck) window.__bgmDuck(1); }
+function celloNote(c,out,n,t){
+  n.m.forEach(function(midi,k){
+    var f=440*Math.pow(2,(midi-69)/12), dur=Math.max(0.12,n.d*0.96), vol=(n.m.length>1?0.32:0.5)*(midi<45?1.1:1);
+    var o1=c.createOscillator(), o2=c.createOscillator(), lfo=c.createOscillator(), lg=c.createGain(), lp=c.createBiquadFilter(), body=c.createBiquadFilter(), g=c.createGain();
+    o1.type='sawtooth'; o2.type='triangle'; o1.frequency.value=f; o2.frequency.value=f*1.004;
+    lfo.frequency.value=5.1; lg.gain.setValueAtTime(0,t); lg.gain.linearRampToValueAtTime(f*0.006,t+Math.min(0.35,dur*0.6)); lfo.connect(lg); lg.connect(o1.frequency); lg.connect(o2.frequency);
+    lp.type='lowpass'; lp.frequency.value=Math.min(2600,f*4.5+300); lp.Q.value=0.8; body.type='peaking'; body.frequency.value=230; body.Q.value=1.1; body.gain.value=5;
+    var at=Math.min(0.09,dur*0.35)+(k*0.018);
+    g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+at); g.gain.linearRampToValueAtTime(vol*0.82,t+Math.max(at+0.01,dur*0.7)); g.gain.linearRampToValueAtTime(0.0001,t+dur+0.16);
+    o1.connect(lp); o2.connect(lp); lp.connect(body); body.connect(g); g.connect(out);
+    o1.start(t); o2.start(t); lfo.start(t); o1.stop(t+dur+0.2); o2.stop(t+dur+0.2); lfo.stop(t+dur+0.2); });
+}
+function celloSync(seg,el,key){
+  var c=window.__sfxCtx && window.__sfxCtx(); if(!c){ if(CELLO.master) celloStop(); return; }
+  var vol=(window.__sfxVol?window.__sfxVol():0.6)*0.42;
+  if(CELLO.key!==key || CELLO.ctx!==c || !CELLO.master || Math.abs((c.currentTime-CELLO.t0)-el)>1.2){
+    celloStop(); CELLO.ctx=c; CELLO.key=key; CELLO.t0=c.currentTime-el; CELLO.idx=0;
+    while(CELLO.idx<seg.notes.length && seg.notes[CELLO.idx].t<el-0.05) CELLO.idx++;
+    var m=c.createGain(); m.gain.value=vol; m.connect(c.destination); CELLO.master=m; }
+  CELLO.master.gain.setTargetAtTime(vol,c.currentTime,0.2);
+  if(window.__bgmDuck) window.__bgmDuck(0.25);
+  var ahead=c.currentTime+0.7;
+  while(CELLO.idx<seg.notes.length && CELLO.t0+seg.notes[CELLO.idx].t<ahead){ var n=seg.notes[CELLO.idx++]; if(n.m.length) celloNote(c,CELLO.master,n,Math.max(c.currentTime+0.02,CELLO.t0+n.t)); }
+}
+
+// 자리: 조는 연못 위쪽, 듣는 사람은 아래 벤치 · 양옆 세로 벤치 · 잔디 돗자리 · 옆 잔디 방석 · 데크 방석 순으로 앉는다 (모두 조 쪽을 본다)
+var CC_JO={ c:14, r:17, x:15*T-17, feet:17*T+28 };
+var CC_SEATS=(function(){ var S=[];
+  function seat(cx,feet,dir,ac,ar,kind){ S.push({ x:cx-17, feet:feet, dir:dir, c:ac, r:ar, kind:kind }); }
+  seat(480,676,'up',14,21,'bench'); seat(448,676,'up',13,21,'bench'); seat(512,676,'up',15,21,'bench');      // 0 사장님 · 1·2 5층 두 분
+  seat(392,606,'right',10,18,'bench'); seat(568,606,'left',19,18,'bench'); seat(392,644,'right',10,19,'bench'); seat(568,644,'left',19,19,'bench');
+  [400,368,432,336,464,304,496,528,560,592,624,656].forEach(function(cx){ seat(cx,730,'up',Math.floor(cx/T),22,'mat'); });
+  seat(304,600,'right',9,18,'cushion'); seat(656,600,'left',20,18,'cushion'); seat(304,640,'right',9,19,'cushion'); seat(656,640,'left',20,19,'cushion');
+  [400,432,368,464,336,496,304,528,560,592,624,656].forEach(function(cx){ seat(cx,794,'up',Math.floor(cx/T),24,'cushion'); });
+  return S; })();
+var CC_LIFT={ bench:null, mat:-2, cushion:0 };
+// 다른 층에서 올라오는 사람들 (16:55부터 몇 초 뒤에 옥상에 나타나나)
+function ccFixedRoster(){
+  var F2=FLOORS['2'], ga=F2 && F2.actors && F2.actors.guard, gLeo=ga && ga.lookId==='guardLeo';
+  return [
+    { key:'nam', fl:'5', aid:'nam', look:NAM_LOOK, name:'남박사', npc:'nam', at:20, seat:1, grp:'nam' },
+    { key:'han', fl:'5', aid:'han', look:HAN_LOOK, name:'한교수', npc:'han', at:34, seat:2, grp:'han' },
+    { key:'b1cashier', fl:'B1', aid:'b1cashier', look:PO.B1LOOK.cashier, name:'현계산', npc:'b1cashier', at:48, grp:'b1' },
+    { key:'b1cook1', fl:'B1', aid:'b1cook1', look:PO.B1LOOK.cook1, name:'윤요리', npc:'b1cook1', at:54, grp:'b1' },
+    { key:'b1cook2', fl:'B1', aid:'b1cook2', look:PO.B1LOOK.cook2, name:'주요리', npc:'b1cook2', at:60, grp:'b1' },
+    { key:'f1ham', fl:'1', aid:'f1ham', look:F1_STAFF.f1ham.look, name:'함 매니저', npc:'f1ham', at:76, grp:'f1' },
+    { key:'f1seo', fl:'1', aid:'f1seo', look:F1_STAFF.f1seo.look, name:'서 스태프', npc:'f1seo', at:82, grp:'f1' },
+    { key:'f1jin', fl:'1', aid:'f1jin', look:F1_STAFF.f1jin.look, name:'바리스타 진', npc:'f1jin', at:96, grp:'f1' },
+    { key:'f1ryu', fl:'1', aid:'f1ryu', look:F1_STAFF.f1ryu.look, name:'바리스타 류', npc:'f1ryu', at:102, grp:'f1' },
+    { key:'f1woo', fl:'1', aid:'f1woo', look:F1_STAFF.f1woo.look, name:'우서빙', npc:'f1woo', at:108, grp:'f1' },
+    { key:'yun', fl:'2', aid:'yun', look:PO.F2LOOK.yun, name:'윤안내', npc:'yun', at:124, grp:'f2' },
+    { key:'kang', fl:'2', aid:'kang', look:PO.F2LOOK.kang, name:'강안내', npc:'kang', at:130, grp:'f2' },
+    { key:'bartender', fl:'2', aid:'npcBartender', look:PO.F2LOOK.bartender, name:'바텐더 박', npc:'bartender', at:142, grp:'f2' },
+    { key:'server', fl:'2', aid:'npcServer', look:PO.F2LOOK.server, name:'강서빙', npc:'server', at:148, grp:'f2' },
+    { key:'sec', fl:'2', aid:'guard', look:gLeo?PO.F2LOOK.guardLeo:PO.F2LOOK.guard, name:gLeo?'표보안':'오보안', npc:gLeo?'guardLeo':'guard', at:160, grp:'sec' },
+    { key:'boss', fl:'', aid:'', look:PO.VISITORS.visitorBoss, name:'사장님', npc:'boss', at:236, seat:0, grp:'boss' } ];
+}
+var CC_TALK={
+  all:['와… 소리 좋다','눈 감고 들어야지','저음이 배까지 울려','연못에 소리가 번진다','금요일 다섯 시의 호사','한 주가 녹는다','이 곡 제목이 뭐더라','바람도 박자 맞추네','핸드폰 무음 했지?',
+    '이래서 금요일이 좋아','첼로 배워 보고 싶다','소름 돋았어','하늘 색이 곡이랑 어울려','참새도 조용하네','이 순간 저장','다음 주도 꼭 와야지','마음이 차분해진다','손가락 움직이는 것 좀 봐'],
+  f3:['마감 생각 잠깐 끄자','이거 듣고 시안 다시 봐야지','메일은 이따가..','스티커 테마로 첼로 어때?','노트 표지에 악보 넣어 볼까','이 곡 사무실 BGM 하자'],
+  boss:['매주 하길 잘했어','조 선생님 최고!','다들 표정이 좋네','다음 달엔 바이올린도 불러 볼까','이게 복지지','음… 좋다'],
+  nam:['이 소리는 밤색이야','첼로 색은 먹색 17호','음에도 결이 있지','종이에 받아 적고 싶군','한교수님, 좋지요?'],
+  han:['…오래전에 들은 곡이군','음은 기록되지 않아도 남지','흠.','이 시각엔 좀 낫군','조… 기억해 둬야겠어','관찰은 잠시 쉬지'],
+  b1:['오늘 저녁 메뉴 생각이 안 나네','국 끓는 소리보다 좋다','앉으니까 다리가 풀린다','이런 날엔 잡채지','주방 불 끄고 왔죠?'],
+  f1:['카페 BGM으로 틀고 싶다','손님들도 들으면 좋을 텐데','엽서에 이 장면 그려야지','진아, 원두 생각 나지?','매장 잠깐 비워도 괜찮겠지'],
+  f2:['로비에서도 연주해 주시면','바에 첼로 곡 어울리겠다','이 곡 칵테일 이름으로 하자','안내데스크 잠깐 비웠어요','자몽 에이드 생각나네'],
+  sec:['…좋군. 이상 무!','근무 중이지만 잠깐만','경계 태세… 잠시 해제','난간 이상 없음, 음악 이상 없음']
+};
+var CC_KIND_GRP={ f3:'f3' };
+function ccSay(a,lines,now,ms){ a.bubble=Array.isArray(lines[0])?lines[Math.floor(Math.random()*lines.length)]:[lines[Math.floor(Math.random()*lines.length)]]; a.talkUntil=now+(ms||3000); }
+function ccAwaySet(r,on){ if(!r.fl) return; var W2=window.__ccAway=window.__ccAway||{}; if(on) W2[r.fl+':'+r.aid]=1; else delete W2[r.fl+':'+r.aid]; }
+function ccSeatFree(F,pref){ var C=F.cc; if(pref!=null && !C.taken[pref]) return pref;
+  for(var i=3;i<CC_SEATS.length;i++) if(!C.taken[i]) return i; return -1; }
+function ccSpawn(F,r,now,off){
+  var C=F.cc, si=ccSeatFree(F,r.seat); if(si<0){ r.done=true; return; }
+  C.taken[si]=1; var cp={}; for(var k in r.look) cp[k]=r.look[k];
+  var a=npcActor(F,'cc_'+r.key,cp,r.name); a.visible=true; a.cc=r; a.ccSeat=si; a.stepMs=290; a.sid=r.sid||null; a.ccNpc=r.npc||null; a.nextTalk=now+20000+Math.random()*40000;
+  r.actor=a; ccAwaySet(r,true);
+  var S=CC_SEATS[si];
+  if(off){ ccSit(a,S); return; }
+  placeAt(F,a,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'down' }); a.ccWalk=true; setGoal(F,a,{ c:S.c, r:S.r, face:S.dir },now);
+}
+function ccSit(a,S){ a.path=null; a.goal=null; a.x=S.x; a.feet=S.feet; a.dir=S.dir; a.onFurn=true; a.ccWalk=false; a.ccLift=CC_LIFT[S.kind]; a.tile={c:S.c,r:S.r}; }
+function ccLeave(F,a,now,off){ var r=a.cc; a.ccOut=true; a.onFurn=false; a.ccLift=null; a.bubble=null; a.emo=null; a.talkUntil=0;
+  if(off){ ccGone(F,a); return; }
+  var S=CC_SEATS[a.ccSeat]; a.x=S.c*T-1; a.feet=S.r*T+29; a.tile={c:S.c,r:S.r}; setGoal(F,a,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'up' },now); if(!a.path) ccGone(F,a); }
+function ccGone(F,a){ var r=a.cc; a.visible=false; delete F.actors[a.id]; if(F.cc) delete F.cc.taken[a.ccSeat]; r.actor=null; r.left=true; ccAwaySet(r,false); if(r.q) r.q.done=true; }
+function concertTick(F,now,off){
+  var ph=concertPhase(), d=new Date(), dk=d.toDateString(), Q=window.__concertQ=window.__concertQ||{};
+  PO.STATE.concert=!!ph;
+  if(!ph){
+    if(F.cc){ for(var k0 in F.actors) if(/^cc_/.test(k0)){ var a0=F.actors[k0]; if(a0.cc) ccGone(F,a0); else delete F.actors[k0]; } F.cc=null; }
+    window.__ccAway={}; for(var q0 in Q) Q[q0].done=true; if(CELLO.master) celloStop(); return; }
+  if(!F.cc || F.cc.dk!==dk){ F.cc={ dk:dk, taken:{}, roster:ccFixedRoster(), staff:{}, segI:-1, logged:false }; }
+  var C=F.cc, el=ccSec(d)-CC_GATHER*60;
+  // 조: 16:55에 올라와 의자에 앉는다
+  var jo=F.actors.cc_jo;
+  if(!jo && ph!=='leave'){ var jl={}; for(var kj in PO.VISITORS.visitorPlayer) jl[kj]=PO.VISITORS.visitorPlayer[kj];
+    jo=npcActor(F,'cc_jo',jl,'연주자 조'); jo.visible=true; jo.ccNpc='visitorPlayer'; jo.stepMs=300; jo.isJo=true;
+    if(off || el>40){ ccSit(jo,{ x:CC_JO.x, feet:CC_JO.feet, dir:'down', c:CC_JO.c, r:CC_JO.r, kind:'bench' }); jo.ccLift=6; }
+    else { placeAt(F,jo,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'down' }); jo.ccWalk=true; setGoal(F,jo,{ c:CC_JO.c, r:CC_JO.r, face:'down' },now); jo.bubble=['안녕하세요~','오늘도 잠깐 실례할게요']; jo.talkUntil=now+3200; } }
+  // 올라오는 사람들: 다른 층 사람은 정해진 시각에, 3층 직원은 엘리베이터에서 내리는 대로
+  if(ph!=='leave'){
+    C.roster.forEach(function(r){ if(!r.actor && !r.left && !r.done && el>=r.at && el<16*60) ccSpawn(F,r,now,off || el>r.at+90); });
+    for(var sid in Q){ var q=Q[sid]; if(q.done || C.staff[sid]) continue;
+      var look=STAFFLOOK[sid]; if(!look){ q.done=true; continue; }
+      var r3={ key:'s_'+sid, fl:'', look:look, name:staffName(sid), sid:sid, grp:'f3', q:q }; C.staff[sid]=r3; ccSpawn(F,r3,now,off); } }
+  // 걷다가 자리에 닿으면 앉는다 · 끝나면 차례로 일어나 내려간다
+  var leaving=ph==='leave', lel=ccSec(d)-CC_END*60;
+  for(var id in F.actors){ var a=F.actors[id]; if(!/^cc_/.test(id)) continue;
+    if(off) step(a,now);
+    if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
+    if(a.emoUntil && now>a.emoUntil){ a.emo=null; a.emoUntil=0; }
+    if(a.isJo){
+      if(a.ccWalk && !a.path){ ccSit(a,{ x:CC_JO.x, feet:CC_JO.feet, dir:'down', c:CC_JO.c, r:CC_JO.r, kind:'bench' }); a.ccLift=6; }
+      if(leaving && lel>75 && !a.ccOut){ a.ccOut=true; a.onFurn=false; a.ccLift=null; a.bubble=null; a.x=CC_JO.c*T-1; a.feet=CC_JO.r*T+29; if(off){ a.visible=false; delete F.actors[id]; } else { setGoal(F,a,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'up' },now); } }
+      else if(a.ccOut && !a.path){ a.visible=false; delete F.actors[id]; }
+      continue; }
+    if(a.ccOut){ if(!a.path) ccGone(F,a); continue; }
+    if(a.ccWalk && !a.path) ccSit(a,CC_SEATS[a.ccSeat]);
+    if(leaving && !a.ccWalk && lel>8+(a.ccSeat%12)*3+Math.floor(a.ccSeat/12)*5) ccLeave(F,a,now,off);
+  }
+  if(leaving) { if(CELLO.master) celloStop(); return; }
+  // 연주 진행: 인사 → (곡 소개 → 곡 → 박수) × 몇 곡 → 앙코르 → 즉흥곡 → 끝인사
+  var sn=ph==='play' ? ccSegNow(d) : null;
+  if(jo && !jo.ccWalk && sn){
+    if(sn.i!==C.segI){ C.segI=sn.i; var sg=sn.seg;
+      if(!C.logged && B.log){ C.logged=true; B.log('🎻','연주자 조의 금요일 옥상 첼로 연주회 — 다 같이 올라가 들었습니다'); }
+      if(sg.kind==='talk'){ jo.bubble=sg.line; jo.talkUntil=now+Math.min(sg.dur*1000-300,5200); }
+      else if(sg.kind==='piece'){ jo.bubble=['♪ '+sg.title[0]].concat(sg.title[1]?[sg.title[1]]:[]); jo.talkUntil=now+4200; }
+      else if(sg.kind==='clap'){ ccClap(F,now); jo.bubble=sg.line; jo.talkUntil=now+3000; jo.emo='happy'; jo.emoUntil=now+3000; }
+      else if(sg.kind==='encore'){ var n=0; for(var ei in F.actors){ var ea=F.actors[ei]; if(ea.cc && !ea.ccWalk && !ea.ccOut && Math.random()<0.35 && n<6){ n++; ccSay(ea,CC_ENC,now+Math.random()*900,2600); } } } }
+    if(sn.seg.kind==='piece'){
+      if(F===activeFloor()) celloSync(sn.seg,sn.el,dk+':'+sn.i); else if(CELLO.master) celloStop();
+      for(var tid in F.actors){ var ta=F.actors[tid]; if(!ta.cc || ta.ccWalk || ta.ccOut || ta.talkUntil) continue;    // 연주 중엔 가끔 조용히 혼잣말
+        if(now>ta.nextTalk){ ta.nextTalk=now+45000+Math.random()*70000; if(sn.el<6 || sn.el>sn.seg.dur-6) continue;
+          var gl=CC_TALK[ta.cc.grp]||[], pool=Math.random()<0.55&&gl.length?gl:CC_TALK.all; ccSay(ta,pool,now,2800); } }
+    } else if(CELLO.master) celloStop();
+  } else if(CELLO.master) celloStop();
+}
+function ccClap(F,now){ for(var id in F.actors){ var a=F.actors[id]; if(!a.cc || a.ccWalk || a.ccOut) continue;
+  if(Math.random()<0.4){ ccSay(a,CC_CLAP,now,2600); } else { a.emo='happy'; a.emoUntil=now+2600; } } }
+// 연주 중 그림: 조의 의자와 첼로(활이 오간다), 떠오르는 음표, 잔디 돗자리 · 방석
+function ccDraw(F,list,now){
+  if(!F.cc) return;
+  var mats={}, d=new Date(), sn=concertPhase()==='play'?ccSegNow(d):null, playing=sn && sn.seg.kind==='piece';
+  for(var id in F.actors){ var a=F.actors[id]; if(a.cc && a.onFurn && !a.path){ var S=CC_SEATS[a.ccSeat]; if(S.kind==='cushion') mats['c'+a.ccSeat]=S; else if(S.kind==='mat') mats.mat=1; } }
+  list.push({ sy:16*T, draw:function(g){
+    if(mats.mat){ var x0=286, y0=22*T+6, w=388, h=24; R(g,x0,y0,w,h,'#f4ece0');
+      for(var i=0;i<w;i+=12) for(var j=0;j<h;j+=12) if(((i/12)+(j/12))%2===0) R(g,x0+i,y0+j,Math.min(12,w-i),Math.min(12,h-j),'#e88c84');
+      R(g,x0,y0,w,1,'#ffffff'); R(g,x0,y0+h-1,w,1,'#c8746c'); }
+    for(var k in mats){ if(k==='mat') continue; var S=mats[k], cx=S.x+17; ell(g,cx,S.feet-3,13,5,['#a9c9b4','#e8a88c','#f2d06a','#b9b4e0'][S.c%4]); ell(g,cx,S.feet-4,10,3,'rgba(255,255,255,0.35)'); } } });
+  var jo=F.actors.cc_jo; if(!jo || !jo.visible || jo.path || !jo.onFurn) return;
+  var cx=Math.round(jo.x)+17, fy=Math.round(jo.feet);
+  list.push({ sy:fy-1, draw:function(g){                                   // 나무 의자
+    R(g,cx-10,fy-12,20,4,'#8a5a3a'); R(g,cx-10,fy-12,20,1,'#b07a52'); R(g,cx-9,fy-8,2,8,'#6a4430'); R(g,cx+7,fy-8,2,8,'#6a4430'); } });
+  list.push({ sy:fy+2, draw:function(g){                                   // 첼로: 왼쪽 무릎 사이에 세우고(목은 왼쪽 어깨 옆) 오른손으로 활을 긋는다
+    var bx=cx-9, by=fy-3, bow=playing?Math.round(Math.sin(now/((sn.seg.notes[0]&&sn.seg.notes[0].d<0.3)?90:260))*6):0;
+    R(g,bx,by,1,3,'#3a3a3a');                                                    // 엔드핀
+    R(g,bx-6,by-12,13,11,'#a0582a'); R(g,bx-5,by-21,11,9,'#a0582a'); R(g,bx-4,by-22,9,1,'#a0582a'); R(g,bx-5,by-1,11,1,'#7a3e1a');
+    R(g,bx-6,by-12,1,10,'#c27a48'); R(g,bx-5,by-21,1,9,'#c27a48'); R(g,bx+6,by-12,1,10,'#7a3e1a'); R(g,bx+5,by-21,1,9,'#7a3e1a');
+    R(g,bx-3,by-15,1,3,'#3a1e10'); R(g,bx+3,by-15,1,3,'#3a1e10');                // f 구멍
+    R(g,bx,by-20,1,15,'#2a1a10'); R(g,bx-2,by-7,5,1,'#2a1a10');                // 지판 · 줄받침
+    R(g,bx,by-36,2,15,'#3a2216'); R(g,bx-1,by-39,4,3,'#3a2216'); R(g,bx-2,by-38,1,1,'#c9a25c'); R(g,bx+3,by-38,1,1,'#c9a25c');   // 목 · 스크롤
+    R(g,bx-4+bow,by-9,24,1,'#e0d2a8'); R(g,bx+18+bow,by-10,3,3,'#3a2216'); } });   // 활
+  if(playing){ list.push({ sy:fy+3, draw:function(g){                        // 떠오르는 음표
+    g.font='12px NeoDGM, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+    for(var k=0;k<5;k++){ var p=((now/1000)*0.35+k*0.2)%1, x=cx+Math.round(Math.sin(p*5+k*2)*14)+(k-2)*7, y=fy-58-Math.round(p*60);
+      g.globalAlpha=Math.max(0,Math.min(1,(1-p)*1.4)); g.fillStyle=['#7a4ab0','#3a7ab0','#b0507a','#4a9a6a','#b07a2a'][k]; g.fillText(k%2?'♪':'♫',x,y); }
+    g.globalAlpha=1; g.textAlign='left'; } }); }
+}
+
 // ---- 지하 1층 구내식당 ----
 // 08~21시 운영(그 밖엔 저절로 불이 꺼진다) · 평일 점심(12~13시)엔 점심 먹는 직원이 엘리베이터로 우르르 내려와
 // 배식대 → 계산대 → 자리 순서로 움직이고 삼삼오오 모여 앉는다. 사장님은 일주일에 세 번쯤. 야근하면 저녁도 먹으러 온다
@@ -1116,6 +1408,9 @@ function b1Chat(F,a,now){
   if(mates.length && r<(boss?0.6:0.4)){ var qa=(boss?B1_BOSS_QA:B1_QA)[Math.floor(Math.random()*(boss?B1_BOSS_QA:B1_QA).length)], m=mates[Math.floor(Math.random()*mates.length)];
     b1Say(a,[qa[0]],now); m.replyAt=now+2600; m.replyLine=qa[1]; return; }
   if(boss){ b1Say(a,B1_BOSS_LINES,now); return; }
+  if(a.crew && B1_CREW_TALK[a.crew]){ var CT=B1_CREW_TALK[a.crew];
+    if(mates.length && r<0.45){ var cq=CT.qa[Math.floor(Math.random()*CT.qa.length)], cm=mates[Math.floor(Math.random()*mates.length)]; b1Say(a,[cq[0]],now); cm.replyAt=now+2600; cm.replyLine=cq[1]; }
+    else b1Say(a,r<0.8?CT.lines:B1_EAT_LINES,now); return; }
   if(a.barCrew){ if(mates.length && r<0.45){ var bq=B1_BAR_QA[Math.floor(Math.random()*B1_BAR_QA.length)], bm=mates[Math.floor(Math.random()*mates.length)]; b1Say(a,[bq[0]],now); bm.replyAt=now+2600; bm.replyLine=bq[1]; } else b1Say(a,B1_BAR_LINES,now); return; }
   if(a.secGuard){ b1Say(a,a.meal==='lunch'?B1_SEC_LUNCH:B1_SEC_LINES,now); return; }
   if(a.dinner){ b1Say(a,B1_DINNER_LINES,now); return; }
@@ -1164,8 +1459,9 @@ function lunchPlan(key){
   LUNCH_PLAN={ key:key, roof:roof, diners:diners, boss:boss };
   return LUNCH_PLAN;
 }
-function b1Look(id){ if(id==='boss') return PO.VISITORS.visitorBoss; return STAFFLOOK[id] || PO.VISITORS[id] || PO.F2LOOK[id]; }
-function b1Name(id){ if(id==='boss') return '사장님'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; return staffName(id); }
+var B1_CREW_LOOK={ b1cashier:'cashier', b1cook1:'cook1', b1cook2:'cook2' };
+function b1Look(id){ if(id==='boss') return PO.VISITORS.visitorBoss; if(F1_STAFF[id]) return F1_STAFF[id].look; if(B1_CREW_LOOK[id]) return PO.B1LOOK[B1_CREW_LOOK[id]]; return STAFFLOOK[id] || PO.VISITORS[id] || PO.F2LOOK[id]; }
+function b1Name(id){ if(id==='boss') return '사장님'; if(F1_STAFF[id]) return F1_STAFF[id].name; if(id==='b1cashier') return '현계산'; if(id==='b1cook1') return '윤요리'; if(id==='b1cook2') return '주요리'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; return staffName(id); }
 function b1MakeDiner(F,key,id,seat,now){
   var look=b1Look(id); if(!look) return null;
   var c1={}, c2={}; for(var k in look){ c1[k]=look[k]; c2[k]=look[k]; } c2.item='foodtray';
@@ -1187,6 +1483,7 @@ function b1Step(F,a,now,M,nowSec){
   switch(a.ph){
     case 'spawn': placeAt(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'down' });
       if(a.snackOnly){ a.ph='toVend'; var vt=a.snack==='ice'?M.VEND.ice:M.VEND.ramen[Math.floor(Math.random()*2)]; a.vendTile=vt; setGoal(F,a,{ c:vt.c, r:vt.r, face:vt.face },now); break; }
+      if(a.skipPay){ a.ph='toLine'; setGoal(F,a,{ c:M.LINE.c0+Math.floor(Math.random()*(M.LINE.c1-M.LINE.c0+1)), r:M.LINE.r, face:'up' },now); break; }   // 주방 식구는 바로 배식대로
       a.ph='toPay'; setGoal(F,a,{ c:M.PAY.c, r:M.PAY.r, face:'up' },now); break;                          // 들어오자마자 계산대
     case 'toVend': a.dir='left'; a.wait=now+(a.snack==='ramen'?3800:2200); a.ph='vend'; b1Say(a,B1_VEND_LINES[a.snack],now,2600);
       F.vendUse={ kind:a.snack, tile:a.vendTile||M.VEND.ice, until:now+(a.snack==='ramen'?3800:2200) }; break;
@@ -1240,6 +1537,13 @@ function wpStep(n,now){                                               // 정해�
   if(Math.abs(dx)<=0.5 && Math.abs(dy)<=0.5){ n.x=w.x; n.feet=w.feet; n.wp.shift(); if(!n.wp.length){ n.walking=false; n.frame=0; return true; } return false; }
   if(Math.abs(dx)>0.5){ n.x+=(dx>0?1:-1)*Math.min(Math.abs(dx),sp); n.dir=dx>0?'right':'left'; } else { n.feet+=(dy>0?1:-1)*Math.min(Math.abs(dy),sp); n.dir=dy>0?'down':'up'; }
   n.frame=[1,0,2,0][Math.floor(now/150)%4]; n.walking=true; return false; }
+// 주방 식구 점심: 입구 쪽으로 나와 배식대에서 직접 담아 자리에 앉는다 (window.__b1Guests 손님처럼, 계산은 건너뛴다)
+function b1CrewLunch(n,i,d){
+  var Q=window.__b1Guests=window.__b1Guests||{}, id=['b1cashier','b1cook1','b1cook2'][i], key='kl_'+id, dk=d.toDateString(), ns=d.getHours()*3600+d.getMinutes()*60;
+  if(Q[key] && Q[key].day===dk) return;
+  if(ns>=15*3600+16*60) return;
+  Q[key]={ kind:'dinner', id:id, name:n.name, group:'kitchen', day:dk, leaveAt:15*3600+18*60+i*15, crew:'kitchen', meal:'lunch', skipPay:true };
+}
 var b1Light={ on:true, openPrev:null }, b1SwitchBound=false;
 function b1Tick(F,now,off){
   F.lunchDone=F.lunchDone||{};
@@ -1258,8 +1562,10 @@ function b1Tick(F,now,off){
   var guests=0; for(var gid in F.actors){ var ga=F.actors[gid]; if(ga.visible && !/^b1c/.test(gid)) guests++; }
   var busy = guests>0 || (open && nowSec>=11*3600+40*60 && nowSec<13*3600+5*60) || nowSec>=21*3600;   // 손님이 있거나 점심 준비·배식 시간, 마감 정리
   if(busy || F.b1IdleSince==null) F.b1IdleSince=now;
+  var kLunch = nowSec>=15*3600 && nowSec<15*3600+20*60;                // 주방 식구 점심: 15:00~15:20, 손님이 다 빠진 식당에서 셋이 같이
   [cs,k1,k2].forEach(function(n,i){
     var inAt=7*3600+50*60+i*45, outAt=21*3600+5*60+i*40, here = nowSec>=inAt && nowSec<outAt;
+    if(here && kLunch){ here=false; b1CrewLunch(n,i,d); n.atLunch=true; }
     var idle=here && !busy && now-F.b1IdleSince>15000+i*5000;           // 손님이 나가고 조금 지나면 한 명씩 휴게실로
     if(!n.b1ph){ n.feet=4*T+2; n.dir='down'; n.onFurn=false; n.wp=null; n.spd=0;   // 접속한 순간: 한가하면 휴게실, 손님이 있으면 제자리, 근무 시간이 아니면 없음
       if(here && !busy){ n.b1ph='rest'; n.visible=true; n.rest={spot:B1_REST_SPOTS[i][0]}; b1RestSit(n,n.rest); n.tx=n.x; n.until=now; n.nextTalk=now+5000+Math.random()*8000; }
@@ -1278,10 +1584,10 @@ function b1Tick(F,now,off){
       return; }
     if(n.b1ph==='fromRest'){ if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; }
       if(wpStep(n,now)){ n.feet=4*T+2; n.dir='down'; if(here){ n.b1ph='work'; n.tx=POST_X[i]; n.until=now+2000; n.nextTalk=now+9000; } else { n.b1ph='out'; n.tx=DOOR_X; n.spd=0; } } return; }
-    if(n.b1ph==='off'){ if(here){ n.b1ph='in'; n.visible=true; n.x=DOOR_X; n.tx=POST_X[i]; n.stepMs=260; b1Say(n,[['좋은 아침입니다!'],['오늘도 맛있게 해봅시다'],['출근 완료!']][i][0].split('|'),now,2600); } return; }
+    if(n.b1ph==='off'){ if(here){ n.b1ph='in'; n.visible=true; n.x=DOOR_X; n.tx=POST_X[i]; n.stepMs=260; b1Say(n,n.atLunch?[['잘 먹었다!'],['자, 저녁 준비!'],['배부르다~']][i]:[['좋은 아침입니다!'],['오늘도 맛있게 해봅시다'],['출근 완료!']][i][0].split('|'),now,2600); n.atLunch=false; } return; }
     if(n.b1ph==='in'){ barStep(n,now); if(Math.abs(n.x-n.tx)<1){ n.b1ph='work'; n.spd=0; n.dir='down'; n.until=now+3000; n.nextTalk=now+10000+Math.random()*10000; } }
     else if(n.b1ph==='work'){
-      if(!here){ n.b1ph='out'; n.tx=DOOR_X; b1Say(n,[['수고하셨습니다~'],['내일 봬요!'],['마감 청소 끝!']][i],now,2600); }
+      if(!here){ n.b1ph='out'; n.tx=DOOR_X; b1Say(n,kLunch?[['우리도 밥 먹자!'],['점심시간~'],['배고파요']][i]:[['수고하셨습니다~'],['내일 봬요!'],['마감 청소 끝!']][i],now,2600); }
       else {
         if(Math.abs(n.x-n.tx)<1) n.spd=0;
         if(i>0){ if(now>n.until && Math.abs(n.x-n.tx)<1){ n.tx=(10+Math.floor(Math.random()*13))*T-1; n.until=now+3000+Math.random()*6000; } barStep(n,now); }
@@ -1337,7 +1643,7 @@ function b1Tick(F,now,off){
       if(q.kind==='snack'){ var pref=free.filter(function(st){ return q.item==='ice' ? st.table==='X' : st.table!=='X'; }); if(pref.length) free=pref; free=[free[Math.floor(Math.random()*free.length)]]; }
       da=b1MakeDiner(F,did,q.id,free[0],now); if(!da){ q.done=true; continue; }
       if(q.kind==='snack'){ da.snackOnly=true; da.snackGuest=true; da.snack=q.item; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+600; continue; }
-      if(q.name) da.name=q.name; da.barCrew=!!q.bar; da.weekend=q.kind==='weekend'; da.secGuard=(q.id==='guard'||q.id==='guardLeo'); da.isGuard=q.id==='visitorGuard'; da.meal=q.meal;
+      if(q.name) da.name=q.name; da.barCrew=!!q.bar; da.crew=q.crew||null; da.skipPay=!!q.skipPay; da.weekend=q.kind==='weekend'; da.secGuard=(q.id==='guard'||q.id==='guardLeo'); da.isGuard=q.id==='visitorGuard'; da.meal=q.meal;
       da.dinner=true; da.dinnerGroup=q.group; da.grp=q.group; da.q=q; da.ph='spawn'; da.leaveSec=nowSec+240+Math.floor(Math.random()*120); }
   }
   // 한 명씩 움직이기
@@ -1436,6 +1742,8 @@ function frame(now){
   step(F.robot,now); if(F.robot && F.robot.path) moving=true;
   if(secretTick(now) || SECRET.seqAt || (CU.at && now-CU.at<CU_SHOW+100)) moving=true;
   FRAME_MS = moving ? 33 : 66;
+  // 금요일 연주회로 옥상에 올라가 있는 사람은 자기 층 그림에서 잠깐 뺀다 (다 그리고 나서 되돌린다)
+  var ccHid=[], CA=window.__ccAway; if(CA && F.key!=='L' && F.key!=='3'){ for(var hk in F.actors){ var ha=F.actors[hk]; if(ha.visible && CA[F.key+':'+hk]){ ha.visible=false; ccHid.push(ha); } } }
 
   var d=new Date(), hm={h:d.getHours(), m:d.getMinutes()}, ph=PO.phase(hm.h), g=fb, M=F.map;
   var roofWx=B.weather(); PO.STATE.roofWx=roofWx;
@@ -1458,6 +1766,7 @@ function frame(now){
     if(F.lunchOn) list.push({sy:26*T+14, draw:drawLunchSign}); }
   else if(F.key==='2') list.push({sy:28*T+0.5, draw:function(gg){ PO.drawBigTank(gg,now); }});
   else if(F.key==='B1') b1Trays(F,list,now);
+  else if(F.key==='L') ccDraw(F,list,now);
   if((F.key==='B1'||F.key==='5'||F.key==='1') && (roofWx==='rain'||roofWx==='snow')) list.push({sy:5*T-1, draw:function(gg){ PO.drawWetSign(gg,T+16,5*T); }});   // 비·눈 오는 날: 엘리베이터 앞 '미끄럼 주의'
   if(F.key==='5' && F.vac){ var vv=F.vac; list.push({ sy:vv.feet-14, draw:function(gg){ PO.drawVacuum(gg,Math.round(vv.x)+15,Math.round(vv.feet)-6,now,!!vv.path); } }); }
   for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:((F.key==='1' || a.ph==='meet') && a.onFurn && !a.path && a.dir!=='up') ? a.feet+8 : a.feet}); }   // 1층: 앞·옆을 보고 앉은 사람은 의자 등받이 앞에
@@ -1487,7 +1796,7 @@ function frame(now){
       g.fillStyle='#5e3a24'; g.fillText(nm,1,1); g.fillStyle='#fff6e6'; g.fillText(nm,0,0); g.restore(); g.textAlign='left'; }
     B.staff.forEach(function(s){ var S=PO.SEATS[s.id]; if(S) drawPlate(g,S.plateX,S.plateY,s.name); });
   } else if(F.key==='L'||F.key==='B1'||F.key==='1') {
-    for(var rid in F.actors){ var ra=F.actors[rid]; if(ra.visible&&ra.name&&!(F.key==='1'&&ra.ph==='rest')) drawPlate(g,Math.round(ra.x)+17,b1TopSit(ra)?Math.round(ra.feet)-72:Math.round(ra.feet)+6-sitLift(ra),ra.name,true); }   // 식당 테이블 안쪽에 앉은 사람은 머리 위에 (식판을 가리지 않게)
+    for(var rid in F.actors){ var ra=F.actors[rid]; if(ra.visible&&ra.name&&!(F.key==='1'&&ra.ph==='rest')&&!(ra.cc&&ra.onFurn&&!ra.path)) drawPlate(g,Math.round(ra.x)+17,b1TopSit(ra)?Math.round(ra.feet)-72:Math.round(ra.feet)+6-sitLift(ra),ra.name,true); }   // 식당 테이블 안쪽에 앉은 사람은 머리 위에 (식판을 가리지 않게)
   } else {
     drawPlate(g,POSTS2.yun.plateX,POSTS2.yun.plateY,'윤안내'); drawPlate(g,POSTS2.kang.plateX,POSTS2.kang.plateY,'강안내');
     drawPlate(g,POSTS2.guard.plateX,POSTS2.guard.plateY,'보안');
@@ -1515,6 +1824,7 @@ function frame(now){
   ctx.imageSmoothingEnabled = (pw/W) < 1.9;
   if(ctx.imageSmoothingEnabled) ctx.imageSmoothingQuality='high';
   ctx.drawImage(fbuf,0,0,pw,ph2);
+  ccHid.forEach(function(h){ h.visible=true; });
 }
 
 // ---- 누르기: 3층 명패·직원 → 프로필, 전원/조명 스위치 → 원래 스위치 ----
@@ -1532,6 +1842,7 @@ var NPC_INFO={
   kang:     { name:'강안내', role:'2층 안내데스크', bio:'고양이. 예약 손님과 키오스크를 챙겨요. 점심은 윤안내와 함께 구내식당에서.', hours:'평일 08:30~18:00' },
   guard:    { name:'오보안', role:'2층 보안요원', bio:'회색곰. 표보안과 하루씩 교대해요. 20분마다 옥상 순찰, 씩씩한 군인 말투.', hours:'매일 08:00~21:00' },
   guardLeo: { name:'표보안', role:'2층 보안요원', bio:'사자. 오보안과 하루씩 교대해요. 20분마다 옥상 순찰, 저녁엔 가끔 바에서 몰래 한 잔.', hours:'매일 08:00~21:00' },
+  visitorPlayer:{ name:'연주자 조', role:'첼리스트 · 방문 연주자', bio:'낙타. 금요일 다섯 시면 옥상 연못가에 의자를 놓고 15분 동안 첼로를 켜요. 곡 순서는 매주 바뀌고, 마지막은 늘 즉흥곡 앙코르.', hours:'금요일 17:00~17:15 옥상' },
   visitorGuard:{ name:'경비', role:'건물 경비', bio:'원숭이. 30분마다 옥상을 돌고, 주말엔 당직 직원과 함께 사무실을 지켜요. 어항 밥은 경비 담당.', hours:'매시 15분·45분 옥상 순찰' },
   boss:     { name:'사장님', role:'(주)끄적끄적문구 대표', bio:'호랑이. 외부 약속이 많아서 구내식당엔 일주일에 세 번쯤 오세요.', hours:'' },
   robot:    { name:'R-도우미', role:'쾌적한 환경 담당 로봇', bio:'온도·습도·미세먼지를 살피며 층을 돌아다녀요. 식당에선 식사 예절도 챙겨요.', hours:'언제나 근무 중' },
@@ -1553,14 +1864,14 @@ function actorWho(F,a){
   if(F.key==='1'){ if(NPC_INFO[a.id]) return {npc:a.id}; if(a.sid) return {staff:a.sid}; if(a.npcKey) return {npc:a.npcKey}; return a.guest ? {npc:a.shop==='store'?'f1shopper':'f1cafeguest'} : null; }
   if(F.key==='B1'){ if(NPC_INFO[a.id]) return {npc:a.id}; var src=a.lookSrc; if(!src) return null;
     if(STAFFLOOK[src]) return {staff:src}; if(src==='visitorGuard') return {npc:'visitorGuard'}; return NPC_INFO[src] ? {npc:src} : null; }
-  if(F.key==='L'){ if(a.sid) return {staff:a.sid}; var m=/^g_(.+)$/.exec(a.id); if(!m) return null; var q=(window.__roofGuests||{})[m[1]];
+  if(F.key==='L'){ if(a.ccNpc && NPC_INFO[a.ccNpc]) return {npc:a.ccNpc}; if(a.sid) return {staff:a.sid}; var m=/^g_(.+)$/.exec(a.id); if(!m) return null; var q=(window.__roofGuests||{})[m[1]];
     if(m[1]==='guard') return {npc:'visitorGuard'}; if(m[1]==='sec') return {npc:a.lookId==='guardLeo'?'guardLeo':'guard'}; return q&&q.id&&STAFFLOOK[q.id] ? {staff:q.id} : null; }
   return null;
 }
 function hitProfile(F,p){
   if(F.key!=='3'){
     var best=null;
-    for(var k in F.actors){ var a=F.actors[k]; if(!a.visible) continue; var top=a.feet-44-(a.onFurn&&!a.path?sitLift(a):0);
+    for(var k in F.actors){ var a=F.actors[k]; if(!a.visible || (window.__ccAway && window.__ccAway[F.key+':'+k])) continue; var top=a.feet-44-(a.onFurn&&!a.path?sitLift(a):0);
       if(p.x>=a.x+4&&p.x<=a.x+30&&p.y>=top&&p.y<=a.feet+2){ if(!best||a.feet>best.feet) best=a; } }
     var rb=F.robot; if(rb && rb.goal && p.x>=rb.x&&p.x<=rb.x+32&&p.y>=rb.feet-(rb.tall||36)&&p.y<=rb.feet+2 && (!best||rb.feet>best.feet)) return {npc:F.key==='5'?'r0':'robot'};
     return best ? actorWho(F,best) : null;

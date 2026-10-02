@@ -2053,7 +2053,7 @@ function roofBirds(g,t){
   for(var i=0;i<4;i++){ var sp=BIRD_SPOTS.lawn, k=Math.floor(t/5200+i*1.7)%sp.length, s=sp[(k+i)%sp.length], hop=((t/260)+i)%10<1?-3:0;
     sparrow(g,s[0]+i*9,s[1]+hop+(i%2)*6,Math.floor(t/180+i)%2,((t/400)+i)%5<1); }
   for(var j=0;j<2;j++){ var dp=BIRD_SPOTS.deck, s2=dp[(Math.floor(t/9000)+j*2)%dp.length], wx=Math.round(Math.sin(t*0.0007+j)*14); pigeon(g,s2[0]+wx,s2[1]+j*10,Math.floor(t/220+j)%2?0:1); }
-  magpie(g,15*T+8,17*T+22,t);                                   // 연못가 까치
+  if(!STATE.concert) magpie(g,15*T+8,17*T+22,t);   // 연주회 땐 조가 앉는 자리라 비켜 준다                                   // 연못가 까치
   azure(g,26*T+6,ROOF_H-18,t); azure(g,29*T+10,ROOF_H-18,t+700,true);   // 난간 위 물까치 둘
   azure(g,33*T+2,14*T+22,t+300,true);                                     // 느티나무 가지에 하나 더
   azure(g,19*T+14,17*T-6,t+1200); azure(g,11*T+4,22*T+4,t+400);          // 새 물그릇 가장자리 · 잔디밭

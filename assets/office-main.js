@@ -1665,7 +1665,7 @@
   function roofGuestQ(){ return (window.__roofGuests = window.__roofGuests || {}); }
   function startRoofTrip(){
     var d = new Date(), t = d.getHours()*60 + d.getMinutes();
-    if(wanderOn || Object.keys(roofTrip).length >= 2) return;
+    if(wanderOn || Object.keys(roofTrip).length >= 2 || concertHold()) return;
     if(t >= 11*60+50 && t < 13*60+5) return;              // 점심시간엔 따로 옥상에 올라가 있다
     if(weatherState === 'rain' && Math.random() < 0.75) return;   // 비 오는 날엔 잘 안 올라간다
     var pool = staff.filter(function(s){
@@ -1805,7 +1805,7 @@
   function f1GuestQ(){ return (window.__f1Guests = window.__f1Guests || {}); }
   function startF1Trip(){
     var d = new Date(), t = d.getHours()*60 + d.getMinutes();
-    if(overtimeMode || isNonWorkingDay() || f1TripOn || wanderOn) return;
+    if(overtimeMode || isNonWorkingDay() || f1TripOn || wanderOn || concertHold()) return;
     if(t < 10*60 || t >= 17*60+40 || (t >= 11*60+50 && t < 13*60+5)) return;        // 매장이 열려 있는 근무시간 (점심 제외)
     var pool = staff.filter(function(s){
       var el = charEl(s.id);
@@ -1877,7 +1877,7 @@
     });
   }
   function workHours(){ var d = new Date(), t = d.getHours()*60 + d.getMinutes();
-    return !overtimeMode && !isNonWorkingDay() && !wanderOn && t >= 10*60 && t < 17*60+30 && !(t >= 11*60+50 && t < 13*60+5); }
+    return !overtimeMode && !isNonWorkingDay() && !wanderOn && !concertHold() && t >= 10*60 && t < 17*60+30 && !(t >= 11*60+50 && t < 13*60+5); }
   function startF2Meeting(){
     if(tripF2On || !workHours()) return;
     var pool = tripPool(null); if(!pool.length) return;
@@ -1899,6 +1899,40 @@
   }
   setInterval(function(){ if(Math.random() < 0.12) startF2Meeting(); }, 60000);
   setInterval(function(){ if(Math.random() < 0.07) startF5Visit(); }, 60000);
+
+  // ===== 금요일 17시 옥상 첼로 연주회 =====
+  // 근무일인 금요일 17:00~17:15, 연주자 조가 옥상 연못가에서 첼로를 켠다. 16:55부터 자리에 있는 직원이 둘씩 옥상으로 올라가
+  // 앉아서 듣고(연차·출장·조퇴로 없는 사람은 빠진다), 끝나면 차례로 내려온다. 시각표와 옥상 자리는 그림 쪽(office-pixel)이 맡는다
+  var CC_GO = ['연주회 보러 가요!', '오늘 금요일 연주회 날이죠', '첼로 들으러 옥상 가요~', '조 선생님 연주 곧 시작해요', '다섯 시다, 옥상으로!', '같이 올라가요!', '이건 못 놓치지', '방석 챙겨 갈까?'];
+  var CC_BACK = ['연주 정말 좋았어요', '귀가 호강했다', '벌써 주말 기분~', '자, 마저 마무리하자', '다음 주 금요일도 기대돼요', '아직도 첼로 소리가 맴돌아', '마음이 차분해졌어요', '역시 금요일 다섯 시'];
+  var concertTrip = {};
+  function concertHold(){ return typeof window.__concertHold === 'function' && window.__concertHold(); }
+  function concertPhaseNow(){ return typeof window.__concertPhase === 'function' ? window.__concertPhase() : null; }
+  function goConcert(s){
+    var el = charEl(s.id), Q = window.__concertQ = window.__concertQ || {};
+    concertTrip[s.id] = true; markBusy(s.id); raiseChar(s);
+    showBubble(s, CC_GO[Math.floor(Math.random()*CC_GO.length)]);
+    travelTo(s, {x:ENTRANCE.x, y:ENTRANCE.y}, 62, function(){
+      if(!el.classList.contains('present')){ clearBusy(s.id); return; }
+      el.classList.add('onRoof');
+      Q[s.id] = { id:s.id, name:s.name };
+      (function wait(){
+        var q = Q[s.id];
+        if(q && !q.done && concertPhaseNow()){ setTimeout(wait, 1000); return; }
+        delete Q[s.id];
+        el.classList.remove('onRoof');
+        if(!el.classList.contains('present')){ clearBusy(s.id); return; }
+        showBubble(s, CC_BACK[Math.floor(Math.random()*CC_BACK.length)]);
+        travelTo(s, {x:s.x, y:s.y}, 62, function(){ lowerChar(s); if(wanderPos) wanderPos[s.id] = {x:s.x, y:s.y}; clearBusy(s.id); });
+      })();
+    });
+  }
+  setInterval(function(){
+    var ph = concertPhaseNow(), d = new Date(), t = d.getHours()*60 + d.getMinutes();
+    if(!ph){ if(!concertHold()) concertTrip = {}; return; }
+    if((ph !== 'gather' && ph !== 'play') || t >= 17*60+11) return;                     // 끝나기 직전엔 늦게라도 올라가지 않는다
+    tripPool(null).filter(function(s){ return !concertTrip[s.id]; }).slice(0, 2).forEach(goConcert);
+  }, 4000);
 
   function cancelErrandsInProgress(){
     Object.keys(errandActive).forEach(function(id){
@@ -3806,6 +3840,7 @@
   // ---- 사장님 방문 (누적 탕비실 이용 10번마다, 10초) ----
   function maybeTriggerBossVisit(){
     if(visitorEventActive) return;
+    if(window.__concertHold && window.__concertHold()) return;   // 금요일 옥상 연주회 시간
     if(window.__bossAtB1) return;          // 사장님은 지금 지하 식당에서 점심 중
     if(window.__bossAtF1) return;          // 1층 매장을 둘러보는 중
     if(lifetime.breaks <= 0 || lifetime.breaks % 10 !== 0) return;
@@ -3921,6 +3956,7 @@
 
   function maybeTriggerPlayerVisit(){
     if(visitorEventActive) return;
+    if(window.__concertHold && window.__concertHold()) return;   // 금요일 옥상 연주회 시간
     if(lifetime.arts <= 0 || lifetime.arts % 5 !== 0) return;
 
     // 경영지원팀에서 자리에 있고 한가한 두 명
@@ -8230,7 +8266,7 @@
 
   // ===== 효과음 (파일 없이 소리를 즉석에서 만든다) =====
   // 배경음악을 켜 둔 상태(재생 중 · 음소거 아님)일 때만 나고, 음량 조절을 그대로 따른다
-  var sfxCtx = null;
+  var sfxCtx = null, bgmDuckK = 1;   // bgmDuckK: 옥상 첼로 연주를 듣는 동안 배경음악을 줄여 둔다
   function sfxOn(){ return audioState.playing && !audioState.muted && audioState.vol > 0; }
   function sfxUnlock(){ if(!sfxOn()) return; try{ if(!sfxCtx){ var AC = window.AudioContext || window.webkitAudioContext; if(AC) sfxCtx = new AC(); } if(sfxCtx && sfxCtx.state === 'suspended') sfxCtx.resume(); }catch(e){} }
   document.addEventListener('pointerdown', sfxUnlock, true);                  // 아이패드: 손가락으로 누를 때 소리 장치를 깨워 둔다
@@ -8251,6 +8287,10 @@
       else if(name === 'click'){ tone(2400, 0, 0.03, 'square', v*0.12); tone(1200, 0.035, 0.03, 'square', v*0.08); }                        // 스위치
     }catch(e){}
   };
+  // 옥상 첼로 연주(픽셀 화면 쪽에서 음을 만든다)가 쓰는 소리 장치 · 음량 · 배경음악 줄이기
+  window.__sfxCtx = function(){ if(!sfxOn()) return null; sfxUnlock(); return sfxCtx; };
+  window.__sfxVol = function(){ return audioState.vol; };
+  window.__bgmDuck = function(k){ k = k == null ? 1 : k; if(k === bgmDuckK) return; bgmDuckK = k; try{ bgm.volume = audioState.vol * bgmDuckK; }catch(e){} };
 
   function trackById(id){
     for(var i=0;i<TRACKS.length;i++){ if(TRACKS[i].id === id) return TRACKS[i]; }
@@ -8357,7 +8397,7 @@
   }
 
   function applyAudio(){
-    bgm.volume = audioState.vol;
+    bgm.volume = audioState.vol * bgmDuckK;
     bgm.muted = audioState.muted;
     volSlider.value = audioState.vol;
     volSlider.title = '음량 조절: ' + Math.round(audioState.vol*100) + '%';
@@ -8446,7 +8486,7 @@
 
   volSlider.addEventListener('input', function(){
     audioState.vol = parseFloat(volSlider.value);
-    bgm.volume = audioState.vol;
+    bgm.volume = audioState.vol * bgmDuckK;
     volSlider.title = '음량 조절: ' + Math.round(audioState.vol*100) + '%';
     saveAudioState();
   });
@@ -9847,6 +9887,7 @@
       if(secRoofSlot === slot) return;
       var w = f2Walker.guard;
       if(!w._on || !f2Visible('guard') || gPatrol.busy || !guardAtPost()) return;
+      if(window.__concertHold && window.__concertHold()) return;   // 금요일 연주회 땐 순찰 대신 옥상에 앉아 듣는다
       secRoofSlot = slot; gPatrol.busy = true;
       f2Say('guard', '옥상 순찰 다녀오겠습니다!');
       f2StaffGo('guard', [F2_ELEV], function(){
@@ -10176,6 +10217,7 @@
     doorOpen: function(){ return doorIsOpen; },
     robotLine: function(){ return rLine(); },
     workDay: function(){ return !isNonWorkingDay(); },
+    log: function(icon, text){ if(typeof logDayEvent === 'function') logDayEvent(icon, text); },
     visitorPresent: function(id){ var el = charEl(id); return !!(el && el.classList.contains('present')); },
     // 오늘 점심을 먹으러 나가는 직원 (쉬는 날·연차·출장·조퇴 제외)
     lunchEaters: function(){ if(isNonWorkingDay()) return []; var out = getOutAllDayIdsAll();
