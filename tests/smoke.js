@@ -1,6 +1,6 @@
 /* Copyright (c) 2026 han8877. All rights reserved. 무단 복제·재사용 금지 — LICENSE 참고 */
 // 기본 확인: 출근하고 모든 층을 한 바퀴 돌아도 자바스크립트 오류가 없는지
-const { open, enter, goFloor, suite } = require('./lib');
+const { open, enter, goFloor, clickArt, suite } = require('./lib');
 (async () => {
   const T = suite('smoke');
   const { browser, page, errors } = await open({ time: '2026-09-22T10:30:00' });
@@ -20,6 +20,9 @@ const { open, enter, goFloor, suite } = require('./lib');
   await page.waitForTimeout(800);
   const stuck = await page.evaluate(id => { const a = window.__pixOffice.floors['3'].actors[id]; document.getElementById('char-' + id).classList.remove('onRoof'); return a.visible; }, who);
   T.check('엘리베이터 앞에서 옥상으로 간 사람은 문 앞에 멈춰 있지 않고 사라진다', who && stuck === false, who);
+  await goFloor(page, '3'); await clickArt(page, 566, 84); await page.waitForTimeout(400);
+  const tv = await page.evaluate(() => { const o = document.getElementById('trophyView'); const ok = !!o && o.style.display === 'flex'; if (o) o.click(); return ok; });
+  T.check('동 트로피를 누르면 명패가 보이는 확대 그림이 뜬다', tv);
   T.check('페이지 오류 없음', errors.length === 0, errors.join(' / '));
   await browser.close(); T.done();
 })();

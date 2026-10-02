@@ -460,6 +460,49 @@ function drawArtArrow(g,now){
     if(shaft||head) P(g,sx+x,sy+y, v<-1.2 && shaft ? '#ff8a90' : '#e8323c');
   }
 }
+// 사물함 위 동(청동) 트로피 (누르는 자리) · 눌렀을 때 크게 보여 줄 그림: 청동 컵 + 월넛 받침 + 황동 명패
+var BRONZE_TROPHY={ x:14*T+108, y:2*T+8, w:20, h:26 };
+function trophyBig(S){
+  S=S||4; var W0=130, H0=172, c=cv(W0*S,H0*S), g=c.getContext('2d');
+  function r(x,y,w,h,col){ g.fillStyle=col; g.fillRect(Math.round(x*S),Math.round(y*S),Math.round(w*S),Math.round(h*S)); }
+  var BZ=['#5a3418','#7a4a22','#9a6232','#b87a42','#d09458','#e8b47a','#f6d4a8','#fff2dc'];   // 어두움 → 밝음
+  function shade(t){ return BZ[Math.max(0,Math.min(BZ.length-1,Math.round(t*(BZ.length-1))))]; }
+  // 뒤 조명
+  var sp=g.createRadialGradient(65*S,60*S,4*S,65*S,70*S,80*S); sp.addColorStop(0,'rgba(255,226,180,0.35)'); sp.addColorStop(1,'rgba(255,226,180,0)'); g.fillStyle=sp; g.fillRect(0,0,W0*S,H0*S);
+  // 손잡이 (컵 뒤)
+  function handle(sx){ for(var y=18;y<=42;y++){ var t=(y-18)/24, off=Math.round(Math.sin(t*Math.PI)*11); r(sx<0?33-off-4:97+off,y,4,1,shade(sx<0?0.35+0.3*(1-t):0.25+0.2*(1-t))); }
+    r(sx<0?29:97,17,8,3,shade(0.6)); }
+  handle(-1); handle(1);
+  // 컵: 위는 넓고 아래로 좁아진다, 왼쪽 위에서 빛
+  for(var y=0;y<=44;y++){ var hw=Math.round(32-Math.pow(y/44,1.6)*22), yy=14+y;
+    for(var x=-hw;x<hw;x++){ var u=(x+hw)/(2*hw), t=0.9-Math.abs(u-0.32)*1.5-(y/44)*0.25; if(u>0.82) t-=0.2; r(65+x,yy,1,1,shade(t)); } }
+  r(33,12,64,3,shade(0.55)); r(34,12,62,1,shade(0.95)); r(33,15,64,1,shade(0.15));                                  // 테두리
+  for(var k=0;k<14;k++) r(45+k*0.4,20+k*2,1,2,'rgba(255,248,230,0.75)');                                              // 반짝이는 줄
+  r(54,26,22,14,shade(0.3)); r(55,27,20,12,shade(0.62)); r(56,28,18,1,shade(0.85));                                   // 컵에 새긴 방패
+  g.fillStyle=shade(0.12); g.font='bold '+(8*S)+'px Georgia, "Times New Roman", serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText('III',65*S,33.6*S);
+  // 목 · 마디 · 발
+  r(61,58,8,16,shade(0.45)); r(61,58,2,16,shade(0.75)); r(67,58,2,16,shade(0.2));
+  r(56,64,18,5,shade(0.55)); r(56,64,18,1,shade(0.9)); r(56,68,18,1,shade(0.2));
+  for(var fy=0;fy<10;fy++){ var fw=12+fy; r(65-fw,74+fy,fw*2,1,shade(0.6-fy*0.03)); r(65-fw,74+fy,3,1,shade(0.85)); }
+  r(44,84,42,2,shade(0.25));
+  // 월넛 받침
+  r(16,86,98,6,'#6a3e24'); r(16,86,98,1,'#9a6440'); r(14,92,102,58,'#4e2c18'); r(14,92,102,2,'#7a4a2c'); r(14,92,3,58,'#6a3e24'); r(113,92,3,58,'#341c10');
+  for(var gr=0;gr<9;gr++) r(18+((gr*23)%90),96+gr*6,30+(gr%3)*12,1,'rgba(30,14,6,0.35)');                            // 나뭇결
+  r(12,148,106,6,'#3a2010'); r(12,148,106,1,'#6a3e24');
+  // 황동 명패
+  r(22,100,86,42,'#8a6a2a'); r(23,101,84,40,'#d9b45a'); r(24,102,82,38,'#e8c870'); r(24,102,82,1,'#fff0b8'); r(24,139,82,1,'#a8843a');
+  r(26,104,78,34,'rgba(255,255,255,0)'); g.strokeStyle='#a8843a'; g.lineWidth=Math.max(1,S*0.5); g.strokeRect(27*S,105*S,76*S,32*S);
+  [[26,104],[102,104],[26,136],[102,136]].forEach(function(p){ r(p[0],p[1],2,2,'#8a6a2a'); r(p[0],p[1],1,1,'#fff0b8'); });   // 나사
+  function eng(txt,y,size,ls){ g.font=size+'px Georgia, "Times New Roman", serif'; if(g.letterSpacing!==undefined) g.letterSpacing=(ls||0)+'px';
+    g.fillStyle='rgba(255,246,210,0.9)'; g.fillText(txt,65*S+1,y*S+1); g.fillStyle='#4a3410'; g.fillText(txt,65*S,y*S); }
+  g.textAlign='center'; g.textBaseline='middle';
+  eng('TOKYO INTERNATIONAL',112,Math.round(5.6*S),S*0.3);
+  eng('STATIONERY AWARD',119.5,Math.round(5.6*S),S*0.3);
+  r(46,124.5,38,0.6,'#a8843a');
+  eng('1994',131,Math.round(7.4*S),S*0.8);
+  if(g.letterSpacing!==undefined) g.letterSpacing='0px';
+  return c;
+}
 // 재고창고 오른쪽 아래 선반, 맨 아래칸 레몬색 노트 묶음 (누르는 자리). 누르면 앞면에 'Cu' 가 찍혀 떠오른다
 var CU_BOX={ x:32*T+44, y:20*T+16+54, w:16, h:20 };   // 선반은 (32~34열, 21~22행) 바닥에 맞춰 20*T+16 에서 시작
 function drawCuTag(g,a){ if(a<=0) return;
@@ -3187,6 +3230,6 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, CU_BOX:CU_BOX, drawCuTag:drawCuTag, MAP5:MAP5, MAP1:MAP1, buildMap1:function(){ return buildMap1({logo:SHOPLOGO}); }, fontReady:fontReady, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, CU_BOX:CU_BOX, drawCuTag:drawCuTag, BRONZE_TROPHY:BRONZE_TROPHY, trophyBig:trophyBig, MAP5:MAP5, MAP1:MAP1, buildMap1:function(){ return buildMap1({logo:SHOPLOGO}); }, fontReady:fontReady, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();

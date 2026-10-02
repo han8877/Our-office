@@ -1932,6 +1932,18 @@ function secretClick(F,p){
   if(S.clicks.length>=3){ S.openAt=now; S.clicks=[]; S.wiggleAt=0; if(window.__sfx) window.__sfx('slide'); }
   return true;
 }
+// 사물함 위 동 트로피: 누르면 명패가 보이게 크게
+function openTrophy(){
+  var ov=byId('trophyView');
+  if(!ov){ ov=document.createElement('div'); ov.id='trophyView';
+    ov.style.cssText='position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,rgba(40,26,18,0.95),rgba(8,6,6,0.97));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;box-sizing:border-box;cursor:zoom-out';
+    ov.innerHTML='<canvas style="max-width:min(86vw,520px);max-height:78vh;width:auto;height:auto;image-rendering:pixelated;filter:drop-shadow(0 10px 24px rgba(0,0,0,0.6))"></canvas><div style="font-family:NeoDGM,sans-serif;color:#9a927e;font-size:12px">누르면 닫혀요</div>';
+    ov.addEventListener('click', function(){ ov.style.display='none'; });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && ov.style.display!=='none') ov.style.display='none'; });
+    document.body.appendChild(ov); }
+  var big=PO.trophyBig(4), c=ov.querySelector('canvas'); c.width=big.width; c.height=big.height; c.getContext('2d').drawImage(big,0,0);
+  ov.style.display='flex';
+}
 function openMemoBoard(){
   var ov=byId('memoBoardView');
   if(!ov){ ov=document.createElement('div'); ov.id='memoBoardView';
@@ -1948,6 +1960,7 @@ cvs.addEventListener('click', function(e){
   var F=activeFloor(); if(!F) return;
   var p=artXY(e);
   if(secretClick(F,p)){ e.stopPropagation(); return; }
+  if(F.key==='3' && inRect(p,PO.BRONZE_TROPHY,2)){ e.stopPropagation(); if(window.__sfx) window.__sfx('click'); openTrophy(); return; }
   if(F.key==='3' && inRect(p,PO.CU_BOX,2)){ e.stopPropagation(); var cn=performance.now(); if(!CU.at || cn-CU.at>CU_SHOW-600){ CU.at=cn; if(window.__sfx) window.__sfx('click'); } return; }
   if(F.key==='5' && inRect(p,PO.MAP5.BOARD_RECT)){ e.stopPropagation(); openMemoBoard(); return; }   // 한교수의 메모 보드 크게 보기
   if(F.key==='5' && inRect(p,PO.MAP5.LIGHTSW,4)){ e.stopPropagation(); PO.STATE.lab5Light=(PO.STATE.lab5Light===false); if(window.__sfx) window.__sfx('click'); return; }   // 연구소 조명 스위치
