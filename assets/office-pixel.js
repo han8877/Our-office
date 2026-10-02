@@ -1537,6 +1537,12 @@ function wpStep(n,now){                                               // 정해�
   if(Math.abs(dx)<=0.5 && Math.abs(dy)<=0.5){ n.x=w.x; n.feet=w.feet; n.wp.shift(); if(!n.wp.length){ n.walking=false; n.frame=0; return true; } return false; }
   if(Math.abs(dx)>0.5){ n.x+=(dx>0?1:-1)*Math.min(Math.abs(dx),sp); n.dir=dx>0?'right':'left'; } else { n.feet+=(dy>0?1:-1)*Math.min(Math.abs(dy),sp); n.dir=dy>0?'down':'up'; }
   n.frame=[1,0,2,0][Math.floor(now/150)%4]; n.walking=true; return false; }
+// 공유드라이브 이야기 (1층 · 5층 · 지하 식당 혼잣말에 섞는다)
+(function(){ var add={ f1ham:[['매장 재고표','드라이브에 올려야지'],['공유폴더에','진열 사진 올렸어요']], f1seo:[['리소 원본 파일','공유폴더에 있나?'],['커스텀 주문서','드라이브에서 받아야지']],
+  f1jin:[['원두 발주서','드라이브에 올렸어요'],['다운로드가','또 멈췄네…']], f1ryu:[['신메뉴 레시피','공유폴더에 있어요']], f1woo:[['식물 관리표','드라이브에 올려 둘게요']] };
+  for(var k in add) if(F1_STAFF[k]) F1_STAFF[k].lines=F1_STAFF[k].lines.concat(add[k]);
+  NAM_LINES.push(['색견본 스캔본','공유폴더에 올려 둬야지'],['드라이브 비번…','9로 시작했던가']);
+  B1_REST_LINES.desk.push(['주간 식단표','드라이브에 올려야지'],['공유폴더','용량이 꽉 찼대'],['발주서 엑셀','드라이브에 있나…']); })();
 // 주방 식구 점심: 입구 쪽으로 나와 배식대에서 직접 담아 자리에 앉는다 (window.__b1Guests 손님처럼, 계산은 건너뛴다)
 function b1CrewLunch(n,i,d){
   var Q=window.__b1Guests=window.__b1Guests||{}, id=['b1cashier','b1cook1','b1cook2'][i], key='kl_'+id, dk=d.toDateString(), ns=d.getHours()*3600+d.getMinutes()*60;

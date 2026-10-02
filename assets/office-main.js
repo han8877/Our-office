@@ -8638,7 +8638,8 @@
       'ggj_office_chatlog_v1',
       'ggj_office_chat_lastseen_map_v1',
       'ggj_office_appr_v1',
-      'ggj_office_diary_v1'
+      'ggj_office_diary_v1',
+      'ggj_office_drive_v1'
     ];
     try{
       resetKeys.forEach(function(k){ localStorage.removeItem(k); });
@@ -10260,6 +10261,9 @@
     robotLine: function(){ return rLine(); },
     workDay: function(){ return !isNonWorkingDay(); },
     log: function(icon, text){ if(typeof logDayEvent === 'function') logDayEvent(icon, text); },
+    // 공유드라이브(office-drive.js)가 쓴다: 자리에 있는지 · 말풍선
+    present: function(id){ var el = charEl(id); return !!(el && el.classList.contains('present') && !el.classList.contains('onRoof')) && !isOnLeaveToday(id) && !isOnTripToday(id); },
+    say: function(id, text){ var s = staffMap[id]; if(s && !isBusy(id)) showBubble(s, text); },
     visitorPresent: function(id){ var el = charEl(id); return !!(el && el.classList.contains('present')); },
     // 오늘 점심을 먹으러 나가는 직원 (쉬는 날·연차·출장·조퇴 제외)
     lunchEaters: function(){ if(isNonWorkingDay()) return []; var out = getOutAllDayIdsAll();
