@@ -23,6 +23,11 @@ const { open, enter, suite } = require('./lib');
   await page.click('.hotBtn[data-for="wanderBtn"]'); await page.waitForTimeout(700);
   const w = await page.evaluate(() => ({ src: document.getElementById('wanderLabel').textContent.trim(), hot: document.querySelector('.hotBtn[data-for="wanderBtn"] .lab').textContent }));
   T.check('핫바 랜덤 이동은 진짜 버튼을 누르고 글자도 따라간다', w.src === w.hot, JSON.stringify(w));
+  await page.evaluate(() => document.getElementById('messengerBtn').click()); await page.waitForTimeout(400);
+  const ms = await page.evaluate(() => ({ secs: [...document.querySelectorAll('#rosterList .rosterSec')].map(e => e.textContent.replace(/[▾\d\s]/g, '')), rows: document.querySelectorAll('#rosterList .rosterRow').length,
+    clock: !!document.getElementById('dayLogBtn'), msg: !!document.querySelector('#rosterList .rosterRow .rosterStatus') }));
+  T.check('메신저 기본 화면: 접속 상태별 목록 · 상태메시지 · 시계(기록) 버튼 없음', ms.secs.length >= 1 && ms.secs.every(t => /^(접속중|잠시자리비움|미접속)$/.test(t)) && ms.rows >= 25 && ms.msg && !ms.clock, JSON.stringify(ms));
+  await page.evaluate(() => document.getElementById('messengerCloseX').click());
   T.check('페이지 오류 없음', errors.length === 0, errors.join(' / '));
   await browser.close(); T.done();
 })();

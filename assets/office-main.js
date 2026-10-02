@@ -5880,47 +5880,89 @@
   }
 
   var messengerOverlay = byId('messengerOverlay');
+  // ---- 메신저 기본 화면: 접속 중 · 잠시 자리 비움 · 미접속으로 나눠 프로필 사진 · 상태메시지 · 지금 상태를 보여 준다 ----
+  var ROSTER_TEAM = { lead:'디자인실장실', note:'노트디자인팀', biz:'경영지원팀', sticker:'스티커디자인팀', pr:'홍보팀' };
+  var ROSTER_SEC = [ { key:'on', label:'접속 중' }, { key:'away', label:'잠시 자리 비움' }, { key:'off', label:'미접속' } ];
+  var ROSTER_FOLD_KEY = 'ggj_office_roster_fold_v1', rosterFold = {};
+  try{ rosterFold = JSON.parse(localStorage.getItem(ROSTER_FOLD_KEY)) || {}; }catch(e){ rosterFold = {}; }
+  function rosterDept(c){
+    if(c.isBoss) return '대표';
+    if(c.f5) return '5층 연구소';
+    if(c.f1) return /^f1(jin|ryu|woo)$/.test(c.id) ? '1층 카페' : '1층 스토어';
+    if(c.b1) return '지하 식당';
+    if(c.floor2) return c.npc ? '2층 라운지 바' : c.f2id === 'guard' ? '2층 보안' : '2층 안내';
+    var s = staffMap[c.id]; return s ? (ROSTER_TEAM[s.teamKey] || '') : '';
+  }
+  function presenceOf(c){
+    var st = contactStatus(c), msg = defaultStatusMsg[c.id] || '';
+    if(!c.floor2 && !c.isBoss && st.online){ var el = charEl(c.id); if(el && el.classList.contains('onRoof')) return { state:'away', note:'자리 비움' }; }   // 다른 층·옥상에 다녀오는 중
+    if(st.online) return (st.text && st.text !== msg) ? { state:'away', note:st.text } : { state:'on', note:'접속 중' };
+    if(/점심|자리 비움|외출/.test(st.text || '')) return { state:'away', note:st.text };
+    return { state:'off', note: st.text || '미접속' };
+  }
   function renderRoster(){
     var wrap = byId('rosterList');
     wrap.innerHTML = '';
-    messengerContacts.forEach(function(c){
-      var st = contactStatus(c);
-      var row = document.createElement('div');
-      row.className = 'rosterRow';
+    var groups = { on:[], away:[], off:[] };
+    messengerContacts.forEach(function(c){ var p = presenceOf(c); groups[p.state].push({ c:c, p:p }); });
+    var sum = document.createElement('div');
+    sum.className = 'rosterSum';
+    sum.innerHTML = ROSTER_SEC.map(function(sec){ return '<span class="rsChip rs-' + sec.key + '"><i></i>' + sec.label + ' <b>' + groups[sec.key].length + '</b></span>'; }).join('');
+    wrap.appendChild(sum);
+    ROSTER_SEC.forEach(function(sec){
+      var list = groups[sec.key]; if(!list.length) return;
+      var head = document.createElement('button');
+      head.type = 'button';
+      head.className = 'rosterSec rs-' + sec.key + (rosterFold[sec.key] ? ' folded' : '');
+      head.innerHTML = '<span class="rsArrow">▾</span>' + sec.label + ' <span class="rsCount">' + list.length + '</span>';
+      head.addEventListener('click', function(){ rosterFold[sec.key] = !rosterFold[sec.key]; try{ localStorage.setItem(ROSTER_FOLD_KEY, JSON.stringify(rosterFold)); }catch(e){} renderRoster(); });
+      wrap.appendChild(head);
+      if(rosterFold[sec.key]) return;
+      list.forEach(function(it){
+        var c = it.c, p = it.p;
+        var row = document.createElement('div');
+        row.className = 'rosterRow rs-' + p.state;
 
-      var dot = document.createElement('span');
-      dot.className = 'rosterDot';
-      dot.style.background = st.online ? '#5BA84F' : '#c2d2dc';
+        var avatar = document.createElement('div');
+        avatar.className = 'rosterAvatar';
+        avatar.innerHTML = '<div class="rosterFace">' + faceAvatar(c) + '</div><span class="rosterDot"></span>';
 
-      var avatar = document.createElement('div');
-      avatar.className = 'rosterAvatar';
-      avatar.innerHTML = faceAvatar(c);
+        var meta = document.createElement('div');
+        meta.className = 'rosterMeta';
+        var top = document.createElement('div');
+        top.className = 'rosterTop';
+        var name = document.createElement('span');
+        name.className = 'rosterName';
+        name.textContent = c.name;
+        var dept = document.createElement('span');
+        dept.className = 'rosterDept';
+        dept.textContent = rosterDept(c);
+        top.appendChild(name); top.appendChild(dept);
+        var status = document.createElement('span');
+        status.className = 'rosterStatus';
+        status.textContent = defaultStatusMsg[c.id] || '';
+        meta.appendChild(top); meta.appendChild(status);
 
-      var name = document.createElement('span');
-      name.className = 'rosterName';
-      name.textContent = c.name;
+        var side = document.createElement('div');
+        side.className = 'rosterSide';
+        var pres = document.createElement('span');
+        pres.className = 'rosterPres';
+        pres.textContent = p.note;
+        var noteBtn = document.createElement('button');
+        noteBtn.className = 'rosterNoteBtn';
+        noteBtn.textContent = '쪽지';
+        noteBtn.setAttribute('aria-label', c.name + '에게 쪽지 보내기');
+        noteBtn.addEventListener('click', function(){ openNoteCompose(c); });
+        side.appendChild(pres); side.appendChild(noteBtn);
 
-      var status = document.createElement('span');
-      status.className = 'rosterStatus';
-      status.textContent = st.text;
-
-      var noteBtn = document.createElement('button');
-      noteBtn.className = 'rosterNoteBtn';
-      noteBtn.textContent = '쪽지보내기';
-      noteBtn.addEventListener('click', function(){ openNoteCompose(c); });
-
-      var meta = document.createElement('div');
-      meta.className = 'rosterMeta';
-      meta.appendChild(name);
-      meta.appendChild(status);
-
-      row.appendChild(avatar);
-      row.appendChild(dot);
-      row.appendChild(meta);
-      row.appendChild(noteBtn);
-      wrap.appendChild(row);
+        row.appendChild(avatar);
+        row.appendChild(meta);
+        row.appendChild(side);
+        wrap.appendChild(row);
+      });
     });
   }
+  setInterval(function(){ if(messengerOverlay.classList.contains('show')) renderRoster(); }, 20000);   // 열어 둔 동안 상태가 바뀌면 다시 그린다
   byId('messengerBtn').addEventListener('click', function(){
     renderRoster();
     updateMsgBadge();
@@ -7979,7 +8021,7 @@
       });
     }
   }
-  byId('dayLogBtn').addEventListener('click', function(){
+  if(byId('dayLogBtn')) byId('dayLogBtn').addEventListener('click', function(){   // 메신저의 시계 버튼은 뺐다 (사무실의 하루 패널에서 본다)
     renderDayLog();
     messengerOverlay.classList.remove('show');
     dayLogOverlay.classList.add('show');
