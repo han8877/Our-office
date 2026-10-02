@@ -460,6 +460,15 @@ function drawArtArrow(g,now){
     if(shaft||head) P(g,sx+x,sy+y, v<-1.2 && shaft ? '#ff8a90' : '#e8323c');
   }
 }
+// 재고창고 오른쪽 아래 선반, 맨 아래칸 레몬색 노트 묶음 (누르는 자리). 누르면 앞면에 'Cu' 가 찍혀 떠오른다
+var CU_BOX={ x:32*T+44, y:20*T+16+54, w:16, h:20 };   // 선반은 (32~34열, 21~22행) 바닥에 맞춰 20*T+16 에서 시작
+function drawCuTag(g,a){ if(a<=0) return;
+  var x=CU_BOX.x, y=CU_BOX.y+3;
+  g.save(); g.globalAlpha=Math.min(1,a);
+  R(g,x-1,y,18,13,'#5a3418'); R(g,x,y+1,16,11,'#b8733a'); R(g,x,y+1,16,1,'#e3a46a'); R(g,x,y+11,16,1,'#8a5226');
+  g.font='bold 10px NeoDGM, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillStyle='#6a3a18'; g.fillText('Cu',x+8.5,y+7.5); g.fillStyle='#ffe6c4'; g.fillText('Cu',x+8,y+7);
+  g.restore(); }
 
 function pSculpture(){ return obj(32,72,function(g){
   R(g,4,36,24,36,'#f3f1ec'); R(g,2,32,28,6,'#fbfaf7'); R(g,2,32,28,1,'#ffffff'); R(g,24,38,4,34,'#d8d4cb'); R(g,4,70,24,2,'#c9c5bc');
@@ -3167,6 +3176,6 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, MAP5:MAP5, MAP1:MAP1, buildMap1:function(){ return buildMap1({logo:SHOPLOGO}); }, fontReady:fontReady, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, CU_BOX:CU_BOX, drawCuTag:drawCuTag, MAP5:MAP5, MAP1:MAP1, buildMap1:function(){ return buildMap1({logo:SHOPLOGO}); }, fontReady:fontReady, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();

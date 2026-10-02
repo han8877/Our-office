@@ -1434,7 +1434,7 @@ function frame(now){
   var moving=false;
   for(var id in F.actors){ var ma=F.actors[id]; if(ma.visible){ step(ma,now); if(ma.path || (ma.tx!=null && Math.abs(ma.x-ma.tx)>=1)) moving=true; } }
   step(F.robot,now); if(F.robot && F.robot.path) moving=true;
-  if(secretTick(now) || SECRET.seqAt) moving=true;
+  if(secretTick(now) || SECRET.seqAt || (CU.at && now-CU.at<CU_SHOW+100)) moving=true;
   FRAME_MS = moving ? 33 : 66;
 
   var d=new Date(), hm={h:d.getHours(), m:d.getMinutes()}, ph=PO.phase(hm.h), g=fb, M=F.map;
@@ -1453,7 +1453,7 @@ function frame(now){
     g.fillText('있을 땐 겸손, 없을 땐 당당 - 호암', M.SIGN.x+M.SIGN.w/2, M.SIGN.y+17); g.textAlign='left';
   }
   var list=M.things.slice();
-  if(F.key==='3'){ list.push({sy:5*T+0.5, draw:function(gg){ PO.drawFish(gg,now,F.feeding); }}); secretDraw(list,now);
+  if(F.key==='3'){ list.push({sy:5*T+0.5, draw:function(gg){ PO.drawFish(gg,now,F.feeding); }}); secretDraw(list,now); cuDraw(list,now);
     if(F.umbrellaOn) list.push({sy:25*T+30, draw:drawUmbrellas});
     if(F.lunchOn) list.push({sy:26*T+14, draw:drawLunchSign}); }
   else if(F.key==='2') list.push({sy:28*T+0.5, draw:function(gg){ PO.drawBigTank(gg,now); }});
@@ -1604,6 +1604,13 @@ function secretDraw(list,now){
   if(t<SEQ_ARROW_END+300) list.push({ sy:15*T+0.5, draw:function(gg){ PO.drawArtEye(gg,look,open); } });
   if(t>=SEQ_ARROW && t<SEQ_ARROW_END) list.push({ sy:15*T+0.6, draw:function(gg){ PO.drawArtArrow(gg,now); } });
 }
+// 재고창고 레몬색 노트 묶음: 누르면 앞면에 'Cu' 가 6초 동안 떠올랐다 흐려진다
+var CU={ at:0 }, CU_SHOW=6000;
+function cuDraw(list,now){
+  var t=now-CU.at; if(!CU.at || t>CU_SHOW) return;
+  var a = t<300 ? t/300 : t>CU_SHOW-600 ? (CU_SHOW-t)/600 : 1;
+  list.push({ sy:23*T+0.5, draw:function(gg){ PO.drawCuTag(gg,a); } });
+}
 function secretClick(F,p){
   if(F.key!=='3') return false;
   var now=performance.now(), S=SECRET;
@@ -1630,6 +1637,7 @@ cvs.addEventListener('click', function(e){
   var F=activeFloor(); if(!F) return;
   var p=artXY(e);
   if(secretClick(F,p)){ e.stopPropagation(); return; }
+  if(F.key==='3' && inRect(p,PO.CU_BOX,2)){ e.stopPropagation(); var cn=performance.now(); if(!CU.at || cn-CU.at>CU_SHOW-600){ CU.at=cn; if(window.__sfx) window.__sfx('click'); } return; }
   if(F.key==='5' && inRect(p,PO.MAP5.BOARD_RECT)){ e.stopPropagation(); openMemoBoard(); return; }   // 한교수의 메모 보드 크게 보기
   if(F.key==='5' && inRect(p,PO.MAP5.LIGHTSW,4)){ e.stopPropagation(); PO.STATE.lab5Light=(PO.STATE.lab5Light===false); if(window.__sfx) window.__sfx('click'); return; }   // 연구소 조명 스위치
   if(F.key==='5' && vacNightHit(F,p)){ e.stopPropagation(); F.vac.bubble=['저는 한교수님의','지시만 이행합니다']; F.vac.bubbleUntil=performance.now()+3200; return; }   // 충전 중인 청소기
