@@ -1479,6 +1479,11 @@ var FONT3={'0':'111101101101111','1':'010110010010111','2':'111001111100111','3'
 function txt3(g,x,y,s,c){ for(var i=0;i<s.length;i++){ var b=FONT3[s[i]]; if(b) for(var k=0;k<15;k++) if(b[k]==='1') P(g,x+i*4+k%3,y+Math.floor(k/3),c); } }
 function pBezel(w,h){ return obj(w,h,function(g){                 // 벽걸이 화면 테두리: 짙은 회색 + 아래 황동 띠
   R(g,0,0,w,h,'#2a2e34'); R(g,0,0,w,1,'#4a5058'); R(g,0,h-3,w,3,'#c9a25c'); R(g,0,h-3,w,1,'#e2c27e'); R(g,w-1,1,1,h-4,'#1c1f24'); }); }
+function pStaffDoor(w,h){ return obj(w,h,function(g){          // 관계자 전용 문: 월넛 문짝, 황동 손잡이, 옆 카드 리더
+  R(g,0,0,w,h,'#4a3a30'); R(g,0,0,w,1,'#6a5646'); R(g,3,3,w-12,h-3,'#6e5544'); R(g,3,3,w-12,1,'#8a6e58'); R(g,w-10,3,1,h-3,'#3a2c24');
+  R(g,7,9,w-20,22,'#664e3e'); R(g,7,9,w-20,1,'#7e6450'); R(g,7,37,w-20,24,'#664e3e'); R(g,7,37,w-20,1,'#7e6450');
+  R(g,w-16,34,4,6,'#c9a25c'); R(g,w-16,34,4,1,'#e2c27e'); R(g,w-20,36,4,2,'#c9a25c');
+  R(g,w-7,26,5,9,'#2a2e34'); R(g,w-6,27,3,2,'#6fd0c0'); R(g,w-6,31,3,1,'#c8323a'); }); }
 function pSconce(){ return obj(14,24,function(g){               // 황동 벽등
   R(g,5,6,4,14,'#c9a25c'); R(g,5,6,1,14,'#e2c27e'); R(g,2,0,10,9,'#fbeec8'); R(g,2,0,10,1,'#fffbe8'); R(g,3,8,8,1,'#e8d2a0'); R(g,4,19,6,3,'#b08a4a'); }); }
 var MEDIA_PAL=[
@@ -1738,8 +1743,14 @@ var SWITCH2={ x:5*T+8, y:46, w:18, h:26 }; wallItem(pSwitch(),SWITCH2.x,SWITCH2.
 var SIGN2={ x:9*T, y:30, w:288 }; wallItem(pSignBoard(SIGN2.w),SIGN2.x,SIGN2.y);
 var CLOCK2={ cx:19*T+16, cy:52 };
 // 벽: 층 안내 화면 · 황동 벽등 · 미디어아트 월 (그림 액자 셋 대신)
-var DIR2={ x:202, y:26, w:76, h:54 }, MEDIA2={ x:752, y:22, w:352, h:62 };
+var DIR2={ x:202, y:26, w:76, h:54 }, MEDIA2={ x:776, y:22, w:256, h:62 };   // 미디어아트 월: 갤러리 벤치 위 가운데쯤, 오른쪽엔 관계자 문 자리를 남긴다
 wallItem(pBezel(DIR2.w,DIR2.h),DIR2.x,DIR2.y); wallItem(pBezel(MEDIA2.w,MEDIA2.h),MEDIA2.x,MEDIA2.y);
+// 미디어아트 월 오른쪽: 관계자외 출입금지 문 (짙은 월넛 문 · 황동 손잡이 · 카드 리더 · 위에 안내판)
+var STAFFDOOR2={ x:1058, y:28, w:42, h:68 };
+wallItem(pStaffDoor(STAFFDOOR2.w,STAFFDOOR2.h),STAFFDOOR2.x,STAFFDOOR2.y);
+lazyItem(function(){ return obj(48,25,function(g){ R(g,0,0,48,25,'#fbf8f2'); R(g,0,0,48,1,'#ffffff'); R(g,1,1,46,23,'#c8323a'); R(g,2,2,44,21,'#fbf8f2');
+  g.font='10px NeoDGM, sans-serif'; g.textAlign='center'; g.textBaseline='top'; g.fillStyle='#b0242c'; g.fillText('관계자외',24,2); g.fillText('출입금지',24,12); }); },
+  STAFFDOOR2.x-3, 2, 2);
 wallItem(pSconce(),20*T+18,34); wallItem(pSconce(),22*T+12,34);
 things.push({sy:1, draw:function(g){ var t=performance.now();
   drawMedia(g,MEDIA2.x+4,MEDIA2.y+4,MEDIA2.w-8,MEDIA2.h-10,t); drawDirectory(g,DIR2.x+3,DIR2.y+3,DIR2.w-6,DIR2.h-9,t); }});
