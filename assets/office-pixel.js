@@ -872,20 +872,80 @@ function f2Meets(F,now,off){
       var used={}; for(var k in A){ if(A[k].venue) used[A[k].venue.name]=1; }
       var free=F2M_VENUES.filter(function(v){ return !used[v.name]; }); if(!free.length){ q.done=true; continue; }
       var ven=lab5Pick(free), ci=Math.floor(Math.random()*F2M_CLIENTS.length), cl=f2mClient(ci), cp={}; for(var kk in look) cp[kk]=look[kk];
+      var bfree=Object.keys(BUYERS).filter(function(bk){ return !A['by_'+bk] && !buyerInMeet(A,bk); }), byk=(bfree.length && Math.random()<0.3) ? lab5Pick(bfree) : null;   // 가끔 외국인 바이어와 회의
+      if(byk) cl={ name:BUYERS[byk].name, look:BUYERS[byk].look };
       s=npcActor(F,sid,cp,staffName(q.id)); s.sid=q.id; s.venue=ven; s.visible=true; s.stepMs=300; placeAt(F,s,{c:F.lobby.c,r:F.lobby.r,face:'down'}); setGoal(F,s,ven.a,now);
-      c=npcActor(F,cid,cl.look,cl.name); c.plateDy=16; c.venue=ven; c.visible=false; c.stepMs=320; c.until=now+2600;
+      c=npcActor(F,cid,cl.look,cl.name); c.plateDy=16; c.venue=ven; c.visible=false; c.stepMs=320; c.until=now+2600; if(byk) c.buyer=byk;
       var talk=F2M_TALK.slice().sort(function(){ return Math.random()-0.5; }).slice(0,6), team=F2M_TEAM[q.team]||[];
       if(team.length) talk.splice(2,0,lab5Pick(team),lab5Pick(team));
-      s.script=[ven.open].concat(talk).concat([lab5Pick(F2M_BYE)]); s.si=0; s.ph='go'; s.next=0; }
+      s.script=[ven.open].concat(talk).concat([lab5Pick(F2M_BYE)]); s.si=0; s.ph='go'; s.next=0;
+      if(byk){ var BY=BUYERS[byk]; s.buyerMeet=true;                                                 // 직원은 한국어로, 바이어는 자기 나라 말로 (가끔 쉬운 한국어)
+        s.script=[[['먼 길','오셨어요!'],Math.random()<0.2?['안녕하세요!','반가워요']:BY.hi]].concat(BUYER_STAFF.slice().sort(function(){ return Math.random()-0.5; }).slice(0,7).map(function(l){ return [l,buyerSay(byk,'meet')]; }))
+          .concat([[['오늘 감사했습니다.','조심히 가세요'],Math.random()<0.2?['감사합니다!','또 올게요']:BY.bye]]); } }
     if(!c.visible && now>c.until && s.ph==='go'){ c.visible=true; placeAt(F,c,{c:F.lobby.c,r:F.lobby.r,face:'down'}); setGoal(F,c,s.venue.b,now); }   // 손님은 조금 뒤에 엘리베이터에서
     if(off){ if(s.path) step(s,now); if(c.path) step(c,now); }
     [s,c].forEach(function(a){ if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; } });
     if(s.ph==='go' && c.visible && !s.path && !c.path){ s.ph='talk'; s.next=now+800; }
     else if(s.ph==='talk'){
       if(now>s.next){ if(s.si>=s.script.length){ s.ph='out'; s.leaving=true; c.leaving=true; s.stepMs=280; c.stepMs=300; setGoal(F,s,{c:F.lobby.c,r:F.lobby.r,face:'up'},now); setGoal(F,c,{c:F.lobby.c,r:F.lobby.r+1,face:'up'},now); if(!s.path) s.visible=false; if(!c.path) c.visible=false; }
-        else { var ex=s.script[s.si++], first=(s.si%3===0)?c:s, second=first===s?c:s; first.bubble=ex[0]; first.talkUntil=now+3300; s.reply=ex[1]; s.replyBy=second; s.replyAt=now+3500; s.next=now+8200+Math.random()*2500; } }
+        else { var ex=s.script[s.si++], first=(!s.buyerMeet && s.si%3===0)?c:s, second=first===s?c:s; first.bubble=ex[0]; first.talkUntil=now+3300; s.reply=ex[1]; s.replyBy=second; s.replyAt=now+3500; s.next=now+8200+Math.random()*2500; } }
       if(s.replyAt && now>s.replyAt){ s.replyBy.bubble=s.reply; s.replyBy.talkUntil=now+3300; s.replyAt=0; } }
     else if(s.ph==='out'){ if(!s.visible && !c.visible){ delete A[sid]; delete A[cid]; q.done=true; } }
+  }
+}
+
+// ---- 2층 외국인 바이어 셋: 평일 하루 두 번쯤 로비를 둘러보고 바에 들른다. 평소엔 자기 나라 말로 수출 혼잣말, 다섯 번에 한 번은 쉬운 한국어 ----
+var BUYERS={
+  jp:{ name:'노토 네코', look:{id:'buyerJp',kind:'maneki',shirt:'#3a3f4a',pants:'#2c3038',tie:'#7a8ab0',item:'file'},
+    self:[['輸出の書類、','確認しなきゃ'],['納期は','来月末かな…'],['このノート、','日本で売れそう'],['送料が','ちょっと高いね'],['サンプルを','本社に送ろう'],['関税の計算、','もう一度…'],['東京の展示会に','出したいな'],['在庫は','十分あるかな'],['見積書、','まだかな'],['いい紙だなぁ'],['パッケージは','日本語版で'],['船便なら','三週間か…'],['このペン、','書きやすい！'],['部長に','報告しないと'],['金色の猫…','親戚かな？'],['コンテナ一つで','足りるかな']],
+    ko:[['안녕하세요~'],['감사합니다!'],['이거','너무 귀여워요'],['커피','맛있어요'],['한국 문구,','최고예요!']],
+    order:['ジンジャーエール、','ください'], bt:['네, 금방','만들어 드릴게요'],
+    meet:[['はい、','大丈夫です'],['いいですね！'],['検討します'],['本社に','確認します'],['素晴らしい！'],['納期は','守れますか？']], hi:['はじめまして、','ノトです'], bye:['ありがとう','ございました！'] },
+  us:{ name:'마이클 스캇', look:{id:'buyerUs',kind:'eagle',shirt:'#5c3d26',pants:'#432c1c',tie:'#c8323a',item:'shopbag'},
+    self:[["Let's close it","by Friday."],['Two containers','to LA.'],['These pens?','Huge in the States.'],['Need the','price sheet.'],['Customs forms…','again.'],['Shipping costs','are killing me.'],['Back-to-school','season is key.'],['Gotta call','the Scranton office.'],['MOQ 5,000?','Hmm.'],['Love this','paper texture.'],['Samples by','next Monday.'],['Retailers would','love this.'],['Is that','tariff-free?'],["That's what","she said."],['Okay, invoice','in dollars.']],
+    ko:[['반가워요!'],['이거','얼마예요?'],['감사합니다~'],['한국','좋아요!'],['맛있어요!']],
+    order:['One grapefruit ade,','please!'], bt:['Sure!','금방 드릴게요'],
+    meet:[['Sounds great!'],['Deal!'],['Let me check','with my boss.'],['Can we do','a better price?'],['Love it!'],['Send me','the samples.']], hi:['Hi! Michael Scott,','nice to meet you'], bye:['Thanks!','See you soon.'] },
+  it:{ name:'카포네 마또띠', look:{id:'buyerIt',kind:'wolf',shirt:'#e8dcc0',pants:'#cbbd9e',scarf:'#3a6a8a',item:'paper'},
+    self:[['Che bella','carta!'],['Spedizione a Milano','entro marzo?'],["Il prezzo è","un po' alto…"],['Serve la fattura','in euro.'],['Mamma mia,','che colori!'],['Il campione','arriva domani?'],['Per la fiera','di Bologna…'],['La dogana è','sempre lenta.'],['Quanti pezzi','per scatola?'],['Bellissimo','design!'],['Devo chiamare','Roma.'],['Un container','basta?'],['Qualità','perfetta.'],['Questo piacerà','ai clienti.'],['Un caffè,','per favore…']],
+    ko:[['잘 지내요?'],['커피','좋아요~'],['너무','예뻐요!'],['안녕하세요!'],['감사합니다!']],
+    order:['Un espresso,','per favore'], bt:['에스프레소…','네, 준비할게요'],
+    meet:[['Perfetto!'],['Va bene!'],['Bellissimo!'],['Ci penso…'],['Il prezzo,','per favore?'],['Grazie mille!']], hi:['Piacere,','Capone Mattotti'], bye:['Grazie,','a presto!'] }
+};
+var BUYER_KO_MEET=[['좋아요!'],['네,','알겠어요'],['감사합니다!'],['괜찮아요~']];
+var BUYER_STAFF=[['수출용 샘플','준비했습니다'],['영문 카탈로그','여기 있어요'],['선적은 다음 달','첫 주예요'],['단가표','보여 드릴게요'],['포장은 현지어로','바꿔 드릴게요'],['통관 서류는','저희가 챙길게요'],['초도 물량은','얼마나 생각하세요?'],['이 패턴,','해외 반응이 좋아요'],['컬러는','세 가지로 갈게요'],['샘플은 항공으로','보내 드릴게요']];
+var BUYER_SPOTS=[{c:26,r:4,face:'up'},{c:28,r:4,face:'up'},{c:12,r:23,face:'down'},{c:15,r:23,face:'down'},{c:25,r:19,face:'up'},{c:32,r:19,face:'up'},{c:22,r:6,face:'up'},{c:12,r:16,face:'up'}];   // 아트 월 · 어항 · 책장 · 음료장 · 금빛 고양이 조형물
+var BUYER_BAR=[{c:30,r:13,face:'up'},{c:26,r:13,face:'up'}];                                     // 바 의자 사이에 서서 주문 (앉으면 의자에 몸이 가려진다)
+function buyerSay(k,kind){ var b=BUYERS[k]; if(Math.random()<0.2) return lab5Pick(kind==='meet'?BUYER_KO_MEET:b.ko); return lab5Pick(kind==='meet'?b.meet:b.self); }
+function buyerInMeet(A,k){ for(var id in A){ if(/^mc_/.test(id) && A[id].buyer===k) return true; } return false; }
+function buyerSpotFree(F,g,me){ for(var id in F.actors){ var o=F.actors[id]; if(o===me || !o.visible) continue; var t=o.goal||o.tile; if(t && t.c===g.c && t.r===g.r) return false; } return true; }
+function buyerSlots(F,d){ var dk=d.toDateString(); if(F.buyDay===dk) return; F.buyDay=dk; F.buySlots=[]; F.buyDone={};
+  Object.keys(BUYERS).forEach(function(k){ for(var j=0;j<2;j++){ var h=PO.hash(dk+'buyer'+k+j); if(h%10<2) continue;                        // 다섯 번에 한 번은 그 시간에 안 온다
+    var st=j? 13*60+30+h%190 : 10*60+h%110; F.buySlots.push({k:k, key:k+j, st:st, end:st+10+(h>>4)%9}); } }); }
+function f2Buyers(F,now,off){
+  var A=F.actors, d=new Date(), t=d.getHours()*60+d.getMinutes(), work=B.workDay?B.workDay():false;
+  buyerSlots(F,d);
+  if(work && !(window.__concertHold && window.__concertHold())) F.buySlots.forEach(function(sl){
+    if(t<sl.st || t>=sl.end || F.buyDone[sl.key] || A['by_'+sl.k] || buyerInMeet(A,sl.k)) return; F.buyDone[sl.key]=1;
+    var b=BUYERS[sl.k], a=npcActor(F,'by_'+sl.k,b.look,b.name); a.buyer=sl.k; a.visible=true; a.leaving=false; a.stepMs=330; a.leaveAt=now+Math.max(90000,(sl.end-t)*60000);
+    placeAt(F,a,{c:F.lobby.c,r:F.lobby.r,face:'down'}); a.ph='pick'; a.until=now+600; a.nextTalk=now+2500; a.lastSpot=null; });
+  for(var k in BUYERS){ var a=A['by_'+k]; if(!a) continue; var b=BUYERS[k];
+    if(off && a.path) step(a,now);
+    if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
+    if(a.ph!=='out' && !a.talkUntil && now>a.nextTalk){ a.bubble=buyerSay(k,'self'); a.talkUntil=now+3400; a.nextTalk=now+9000+Math.random()*9000; }
+    if(a.btAt && now>a.btAt){ a.btAt=0; var bt=A.npcBartender; if(bt && bt.visible && bt.onBar){ bt.bubble=b.bt; bt.talkUntil=now+3000; bt.orderCool=now+15000; bt.tx=Math.max(24*T-1,Math.min(32*T-1,a.x)); } }
+    if(a.ph==='pick' && now>a.until){
+      if(now>a.leaveAt){ a.ph='out'; a.leaving=true; a.stepMs=300; setGoal(F,a,{c:F.lobby.c,r:F.lobby.r,face:'up'},now); if(!a.path) a.visible=false; continue; }
+      var bt0=A.npcBartender, barOn=bt0 && bt0.visible && bt0.onBar, g=null;
+      if(barOn && a.lastSpot!=='bar' && Math.random()<0.35){ var bs=BUYER_BAR.filter(function(s){ return buyerSpotFree(F,s,a); }); if(bs.length){ g=lab5Pick(bs); a.atBar=true; } }
+      if(!g){ a.atBar=false; var fr=BUYER_SPOTS.filter(function(s){ return s!==a.lastSpot && buyerSpotFree(F,s,a); }); g=fr.length? lab5Pick(fr) : null; }
+      if(!g){ a.until=now+3000; continue; }
+      a.lastSpot=a.atBar?'bar':g; a.ph='go'; setGoal(F,a,{c:g.c,r:g.r,face:g.face,sit:g.sit,pt:g.pt},now); if(!a.path){ a.ph='pick'; a.until=now+2000; } }
+    else if(a.ph==='go' && !a.path){ a.ph='stay';
+      if(a.atBar){ a.until=now+40000+Math.random()*30000; a.bubble=Math.random()<0.2?['자몽 에이드','주세요!']:b.order; a.talkUntil=now+3000; a.nextTalk=now+12000; a.btAt=now+1600; }
+      else a.until=now+15000+Math.random()*20000; }
+    else if(a.ph==='stay' && now>a.until){ a.ph='pick'; a.until=now+300; }
+    else if(a.ph==='out' && (!a.visible || !a.path)){ a.visible=false; delete A['by_'+k]; }
   }
 }
 
@@ -1770,7 +1830,7 @@ function catchUp(now){
   }
   var F2=FLOORS['2']; if(F2 && F2.actors){ ['npcBartender','npcServer'].forEach(function(k){ var n=F2.actors[k]; if(n && n.path){ n.stepStart=now-60000; } }); }   // 걷던 길은 끝까지 간 것으로
   // 5층: 남박사·한교수는 다음 틱에 지금 시각대로 다시 자리 잡고(근무 중이면 연구소, 아니면 없음), 청소기는 밤이면 충전 독에, R-0는 제자리에서 다시
-  var FT=FLOORS['2']; if(FT && FT.actors){ var Q2=window.__f2Guests||{}; for(var k3 in FT.actors){ if(/^mc?_/.test(k3)){ var m3=FT.actors[k3]; delete FT.actors[k3]; } } for(var q2 in Q2) Q2[q2].done=true; }
+  var FT=FLOORS['2']; if(FT && FT.actors){ var Q2=window.__f2Guests||{}; for(var k3 in FT.actors){ if(/^(mc?|by)_/.test(k3)){ var m3=FT.actors[k3]; delete FT.actors[k3]; } } for(var q2 in Q2) Q2[q2].done=true; }
   if(window.__hanTrip){ window.__hanTrip=null; if(FLOORS['2'] && FLOORS['2'].actors) delete FLOORS['2'].actors.han2; }   // 한교수 2층 나들이는 그사이 끝났다
   var FV=FLOORS['5']; if(FV && FV.actors){ var Q5=window.__f5Guests||{}; for(var k5 in FV.actors){ if(/^v5_/.test(k5)) delete FV.actors[k5]; } for(var q5 in Q5) Q5[q5].done=true; }
   var F1=FLOORS['1'];
@@ -1810,7 +1870,7 @@ function frame(now){
   if(FLOORS['1'] && FLOORS['1'].svg){ try{ f1Tick(FLOORS['1'],now,F!==FLOORS['1']); }catch(e){ if(window.console) console.warn('pixOffice f1', e); } }
   if(FLOORS['5'] && FLOORS['5'].svg){ try{ lab5Tick(FLOORS['5'],now,F!==FLOORS['5']); }catch(e){ if(window.console) console.warn('pixOffice lab5', e); } }
   if(FLOORS.L && FLOORS.L.svg){ try{ roofTick(FLOORS.L,now,F!==FLOORS.L); }catch(e){ if(window.console) console.warn('pixOffice roof', e); } }
-  if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); f2Meets(FLOORS['2'],now,F!==FLOORS['2']); f2HanTrip(FLOORS['2'],now,F!==FLOORS['2']); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
+  if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); f2Meets(FLOORS['2'],now,F!==FLOORS['2']); f2HanTrip(FLOORS['2'],now,F!==FLOORS['2']); f2Buyers(FLOORS['2'],now,F!==FLOORS['2']); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
   var moving=false;
   for(var id in F.actors){ var ma=F.actors[id]; if(ma.visible){ step(ma,now); if(ma.path || (ma.tx!=null && Math.abs(ma.x-ma.tx)>=1)) moving=true; } }
   step(F.robot,now); if(F.robot && F.robot.path) moving=true;
@@ -1928,12 +1988,16 @@ var NPC_INFO={
   f1woo:    { name:'우서빙', role:'1층 MOON 9 COFFEE · 홀 서빙', bio:'하마. 식물에 물을 주고, 테이블을 닦고, 쓰레기통을 비우고, 갤러리 그림도 챙겨요. 손님 질문엔 뭐든 대답해 줘요. 쉴 땐 직원 쉼터에서 뜨개질을 해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
   f1shopper:{ name:'손님', role:'1층 스토어 손님', bio:'베이지 장바구니를 들고 진열대를 구경해요.', hours:'영업 10~21시' },
   f1cafeguest:{ name:'손님', role:'1층 카페 손님', bio:'키오스크에서 주문하고 픽업대에서 음료를 받아요.', hours:'영업 8~22시' },
+  buyer_jp: { name:'노토 네코', role:'일본 바이어 · 2층 로비 손님', bio:'마네키네코. 도쿄에서 온 문구 수입사 바이어예요. 서류철을 꼭 쥐고 일본어로 수출 이야기를 중얼거려요. 한국어는 인사 정도.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
+  buyer_us: { name:'마이클 스캇', role:'미국 바이어 · 2층 로비 손님', bio:'흰머리수리. 1층 스토어 쇼핑백을 늘 들고 다녀요. 영어로 선적 얘기를 하다가 혼자 농담하고 혼자 웃어요.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
+  buyer_it: { name:'카포네 마또띠', role:'이탈리아 바이어 · 2층 로비 손님', bio:'늑대. 밀라노에서 온 종이 수입사 바이어예요. 견본 종이를 들고 다니며 이탈리아어로 감탄해요. 바에선 늘 에스프레소.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
   visitor:  { name:'방문객', role:'2층 로비 손님', bio:'로비를 둘러보며 작품을 보거나 바에서 음료를 마셔요.', hours:'평일 09:00~18:00' }
 };
 // 그림 속 사람을 눌렀을 때: 직원이면 원래 프로필, 아니면 짧은 소개 카드
 function actorWho(F,a){
   if((F.key==='2'||F.key==='5') && a.sid) return {staff:a.sid};
   if(F.key==='2' && a.id==='han2') return {npc:'han'};
+  if(F.key==='2' && a.buyer) return {npc:'buyer_'+a.buyer};
   if(F.key==='2'){ if(a.id==='npcBartender') return {npc:'bartender'}; if(a.id==='npcServer') return {npc:'server'}; if(a.id==='yun'||a.id==='kang') return {npc:a.id};
     if(a.id==='guard') return {npc:a.lookId==='guardLeo'?'guardLeo':'guard'}; return {npc:'visitor', name:a.name}; }
   if(F.key==='5'){ return NPC_INFO[a.id] ? {npc:a.id} : null; }

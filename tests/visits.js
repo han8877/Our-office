@@ -38,5 +38,21 @@ const { open, enter, goFloor, suite } = require('./lib');
   T.check('연주회: 3층 직원도 올라온다', cc.f3 >= 4, JSON.stringify(cc));
   T.check('연주회: 메신저 상태는 "옥상 연주회"', cc.st === '옥상 연주회', cc.st);
   T.check('연주회: 페이지 오류 없음', C.errors.length === 0, C.errors.join(' / '));
-  await C.browser.close(); T.done();
+  await C.browser.close();
+  // 2층 외국인 바이어 셋: 이름은 한국어 · 혼잣말은 자기 나라 말(가끔 쉬운 한국어) · 회의 손님으로도 온다
+  const Y = await open({ time: '2026-10-06T11:00:00' });
+  await enter(Y.page); await goFloor(Y.page, '2'); await Y.page.waitForTimeout(800);
+  await Y.page.evaluate(() => { window.__pixOffice.floors['2'].buySlots = ['jp', 'us', 'it'].map(k => ({ k, key: k + 'T', st: 600, end: 700 })); });
+  const said = new Set(); let names = [];
+  for (let i = 0; i < 30 && said.size < 4; i++) { await Y.page.waitForTimeout(1500);
+    const r = await Y.page.evaluate(() => { const A = window.__pixOffice.floors['2'].actors; return ['jp', 'us', 'it'].map(k => A['by_' + k]).filter(Boolean).map(a => ({ n: a.name, v: a.visible, b: a.bubble && a.bubble.join(' ') })); });
+    names = r.filter(a => a.v).map(a => a.n); r.forEach(a => { if (a.b) said.add(a.b); }); }
+  T.check('바이어: 노토 네코 · 마이클 스캇 · 카포네 마또띠가 2층 로비에', ['노토 네코', '마이클 스캇', '카포네 마또띠'].every(n => names.includes(n)), names.join(','));
+  T.check('바이어: 혼잣말을 한다', said.size >= 2, [...said].join(' / '));
+  const meet = await Y.page.evaluate(async () => { const F = window.__pixOffice.floors['2'], A = F.actors; F.buySlots = []; ['jp', 'us', 'it'].forEach(k => delete A['by_' + k]);
+    const r = Math.random; Math.random = () => 0.1; window.__f2Guests = { b: { id: 'kobujang', team: 'biz' } }; await new Promise(z => setTimeout(z, 500)); Math.random = r;
+    return A.mc_b ? { n: A.mc_b.name, buyer: A.mc_b.buyer, staffFirst: !!(A.m_b && A.m_b.buyerMeet) } : null; });
+  T.check('바이어: 3층 직원 회의에 바이어가 손님으로 온다 (직원은 한국어로 먼저)', meet && meet.buyer && meet.staffFirst, JSON.stringify(meet));
+  T.check('바이어: 페이지 오류 없음', Y.errors.length === 0, Y.errors.join(' / '));
+  await Y.browser.close(); T.done();
 })();

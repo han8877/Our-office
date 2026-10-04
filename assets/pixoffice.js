@@ -857,7 +857,7 @@ function drawHeadNew(g,K,p,dir,blink){
       if(blink) R(g,cx-6,cy-1,3,1,eye); else { R(g,cx-6,cy-2,3,3,'#2a1c18'); P(g,cx-6,cy-2,'#ffffff'); } R(g,cx-7,cy-3,2,1,'#2a1c18'); P(g,cx+2,cy-6,'#f6ead8'); P(g,cx+4,cy-3,'#f6ead8'); R(g,cx-1,cy+2,3,2,blush); }
     if(k==='maneki'){ ell(g,cx+3,cy-4,5,3,'#f0a040'); ell(g,cx+6,cy+1,2,2,'#3a3236');                            // 얼룩 · 웃는 눈 · 분홍 코 · 수염 · 빨간 목줄과 금방울
       if(blink) R(g,cx-7,cy,3,1,eye); else { P(g,cx-7,cy,eye); R(g,cx-6,cy-1,2,1,eye); P(g,cx-4,cy,eye); }
-      R(g,cx-12,cy+2,2,1,'#f2a0b0'); P(g,cx-11,cy+3,'#c87a8a'); R(g,cx-15,cy+3,4,1,'#d8d0c8'); R(g,cx-15,cy+5,4,1,'#d8d0c8'); R(g,cx-4,cy+3,3,2,blush);
+      R(g,cx-12,cy+2,2,1,'#f2a0b0'); P(g,cx-11,cy+3,'#c87a8a'); R(g,cx-4,cy+3,3,2,blush);
       R(g,cx-7,cy+7,13,2,'#d83a3a'); R(g,cx-7,cy+7,13,1,'#e85a50'); disc(g,cx-6,cy+10,2,'#f2c030'); P(g,cx-7,cy+9,'#fff0a0'); R(g,cx-7,cy+11,3,1,'#a87818'); }
     if(k==='greyhound'){ ell(g,cx-9,cy+3,7,3,f); ell(g,cx-9,cy+4,6,2,F); R(g,cx-16,cy+2,2,2,'#2a2426'); R(g,cx-8,cy-6,6,2,F);   // 길고 가는 주둥이 · 흰 줄무늬
       eyes(cx-5,null,cy-2); R(g,cx-1,cy+3,3,2,blush); }
@@ -1146,7 +1146,7 @@ function drawBody(g,K,p,dir,frame,sit){
   if(p.scarf&&dir==='up'){ R(g,11,25,10,2,p.scarf); }
   if(p.badge) drawBadge(g,dir);
   if(dir==='down') drawCarry(g,p,'down',22);
-  if(dir==='up'&&(p.item==='basket'||p.item==='cup')) drawCarry(g,p,'up',22);   // 뒷모습: 옆구리에 든 장바구니 · 컵
+  if(dir==='up'&&(p.item==='basket'||p.item==='cup'||p.item==='shopbag')) drawCarry(g,p,'up',22);   // 뒷모습: 옆구리에 든 장바구니 · 컵
   if(p.shell && dir==='up') drawShell(g,'up');
 }
 // 사원증: 남색 목줄에 흰 카드 (앞: 가슴에 달랑 · 옆: 몸 앞쪽 · 뒤: 목덜미 줄만)
@@ -1169,6 +1169,8 @@ function drawCarry(g,p,dir,hx){
   else if(it==='foodtray'){ var fx=dir==='down'?8:hx-8; R(g,fx,30,16,7,'#b88a5c'); R(g,fx,30,16,1,'#d8aa7a'); disc(g,fx+4,33,2,'#fbfaf6'); disc(g,fx+10,33,2,'#e8903a'); R(g,fx+13,31,2,4,'#6aa84a'); }
   else if(it==='icecream'){ var ix=dir==='down'?23:hx+1; tri(g,ix-2,31,ix+2,31,ix,37,'#d8a060'); P(g,ix-1,32,'#b8844a'); disc(g,ix,29,3,'#f7a8c8'); P(g,ix-1,28,'#ffe0ec'); }
   else if(it==='ramen'){ var rx=dir==='down'?11:hx-2; R(g,rx,30,10,8,'#fbfaf6'); R(g,rx,32,10,2,'#d8402e'); R(g,rx-1,29,12,2,'#e8e4dc'); R(g,rx+7,25,1,5,'#c89a5a'); R(g,rx+9,25,1,5,'#c89a5a'); }
+  else if(it==='shopbag'){ var sx=dir==='down'?hx-3:dir==='up'?19:hx-2; R(g,sx+2,29,1,4,'#8a6a48'); R(g,sx+7,29,1,4,'#8a6a48'); R(g,sx+2,29,6,1,'#8a6a48');   // 종이 쇼핑백 (끄적끄적 초록 띠)
+    R(g,sx,32,10,9,'#efe4cc'); R(g,sx,32,10,1,'#faf4e6'); R(g,sx,35,10,2,'#5a8a5a'); P(g,sx+4,35,'#f6e8a8'); R(g,sx+9,33,1,8,'#d8c8a8'); }
   else if(it==='paper'){ R(g,hx-1,32,6,8,'#ffffff'); R(g,hx,34,4,1,'#b8b2a6'); R(g,hx,36,3,1,'#b8b2a6'); }
 }
 function buildChar(p, dir, frame, blink, sit){
