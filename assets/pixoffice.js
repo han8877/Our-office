@@ -1812,6 +1812,9 @@ wallItem(pBezel(DIR2.w,DIR2.h),DIR2.x,DIR2.y); wallItem(pBezel(MEDIA2.w,MEDIA2.h
 // 미디어아트 월 오른쪽: 관계자외 출입금지 문 (짙은 월넛 문 · 황동 손잡이 · 카드 리더 · 위에 안내판)
 var STAFFDOOR2={ x:1058, y:28, w:42, h:68 };
 wallItem(pStaffDoor(STAFFDOOR2.w,STAFFDOOR2.h),STAFFDOOR2.x,STAFFDOOR2.y);
+things.push({sy:2, draw:function(g){ if(!(STATE.staffDoor2>performance.now())) return;   // 누가 드나들 때: 문짝이 안쪽으로 열리고 어두운 안이 보인다
+  var x=STAFFDOOR2.x, y=STAFFDOOR2.y, w=STAFFDOOR2.w, h=STAFFDOOR2.h;
+  R(g,x+3,y+3,w-12,h-3,'#14100e'); R(g,x+3,y+h-6,w-12,6,'#2a201a'); R(g,x+3,y+3,8,h-3,'#5a4434'); R(g,x+4,y+3,1,h-3,'#7a604a'); R(g,x+8,y+34,2,5,'#c9a25c'); }});
 lazyItem(function(){ return obj(48,25,function(g){ R(g,0,0,48,25,'#fbf8f2'); R(g,0,0,48,1,'#ffffff'); R(g,1,1,46,23,'#c8323a'); R(g,2,2,44,21,'#fbf8f2');
   g.font='10px NeoDGM, sans-serif'; g.textAlign='center'; g.textBaseline='top'; g.fillStyle='#b0242c'; g.fillText('관계자외',24,2); g.fillText('출입금지',24,12); }); },
   STAFFDOOR2.x-3, 2, 2);

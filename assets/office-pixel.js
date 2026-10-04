@@ -459,6 +459,32 @@ function lab5Screens(){ var c3=lab5Snap(PO.MAP3,true);
 function lab5Talk(a,now,lines,emos,gapMin,gapMax){
   if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.emo=null; a.talkUntil=0; a.nextTalk=now+gapMin+Math.random()*(gapMax-gapMin); }
   else if(!a.talkUntil && now>(a.nextTalk||0)){ if(emos && Math.random()<0.4){ a.emo=lab5Pick(emos); a.bubble=null; } else { a.bubble=lab5Pick(lines); a.emo=null; } a.talkUntil=now+3400; } }
+// ---- 한교수의 2층 나들이: 하루 서너 번(날마다 다른 시각) 엘리베이터로 2층에 내려가 안내데스크 뒤를 지나 관계자외 출입금지 문으로 들어갔다가
+// 10~30초 뒤에 나와 다시 5층으로 올라간다 (window.__hanTrip: go → 2층 → home) ----
+var HAN_TRIP_GO=[['잠깐','내려갔다 오지.'],['2층에','볼일이 있어.'],['…확인할 게','하나 있군.']];
+var HAN_TRIP_DOOR=[['…'],['문은','닫아 두게.'],['37%라…','확인만 하지.'],['흠.'],['관계자는','나 하나면 돼.']];
+var HAN_TRIP_OUT=[['…됐군.'],['기록은','그대로야.'],['아무 일도','없었네.'],['흠.']];
+function hanTripDue(F,d,t){
+  var dk=d.toDateString(); if(F.hanTripDay!==dk){ F.hanTripDay=dk; F.hanTripDone={}; var h=PO.hash(dk+'hantrip'), n=3+(h%2); F.hanTrips=[];
+    for(var i=0;i<n;i++) F.hanTrips.push(9*60+30+Math.floor(i*600/n)+PO.hash(dk+'ht'+i)%Math.floor(600/n-20)); }
+  for(var i2=0;i2<F.hanTrips.length;i2++){ var m=F.hanTrips[i2]; if(t>=m && t<m+40 && !F.hanTripDone[i2]){ F.hanTripDone[i2]=1; return true; } }
+  return false;
+}
+function f2HanTrip(F,now,off){
+  var HT=window.__hanTrip, a=F.actors.han2, M=F.map, W1={c:12,r:4,face:'right'}, DOOR={c:33,r:3,face:'up'};
+  if(!HT || HT.stage==='home'){ if(a){ a.visible=false; delete F.actors.han2; } return; }
+  if(HT.stage==='go'){ a=npcActor(F,'han2',HAN_LOOK,'한교수'); a.visible=true; a.stepMs=380; placeAt(F,a,{c:F.lobby.c,r:F.lobby.r,face:'down'}); setGoal(F,a,W1,now); HT.stage='w1';
+    var ky=F.actors.kang||F.actors.yun; if(ky && ky.visible && Math.random()<0.5){ ky.bubble=lab5Pick([['교수님,','오늘도요?'],['어서 오세요,','교수님.'],['…아, 안녕하세요.']]); ky.talkUntil=now+2600; } }
+  if(!a){ HT.stage='home'; return; }
+  if(off) step(a,now);
+  if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
+  if(HT.stage==='w1' && !a.path){ HT.stage='door'; setGoal(F,a,DOOR,now); }
+  else if(HT.stage==='door' && !a.path){ a.dir='up'; a.bubble=lab5Pick(HAN_TRIP_DOOR); a.talkUntil=now+2200; PO.STATE.staffDoor2=performance.now()+1600; HT.stage='enter'; HT.until=now+900; }
+  else if(HT.stage==='enter' && now>HT.until){ a.visible=false; a.bubble=null; HT.stage='inside'; HT.until=now+10000+Math.random()*20000; }
+  else if(HT.stage==='inside' && now>HT.until){ PO.STATE.staffDoor2=performance.now()+1600; a.visible=true; placeAt(F,a,{c:DOOR.c,r:DOOR.r,face:'down'}); a.bubble=lab5Pick(HAN_TRIP_OUT); a.talkUntil=now+2400; HT.stage='w1b'; setGoal(F,a,W1,now); }
+  else if(HT.stage==='w1b' && !a.path){ HT.stage='out'; setGoal(F,a,{c:F.lobby.c,r:F.lobby.r,face:'up'},now); }
+  else if(HT.stage==='out' && !a.path){ a.visible=false; delete F.actors.han2; HT.stage='home'; }
+}
 function lab5Tick(F,now,off){
   var d=new Date(), t=d.getHours()*60+d.getMinutes(), M=PO.MAP5, work=B.workDay?B.workDay():true;
   if(!F.lab5Init){ F.lab5Init=true;
@@ -491,7 +517,8 @@ function lab5Tick(F,now,off){
   if(han.ph==='off' && hanHere){ han.ph='back'; han.visible=true; han.stepMs=380; placeAt(F,han,{c:M.STEEL.c,r:M.STEEL.r,face:'left'}); setGoal(F,han,lab5Seat(M.HAN_SEAT),now); }
   if(han.ph==='sit' && !hanHere){ han.ph='out'; han.bubble=['오늘 관찰은','여기까지.']; han.talkUntil=now+2600; han.leaving=true; han.stepMs=380; setGoal(F,han,{c:M.STEEL.c,r:M.STEEL.r,face:'right'},now); if(!han.path){ han.visible=false; han.leaving=false; han.ph='off'; } }
   else if(han.ph==='sit'){ lab5Talk(han,now,HAN_LINES,null,16000,32000);
-    if(now>han.until && !han.talkUntil){ han.stepMs=380;
+    if(now>han.until && !han.talkUntil && hanTripDue(F,d,t)){ han.stepMs=380; han.ph='toElev2'; han.bubble=lab5Pick(HAN_TRIP_GO); han.talkUntil=now+2800; setGoal(F,han,{c:M.LOBBY.c,r:M.LOBBY.r,face:'up'},now); if(!han.path){ han.ph='sit'; han.until=now+20000; } }
+    else if(now>han.until && !han.talkUntil){ han.stepMs=380;
       if(Math.random()<0.35){ han.ph='toSteel'; setGoal(F,han,{c:M.STEEL.c,r:M.STEEL.r,face:'right'},now); if(!han.path && !(han.tile&&han.tile.c===M.STEEL.c&&han.tile.r===M.STEEL.r)){ han.ph='sit'; han.until=now+20000; } }   // 가끔 서버실로
       else { han.ph='walk'; var hs=lab5Pick(HAN_SPOTS); setGoal(F,han,{c:hs.c,r:hs.r,face:hs.face},now); if(!han.path){ han.ph='sit'; han.until=now+20000; } } } }
   // 서버실 드나들기: 강철 문 앞 → 문이 위로 열림 → 안으로 → 서버실을 두어 군데 둘러보고 → 다시 문으로 나와 자리로
@@ -509,6 +536,10 @@ function lab5Tick(F,now,off){
   else if(han.ph==='steelBack'){ if(now>han.until){ han.visible=true; placeAt(F,han,{c:M.STEEL.c,r:M.STEEL.r,face:'left'}); han.ph='back'; setGoal(F,han,lab5Seat(M.HAN_SEAT),now); } }
   else if(han.ph==='walk'){ if(!han.path){ han.ph='look'; han.until=now+5000+Math.random()*5000; han.bubble=lab5Pick(HAN_LINES); han.talkUntil=now+3400; } }
   else if(han.ph==='look'){ if(han.talkUntil && now>han.talkUntil){ han.bubble=null; han.talkUntil=0; } if(now>han.until){ han.ph='back'; setGoal(F,han,lab5Seat(M.HAN_SEAT),now); if(!han.path){ placeAt(F,han,lab5Seat(M.HAN_SEAT)); } } }
+  else if(han.ph==='toElev2'){ if(han.talkUntil && now>han.talkUntil){ han.bubble=null; han.talkUntil=0; }
+    if(!han.path){ han.visible=false; han.bubble=null; han.ph='away2'; han.until=now+6*60000; window.__hanTrip={ stage:'go', t:now }; } }
+  else if(han.ph==='away2'){ var HT=window.__hanTrip;
+    if(!HT || HT.stage==='home' || now>han.until){ window.__hanTrip=null; if(hanHere){ han.visible=true; placeAt(F,han,{c:M.LOBBY.c,r:M.LOBBY.r,face:'down'}); han.ph='back'; setGoal(F,han,lab5Seat(M.HAN_SEAT),now); } else { han.ph='off'; } } }
   else if(han.ph==='back'){ if(!han.path){ han.ph='sit'; han.until=now+40000+Math.random()*50000; han.nextTalk=now+8000+Math.random()*10000; } }
   if(!hanHere && /^(toSteel|steel|srv)/.test(han.ph) && !han.path){ han.visible=false; han.bubble=null; han.ph='off'; }
   if(han.ph==='out'){ if(han.talkUntil && now>han.talkUntil){ han.bubble=null; han.talkUntil=0; } if(!han.visible){ han.ph='off'; han.bubble=null; } }
@@ -1740,6 +1771,7 @@ function catchUp(now){
   var F2=FLOORS['2']; if(F2 && F2.actors){ ['npcBartender','npcServer'].forEach(function(k){ var n=F2.actors[k]; if(n && n.path){ n.stepStart=now-60000; } }); }   // 걷던 길은 끝까지 간 것으로
   // 5층: 남박사·한교수는 다음 틱에 지금 시각대로 다시 자리 잡고(근무 중이면 연구소, 아니면 없음), 청소기는 밤이면 충전 독에, R-0는 제자리에서 다시
   var FT=FLOORS['2']; if(FT && FT.actors){ var Q2=window.__f2Guests||{}; for(var k3 in FT.actors){ if(/^mc?_/.test(k3)){ var m3=FT.actors[k3]; delete FT.actors[k3]; } } for(var q2 in Q2) Q2[q2].done=true; }
+  if(window.__hanTrip){ window.__hanTrip=null; if(FLOORS['2'] && FLOORS['2'].actors) delete FLOORS['2'].actors.han2; }   // 한교수 2층 나들이는 그사이 끝났다
   var FV=FLOORS['5']; if(FV && FV.actors){ var Q5=window.__f5Guests||{}; for(var k5 in FV.actors){ if(/^v5_/.test(k5)) delete FV.actors[k5]; } for(var q5 in Q5) Q5[q5].done=true; }
   var F1=FLOORS['1'];
   if(F1 && F1.actors){ for(var k1 in F1.actors){ var n1=F1.actors[k1]; if(n1.guest) delete F1.actors[k1]; else { n1.ph=null; n1.path=null; n1.pend=null; n1.leaving=false; n1.bubble=null; n1.talkUntil=0; n1.until=0; } } F1.f1Warm=false; F1.f1Next=0;
@@ -1778,7 +1810,7 @@ function frame(now){
   if(FLOORS['1'] && FLOORS['1'].svg){ try{ f1Tick(FLOORS['1'],now,F!==FLOORS['1']); }catch(e){ if(window.console) console.warn('pixOffice f1', e); } }
   if(FLOORS['5'] && FLOORS['5'].svg){ try{ lab5Tick(FLOORS['5'],now,F!==FLOORS['5']); }catch(e){ if(window.console) console.warn('pixOffice lab5', e); } }
   if(FLOORS.L && FLOORS.L.svg){ try{ roofTick(FLOORS.L,now,F!==FLOORS.L); }catch(e){ if(window.console) console.warn('pixOffice roof', e); } }
-  if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); f2Meets(FLOORS['2'],now,F!==FLOORS['2']); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
+  if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); f2Meets(FLOORS['2'],now,F!==FLOORS['2']); f2HanTrip(FLOORS['2'],now,F!==FLOORS['2']); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
   var moving=false;
   for(var id in F.actors){ var ma=F.actors[id]; if(ma.visible){ step(ma,now); if(ma.path || (ma.tx!=null && Math.abs(ma.x-ma.tx)>=1)) moving=true; } }
   step(F.robot,now); if(F.robot && F.robot.path) moving=true;
@@ -1901,6 +1933,7 @@ var NPC_INFO={
 // 그림 속 사람을 눌렀을 때: 직원이면 원래 프로필, 아니면 짧은 소개 카드
 function actorWho(F,a){
   if((F.key==='2'||F.key==='5') && a.sid) return {staff:a.sid};
+  if(F.key==='2' && a.id==='han2') return {npc:'han'};
   if(F.key==='2'){ if(a.id==='npcBartender') return {npc:'bartender'}; if(a.id==='npcServer') return {npc:'server'}; if(a.id==='yun'||a.id==='kang') return {npc:a.id};
     if(a.id==='guard') return {npc:a.lookId==='guardLeo'?'guardLeo':'guard'}; return {npc:'visitor', name:a.name}; }
   if(F.key==='5'){ return NPC_INFO[a.id] ? {npc:a.id} : null; }
