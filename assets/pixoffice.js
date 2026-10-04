@@ -776,6 +776,7 @@ KIND.sheep    = {f:'#fbf8f2',F:'#f2dcc4',d:'#c9b69a',nk:'sheep'};
 KIND.persian  = {f:'#fbf8f4',F:'#ffffff',d:'#e2d8cc',nk:'persian'};
 KIND.persianCream = {f:'#f2dcbc',F:'#fbf1e2',d:'#d4b088',nk:'persian',pr:'#e2c49c',pl:'#f6e6cc',eyeC:'#d88a30'};   // 크림색 페르시안 (민주임)
 KIND.bulldog  = {f:'#d8ae84',F:'#f8f2ea',d:'#9a6e4c',nk:'bulldog'};      // 불독 (미국)
+KIND.elephantW= {f:'#f6f3ee',F:'#ffffff',d:'#d4cec2',i:'#f6c4cf',nk:'elephant',white:true};   // 하얀 코끼리 (건물주 시안)
 KIND.tuxedo   = {f:'#2e2c34',F:'#fbfaf6',d:'#1c1a20',nk:'tuxedo',hl:'#46444c',hand:'#fbfaf6'};   // 흰 양말 발       // 턱시도 고양이 (민주임)
 KIND.eagle    = {f:'#fbfbf6',F:'#ffffff',d:'#d8d4ca',nk:'eagle'};
 KIND.swan     = {f:'#fdfdfb',F:'#ffffff',d:'#dcdcd6',nk:'swan'};
@@ -884,6 +885,7 @@ function drawHeadNew(g,K,p,dir,blink){
     if(k==='swan'){ R(g,cx-7,cy-3,4,3,'#24242a'); if(!blink) P(g,cx-5,cy-2,'#ffffff');                            // 눈가 검은 털 · 주황 부리 · 검은 혹
       R(g,cx-15,cy+1,10,3,'#f08a30'); R(g,cx-15,cy+1,10,1,'#f8a858'); R(g,cx-8,cy-1,3,3,'#24242a'); P(g,cx-15,cy+3,'#24242a'); R(g,cx-2,cy+3,3,2,blush); }
     if(p.acc==='glasses'){ var glc=p.accC||'#3a3040'; ring(g,cx-5,cy-1,3,glc); R(g,cx-2,cy-1,6,1,glc); }
+    if(p.acc==='monocle'){ ring(g,cx-5,cy-1,3,'#e8c050'); line(g,cx-3,cy+2,cx+1,cy+9,'#e8c050'); }
     drawHat(g,p,dir,cx,cy,rx,ry); return; }
   // 정면
   if(k==='duck'){ R(g,cx-1,cy-12,2,4,f); R(g,cx+1,cy-11,2,3,sh(f,0.1)); R(g,cx-3,cy-10,2,2,sh(f,-0.05));
@@ -892,6 +894,7 @@ function drawHeadNew(g,K,p,dir,blink){
     eyes(cx-6,cx+5,cy-5); R(g,cx-11,cy+1,2,2,blush); R(g,cx+10,cy+1,2,2,blush); }
   if(k==='elephant'){ eyes(cx-5,cx+4,cy-2);
     R(g,cx-2,cy+1,5,5,f); R(g,cx-2,cy+6,4,4,f); R(g,cx-1,cy+10,4,2,fD); P(g,cx+2,cy+9,fD); R(g,cx-2,cy+1,1,8,fL);   // 코: 가운데로 내려와 살짝 말린다
+    if(K.white){ var tsh=sh(f,-0.14); R(g,cx+3,cy+1,1,5,tsh); R(g,cx+2,cy+6,1,4,tsh); R(g,cx-3,cy+2,1,7,tsh); R(g,cx-1,cy+4,3,1,tsh); R(g,cx-1,cy+7,3,1,tsh); }   // 하얀 코끼리: 코 윤곽과 주름
     R(g,cx-9,cy+3,3,2,blush); R(g,cx+7,cy+3,3,2,blush); }
   if(k==='koala'){ ell(g,cx,cy+3,3,4,'#3a3a42'); P(g,cx-1,cy+1,'#6a6a72'); R(g,cx-1,cy,2,1,'#6a6a72');
     eyes(cx-6,cx+5,cy-1); ell(g,cx,cy+8,4,1,F); R(g,cx-10,cy+3,3,2,blush); R(g,cx+8,cy+3,3,2,blush); }
@@ -936,6 +939,7 @@ function drawHeadNew(g,K,p,dir,blink){
     [cx-6,cx+3].forEach(function(ex){ if(blink) R(g,ex,cy,3,1,eye); else { R(g,ex,cy-1,2,2,'#24242a'); P(g,ex,cy-1,'#ffffff'); } });
     R(g,cx-1,cy,3,2,'#24242a'); P(g,cx-2,cy+1,'#24242a'); P(g,cx+2,cy+1,'#24242a'); R(g,cx-2,cy+2,5,5,'#f08a30'); R(g,cx-2,cy+2,5,1,'#f8a858'); P(g,cx,cy+7,'#24242a'); R(g,cx-9,cy+3,3,2,blush); R(g,cx+7,cy+3,3,2,blush); }
   if(p.acc==='glasses'){ var gl=p.accC||'#3a3040'; ring(g,cx-4,cy,3,gl); ring(g,cx+5,cy,3,gl); R(g,cx-1,cy,3,1,gl); }
+  if(p.acc==='monocle'){ var mg='#e8c050'; ring(g,cx+5,cy-1,3,mg); P(g,cx+4,cy-3,'#ffffff'); line(g,cx+8,cy,cx+10,cy+9,mg); }   // 금테 외알 안경 · 줄
   drawHat(g,p,dir,cx,cy,rx,ry);
 }
 
@@ -1097,6 +1101,8 @@ function drawHat(g,p,dir,cx,cy,rx,ry){
   if(p.beanie){ var bc=p.beanie, bt=cy-ry-1, bl=sh(bc,0.25), bdk=sh(bc,-0.25);          // 1층 손님: 방울 달린 뜨개 모자
     ell(g,cx,bt+4,rx-1,5,bc); R(g,cx-rx+1,bt+5,rx*2-1,3,bc); for(var q=cx-rx+2;q<cx+rx-1;q+=2) R(g,q,bt+6,1,2,bdk); R(g,cx-rx+1,bt+8,rx*2-1,1,bdk); R(g,cx-4,bt+1,6,1,bl);
     disc(g,dir==='left'?cx+1:cx,bt-1,2,'#fbfaf6'); return; }
+  if(p.tophat){ var th='#1e1c24', tl='#3a3644', tg='#e8c050', tt=cy-ry-9, hx=dir==='left'?cx+1:cx;            // 실크 중절모: 검은 몸통 · 금빛 띠
+    R(g,hx-6,tt,13,10,th); R(g,hx-6,tt,13,1,tl); R(g,hx-5,tt+1,1,8,tl); R(g,hx-6,tt+7,13,2,tg); R(g,hx-10,tt+9,21,2,th); R(g,hx-10,tt+9,21,1,tl); return; }
   if(!p.hat) return;
   var c=p.hat, dk=sh(c,-0.3), lt=sh(c,0.3), top=cy-ry-2;
   ell(g,cx,top+4,rx-1,4,c); R(g,cx-rx+1,top+4,rx*2-1,3,c); R(g,cx-rx+3,top+1,rx*2-5,1,lt);
@@ -1166,6 +1172,7 @@ function drawBody(g,K,p,dir,frame,sit){
   if(dir==='up'&&p.bag){ R(g,10,27,12,10,p.bag); R(g,10,27,12,1,sh(p.bag,0.25)); R(g,12,31,8,1,sh(p.bag,-0.25)); }
   if(dir==='down'&&p.bag){ R(g,11,27,2,8,sh(p.bag,-0.1)); R(g,19,27,2,8,sh(p.bag,-0.1)); }
   if(dir==='down'&&p.tie){ R(g,15,27,2,2,p.tie); R(g,15,29,2,6,sh(p.tie,-0.1)); }
+  if(dir==='down'&&p.rich){ var rg='#e8c050'; R(g,18,28,3,2,rg); P(g,19,27,'#fff2b0'); for(var wc=0;wc<6;wc++) P(g,11+wc,32+(wc%2),rg); P(g,13,30,rg); P(g,13,33,rg); P(g,13,35,rg); R(g,23,37,2,1,rg); }   // 금 포켓치프 · 시곗줄 · 단추 · 반지
   if(p.scarf&&dir!=='up'){ R(g,11,25,10,3,p.scarf); R(g,15,28,3,4,sh(p.scarf,-0.15)); }
   if(p.scarf&&dir==='up'){ R(g,11,25,10,2,p.scarf); }
   if(p.badge) drawBadge(g,dir);
@@ -1195,6 +1202,7 @@ function drawCarry(g,p,dir,hx){
   else if(it==='ramen'){ var rx=dir==='down'?11:hx-2; R(g,rx,30,10,8,'#fbfaf6'); R(g,rx,32,10,2,'#d8402e'); R(g,rx-1,29,12,2,'#e8e4dc'); R(g,rx+7,25,1,5,'#c89a5a'); R(g,rx+9,25,1,5,'#c89a5a'); }
   else if(it==='shopbag'){ var sx=dir==='down'?hx-3:dir==='up'?19:hx-2; R(g,sx+2,29,1,4,'#8a6a48'); R(g,sx+7,29,1,4,'#8a6a48'); R(g,sx+2,29,6,1,'#8a6a48');   // 종이 쇼핑백 (끄적끄적 초록 띠)
     R(g,sx,32,10,9,'#efe4cc'); R(g,sx,32,10,1,'#faf4e6'); R(g,sx,35,10,2,'#5a8a5a'); P(g,sx+4,35,'#f6e8a8'); R(g,sx+9,33,1,8,'#d8c8a8'); }
+  else if(it==='cane'){ var kx=dir==='down'?hx+3:hx+1; R(g,kx,36,1,8,'#26222a'); R(g,kx-1,34,3,2,'#e8c050'); P(g,kx-1,34,'#fff2b0'); P(g,kx,44,'#e8c050'); }   // 금 손잡이 지팡이
   else if(it==='paper'){ R(g,hx-1,32,6,8,'#ffffff'); R(g,hx,34,4,1,'#b8b2a6'); R(g,hx,36,3,1,'#b8b2a6'); }
 }
 function buildChar(p, dir, frame, blink, sit){

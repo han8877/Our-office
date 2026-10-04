@@ -43,7 +43,7 @@ const { open, enter, goFloor, clickArt, suite } = require('./lib');
   let rest = null; for (let i = 0; i < 12; i++) { await page.waitForTimeout(3000); rest = await page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors; return ['f1jin', 'f1ryu', 'f1woo'].map(k => A[k].ph + '@' + (A[k].tile ? A[k].tile.c + ',' + A[k].tile.r : '')); }); if (rest.every(x => /^rest@(34,4|33,5|34,6)$/.test(x))) break; }
   T.check('카페가 조용하면 진·류·우서빙이 직원 쉼터에 앉는다', rest.every(x => /^rest@(34,4|33,5|34,6)$/.test(x)), rest.join(' '));
   let back2 = false; for (let i = 0; i < 12 && !back2; i++) { await page.evaluate(() => { const F = window.__pixOffice.floors['1']; F.f1Next = 0; }); await page.waitForTimeout(2500);
-    back2 = await page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors; const cafe = Object.values(A).some(a => a.guest && a.shop === 'cafe' && a.visible); return cafe && ['f1jin', 'f1ryu', 'f1woo'].every(k => A[k].ph !== 'rest' && A[k].ph !== 'toRest'); }); }
+    back2 = await page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors; const cafe = Object.values(A).some(a => a.guest && a.shop === 'cafe' && a.visible); return cafe && ['f1jin', 'f1ryu', 'f1woo'].every(k => A[k].brk || A[k].ph !== 'rest' && A[k].ph !== 'toRest'); }); }
   T.check('카페 손님이 오면 제자리로 돌아간다', back2);
   T.check('가드너 우는 우서빙이 됐다', await page.evaluate(() => window.__pixOffice.floors['1'].actors.f1woo.name === '우서빙'));
   // 밤 11시로 건너뛰면 비어 있다
