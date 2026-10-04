@@ -46,6 +46,11 @@ const { open, enter, goFloor, clickArt, suite } = require('./lib');
     back2 = await page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors; const cafe = Object.values(A).some(a => a.guest && a.shop === 'cafe' && a.visible); return cafe && ['f1jin', 'f1ryu', 'f1woo'].every(k => A[k].brk || A[k].ph !== 'rest' && A[k].ph !== 'toRest'); }); }
   T.check('카페 손님이 오면 제자리로 돌아간다', back2);
   T.check('가드너 우는 우서빙이 됐다', await page.evaluate(() => window.__pixOffice.floors['1'].actors.f1woo.name === '우서빙'));
+  // 7층 건물주 백회장(하얀 악어)이 정문으로 들어와 카페에 들른다
+  await page.evaluate(() => { const F = window.__pixOffice.floors['1'], d = new Date(); F.llSlots = [d.getHours() * 60 + d.getMinutes()]; F.llDone = {}; delete F.actors.landlord; });
+  await page.waitForTimeout(2500);
+  const ll = await page.evaluate(() => { const a = window.__pixOffice.floors['1'].actors.landlord; return a ? a.name : null; });
+  T.check('백회장이 카페에 들른다', ll === '백회장', ll);
   // 밤 11시로 건너뛰면 비어 있다
   await page.evaluate(() => { window.__dt = 10 * 3600 * 1000; document.dispatchEvent(new Event('visibilitychange')); });
   await page.waitForTimeout(1500);

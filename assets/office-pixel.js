@@ -676,6 +676,40 @@ function f1Plan(q){ var P=[];
     f1Pick(F1_BROWSE,2).forEach(function(sp){ add(sp,6000+Math.random()*5000); }); add(F1_POS,4500); P[P.length-1].pay=true; return P; }
   var n=q.kind==='boss'?4:5, sp2=f1Pick(F1_STORE_SPOTS,Math.ceil(n/2)).concat(f1Pick(F1_CAFE_SPOTS,Math.floor(n/2)));
   sp2.forEach(function(sp){ add(sp,q.kind==='boss'?7000+Math.random()*6000:3500+Math.random()*2500); }); return P; }
+// ---- 7층 건물주 백회장 (하얀 악어): 하루 한두 번 정문으로 들어와 레몬나무·그림을 둘러보고 "늘 먹던 걸로" 커피를 받아 앉았다 간다 ----
+var LANDLORD_LOOK={id:'landlord',kind:'croc',shirt:'#c49a62',pants:'#e8e0cc',turtle:'#1e1c22',watch:true,acc:'shadesOn',item:'phone',shoe:'#7a5236'};
+var LANDLORD_LINES=[['허허, 이 건물','참 잘 지었단 말이지'],['레몬나무가','잘 크는구먼'],['7층 테라스 공사는','언제 하나…'],['커피값은','내가 내지, 허허'],['임대료?','올릴 생각 없네'],
+  ['…응, 응. 계약서는','다음 주에 보세'],['요즘 카페','장사 잘되나?'],['이 그림…','얼마에 샀더라'],['손주 녀석이','폰을 바꿔 줬지'],['주식? 난','건물만 믿네'],['엘리베이터 점검이','언제였더라'],['선글라스는 실내에서도','써야 멋이지']];
+var LANDLORD_HI=[['회장님','오셨어요?'],['어서 오세요,','회장님!'],['회장님,','오늘도 늘 드시던 걸로요?']], LANDLORD_WHISPER=[['백회장님','오셨다…'],['건물주님','오셨어…'],['쉿, 회장님','오셨어']];
+var LANDLORD_SPOTS=[{c:22,r:16,face:'right'},{c:20,r:20,face:'up'},{c:21,r:9,face:'left'}];   // 레몬나무 · 갤러리 그림 · 이젤
+function f1Landlord(F,now,off,O,t){
+  var A=F.actors, M=F.map, d=new Date(), dk=d.toDateString(), a=A.landlord;
+  if(F.llDay!==dk){ F.llDay=dk; F.llSlots=[]; F.llDone={}; [10*60+30,14*60+30].forEach(function(b,i){ var h=PO.hash(dk+'landlord'+i); if(h%10<7) F.llSlots.push(b+h%150); }); }
+  if(!a && O.cafe && !(window.__concertHold && window.__concertHold())) F.llSlots.forEach(function(m,i){ if(a || t<m || t>=m+6 || F.llDone[i]) return; F.llDone[i]=1;
+    a=npcActor(F,'landlord',LANDLORD_LOOK,'백회장'); a.visible=true; a.stepMs=360; a.leaving=false; placeAt(F,a,{c:M.DOOR.c,r:M.DOOR.r,face:'up'});
+    var st=F1_SEATS.filter(function(s){ return !Object.keys(A).some(function(k){ var o=A[k]; return o.visible && o.goal && o.goal.c===s[0] && o.goal.r===s[1]; }); });
+    a.plan=[lab5Pick(LANDLORD_SPOTS), F1_KIOSK[0], {c:28,r:6,face:'up',pickup:true}].concat(st.length?[(function(s){ return {c:s[0],r:s[1],face:s[2],sit:true,stay:true}; })(lab5Pick(st))]:[]).concat([{c:M.DOOR.c,r:M.DOOR.r,face:'down',out:true}]);
+    a.pi=-1; a.until=now+800; a.nextTalk=now+6000;
+    var greet=['f1woo','f1jin','f1ryu'].map(function(k){ return A[k]; }).filter(function(o){ return o && o.visible && !o.brk && o.ph!=='gift'; });
+    if(greet[0]){ greet[0].ans=lab5Pick(LANDLORD_HI); greet[0].ansAt=now+1200; }
+    if(greet[1] && Math.random()<0.6){ greet[1].ans=lab5Pick(LANDLORD_WHISPER); greet[1].ansAt=now+4200; } });
+  if(!a) return;
+  if(!O.cafe){ delete A.landlord; return; }                                        // 카페 문 닫을 땐 이미 돌아갔다
+  if(off && a.path) step(a,now);
+  if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
+  var cur=a.plan[a.pi];
+  if(!a.path && a.arrived && cur && cur.stay && now<a.until){ lab5Talk(a,now,LANDLORD_LINES,null,14000,26000); return; }   // 앉아서 커피 마시며 혼잣말
+  if(a.path || now<a.until) return;
+  if(cur && cur.out){ a.visible=false; delete A.landlord; return; }
+  if(cur && !a.arrived){ a.arrived=true;                                                // 도착한 곳에서 한마디
+    if(cur===F1_KIOSK[0]){ a.bubble=['늘 먹던 걸로','주게']; a.talkUntil=now+2800; a.until=now+3800; return; }
+    if(cur.pickup){ var ry=[A.f1ryu,A.f1jin].filter(function(o){ return o && o.visible && (o.ph==='work'||o.ph==='roam'); })[0]; if(ry){ ry.bubble=['회장님 아메리카노','나왔습니다~']; ry.talkUntil=now+2800; } a.until=now+4500; return; }
+    if(cur.stay){ a.until=now+120000+Math.random()*90000; a.nextTalk=now+5000; return; }
+    else { a.bubble=lab5Pick(LANDLORD_LINES); a.talkUntil=now+3400; a.until=now+9000+Math.random()*5000; return; } }
+  a.pi++; a.arrived=false; var nx=a.plan[a.pi]; if(!nx){ delete A.landlord; return; }
+  if(nx.out){ a.leaving=true; a.bubble=Math.random()<0.5?['수고들 하게,','허허']:null; a.talkUntil=a.bubble?now+2600:0; }
+  setGoal(F,a,{c:nx.c,r:nx.r,face:nx.face,sit:nx.sit},now); if(!a.path && !a.goal){ a.until=now+1000; }
+}
 function f1Visitors(F,now,off,O,t){
   var Q=window.__f1Guests=window.__f1Guests||{}, A=F.actors, d=new Date(), dk=d.toDateString(), M=F.map;
   // 사장님: 날마다 정해진 7~8번 (10~21시), 3층이나 지하 식당에 계시면 건너뛴다
@@ -858,7 +892,7 @@ function f1Tick(F,now,off){
     var wantS=O.store && nS<Math.round(6*busy), wantC=O.cafe && (peak ? nC<Math.round(6*busy) : (nC<3 && Math.random()<0.6));
     if(wantS && (!wantC || Math.random()<0.5)) f1Guest(F,now,'store'); else if(wantC) f1Guest(F,now,'cafe'); }
   if(!F.f1Warm && (O.store||O.cafe)){ F.f1Warm=true; for(var w=0;w<5;w++){ var wg=f1Guest(F,now,O.store&&(w<3||!O.cafe)?'store':'cafe'); if(wg.todo.length){ var wt=wg.todo.shift(); wg.cur=wt; placeAt(F,wg,wt.seat?{c:wt.seat[0],r:wt.seat[1],face:wt.seat[2],sit:true}:{c:wt.g.c,r:wt.g.r,face:wt.g.face}); wg.ph='stay'; wg.until=now+3000+Math.random()*6000; } } }   // 이미 영업 중이면 손님 몇 명은 벌써 구경 중
-  f1Visitors(F,now,off,O,t); f1Robot(F,now,off); f1GuardBooth(F,now,off,O);
+  f1Visitors(F,now,off,O,t); f1Landlord(F,now,off,O,t); f1Robot(F,now,off); f1GuardBooth(F,now,off,O);
   var taken={}; for(var id2 in A){ var s=A[id2]; if(s.guest && s.seatK) taken[s.seatK]=1; }
   for(var gid in A){ var a=A[gid]; if(!a.guest || !a.visible) continue;
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
@@ -903,7 +937,7 @@ var F2M_TEAM={
   lead:[[['전체 톤은','차분하게 가죠'],['디자인실장님 감각','믿습니다']],[['브랜드 방향이','명확하네요'],['각지본색이','저희 원칙이라서요']],[['패턴은 굵게,','색은 두 가지만'],['덜어낼수록','세련되네요']]]
 };
 var F2M_BYE=[[['그럼 다음 주에','다시 뵐게요'],['좋습니다,','연락드릴게요']],[['샘플 나오면','바로 보내 드릴게요'],['기대하겠습니다!']],[['오늘 회의','정말 좋았어요'],['저도요.','잘 부탁드립니다']]];
-var F2M_CLIENTS=[['7사 문대리','fox3'],['8사 오과장','bear3'],['디자인랩 한실장','calico'],['9사 이팀장','dog3'],['브랜드 협업 차대표','greycat'],['인쇄소 곽실장','goat'],['유통사 백과장','rabbit3'],['굿즈 스튜디오 모실장','pup']];
+var F2M_CLIENTS=[['7사 문대리','fox3'],['8사 오과장','bear3'],['디자인랩 한실장','calico'],['9사 이팀장','dog3'],['브랜드 협업 차대표','greycat'],['인쇄소 곽실장','goat'],['유통사 변과장','rabbit3'],['굿즈 스튜디오 모실장','pup']];
 function f2mClient(i){ var cl=F2M_CLIENTS[i%F2M_CLIENTS.length], sh=['#3a4a6a','#5a5f6a','#4a3a3a','#2e3440','#6a5a4a'][i%5];
   return { name:cl[0], look:{ id:'f2client'+i, kind:cl[1], shirt:sh, pants:'#2e3038', tie:['#c8403a','#e8c46a','#5a8a6a','#8aa0c0'][i%4], item:'case' } }; }
 function f2Meets(F,now,off){
@@ -2143,6 +2177,7 @@ var NPC_INFO={
   f1ryu:    { name:'바리스타 류', role:'1층 MOON 9 COFFEE · 바리스타', bio:'오리. 픽업대에서 음료 이름을 또박또박 불러 줘요. 나인 콜드브루를 제일 좋아해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
   f1woo:    { name:'우서빙', role:'1층 MOON 9 COFFEE · 홀 서빙', bio:'하마. 식물에 물을 주고, 테이블을 닦고, 쓰레기통을 비우고, 갤러리 그림도 챙겨요. 손님 질문엔 뭐든 대답해 줘요. 쉴 땐 직원 쉼터에서 뜨개질을 해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
   f1shopper:{ name:'손님', role:'1층 스토어 손님', bio:'베이지 장바구니를 들고 진열대를 구경해요.', hours:'영업 10~21시' },
+  landlord: { name:'백회장', role:'7층 건물주 · 회장님', bio:'알비노 하얀 악어. 이 건물의 주인이에요. 카멜 캐시미어 코트에 금테 선글라스, 손에는 늘 갤럭시. 하루 한두 번 1층 카페에 들러 "늘 먹던 걸로" 아메리카노를 받고 레몬나무를 구경해요. 7층은 아직 공사 중.', hours:'날마다 오전·오후 한 번쯤 (안 오는 날도 있어요)' },
   f1cafeguest:{ name:'손님', role:'1층 카페 손님', bio:'키오스크에서 주문하고 픽업대에서 음료를 받아요.', hours:'영업 8~22시' },
   buyer_jp: { name:'노토 네코', role:'일본 바이어 · 2층 로비 손님', bio:'마네키네코. 도쿄에서 온 문구 수입사 바이어예요. 서류철을 꼭 쥐고 일본어로 수출 이야기를 중얼거려요. 한국어는 인사 정도.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
   buyer_us: { name:'마이클 스캇', role:'미국 바이어 · 2층 로비 손님', bio:'흰머리수리. 1층 스토어 쇼핑백을 늘 들고 다녀요. 영어로 선적 얘기를 하다가 혼자 농담하고 혼자 웃어요.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },

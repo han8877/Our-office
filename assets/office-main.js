@@ -9183,7 +9183,7 @@
       { id:'v3', co:'N사', name:'N사 임차장', animal:'bear',   fur:'#8e857c', furL:'#bdb5aa',
         suit:'#3c4450', suitD:'#2c333d', neck:'tie',   neckCol:'#8f3f3f', neckCol2:'#8f3f3f',
         item:'file',   mode:'spot',   delay:'-2.2' },
-      { id:'v4', co:'T사', name:'T사 백대리', animal:'rabbit', fur:'#9e9a94', furL:'#cfcbc4',
+      { id:'v4', co:'T사', name:'T사 성대리', animal:'rabbit', fur:'#9e9a94', furL:'#cfcbc4',
         suit:'#e0cfab', suitD:'#c9b68e', neck:'scarf', neckCol:'#c98a7a', neckCol2:'#b0705f',
         item:'backpack', bagCol:'#7a6a58', bagDark:'#5f5344', mode:'spot', delay:'-0.6' },
       { id:'v5', co:'K사', name:'K사 민주임', animal:'cat', calico:true, fur:'#f4efe6', furL:'#fffbf4',
