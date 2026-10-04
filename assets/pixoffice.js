@@ -786,6 +786,7 @@ KIND.dogBW    = {f:'#fbf8f2',F:'#ffffff',d:'#34303a',ears:'floppy',mark:'cow'}; 
 KIND.jindo    = {f:'#f6efe2',F:'#ffffff',d:'#d8c8a8',nk:'shiba'};                    // 진돗개 (흰 바탕 · 쫑긋한 귀)
 KIND.rabbitSp = {f:'#fbf8f2',F:'#ffffff',d:'#4a3a34',i:'#f2b8c4',ears:'long',mark:'cow'};   // 얼룩토끼
 KIND.rpandaW  = {f:'#fbf8f2',F:'#ffffff',d:'#b8703e',nk:'rpandaW'};                  // 흰 얼굴 레서판다 (귀·눈물무늬만 적갈색)
+KIND.sparrow  = {f:'#f6f0e6',F:'#ffffff',d:'#8a5230',nk:'sparrow',hand:'#8a5230'};                  // 참새: 밤색 정수리 · 흰 뺨 · 검은 뺨 점 · 검은 턱받이
 KIND.penguin  = {f:'#26242c',F:'#ffffff',d:'#141218',nk:'penguin',hl:'#3a3842'};     // 펭귄
 KIND.mouse    = {f:'#cfc8c0',F:'#f4efe8',d:'#9a928a',i:'#f2b0bc',nk:'mouse'};        // 생쥐
 KIND.tuxedo   = {f:'#2e2c34',F:'#fbfaf6',d:'#1c1a20',nk:'tuxedo',hl:'#46444c',hand:'#fbfaf6'};   // 흰 양말 발       // 턱시도 고양이 (민주임)
@@ -870,6 +871,7 @@ function drawHeadNew(g,K,p,dir,blink){
     if(k==='koala'){ for(var q=0;q<8;q++) P(g,cx-6+q*2,cy-6+(q%2),sh(f,0.2)); }
     if(k==='persian'){ ell(g,cx,cy+7,9,3,K.pl||'#f8f4ee'); }
     if(k==='bulldog'){ ell(g,cx,cy+6,9,3,sh(f,-0.1)); R(g,cx-5,cy+3,10,1,sh(f,-0.2)); }
+    if(k==='sparrow'){ ell(g,cx,cy-1,rx-1,ry-1,d); ell(g,cx-3,cy-5,4,2,sh(d,0.2)); for(var sp=0;sp<4;sp++) R(g,cx-5+sp*3,cy+2+(sp%2),1,3,'#4a2c1c'); }   // 참새 뒤통수: 밤색 · 줄무늬
     if(k==='croc'){ for(var cs=0;cs<3;cs++) for(var cc=0;cc<4;cc++) R(g,cx-6+cc*4,cy-4+cs*4,2,2,d); }   // 악어: 뒤통수 비늘 돌기
     if(k==='wolf'){ ell(g,cx,cy+6,7,3,sh(f,-0.08)); }
     if(k==='maneki'){ ell(g,cx+5,cy-4,5,3,'#f0a040'); ell(g,cx-6,cy-3,3,2,'#3a3236'); R(g,cx-8,cy+7,17,2,'#d83a3a'); R(g,cx-8,cy+7,17,1,'#e85a50'); }
@@ -896,6 +898,9 @@ function drawHeadNew(g,K,p,dir,blink){
       R(g,cx-7,cy+7,13,2,'#d83a3a'); R(g,cx-7,cy+7,13,1,'#e85a50'); disc(g,cx-6,cy+10,2,'#f2c030'); P(g,cx-7,cy+9,'#fff0a0'); R(g,cx-7,cy+11,3,1,'#a87818'); }
     if(k==='tuxedo'){ ell(g,cx-6,cy+4,6,4,F); tri(g,cx-9,cy+1,cx-6,cy-3,cx-4,cy+1,F); R(g,cx-12,cy+2,2,1,'#f2a0b0'); P(g,cx-11,cy+3,'#c87a8a');   // 하얀 주둥이·턱 · 연두빛 노란 눈
       if(blink) R(g,cx-7,cy-1,3,1,'#c8c4b8'); else { R(g,cx-7,cy-3,3,3,'#e0b850'); R(g,cx-7,cy-3,2,3,'#120f14'); P(g,cx-7,cy-3,'#ffffff'); } R(g,cx-2,cy+3,3,2,blush); }
+    if(k==='sparrow'){ ell(g,cx+1,cy-5,10,4,d); ell(g,cx+5,cy-1,6,6,d); ell(g,cx-2,cy-7,4,1,sh(d,0.2));   // 밤색 정수리·뒤통수 · 흰 뺨 · 검은 점 · 작은 부리 · 턱받이
+      tri(g,cx-14,cy+1,cx-9,cy-1,cx-9,cy+3,'#4a4048'); P(g,cx-13,cy+1,'#7a7078'); R(g,cx-2,cy+1,3,2,'#1e1c22'); R(g,cx-9,cy+4,3,2,'#1e1c22');
+      eyes(cx-6,null,cy-2); R(g,cx+1,cy+4,2,1,blush); }
     if(k==='rpandaW'){ ell(g,cx-7,cy+3,5,3,F); R(g,cx-12,cy+2,2,2,'#2a2426'); ell(g,cx-5,cy+1,2,3,d);   // 흰 얼굴 · 눈 밑 회색 눈물무늬
       eyes(cx-6,null,cy-2); R(g,cx-1,cy+3,3,2,blush); }
     if(k==='penguin'){ ell(g,cx-4,cy+1,6,6,F); R(g,cx-14,cy+1,5,2,'#f0a030'); R(g,cx-14,cy+1,5,1,'#f8c060'); P(g,cx-10,cy+2,'#c87a18');   // 흰 얼굴 · 주황 부리
@@ -963,6 +968,9 @@ function drawHeadNew(g,K,p,dir,blink){
     [cx-7,cx+4].forEach(function(ex){ if(blink) R(g,ex,cy,3,1,'#c8c4b8'); else { ell(g,ex+1,cy-1,2,2,'#e0b850'); R(g,ex,cy-2,3,3,'#120f14'); P(g,ex,cy-2,'#ffffff'); P(g,ex+2,cy,'#6a6070'); } });   // 동그랗고 까만 눈동자 · 반짝
     R(g,cx-1,cy+2,2,1,'#f2a0b0'); P(g,cx-1,cy+3,'#c87a8a'); P(g,cx-2,cy+4,'#b8a8a8'); P(g,cx+1,cy+4,'#b8a8a8');
     R(g,cx-13,cy+3,4,1,'#e8e4dc'); R(g,cx-13,cy+5,4,1,'#e8e4dc'); R(g,cx+10,cy+3,4,1,'#e8e4dc'); R(g,cx+10,cy+5,4,1,'#e8e4dc'); R(g,cx-8,cy+3,2,2,blush); R(g,cx+7,cy+3,2,2,blush); }
+  if(k==='sparrow'){ ell(g,cx,cy-6,rx-2,4,d); ell(g,cx-3,cy-7,3,1,sh(d,0.2));                        // 참새: 밤색 정수리 · 흰 뺨 · 검은 뺨 점 · 검은 턱받이
+    R(g,cx-9,cy+2,3,2,'#1e1c22'); R(g,cx+7,cy+2,3,2,'#1e1c22'); eyes(cx-5,cx+4,cy-2); R(g,cx-3,cy-1,2,1,'#5a3a28'); R(g,cx+2,cy-1,2,1,'#5a3a28');
+    tri(g,cx-2,cy+1,cx+2,cy+1,cx,cy+4,'#4a4048'); P(g,cx-1,cy+1,'#7a7078'); R(g,cx-1,cy+5,3,2,'#1e1c22'); R(g,cx-8,cy+4,2,1,blush); R(g,cx+7,cy+4,2,1,blush); }
   if(k==='rpandaW'){ ell(g,cx,cy+4,5,3,F); R(g,cx-1,cy+2,3,2,'#2a2426');          // 흰 레서판다: 회색 눈물무늬만
     ell(g,cx-5,cy+1,2,3,d); ell(g,cx+5,cy+1,2,3,d); eyes(cx-6,cx+4,cy-2); R(g,cx-2,cy+5,5,1,sh(F,-0.3)); R(g,cx-10,cy+3,2,2,blush); R(g,cx+9,cy+3,2,2,blush); }
   if(k==='penguin'){ ell(g,cx-4,cy,4,5,F); ell(g,cx+4,cy,4,5,F); ell(g,cx,cy+4,7,3,F);   // 펭귄: 하트 모양 흰 얼굴 · 주황 부리
