@@ -1732,7 +1732,7 @@ function b1Chat(F,a,now){
 }
 var B1_CASHIER_LINES=[['맛있게 드세요'],['카드 찍어 주세요'],['오늘 반찬 맛있어요'],['식판은 반납대에','부탁해요']];
 var B1_COOK_LINES=[['오늘은 제육볶음이에요'],['국 뜨끈해요'],['밥 더 드릴까요?'],['반찬 새로 채웠어요'],['맛있게 드세요~']];
-var B1_ROBOT_SPOTS=[[4,5],[10,9],[17,9],[4,15],[12,15],[18,20],[10,21],[12,26],[25,15],[27,18],[23,22],[26,27],[29,18],[22,7],[3,21]];
+var B1_ROBOT_SPOTS=[[4,5],[10,9],[17,9],[4,15],[12,15],[18,20],[10,21],[12,26],[20,13],[16,8],[8,27],[14,27],[20,19],[22,7],[3,21]];
 var B1_TEAM={}; PO.STAFF.forEach(function(p){ B1_TEAM[p.id]=p.team; });
 function b1Rng(seed){ var x=seed||1; return function(){ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; }
 function b1Open(d){ var h=d.getHours(); return h>=8 && h<21; }
@@ -1791,7 +1791,7 @@ function b1Step(F,a,now,M,nowSec){
   a.wait=0;
   switch(a.ph){
     case 'spawn': placeAt(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'down' });
-      if(a.snackOnly){ a.ph='toVend'; var vt=a.snack==='ice'?M.VEND.ice:M.VEND.ramen[Math.floor(Math.random()*2)]; a.vendTile=vt; setGoal(F,a,{ c:vt.c, r:vt.r, face:vt.face },now); break; }
+      if(a.snackOnly){ a.ph='toVend'; var vt=a.snack==='ice'?M.VEND.ice:M.VEND.ramen[Math.floor(Math.random()*M.VEND.ramen.length)]; a.vendTile=vt; setGoal(F,a,{ c:vt.c, r:vt.r, face:vt.face },now); break; }
       if(a.skipPay){ a.ph='toLine'; setGoal(F,a,{ c:M.LINE.c0+Math.floor(Math.random()*(M.LINE.c1-M.LINE.c0+1)), r:M.LINE.r, face:'up' },now); break; }   // 주방 식구는 바로 배식대로
       a.ph='toPay'; setGoal(F,a,{ c:M.PAY.c, r:M.PAY.r, face:'up' },now); break;                          // 들어오자마자 계산대
     case 'toVend': a.dir='left'; a.wait=now+(a.snack==='ramen'?3800:2200); a.ph='vend'; b1Say(a,B1_VEND_LINES[a.snack],now,2600);

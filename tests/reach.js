@@ -14,7 +14,10 @@ const KNOWN_ISOLATED_3F = ['5,3', '31,3', '32,3', '5,4', '31,4', '32,4', '1,5', 
     const M3 = PO.MAP3, from3 = { c: 3, r: 26 };
     out.seats3 = Object.keys(PO.SEATS).filter(id => !PO.bfs(from3, { c: PO.SEATS[id].c, r: PO.SEATS[id].r }, M3));
     out.iso3 = []; for (let r = 3; r < 29; r++) for (let c = 1; c < 35; c++) { if (M3.blocked[r][c]) continue; if (!PO.bfs(from3, { c, r }, M3)) out.iso3.push(c + ',' + r); }
-    const MB = PO.MAPB, L = MB.LOBBY, tg = [['계산대', MB.PAY], ['퇴식구 식판', MB.RETURN], ['잔반', MB.SCRAP], ['수저', MB.SPOON], ['아이스크림', MB.VEND.ice], ['라면1', MB.VEND.ramen[0]], ['라면2', MB.VEND.ramen[1]], ['로봇 충전', MB.DOCK]];
+    const MB = PO.MAPB, L = MB.LOBBY, tg = [['계산대', MB.PAY], ['퇴식구 식판', MB.RETURN], ['잔반', MB.SCRAP], ['수저', MB.SPOON], ['아이스크림', MB.VEND.ice], ['로봇 충전', MB.DOCK]];
+    MB.VEND.ramen.forEach((v, i) => tg.push(['라면' + (i + 1), v]));
+    if (MB.KITCHEN) ['prep', 'sink', 'fridge', 'rice'].forEach(k => tg.push(['주방 ' + k, MB.KITCHEN[k]]));   // 주방 · 영양사 자리도 걸어서 닿는지
+    if (MB.KITCHEN) tg.push(['식자재 창고', { c: 27, r: 25 }]);
     MB.SEATS.forEach(s => tg.push(['자리 ' + s.id, { c: s.c, r: s.r }]));
     for (let c = MB.LINE.c0; c <= MB.LINE.c1; c++) tg.push(['배식 ' + c, { c, r: MB.LINE.r }]);
     out.b1 = tg.filter(t => !PO.bfs({ c: L.c, r: L.r }, t[1], MB)).map(t => t[0]);
