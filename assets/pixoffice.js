@@ -790,6 +790,10 @@ KIND.sparrow  = {f:'#f6f0e6',F:'#ffffff',d:'#8a5230',nk:'sparrow',hand:'#8a5230'
 KIND.porcupine= {f:'#5e4838',F:'#8e7260',d:'#2a2228',nk:'porcupine'};               // 호저: 흑백 띠 긴 가시
 KIND.penguin  = {f:'#26242c',F:'#ffffff',d:'#141218',nk:'penguin',hl:'#3a3842'};     // 펭귄
 KIND.mouse    = {f:'#cfc8c0',F:'#f4efe8',d:'#9a928a',i:'#f2b0bc',nk:'mouse'};        // 생쥐
+// 2층 방문객 새 색 배치
+KIND.fox3e    = {f:'#d99a62',F:'#f5dcbc',d:'#a8683a',ears:'pointed',mark:'fox',earC:'#7a4628'};   // 홍부장: 귀만 짙은 갈색
+KIND.rabbit3w = {f:'#fbf8f2',F:'#ffffff',d:'#9a968f',i:'#e8b8b8',ears:'long',earC:'#9e9a94'};      // 성대리: 얼굴은 하얗게, 귀는 회색 그대로
+KIND.koalaB   = {f:'#a8998c',F:'#efe8e0',d:'#6e6258',nk:'koala'};                                  // 임차장: 함 매니저보다 따뜻한 회갈색 코알라
 KIND.tuxedo   = {f:'#2e2c34',F:'#fbfaf6',d:'#1c1a20',nk:'tuxedo',hl:'#46444c',hand:'#fbfaf6'};   // 흰 양말 발       // 턱시도 고양이 (민주임)
 KIND.eagle    = {f:'#fbfbf6',F:'#ffffff',d:'#d8d4ca',nk:'eagle'};
 KIND.swan     = {f:'#fdfdfb',F:'#ffffff',d:'#dcdcd6',nk:'swan'};
@@ -1022,7 +1026,7 @@ function drawHeadNew(g,K,p,dir,blink){
 var PANTS=['#5a6a94','#6e5a4a','#4f7470','#7a5a70','#5a5a66','#6a7090'];
 
 function drawEarsBehind(g,K,dir,cx){
-  var f=K.f, inr=K.i||'#f7b6c4', d=K.d, side=dir==='left', back=dir==='up';
+  var f=K.earC||K.f, inr=K.i||'#f7b6c4', d=K.d, side=dir==='left', back=dir==='up';
   if(K.ears==='round'){ if(side){ disc(g,cx+6,9,4,f); disc(g,cx+6,9,2,inr); return; }
     disc(g,cx-8,9,4,f); disc(g,cx+8,9,4,f); if(!back){ disc(g,cx-8,9,2,inr); disc(g,cx+8,9,2,inr); } }
   if(K.ears==='long'){ if(side){ ell(g,cx+4,5,3,7,f); ell(g,cx+4,6,1,5,inr); return; }                        // 토끼 귀 끝이 칸 위로 나가지 않게
@@ -2100,10 +2104,10 @@ var F2LOOK={
   kang: {id:'kang', kind:'cat2',    shirt:'#fbf7ef', pants:'#3c4a6a', scarf:'#5a7ab0'},
   guard:{id:'guard',kind:'bearg',   shirt:'#3c4450', pants:'#2c333d', hat:'#2c333d', hatBadge:true, acc:'shades'},
   guardLeo:{id:'guardLeo',kind:'lion', shirt:'#3c4450', pants:'#2c333d', hat:'#2c333d', hatBadge:true},
-  v1:{id:'v1', kind:'fox3',    shirt:'#a8cbe0', pants:'#6f8ea6', scarf:'#7c9fb8', item:'case'},
+  v1:{id:'v1', kind:'fox3e',    shirt:'#a8cbe0', pants:'#6f8ea6', scarf:'#7c9fb8', item:'case'},
   v2:{id:'v2', kind:'dog3',    shirt:'#9aa0a6', pants:'#6f757c', tie:'#4a5f7a', item:'laptop'},
-  v3:{id:'v3', kind:'bear3',   shirt:'#3c4450', pants:'#2c333d', tie:'#8f3f3f', item:'file'},
-  v4:{id:'v4', kind:'rabbit3', shirt:'#e0cfab', pants:'#9c8a66', scarf:'#c98a7a', bag:'#7a6a58'},
+  v3:{id:'v3', kind:'koalaB',   shirt:'#3c4450', pants:'#2c333d', tie:'#8f3f3f', item:'file'},
+  v4:{id:'v4', kind:'rabbit3w', shirt:'#e0cfab', pants:'#9c8a66', scarf:'#c98a7a', bag:'#7a6a58'},
   bartender:{id:'bartender', kind:'redpanda', shirt:'#2c2a30', pants:'#26242a', bow:'#8a2434'},
   server:   {id:'server',    kind:'badger',   shirt:'#fbf7ef', pants:'#2c2a30', tie:'#2c2a30', apron:'#3a3438'},
   serverTray:{id:'server',   kind:'badger',   shirt:'#fbf7ef', pants:'#2c2a30', tie:'#2c2a30', apron:'#3a3438', item:'tray'},

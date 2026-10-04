@@ -9174,7 +9174,7 @@
 
     // ---- 방문객 다섯 (평일 오전 9시 ~ 오후 6시) ----
     var VISITORS = [
-      { id:'v1', co:'S사', name:'S사 한부장', animal:'fox',    fur:'#d99a62', furL:'#f0c79a',
+      { id:'v1', co:'S사', name:'S사 홍부장', animal:'fox',    fur:'#d99a62', furL:'#f0c79a',
         suit:'#a8cbe0', suitD:'#8bb2cb', neck:'scarf', neckCol:'#7c9fb8', neckCol2:'#6b8ca6',
         item:'case',   mode:'wander', delay:'0' },
       { id:'v2', co:'L사', name:'L사 이과장', animal:'dog',    fur:'#c9a179', furL:'#e8cfaa',
