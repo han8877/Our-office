@@ -667,7 +667,7 @@ function f1Visitors(F,now,off,O,t){
       var st0 = q.kind==='vguard' && M.BOOTH ? M.BOOTH.exit : { c:M.LOBBY.c, r:M.LOBBY.r, face:'down' }; placeAt(F,a,{ c:st0.c, r:st0.r, face:st0.face||'down' });   // 경비는 정문 옆 경비실에서 나온다
       if(q.kind==='boss'){ var hm=A.f1ham; if(hm && hm.visible){ hm.bubble=['사장님 오셨어요!']; hm.talkUntil=now+2600; } }
     }
-    a.name = q.kind==='staff' ? staffName(q.id) : q.kind==='sec' ? q.name : q.kind==='boss' ? '사장님' : '경비';
+    a.name = q.kind==='staff' ? staffName(q.id) : q.kind==='sec' ? q.name : q.kind==='boss' ? '사장님' : '유경비';
     if(off) step(a,now);
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
     if(a.path) continue;
@@ -724,7 +724,7 @@ function f1GuardBooth(F,now,off,O){
   if(away!==F.guardAway){ F.guardAway=away;
     if(w){ delete F.actors.g1_walk; w=null; }
     var lk={}; for(var k in PO.VISITORS.visitorGuard) lk[k]=PO.VISITORS.visitorGuard[k];
-    w=npcActor(F,'g1_walk',lk,'경비'); w.visible=true; w.stepMs=280; w.npcKey='visitorGuard';
+    w=npcActor(F,'g1_walk',lk,'유경비'); w.visible=true; w.stepMs=280; w.npcKey='visitorGuard';
     if(away){ placeAt(F,w,{ c:BT.exit.c, r:BT.exit.r, face:'left' }); setGoal(F,w,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); w.goIn=false; w.bubble=lab5Pick([['순찰 다녀오겠습니다'],['옥상 한 바퀴!'],['잠깐 자리 비웁니다']]); w.talkUntil=now+2600; }
     else { placeAt(F,w,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'down' }); setGoal(F,w,{ c:BT.exit.c, r:BT.exit.r, face:'left' },now); w.goIn=true; }
   }
@@ -1015,6 +1015,10 @@ window.__npcStatus=function(id){
     if(t>=inT && t<outT && f1LunchNow(S1.shop,t)) return { online:false, text:'점심시간' };
     if(t>=inT && t<outT) return { online:true, text:'' };
     return { online:false, text: t<inT ? '출근 전' : '퇴근' }; }
+  if(id==='visitorGuard'){ var F1g=FLOORS['1'];                     // 유경비: 1층 정문 경비실 상주
+    if(PO.STATE.guardBooth || !F1g) return { online:true, text:'' };
+    if(B.visitorPresent && B.visitorPresent('visitorGuard')) return { online:true, text: B.workDay && !B.workDay() ? '3층 당직' : '3층 점검 중' };
+    return { online:true, text:'순찰 중' }; }
   var n=FLOORS.B1 && FLOORS.B1.actors[id];
   if(n && n.visible) return { online:true, text:'' };
   if(/^b1c/.test(id) && t>=15*60 && t<15*60+20) return { online:true, text:'점심시간' };   // 주방 식구는 식당에서 먹는다
@@ -1084,7 +1088,7 @@ function roofGuestPlan(F,q){
 function roofGuests(F,now,off){
   var Q=window.__roofGuests=window.__roofGuests||{}, d=new Date(), hr=d.getHours(), mn=d.getMinutes();
   // 경비: 매시 15분 · 45분에 옥상을 한 바퀴 돈다 (밤낮 없이)
-  if((mn===15||mn===45) && F.guardSlot!==d.toDateString()+hr+':'+mn && !Q.guard && !(B.visitorPresent && B.visitorPresent('visitorGuard'))){ F.guardSlot=d.toDateString()+hr+':'+mn; Q.guard={ kind:'guard', name:'경비' }; }
+  if((mn===15||mn===45) && F.guardSlot!==d.toDateString()+hr+':'+mn && !Q.guard && !(B.visitorPresent && B.visitorPresent('visitorGuard'))){ F.guardSlot=d.toDateString()+hr+':'+mn; Q.guard={ kind:'guard', name:'유경비' }; }
   var night=hr>=18||hr<7;
   for(var key in Q){ var q=Q[key], id='g_'+key, a=F.actors[id];
     if(a && q.kind==='staff') a.name=staffName(q.id);
@@ -1419,12 +1423,12 @@ var B1_SEC_LINES=['저녁 먹고 마감 근무!','오늘 로비 조용했지','9
 var B1_SEC_LUNCH=['점심은 든든하게!','오후 순찰 전에 충전','여기 제육 맛있네','로비는 잠깐 R-도우미에게','직원분들 식사 맛있게 하세요'];
 var B1_DINNER_LINES=['야근엔 밥심이지','오늘 몇 시에 끝날까..','든든하게 먹자','저녁 메뉴 괜찮네','우리만 남았네요','빨리 먹고 끝내요','내일은 칼퇴 각','야식 대신 저녁 든든히'];
 var B1_WEEKEND_LINES=['주말엔 식당이 한산하네','오늘 메뉴 좋네요','주말 근무 화이팅','조용해서 좋다','밥 먹고 한 바퀴 더 돌아야지','다들 쉬는 날인데 우리만 나왔네'];
-var B1_WEEKEND_QA=[['주말 근무 힘들죠?','그래도 조용해서 좋아요'],['오후엔 뭐 하세요?','화분 물 주고 어항 밥 줘야죠'],['오늘 순찰 이상 없었죠?','네 이상 무!'],['경비님 많이 드세요','감사합니다, 같이 드시죠'],['보안요원님도 오셨네요','주말엔 같이 먹어야죠!'],['다음 주말도 근무예요?','격일이라 모레 또 나와요']];
+var B1_WEEKEND_QA=[['주말 근무 힘들죠?','그래도 조용해서 좋아요'],['오후엔 뭐 하세요?','화분 물 주고 어항 밥 줘야죠'],['오늘 순찰 이상 없었죠?','네 이상 무!'],['유경비님 많이 드세요','감사합니다, 같이 드시죠'],['보안요원님도 오셨네요','주말엔 같이 먹어야죠!'],['다음 주말도 근무예요?','격일이라 모레 또 나와요']];
 var B1_GUARD_LINES=['주말 식당 밥이 제일 맛있어요','어항 물고기 밥은 제가 줬습니다','밥 먹고 3층 한 바퀴 더 돌아야죠','오늘 복도 이상 없었습니다','엘리베이터 점검도 해야겠네',
   '경비는 밥심으로 삽니다','국 한 그릇 더 하고 싶네','순찰하다 보면 배가 금방 꺼져요','현계산님 오늘도 친절하시네','옥상 순찰 때 부엉이 봤어요',
   '비상구 표시등 확인 완료했습니다','식후엔 커피 한 잔 해야죠','주말엔 조용해서 좋아요','라면 자판기 새로 들어왔던데요','요즘 순찰 동선 바꿨어요',
   '제복 다리미질 했어요','이 식당 인테리어 멋지죠','저 사과 조각 볼 때마다 배고파요','문단속은 제가 책임집니다','오후엔 비 온다던데 우산 챙기세요'];
-var B1_GUARD_QA=[['오늘 3층 조용했죠?','네, 덕분에요'],['보안요원님 교대 몇 시예요?','9시까지요!'],['당직 힘드시죠?','경비님 계셔서 든든해요'],['밥 더 받아다 드릴까요?','아이고 괜찮아요'],['옥상 부엉이 보셨어요?','밤에만 나온대요!'],['오후엔 어디부터 도세요?','재고창고부터 보려고요']];
+var B1_GUARD_QA=[['오늘 3층 조용했죠?','네, 덕분에요'],['보안요원님 교대 몇 시예요?','9시까지요!'],['당직 힘드시죠?','유경비님 계셔서 든든해요'],['밥 더 받아다 드릴까요?','아이고 괜찮아요'],['옥상 부엉이 보셨어요?','밤에만 나온대요!'],['오후엔 어디부터 도세요?','재고창고부터 보려고요']];
 var B1_DAY_LINES={ 1:['월요병 온다..','주말이 너무 짧았어'], 3:['벌써 수요일이네','반 왔다!'], 5:['불금이다!','오늘 퇴근하고 뭐 해요?'] };
 var B1_WX_LINES={ rain:['비 오니까 다들 식당 왔네','비 오는 날엔 국물이지'], snow:['눈 온다! 밖에 봤어요?','눈 오는 날엔 라면인데'], sunny:['날씨 좋다, 밥 먹고 산책해요'], cloudy:['날이 흐리네요'] };
 // 먹는 동안 말하기: 혼잣말 · 요일·날씨 이야기 · 같이 앉은 사람과 주고받기
@@ -1882,7 +1886,7 @@ var NPC_INFO={
   guard:    { name:'오보안', role:'2층 보안요원', bio:'회색곰. 표보안과 하루씩 교대해요. 20분마다 옥상 순찰, 씩씩한 군인 말투.', hours:'매일 08:00~21:00' },
   guardLeo: { name:'표보안', role:'2층 보안요원', bio:'사자. 오보안과 하루씩 교대해요. 20분마다 옥상 순찰, 저녁엔 가끔 바에서 몰래 한 잔.', hours:'매일 08:00~21:00' },
   visitorPlayer:{ name:'연주자 조', role:'첼리스트 · 방문 연주자', bio:'낙타. 금요일 다섯 시면 옥상 연못가에 의자를 놓고 15분 동안 첼로를 켜요. 곡 순서는 매주 바뀌고, 마지막은 늘 즉흥곡 앙코르.', hours:'금요일 17:00~17:15 옥상' },
-  visitorGuard:{ name:'경비', role:'건물 경비 · 1층 정문 경비실', bio:'원숭이. 평소엔 1층 정문 옆 경비실에서 CCTV를 보며 손님을 맞고, 30분마다 옥상을 돌아요. 주말엔 당직 직원과 함께 사무실을 지켜요. 어항 밥은 경비 담당.', hours:'1층 경비실 상주 · 매시 15분·45분 옥상 순찰' },
+  visitorGuard:{ name:'유경비', role:'건물 경비 · 1층 정문 경비실', bio:'원숭이. 평소엔 1층 정문 옆 경비실에서 CCTV를 보며 손님을 맞고, 30분마다 옥상을 돌아요. 주말엔 당직 직원과 함께 사무실을 지켜요. 어항 밥은 경비 담당.', hours:'1층 경비실 상주 · 매시 15분·45분 옥상 순찰' },
   boss:     { name:'사장님', role:'(주)끄적끄적문구 대표', bio:'호랑이. 외부 약속이 많아서 구내식당엔 일주일에 세 번쯤 오세요.', hours:'' },
   robot:    { name:'R-도우미', role:'쾌적한 환경 담당 로봇', bio:'온도·습도·미세먼지를 살피며 층을 돌아다녀요. 식당에선 식사 예절도 챙겨요.', hours:'언제나 근무 중' },
   f1ham:    { name:'함 매니저', role:'1층 끄적끄적문구 스토어 · 매니저', bio:'코알라. 계산대를 지키며 손님을 맞고, 틈틈이 진열대를 정리해요. 선물 포장 솜씨가 좋아요.', hours:'매일 08:30~08:40 사이 출근 · 21:10 퇴근 (영업 10~21시)' },

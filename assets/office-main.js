@@ -3650,7 +3650,7 @@
       '<rect x="-12.2" y="-39.4" width="24.4" height="3.2" rx="1" fill="'+uniD+'"'+VSIL+'/>' +
       '<ellipse cx="0" cy="-35.6" rx="12.4" ry="2.2" fill="'+uniD+'"'+VSIL+'/>' +
       '<path d="M -2.6 -45.6 L 2.6 -45.6 L 1.6 -41.4 L -1.6 -41.4 Z" fill="'+gold+'" stroke="none"/>' +
-    '</g>' + visitorNamePlate('경비');
+    '</g>' + visitorNamePlate('유경비');
   }
 
   var visitorDefs = {
@@ -4076,7 +4076,7 @@
     setPos(obj.id, VISITOR_ENTRANCE.x, VISITOR_ENTRANCE.y, false);
     charEl(obj.id).classList.add('present');
     showBubble(obj, '시설 좀 점검할게요');
-    if(typeof logDayEvent === 'function') logDayEvent('🛡️', '경비 방문 — 시설 점검');
+    if(typeof logDayEvent === 'function') logDayEvent('🛡️', '유경비 방문 — 시설 점검');
 
     // 수리기사와 같은 이유로, 한 곳에 닿은 뒤 다음 곳으로 넘어간다
     var gi = 0;
@@ -4232,7 +4232,7 @@
         showBubble(obj, DUTY_GUARD_TANK_LINES[Math.floor(Math.random()*DUTY_GUARD_TANK_LINES.length)]);
         if(!dutyFeedLogged){
           dutyFeedLogged = true;
-          if(typeof logDayEvent === 'function') logDayEventOnce('🐟', '경비가 어항에 밥을 줬습니다');
+          if(typeof logDayEvent === 'function') logDayEventOnce('🐟', '유경비가 어항에 밥을 줬습니다');
         }
       } else if(Math.random() < 0.55){
         showBubble(obj, DUTY_GUARD_LINES[Math.floor(Math.random()*DUTY_GUARD_LINES.length)]);
@@ -4272,9 +4272,9 @@
       dutyGuardGo();
     }, 2800);
 
-    toast('쉬는 날이라 당직 '+josa(dutyStaff.name,'과/와')+' 경비만 출근했어요');
+    toast('쉬는 날이라 당직 '+josa(dutyStaff.name,'과/와')+' 유경비만 출근했어요');
     if(typeof logDayEvent === 'function'){
-      logDayEventOnce('🗓️', '주말 당직 — '+josa(dutyStaff.name,'과/와')+' 경비가 출근했습니다');
+      logDayEventOnce('🗓️', '주말 당직 — '+josa(dutyStaff.name,'과/와')+' 유경비가 출근했습니다');
     }
   }
 
@@ -4285,9 +4285,9 @@
     var s = dutyStaff, gid = visitorDefs.guard.id, gel = charEl(gid), sel = charEl(s.id), left = 2;
     dutyLunchOn = true; dutyLunchDay = dateKey();
     clearTimeout(dutyTimer); clearTimeout(dutyGuardTimer);
-    showBubble(s, '경비님, 밥 먹으러 가요!');
+    showBubble(s, '유경비님, 밥 먹으러 가요!');
     setTimeout(function(){ if(dutyActive) showBubble({ id:gid }, '좋습니다, 같이 가시죠'); }, 1800);
-    if(typeof logDayEvent === 'function') logDayEventOnce('🍱', '주말 점심 — '+josa(s.name,'과/와')+' 경비가 구내식당에 갔습니다');
+    if(typeof logDayEvent === 'function') logDayEventOnce('🍱', '주말 점심 — '+josa(s.name,'과/와')+' 유경비가 구내식당에 갔습니다');
     function back(){ if(--left > 0) return; dutyLunchOn = false;
       if(!dutyActive) return;
       dutyTimer = setTimeout(dutyGo, 1500); dutyGuardTimer = setTimeout(dutyGuardGo, 3000); }
@@ -4309,7 +4309,7 @@
       if(!dutyActive){ dutyLunchOn = false; return; }
       raiseChar(s);
       trip(sel, s, {x:ENTRANCE.x, y:ENTRANCE.y}, 'wk_duty', { kind:'weekend', id:s.id, name:s.name, group:'wk' });
-      trip(gel, { id:gid }, VISITOR_ENTRANCE, 'wk_guard', { kind:'weekend', id:'visitorGuard', name:'경비', group:'wk' });
+      trip(gel, { id:gid }, VISITOR_ENTRANCE, 'wk_guard', { kind:'weekend', id:'visitorGuard', name:'유경비', group:'wk' });
     }, 3000);
   }
   // 주말 당직 경비의 옥상 순찰 (매시 15분·45분): 3층에서 빠져 옥상 그림(roofGuests)에 나타났다 돌아온다
@@ -4322,7 +4322,7 @@
     travelTo(who, VISITOR_ENTRANCE, 78, function(){
       if(!dutyActive || !gel.classList.contains('present')){ dutyRoofOn = false; return; }
       gel.classList.add('onRoof');
-      var Q = (window.__roofGuests = window.__roofGuests || {}); Q.guard = { kind:'guard', name:'경비' };
+      var Q = (window.__roofGuests = window.__roofGuests || {}); Q.guard = { kind:'guard', name:'유경비' };
       var t0 = Date.now();
       (function wait(){
         var q = Q.guard;
@@ -4351,7 +4351,7 @@
 
     if(graceful && s){
       // 퇴근 시각: 둘 다 입구로 걸어 나간 뒤 사라진다
-      if(typeof logDayEvent === 'function') logDayEventOnce('🚪', '주말 당직 종료 — '+josa(s.name,'과/와')+' 경비가 퇴근했습니다');
+      if(typeof logDayEvent === 'function') logDayEventOnce('🚪', '주말 당직 종료 — '+josa(s.name,'과/와')+' 유경비가 퇴근했습니다');
       clearBubble(s.id);
       walkOut(s, function(){
         lowerChar(s);
@@ -5812,7 +5812,9 @@
     { id:'f1woo', name:'우서빙',      avatar:'#b9a8cc', isBoss:false, floor2:true, f1:true, npc:'f1woo', voice:'guide', quick:'moon9', face:{id:'faceF1woo', kind:'hippo',    shirt:'#e8efe4', apron:'#6f9168'} },
     { id:'b1cash',  b1look:'cashier', name:'현계산',    avatar:'#f2a65a', isBoss:false, floor2:true, b1:true, npc:'b1cashier', voice:'guide', quick:'cafe' },
     { id:'b1yun',   b1look:'cook1',   name:'윤요리',    avatar:'#d9b98c', isBoss:false, floor2:true, b1:true, npc:'b1cook1',   voice:'guide', quick:'cafe' },
-    { id:'b1ju',    b1look:'cook2',   name:'주요리',    avatar:'#d9b98c', isBoss:false, floor2:true, b1:true, npc:'b1cook2',   voice:'guide', quick:'cafe' }
+    { id:'b1ju',    b1look:'cook2',   name:'주요리',    avatar:'#d9b98c', isBoss:false, floor2:true, b1:true, npc:'b1cook2',   voice:'guide', quick:'cafe' },
+    // 1층 정문 경비실 (그림 쪽 부스 · 순찰 상태를 따른다)
+    { id:'guardyu', name:'유경비', avatar:'#a87a5a', isBoss:false, floor2:true, f1:true, guardYu:true, npc:'visitorGuard', voice:'soldier', quick:'guardyu', face:{id:'faceGuardYu', kind:'guardmk', shirt:'#2f4157', hat:'#2f4157', hatBadge:true} }
   ]);
 
   function isBossOnline(){
@@ -5849,7 +5851,8 @@
     f1woo:      '레몬이 노랗게 익었어요',
     b1cash:     '맛있게 드세요',
     b1yun:      '밥 넉넉히 드릴게요',
-    b1ju:       '오늘 반찬 기대하세요'
+    b1ju:       '오늘 반찬 기대하세요',
+    guardyu:    '정문은 제가 지킵니다'
   };
 
   function contactStatus(c){
@@ -5888,6 +5891,7 @@
   function rosterDept(c){
     if(c.isBoss) return '대표';
     if(c.f5) return '5층 연구소';
+    if(c.guardYu) return '1층 경비실';
     if(c.f1) return /^f1(jin|ryu|woo)$/.test(c.id) ? '1층 카페' : '1층 스토어';
     if(c.b1) return '지하 식당';
     if(c.floor2) return c.npc ? '2층 라운지 바' : c.f2id === 'guard' ? '2층 보안' : '2층 안내';
@@ -6306,7 +6310,7 @@
     });
     var f1Header = document.createElement('div');
     f1Header.className = 'chatListSectionHeader';
-    f1Header.textContent = '1층 판매샵·카페';
+    f1Header.textContent = '1층 판매샵·카페·경비실';
     wrap.appendChild(f1Header);
     messengerContacts.filter(function(c){ return c.f1; }).forEach(function(c){
       wrap.appendChild(buildChatListRow(c, chatKeyFor(c.id)));
@@ -6519,6 +6523,13 @@
       { q:'선물 포장 돼요?',   a:'그럼요! 포장지 고르시면 리본까지 예쁘게 해 드려요' },
       { q:'커스텀 노트 만들 수 있어요?', a:'네, 공방에서 이름 각인까지 10분이면 돼요' },
       { q:'직원 할인 돼요?',   a:'사원증 보여 주시면 10% 해 드려요 :)' }
+    ],
+    guardyu: [
+      { q:'오늘 이상 없어요?',   a:'이상 무! 정문도 옥상도 조용합니다' },
+      { q:'택배 맡겨도 돼요?',   a:'네, 경비실에 두고 가시면 제가 챙겨 두겠습니다' },
+      { q:'순찰은 언제 돌아요?', a:'매시 15분, 45분에 옥상 한 바퀴 돕니다' },
+      { q:'우산 빌릴 수 있어요?', a:'경비실에 분실물 우산 몇 개 있습니다. 쓰시고 돌려주세요' },
+      { q:'수고하세요',          a:'고맙습니다. 들어가실 때 정문 조심하시고요' }
     ],
     moon9: [
       { q:'오늘 추천 메뉴는요?', a:'달빛 라떼요! 오늘 원두는 에티오피아예요' },
@@ -7317,6 +7328,12 @@
       '느릿느릿하고 다정하게, 혼잣말하듯 짧게. 오늘의 색, 한지 결, 봉투 샘플, 습도 이야기를 좋아한다. "천천히, 천천히"가 입버릇.',
       '평일 8시~8시 반 사이에 출근해 18시 반에 퇴근한다. 한교수와 가끔 회의를 한다.',
       '5층의 비밀(서버실, 캡슐, 선반 뒤 문 등)은 절대 설명하지 않는다. 물으면 "쉿, 여긴 그냥 종이 가게야" 같은 말로 흐린다. 이모티콘은 쓰지 않는다.'
+    ].join('\n'),
+    guardyu: [
+      '너는 건물 경비 유경비다. 원숭이, 남색 제복과 모자. 성격유형은 ISTJ(현실주의자), 안정형이다.',
+      '평소엔 1층 정문 옆 경비실에서 CCTV를 보며 손님을 맞고, 매시 15분·45분엔 옥상을 순찰한다. 주말엔 당직 직원과 함께 3층을 지킨다.',
+      '듬직하고 짧게, 존댓말. "이상 무"가 입버릇이고 어항 밥 주는 걸 좋아한다. 이모티콘·물결은 쓰지 않는다.',
+      '건물의 비밀스러운 곳(5층 · 수납장 뒤 등)은 "관계자만 압니다" 정도로만 흐린다.'
     ].join('\n'),
     f1ham: [
       '너는 1층 끄적끄적문구 스토어의 매니저 함 매니저다. 코알라. 성격유형은 ESFJ(집정관), 안정형이다.',
