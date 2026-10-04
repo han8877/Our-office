@@ -2054,7 +2054,9 @@ function frame(now){
   if(F.key==='5' && F.vac && F.vac.bubble) drawBubble(g,Math.round(F.vac.x)+15,Math.round(F.vac.feet)-16,F.vac.bubble,'#6f9aa6');
   // 시간대 색 · 조명
   var tint=PO.TINT[ph];
-  if(tint && F.key!=='B1'){ g.save(); g.globalCompositeOperation='multiply'; g.globalAlpha=tint[1]*(F.lightDim>0.1?0.55:(F.key==='2'?0.6:1)); g.fillStyle=tint[0]; g.fillRect(0,0,W,H); g.restore(); }
+  // 사람이 남아 있고 불이 켜진 실내는 밤에도 환하게 (창밖 시간 색만 살짝). 1층은 영업시간, 2층은 보안요원 근무시간(08~21시)도 켜 둔 것으로 본다
+  var lit = F.key!=='L' && F.lightDim<0.1 && floorLit(F);
+  if(tint && F.key!=='B1'){ g.save(); g.globalCompositeOperation='multiply'; g.globalAlpha=tint[1]*(lit?0.16:F.lightDim>0.1?0.55:(F.key==='2'?0.6:1)); g.fillStyle=tint[0]; g.fillRect(0,0,W,H); g.restore(); }
   if(F.lightDim>0.01){ g.save(); g.globalAlpha=F.lightDim; g.fillStyle='#1c1c2e'; g.fillRect(0,0,W,H); g.restore(); }
   if(F.key==='L'){ PO.drawRoofWeather(g,now,roofWx); PO.drawRoofGlow(g,now); drawTorches(F,g,ph); }   // 옥상 전구·등불 불빛 · 순찰 손전등
   if(F.key==='3' && (ph==='night'||ph==='dusk') && F.lightDim<0.3){ g.save(); g.globalCompositeOperation='lighter';
@@ -2066,6 +2068,13 @@ function frame(now){
   ccHid.forEach(function(h){ h.visible=true; });
 }
 
+function floorLit(F){
+  var d=new Date(), t=d.getHours()*60+d.getMinutes();
+  if(F.key==='1' && t>=7*60+40 && t<22*60+10) return true;                 // 카페 07:40 출근 ~ 22:10 퇴근
+  if(F.key==='2' && t>=8*60 && t<21*60) return true;                        // 보안요원 근무
+  for(var k in F.actors){ var a=F.actors[k]; if(a.visible && !a.leaving) return true; }
+  return false;
+}
 // ---- 누르기: 3층 명패·직원 → 프로필, 전원/조명 스위치 → 원래 스위치 ----
 function artXY(e){ var rc=cvs.getBoundingClientRect(); return { x:(e.clientX-rc.left)*W/rc.width, y:(e.clientY-rc.top)*H/rc.height }; }
 var NPC_INFO={
