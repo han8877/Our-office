@@ -1235,6 +1235,7 @@ function drawCarry(g,p,dir,hx){
   else if(it==='ramen'){ var rx=dir==='down'?11:hx-2; R(g,rx,30,10,8,'#fbfaf6'); R(g,rx,32,10,2,'#d8402e'); R(g,rx-1,29,12,2,'#e8e4dc'); R(g,rx+7,25,1,5,'#c89a5a'); R(g,rx+9,25,1,5,'#c89a5a'); }
   else if(it==='shopbag'){ var sx=dir==='down'?hx-3:dir==='up'?19:hx-2; R(g,sx+2,29,1,4,'#8a6a48'); R(g,sx+7,29,1,4,'#8a6a48'); R(g,sx+2,29,6,1,'#8a6a48');   // 종이 쇼핑백 (끄적끄적 초록 띠)
     R(g,sx,32,10,9,'#efe4cc'); R(g,sx,32,10,1,'#faf4e6'); R(g,sx,35,10,2,'#5a8a5a'); P(g,sx+4,35,'#f6e8a8'); R(g,sx+9,33,1,8,'#d8c8a8'); }
+  else if(it==='phone'){ var px=dir==='down'?hx:dir==='left'?hx+1:hx; R(g,px,32,3,6,'#1c1e26'); R(g,px,33,3,4,'#3a5a8a'); P(g,px,33,'#8ab8f0'); P(g,px+1,37,'#5a5e6a'); }   // 갤럭시 폰 (화면 불빛)
   else if(it==='luxbag'){ var lx=dir==='down'?hx-3:dir==='up'?19:hx-2; R(g,lx+3,31,1,2,'#e8c050'); R(g,lx+6,31,1,2,'#e8c050'); R(g,lx+3,30,4,1,'#e8c050');   // 검은 명품 쇼핑백 (금 끈)
     R(g,lx+1,33,8,7,'#1e1c22'); R(g,lx+1,33,8,1,'#3a3844'); R(g,lx+4,35,2,2,'#e8c050'); R(g,lx+8,34,1,6,'#121016'); }
   else if(it==='cane'){ var kx=dir==='down'?hx+3:hx+1; R(g,kx,36,1,8,'#26222a'); R(g,kx-1,34,3,2,'#e8c050'); P(g,kx-1,34,'#fff2b0'); P(g,kx,44,'#e8c050'); }   // 금 손잡이 지팡이
