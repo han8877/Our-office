@@ -780,6 +780,14 @@ KIND.elephantW= {f:'#f6f3ee',F:'#ffffff',d:'#d4cec2',i:'#f6c4cf',nk:'elephant',w
 KIND.croc     = {f:'#ece8dc',F:'#faf7ee',d:'#c4bca8',nk:'croc'};           // 하얀 악어 (건물주 시안)
 KIND.rhino    = {f:'#c9c6be',F:'#e2ded4',d:'#9a968c',nk:'rhino'};          // 흰 코뿔소 (건물주 시안)
 KIND.panther  = {f:'#2a2830',F:'#3a3842',d:'#18161c',nk:'panther',hl:'#45424e'};   // 흑표범 (건물주 시안)
+// 2층 거래처 회의 손님: 사무실 직원과 겹치지 않는 색 배치
+KIND.dogWB    = {f:'#fbf8f2',F:'#ffffff',d:'#9a6a3a',ears:'floppy'};                 // 흰 얼굴 · 갈색 귀 강아지
+KIND.dogBW    = {f:'#fbf8f2',F:'#ffffff',d:'#34303a',ears:'floppy',mark:'cow'};      // 흰 얼굴 · 검은 귀 · 얼룩 강아지
+KIND.jindo    = {f:'#f6efe2',F:'#ffffff',d:'#d8c8a8',nk:'shiba'};                    // 진돗개 (흰 바탕 · 쫑긋한 귀)
+KIND.rabbitSp = {f:'#fbf8f2',F:'#ffffff',d:'#4a3a34',i:'#f2b8c4',ears:'long',mark:'cow'};   // 얼룩토끼
+KIND.rpandaW  = {f:'#fbf8f2',F:'#ffffff',d:'#8a8690',nk:'rpandaW'};                  // 흰 얼굴 레서판다 (귀·눈만 회색)
+KIND.penguin  = {f:'#26242c',F:'#ffffff',d:'#141218',nk:'penguin',hl:'#3a3842'};     // 펭귄
+KIND.mouse    = {f:'#cfc8c0',F:'#f4efe8',d:'#9a928a',i:'#f2b0bc',nk:'mouse'};        // 생쥐
 KIND.tuxedo   = {f:'#2e2c34',F:'#fbfaf6',d:'#1c1a20',nk:'tuxedo',hl:'#46444c',hand:'#fbfaf6'};   // 흰 양말 발       // 턱시도 고양이 (민주임)
 KIND.eagle    = {f:'#fbfbf6',F:'#ffffff',d:'#d8d4ca',nk:'eagle'};
 KIND.swan     = {f:'#fdfdfb',F:'#ffffff',d:'#dcdcd6',nk:'swan'};
@@ -822,6 +830,12 @@ function drawHeadNew(g,K,p,dir,blink){
   if(k==='tuxedo'){ var ti='#e8a0b0';                                         // 턱시도: 까만 세모 귀 · 분홍 속귀
     if(side){ tri(g,cx+1,cy-6,cx+4,cy-14,cx+8,cy-6,f); tri(g,cx+3,cy-7,cx+4,cy-11,cx+6,cy-7,ti); }
     else { tri(g,cx-11,cy-4,cx-8,cy-14,cx-3,cy-8,f); tri(g,cx+11,cy-4,cx+8,cy-14,cx+3,cy-8,f); if(!back){ tri(g,cx-9,cy-6,cx-8,cy-11,cx-5,cy-8,ti); tri(g,cx+9,cy-6,cx+8,cy-11,cx+5,cy-8,ti); } } }
+  if(k==='rpandaW'){ var rg=d, rw='#ffffff';                                  // 회색 둥근 귀 · 흰 테
+    if(side){ disc(g,cx+5,cy-7,4,rg); disc(g,cx+5,cy-7,2,rw); }
+    else { disc(g,cx-8,cy-7,4,rg); disc(g,cx+8,cy-7,4,rg); if(!back){ disc(g,cx-8,cy-7,2,rw); disc(g,cx+8,cy-7,2,rw); } } }
+  if(k==='mouse'){ var mi=K.i;                                                  // 생쥐: 크고 둥근 귀
+    if(side){ disc(g,cx+4,cy-8,5,f); disc(g,cx+4,cy-8,3,mi); }
+    else { disc(g,cx-9,cy-8,5,f); disc(g,cx+9,cy-8,5,f); if(!back){ disc(g,cx-9,cy-8,3,mi); disc(g,cx+9,cy-8,3,mi); } } }
   if(k==='rhino'){ if(side) ell(g,cx+5,cy-8,2,4,f); else { ell(g,cx-8,cy-8,2,4,f); ell(g,cx+8,cy-8,2,4,f); if(!back){ P(g,cx-8,cy-9,d); P(g,cx+8,cy-9,d); } } }   // 코뿔소: 작은 원통 귀
   if(k==='panther'){ if(side) disc(g,cx+5,cy-7,3,f); else { disc(g,cx-8,cy-7,3,f); disc(g,cx+8,cy-7,3,f); if(!back){ P(g,cx-8,cy-7,'#5a4a50'); P(g,cx+8,cy-7,'#5a4a50'); } } }   // 흑표범: 둥근 귀
   if(k==='bulldog'){ var bd=d;                                                // 불독: 작게 접힌 장미 귀
@@ -839,6 +853,7 @@ function drawHeadNew(g,K,p,dir,blink){
   if(k==='greyhound'){ rx=9; ry=9; }
   if(k==='bulldog'){ rx=12; ry=9; }
   if(k==='croc'){ rx=12; ry=8; }
+  if(k==='mouse'){ rx=10; ry=8; }
   if(k==='rhino'){ rx=11; ry=9; }
   if(k==='sheep'){                                                            // 양: 곱슬 털뭉치가 머리를 감싼다
     var wool=f, wd='#e6dfd2'; ell(g,cx,cy-1,11,9,wd);
@@ -881,6 +896,12 @@ function drawHeadNew(g,K,p,dir,blink){
       R(g,cx-7,cy+7,13,2,'#d83a3a'); R(g,cx-7,cy+7,13,1,'#e85a50'); disc(g,cx-6,cy+10,2,'#f2c030'); P(g,cx-7,cy+9,'#fff0a0'); R(g,cx-7,cy+11,3,1,'#a87818'); }
     if(k==='tuxedo'){ ell(g,cx-6,cy+4,6,4,F); tri(g,cx-9,cy+1,cx-6,cy-3,cx-4,cy+1,F); R(g,cx-12,cy+2,2,1,'#f2a0b0'); P(g,cx-11,cy+3,'#c87a8a');   // 하얀 주둥이·턱 · 연두빛 노란 눈
       if(blink) R(g,cx-7,cy-1,3,1,'#c8c4b8'); else { R(g,cx-7,cy-3,3,3,'#e0b850'); R(g,cx-7,cy-3,2,3,'#120f14'); P(g,cx-7,cy-3,'#ffffff'); } R(g,cx-2,cy+3,3,2,blush); }
+    if(k==='rpandaW'){ ell(g,cx-7,cy+3,5,3,F); R(g,cx-12,cy+2,2,2,'#2a2426'); ell(g,cx-5,cy+1,2,3,d);   // 흰 얼굴 · 눈 밑 회색 눈물무늬
+      eyes(cx-6,null,cy-2); R(g,cx-1,cy+3,3,2,blush); }
+    if(k==='penguin'){ ell(g,cx-4,cy+1,6,6,F); R(g,cx-14,cy+1,5,2,'#f0a030'); R(g,cx-14,cy+1,5,1,'#f8c060'); P(g,cx-10,cy+2,'#c87a18');   // 흰 얼굴 · 주황 부리
+      eyes(cx-5,null,cy-2); R(g,cx-2,cy+3,3,2,blush); }
+    if(k==='mouse'){ tri(g,cx-14,cy+3,cx-6,cy-2,cx-6,cy+7,f); ell(g,cx-8,cy+4,3,2,F); R(g,cx-15,cy+2,2,2,'#e88a9a');   // 뾰족한 주둥이 · 분홍 코 · 수염
+      R(g,cx-15,cy+5,4,1,'#9a928a'); eyes(cx-5,null,cy-2); R(g,cx-1,cy+3,3,2,blush); }
     if(k==='croc'){ R(g,cx-15,cy-1,12,6,f); R(g,cx-16,cy,1,4,f); R(g,cx-15,cy-1,12,1,sh(f,0.1)); R(g,cx-15,cy+3,12,2,F); R(g,cx-16,cy-2,3,2,f); P(g,cx-15,cy-2,d); R(g,cx-16,cy+2,13,1,sh(d,-0.2));   // 길고 납작한 주둥이(끝까지) · 콧구멍 혹 · 이빨
       for(var tz=0;tz<6;tz++){ P(g,cx-15+tz*2,cy+3,'#ffffff'); P(g,cx-14+tz*2,cy+1,'#ffffff'); }
       disc(g,cx-3,cy-5,3,f); if(blink) R(g,cx-5,cy-5,4,1,d); else { R(g,cx-5,cy-6,4,3,'#e8b830'); R(g,cx-4,cy-6,1,3,'#1a1410'); P(g,cx-5,cy-6,'#fff4c0'); }
@@ -942,6 +963,12 @@ function drawHeadNew(g,K,p,dir,blink){
     [cx-7,cx+4].forEach(function(ex){ if(blink) R(g,ex,cy,3,1,'#c8c4b8'); else { ell(g,ex+1,cy-1,2,2,'#e0b850'); R(g,ex,cy-2,3,3,'#120f14'); P(g,ex,cy-2,'#ffffff'); P(g,ex+2,cy,'#6a6070'); } });   // 동그랗고 까만 눈동자 · 반짝
     R(g,cx-1,cy+2,2,1,'#f2a0b0'); P(g,cx-1,cy+3,'#c87a8a'); P(g,cx-2,cy+4,'#b8a8a8'); P(g,cx+1,cy+4,'#b8a8a8');
     R(g,cx-13,cy+3,4,1,'#e8e4dc'); R(g,cx-13,cy+5,4,1,'#e8e4dc'); R(g,cx+10,cy+3,4,1,'#e8e4dc'); R(g,cx+10,cy+5,4,1,'#e8e4dc'); R(g,cx-8,cy+3,2,2,blush); R(g,cx+7,cy+3,2,2,blush); }
+  if(k==='rpandaW'){ ell(g,cx,cy+4,5,3,F); R(g,cx-1,cy+2,3,2,'#2a2426');          // 흰 레서판다: 회색 눈물무늬만
+    ell(g,cx-5,cy+1,2,3,d); ell(g,cx+5,cy+1,2,3,d); eyes(cx-6,cx+4,cy-2); R(g,cx-2,cy+5,5,1,sh(F,-0.3)); R(g,cx-10,cy+3,2,2,blush); R(g,cx+9,cy+3,2,2,blush); }
+  if(k==='penguin'){ ell(g,cx-4,cy,4,5,F); ell(g,cx+4,cy,4,5,F); ell(g,cx,cy+4,7,3,F);   // 펭귄: 하트 모양 흰 얼굴 · 주황 부리
+    eyes(cx-5,cx+4,cy-1); tri(g,cx-2,cy+2,cx+2,cy+2,cx,cy+5,'#f0a030'); P(g,cx-1,cy+2,'#f8c060'); R(g,cx-9,cy+3,2,2,blush); R(g,cx+8,cy+3,2,2,blush); }
+  if(k==='mouse'){ ell(g,cx,cy+4,4,3,F); R(g,cx-1,cy+3,2,2,'#e88a9a');               // 생쥐: 작은 분홍 코 · 수염
+    eyes(cx-5,cx+4,cy-1); R(g,cx-11,cy+3,5,1,'#9a928a'); R(g,cx-11,cy+5,5,1,'#9a928a'); R(g,cx+7,cy+3,5,1,'#9a928a'); R(g,cx+7,cy+5,5,1,'#9a928a'); R(g,cx-8,cy+2,2,2,blush); R(g,cx+7,cy+2,2,2,blush); }
   if(k==='croc'){ ell(g,cx,cy+4,8,4,F); R(g,cx-8,cy+5,17,1,sh(d,-0.2)); for(var tf=0;tf<8;tf++) P(g,cx-7+tf*2,cy+6,'#ffffff'); for(var tu=0;tu<7;tu++) P(g,cx-6+tu*2,cy+4,'#ffffff');   // 악어: 넓은 주둥이 · 위아래 이빨
     P(g,cx-2,cy+1,d); P(g,cx+2,cy+1,d); ring(g,cx-6,cy-3,3,sh(f,-0.08)); ring(g,cx+6,cy-3,3,sh(f,-0.08));
     [cx-7,cx+5].forEach(function(ex){ if(blink) R(g,ex,cy-3,3,1,d); else { R(g,ex,cy-4,3,3,'#e8b830'); R(g,ex+1,cy-4,1,3,'#1a1410'); P(g,ex,cy-4,'#fff4c0'); } });   // 금빛 세로 눈동자 (불룩한 눈두덩)
