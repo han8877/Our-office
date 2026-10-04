@@ -794,6 +794,7 @@ KIND.mouse    = {f:'#cfc8c0',F:'#f4efe8',d:'#9a928a',i:'#f2b0bc',nk:'mouse'};   
 KIND.fox3e    = {f:'#d99a62',F:'#f5dcbc',d:'#a8683a',ears:'pointed',mark:'fox',earC:'#7a4628'};   // 홍부장: 귀만 짙은 갈색
 KIND.rabbit3w = {f:'#fbf8f2',F:'#ffffff',d:'#9a968f',i:'#e8b8b8',ears:'long',earC:'#9e9a94'};      // 성대리: 얼굴은 하얗게, 귀는 회색 그대로
 KIND.koalaB   = {f:'#a8998c',F:'#efe8e0',d:'#6e6258',nk:'koala'};                                  // 임차장: 함 매니저보다 따뜻한 회갈색 코알라
+KIND.collie   = {f:'#34323a',F:'#fbf8f2',d:'#222028',ears:'floppy',mark:'badger',hand:'#fbf8f2'};   // 이과장: 보더콜리 (검은 얼굴 · 흰 줄 · 흰 주둥이)
 KIND.tuxedo   = {f:'#2e2c34',F:'#fbfaf6',d:'#1c1a20',nk:'tuxedo',hl:'#46444c',hand:'#fbfaf6'};   // 흰 양말 발       // 턱시도 고양이 (민주임)
 KIND.eagle    = {f:'#fbfbf6',F:'#ffffff',d:'#d8d4ca',nk:'eagle'};
 KIND.swan     = {f:'#fdfdfb',F:'#ffffff',d:'#dcdcd6',nk:'swan'};
@@ -2105,7 +2106,7 @@ var F2LOOK={
   guard:{id:'guard',kind:'bearg',   shirt:'#3c4450', pants:'#2c333d', hat:'#2c333d', hatBadge:true, acc:'shades'},
   guardLeo:{id:'guardLeo',kind:'lion', shirt:'#3c4450', pants:'#2c333d', hat:'#2c333d', hatBadge:true},
   v1:{id:'v1', kind:'fox3e',    shirt:'#a8cbe0', pants:'#6f8ea6', scarf:'#7c9fb8', item:'case'},
-  v2:{id:'v2', kind:'dog3',    shirt:'#9aa0a6', pants:'#6f757c', tie:'#4a5f7a', item:'laptop'},
+  v2:{id:'v2', kind:'collie',    shirt:'#9aa0a6', pants:'#6f757c', tie:'#4a5f7a', item:'laptop'},
   v3:{id:'v3', kind:'koalaB',   shirt:'#3c4450', pants:'#2c333d', tie:'#8f3f3f', item:'file'},
   v4:{id:'v4', kind:'rabbit3w', shirt:'#e0cfab', pants:'#9c8a66', scarf:'#c98a7a', bag:'#7a6a58'},
   bartender:{id:'bartender', kind:'redpanda', shirt:'#2c2a30', pants:'#26242a', bow:'#8a2434'},
