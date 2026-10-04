@@ -53,6 +53,23 @@ const { open, enter, goFloor, suite } = require('./lib');
     const r = Math.random; Math.random = () => 0.1; window.__f2Guests = { b: { id: 'kobujang', team: 'biz' } }; await new Promise(z => setTimeout(z, 500)); Math.random = r;
     return A.mc_b ? { n: A.mc_b.name, buyer: A.mc_b.buyer, staffFirst: !!(A.m_b && A.m_b.buyerMeet) } : null; });
   T.check('바이어: 3층 직원 회의에 바이어가 손님으로 온다 (직원은 한국어로 먼저)', meet && meet.buyer && meet.staffFirst, JSON.stringify(meet));
+  // 같은 나라 둘: 자기 나라 말로 수다 · 3층 직원이 내려와 응대 · 점심때 떠나면 지하 식당으로
+  await Y.page.evaluate(() => { const F = window.__pixOffice.floors['2']; window.__f2Guests = {}; Object.keys(F.actors).filter(k => /^(mc?|by|h)_/.test(k)).forEach(k => delete F.actors[k]);
+    F.buySlots = ['jp', 'jp2', 'it'].map(k => ({ k, key: k + 'U', st: 600, end: 760 })); });
+  let chat = false, hostCall = null, host = null;
+  for (let i = 0; i < 80 && !(chat && host); i++) { await Y.page.waitForTimeout(1500);
+    if (i === 4) await Y.page.evaluate(() => { const A = window.__pixOffice.floors['2'].actors, n = performance.now(); ['jp', 'jp2'].forEach(k => { const a = A['by_' + k]; if (a && !a.path) { a.ph = 'stay'; a.atBar = false; a.until = n + 60000; } }); });   // 둘 다 한자리에 머물게
+    if (i === 8) hostCall = await Y.page.evaluate(() => window.__buyerHost('it', '카포네 마또띠'));
+    const r = await Y.page.evaluate(() => { const A = window.__pixOffice.floors['2'].actors, h = Object.keys(A).filter(k => /^h_/.test(k)).map(k => A[k])[0];
+      return { chat: ['jp', 'jp2'].some(k => A['by_' + k] && A['by_' + k].ph === 'chat'), host: h ? { n: h.name, ph: h.ph, b: h.bubble && h.bubble.join(' ') } : null }; });
+    if (r.chat) chat = true; if (r.host && r.host.ph === 'talk') host = r.host; }
+  T.check('바이어: 같은 나라 둘이 다가가 수다를 떤다', chat);
+  T.check('바이어: 3층 직원이 내려와 바이어를 응대한다', hostCall && host, JSON.stringify({ hostCall, host }));
+  const lunch = await Y.page.evaluate(async () => { window.__dt += 15 * 60000; const A = window.__pixOffice.floors['2'].actors, r = Math.random; Math.random = () => 0.1;
+    const a = A.by_jp2; if (a) { a.leaveAt = 0; a.ph = 'pick'; a.until = 0; a.host = null; a.mate = null; } await new Promise(z => setTimeout(z, 400)); Math.random = r;
+    for (let i = 0; i < 40 && A.by_jp2; i++) await new Promise(z => setTimeout(z, 500));
+    const q = (window.__b1Guests || {}).buy_jp2, j = A.by_jp2; return q ? { group: q.group, crew: q.crew } : { had: !!a, ph: j && j.ph, dest: j && j.dest, rq: !!(window.__roofGuests || {}).buy_jp2 }; });
+  T.check('바이어: 점심때 떠나면 같은 나라끼리 지하 식당으로', lunch && lunch.group === 'buyers_jp', JSON.stringify(lunch));
   T.check('바이어: 페이지 오류 없음', Y.errors.length === 0, Y.errors.join(' / '));
   await Y.browser.close(); T.done();
 })();

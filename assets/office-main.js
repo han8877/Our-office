@@ -1886,6 +1886,18 @@
     floorTrip(s, '__f2Guests', 'meet_' + s.id, { kind:'meet', id:s.id, name:s.name, team:s.teamKey }, 10, F2M_GO, F2M_BACK, '🤝',
       '2층 로비에서 거래처와 협업 회의를 합니다', function(){ tripF2On = false; });
   }
+  // 2층에 해외 바이어가 오면 가끔 한 명이 내려가 그 나라 말로 응대한다 (office-pixel 이 부른다)
+  var BH_GO = ['2층에 바이어 오셨대요, 응대하고 올게요', '해외 바이어 맞으러 다녀올게요', '외국어 연습한 거 써먹을 때다!'];
+  var BH_BACK = ['바이어 응대 잘 끝났어요!', '통역 없이 해냈어요', '샘플 반응 좋았어요', '외국어 공부 더 해야겠다…'];
+  window.__buyerHost = function(k, name){
+    if(tripF2On || !workHours()) return false;
+    var pool = tripPool(null); if(!pool.length) return false;
+    var s = pool[Math.floor(Math.random()*pool.length)];
+    tripF2On = true;
+    floorTrip(s, '__f2Guests', 'host_' + s.id, { kind:'host', id:s.id, name:s.name, team:s.teamKey, buyer:k }, 6, BH_GO, BH_BACK, '🌏',
+      '2층 로비에서 해외 바이어 ' + josa(name,'을/를') + ' 응대합니다', function(){ tripF2On = false; });
+    return true;
+  };
   function startF5Visit(){
     var dk = dateKey(); if(f5Day !== dk){ f5Day = dk; f5Count = 0; }
     if(tripF5On || f5Count >= 4 || !workHours()) return;
