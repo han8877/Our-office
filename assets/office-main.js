@@ -7546,7 +7546,12 @@
         if(!res.ok){ rec.why = 'HTTP ' + res.status; aiNoteFail(rec.why); finish(null); return; }
         var data; try{ data = JSON.parse(res.raw); rec.json = true; }
                   catch(e){ data = res.raw; rec.json = false; }
-        var out = aiTidy(aiUnwrap(aiExtractText(data, 0)));
+        // 워커가 200으로 실패를 알려 오는 경우({error} · {ok:false} · 'AI 호출 실패' 같은 글)는 답이 아니다 → 기존 답장으로
+        var failMsg = (data && typeof data === 'object' && (data.error || data.ok === false || data.success === false))
+          ? String(data.error || data.message || data.detail || '실패 응답') : '';
+        var out = failMsg ? '' : aiTidy(aiUnwrap(aiExtractText(data, 0)));
+        if(out && /^\s*\[?\s*(AI\s*호출\s*실패|AI\s*오류|Gemini\s*(호출\s*)?(실패|오류)|error\b|에러\b)/i.test(out)){ failMsg = out; out = ''; }
+        if(failMsg){ rec.why = '워커가 실패를 알려 옴 — ' + failMsg.slice(0, 160); aiNoteFail(rec.why); finish(null); return; }
         if(out){
           aiFailCount = 0; rec.used = out;
           try{ console.log('Gemini 답변 적용:', out); }catch(e){}

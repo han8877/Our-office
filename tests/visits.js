@@ -15,7 +15,9 @@ const { open, enter, goFloor, suite } = require('./lib');
   const plate = await page.evaluate(() => { const A = window.__pixOffice.floors['2'].actors; return (A.mc_a && A.mc_a.plateDy) || 0; });
   T.check('2층: 나란히 선 둘의 이름표가 겹치지 않게 어긋난다', plate > 0);
   await goFloor(page, '5'); await page.waitForTimeout(1200);
-  await page.evaluate(() => { window.__f5Guests = { v: { kind: 'visit', id: 'kobujang', name: '최실장', team: 'lead' } }; });
+  await page.evaluate(() => { const F = window.__pixOffice.floors['5'], n = F.actors.nam;   // 남박사가 한교수와 회의 중이면 손님은 그냥 내려간다(게임 규칙) — 테스트에선 회의를 미리 끝내 둔다
+    F.meetDay = new Date().toDateString(); F.meetDone = { 0: 1, 1: 1, 2: 1 }; if (F.meeting || (n && n.ph === 'meet')) { F.meeting = false; if (n) { n.ph = 'work'; n.plateDy = 0; n.wait = false; } }
+    window.__f5Guests = { v: { kind: 'visit', id: 'kobujang', name: '최실장', team: 'lead' } }; });
   let talk5 = false, namSaid = new Set();
   for (let i = 0; i < 40; i++) { await page.waitForTimeout(1500);
     const r = await page.evaluate(() => { const A = window.__pixOffice.floors['5'].actors, v = A.v5_v, n = A.nam; return { ph: v && v.ph, nph: n.ph, nb: n.bubble && n.bubble.join(' ') }; });
@@ -40,7 +42,7 @@ const { open, enter, goFloor, suite } = require('./lib');
   T.check('연주회: 페이지 오류 없음', C.errors.length === 0, C.errors.join(' / '));
   await C.browser.close();
   // 2층 외국인 바이어 셋: 이름은 한국어 · 혼잣말은 자기 나라 말(가끔 쉬운 한국어) · 회의 손님으로도 온다
-  const Y = await open({ time: '2026-10-06T11:00:00' });
+  const Y = await open({ time: '2026-10-06T11:12:00' });   // 점심 나들이(11:10~)까지 한 번에 보도록
   await enter(Y.page); await goFloor(Y.page, '2'); await Y.page.waitForTimeout(800);
   await Y.page.evaluate(() => { window.__pixOffice.floors['2'].buySlots = ['jp', 'us', 'it'].map(k => ({ k, key: k + 'T', st: 600, end: 700 })); });
   const said = new Set(); let names = [];
@@ -58,14 +60,14 @@ const { open, enter, goFloor, suite } = require('./lib');
     F.buySlots = ['jp', 'jp2', 'it'].map(k => ({ k, key: k + 'U', st: 600, end: 760 })); });
   let chat = false, hostCall = null, host = null;
   for (let i = 0; i < 80 && !(chat && host); i++) { await Y.page.waitForTimeout(1500);
-    if (i === 4) await Y.page.evaluate(() => { const A = window.__pixOffice.floors['2'].actors, n = performance.now(); ['jp', 'jp2'].forEach(k => { const a = A['by_' + k]; if (a && !a.path) { a.ph = 'stay'; a.atBar = false; a.until = n + 60000; } }); });   // 둘 다 한자리에 머물게
+    if (!chat && i >= 4 && i % 4 === 0) await Y.page.evaluate(() => { const A = window.__pixOffice.floors['2'].actors, n = performance.now(); ['jp', 'jp2'].forEach(k => { const a = A['by_' + k]; if (a && a.ph !== 'chat' && a.ph !== 'toChat' && a.ph !== 'waitChat') { a.path = null; a.ph = 'stay'; a.atBar = false; a.hostAt = 0; a.until = n + 60000; } }); });   // 둘 다 한자리에 머물게
     if (i === 8) hostCall = await Y.page.evaluate(() => window.__buyerHost('it', '카포네 마또띠'));
     const r = await Y.page.evaluate(() => { const A = window.__pixOffice.floors['2'].actors, h = Object.keys(A).filter(k => /^h_/.test(k)).map(k => A[k])[0];
       return { chat: ['jp', 'jp2'].some(k => A['by_' + k] && A['by_' + k].ph === 'chat'), host: h ? { n: h.name, ph: h.ph, b: h.bubble && h.bubble.join(' ') } : null }; });
     if (r.chat) chat = true; if (r.host && r.host.ph === 'talk') host = r.host; }
   T.check('바이어: 같은 나라 둘이 다가가 수다를 떤다', chat);
   T.check('바이어: 3층 직원이 내려와 바이어를 응대한다', hostCall && host, JSON.stringify({ hostCall, host }));
-  const lunch = await Y.page.evaluate(async () => { window.__dt += 15 * 60000; const A = window.__pixOffice.floors['2'].actors, r = Math.random; Math.random = () => 0.1;
+  const lunch = await Y.page.evaluate(async () => { const A = window.__pixOffice.floors['2'].actors, r = Math.random; Math.random = () => 0.1;
     const a = A.by_jp2; if (a) { a.leaveAt = 0; a.ph = 'pick'; a.until = 0; a.host = null; a.mate = null; } await new Promise(z => setTimeout(z, 3000)); Math.random = r;   // 떠날 곳을 고를 때까지 넉넉히
     for (let i = 0; i < 40 && A.by_jp2; i++) await new Promise(z => setTimeout(z, 500));
     const q = (window.__b1Guests || {}).buy_jp2, j = A.by_jp2; return q ? { group: q.group, crew: q.crew } : { had: !!a, ph: j && j.ph, dest: j && j.dest, rq: !!(window.__roofGuests || {}).buy_jp2 }; });
