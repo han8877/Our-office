@@ -896,31 +896,41 @@ function f2Meets(F,now,off){
 
 // ---- 2층 외국인 바이어 셋: 평일 하루 두 번쯤 로비를 둘러보고 바에 들른다. 평소엔 자기 나라 말로 수출 혼잣말, 다섯 번에 한 번은 쉬운 한국어 ----
 var BUYERS={
-  jp:{ name:'노토 네코', look:{id:'buyerJp',kind:'maneki',shirt:'#3a3f4a',pants:'#2c3038',tie:'#7a8ab0',item:'file'},
+  jp:{ name:'노토 네코', nat:'jp', look:{id:'buyerJp',kind:'maneki',shirt:'#3a3f4a',pants:'#2c3038',tie:'#7a8ab0',item:'file'},
     self:[['輸出の書類、','確認しなきゃ'],['納期は','来月末かな…'],['このノート、','日本で売れそう'],['送料が','ちょっと高いね'],['サンプルを','本社に送ろう'],['関税の計算、','もう一度…'],['東京の展示会に','出したいな'],['在庫は','十分あるかな'],['見積書、','まだかな'],['いい紙だなぁ'],['パッケージは','日本語版で'],['船便なら','三週間か…'],['このペン、','書きやすい！'],['部長に','報告しないと'],['金色の猫…','親戚かな？'],['コンテナ一つで','足りるかな']],
     ko:[['안녕하세요~'],['감사합니다!'],['이거','너무 귀여워요'],['커피','맛있어요'],['한국 문구,','최고예요!']],
     order:['ジンジャーエール、','ください'], bt:['네, 금방','만들어 드릴게요'],
     meet:[['はい、','大丈夫です'],['いいですね！'],['検討します'],['本社に','確認します'],['素晴らしい！'],['納期は','守れますか？']], hi:['はじめまして、','ノトです'], bye:['ありがとう','ございました！'] },
-  us:{ name:'마이클 스캇', look:{id:'buyerUs',kind:'eagle',shirt:'#5c3d26',pants:'#432c1c',tie:'#c8323a',item:'shopbag'},
+  us:{ name:'마이클 스캇', nat:'us', look:{id:'buyerUs',kind:'eagle',shirt:'#5c3d26',pants:'#432c1c',tie:'#c8323a',item:'shopbag'},
     self:[["Let's close it","by Friday."],['Two containers','to LA.'],['These pens?','Huge in the States.'],['Need the','price sheet.'],['Customs forms…','again.'],['Shipping costs','are killing me.'],['Back-to-school','season is key.'],['Gotta call','the Scranton office.'],['MOQ 5,000?','Hmm.'],['Love this','paper texture.'],['Samples by','next Monday.'],['Retailers would','love this.'],['Is that','tariff-free?'],["That's what","she said."],['Okay, invoice','in dollars.']],
     ko:[['반가워요!'],['이거','얼마예요?'],['감사합니다~'],['한국','좋아요!'],['맛있어요!']],
     order:['One grapefruit ade,','please!'], bt:['Sure!','금방 드릴게요'],
     meet:[['Sounds great!'],['Deal!'],['Let me check','with my boss.'],['Can we do','a better price?'],['Love it!'],['Send me','the samples.']], hi:['Hi! Michael Scott,','nice to meet you'], bye:['Thanks!','See you soon.'] },
-  it:{ name:'카포네 마또띠', look:{id:'buyerIt',kind:'wolf',shirt:'#e8dcc0',pants:'#cbbd9e',scarf:'#3a6a8a',item:'paper'},
+  it:{ name:'카포네 마또띠', nat:'it', look:{id:'buyerIt',kind:'wolf',shirt:'#e8dcc0',pants:'#cbbd9e',scarf:'#3a6a8a',item:'paper'},
     self:[['Che bella','carta!'],['Spedizione a Milano','entro marzo?'],["Il prezzo è","un po' alto…"],['Serve la fattura','in euro.'],['Mamma mia,','che colori!'],['Il campione','arriva domani?'],['Per la fiera','di Bologna…'],['La dogana è','sempre lenta.'],['Quanti pezzi','per scatola?'],['Bellissimo','design!'],['Devo chiamare','Roma.'],['Un container','basta?'],['Qualità','perfetta.'],['Questo piacerà','ai clienti.'],['Un caffè,','per favore…']],
     ko:[['잘 지내요?'],['커피','좋아요~'],['너무','예뻐요!'],['안녕하세요!'],['감사합니다!']],
     order:['Un espresso,','per favore'], bt:['에스프레소…','네, 준비할게요'],
-    meet:[['Perfetto!'],['Va bene!'],['Bellissimo!'],['Ci penso…'],['Il prezzo,','per favore?'],['Grazie mille!']], hi:['Piacere,','Capone Mattotti'], bye:['Grazie,','a presto!'] }
+    meet:[['Perfetto!'],['Va bene!'],['Bellissimo!'],['Ci penso…'],['Il prezzo,','per favore?'],['Grazie mille!']], hi:['Piacere,','Capone Mattotti'], bye:['Grazie,','a presto!'] },
+  jp2:{ name:'이누 사토시', nat:'jp', look:{id:'buyerJp2',kind:'shiba',shirt:'#2e3a52',pants:'#262e40',tie:'#c84a4a',item:'case'},
+    self:[['柴犬グッズも','作りたいな'],['散歩コースに','いい店がある'],['ハンコ型の','ステッカー…'],['大阪の問屋に','連絡しよう'],['この消しゴム、','かわいい！']],
+    order:['アイスコーヒー、','お願いします'], bt:['네, 아이스커피','바로 드릴게요'], hi:['イヌです。','よろしくお願いします'], bye:['また来ます！','ワン…いや、では！'] },
+  jp3:{ name:'켄지 코테츠', nat:'jp', look:{id:'buyerJp3',kind:'deer',shirt:'#5a5f68',pants:'#454a52',tie:'#5a8a6a',item:'shopbag'},
+    self:[['奈良の店にも','置きたいな'],['お辞儀は','大事です'],['和紙の質感、','いいですね'],['鹿せんべい柄…','ありかも'],['京都の展示会、','来年こそ']],
+    order:['緑茶は','ありますか？'], bt:['녹차요?','네, 따뜻하게 드릴게요'], hi:['コテツです。','どうぞよろしく'], bye:['本日は','ありがとうございました'] },
+  it2:{ name:'돈 빈센조', nat:'it', look:{id:'buyerIt2',kind:'greyhound',shirt:'#2a2a30',pants:'#222228',tie:'#8a2434',item:'case'},
+    self:[['Pazienza…'],['Nessun','problema.'],['Il caffè coreano…','non male.'],['Questo affare','si chiude oggi.'],['Un regalo','per la famiglia.']],
+    order:['Un espresso doppio,','grazie'], bt:['더블 에스프레소,','바로 드릴게요'], hi:['Vincenzo.','Piacere.'], bye:['Arrivederci.','A presto.'] }
 };
 var BUYER_KO_MEET=[['좋아요!'],['네,','알겠어요'],['감사합니다!'],['괜찮아요~']];
 var BUYER_STAFF=[['수출용 샘플','준비했습니다'],['영문 카탈로그','여기 있어요'],['선적은 다음 달','첫 주예요'],['단가표','보여 드릴게요'],['포장은 현지어로','바꿔 드릴게요'],['통관 서류는','저희가 챙길게요'],['초도 물량은','얼마나 생각하세요?'],['이 패턴,','해외 반응이 좋아요'],['컬러는','세 가지로 갈게요'],['샘플은 항공으로','보내 드릴게요']];
 var BUYER_SPOTS=[{c:26,r:4,face:'up'},{c:28,r:4,face:'up'},{c:12,r:23,face:'down'},{c:15,r:23,face:'down'},{c:25,r:19,face:'up'},{c:32,r:19,face:'up'},{c:22,r:6,face:'up'},{c:12,r:16,face:'up'}];   // 아트 월 · 어항 · 책장 · 음료장 · 금빛 고양이 조형물
 var BUYER_BAR=[{c:30,r:13,face:'up'},{c:26,r:13,face:'up'}];                                     // 바 의자 사이에 서서 주문 (앉으면 의자에 몸이 가려진다)
-function buyerSay(k,kind){ var b=BUYERS[k]; if(Math.random()<0.2) return lab5Pick(kind==='meet'?BUYER_KO_MEET:b.ko); return lab5Pick(kind==='meet'?b.meet:b.self); }
+function buyerSay(k,kind){ var b=BUYERS[k], n=BUYERS[b.nat]; if(Math.random()<0.2) return lab5Pick(kind==='meet'?BUYER_KO_MEET:n.ko);   // 같은 나라 바이어는 나라 대사를 함께 쓰고, 자기만의 대사를 더 자주 한다
+  if(kind==='meet') return lab5Pick(n.meet); return lab5Pick(b===n || Math.random()<0.5 ? b.self : n.self.filter(function(l){ return !/she said|親戚/.test(l.join(' ')); })); }
 function buyerInMeet(A,k){ for(var id in A){ if(/^mc_/.test(id) && A[id].buyer===k) return true; } return false; }
 function buyerSpotFree(F,g,me){ for(var id in F.actors){ var o=F.actors[id]; if(o===me || !o.visible) continue; var t=o.goal||o.tile; if(t && t.c===g.c && t.r===g.r) return false; } return true; }
 function buyerSlots(F,d){ var dk=d.toDateString(); if(F.buyDay===dk) return; F.buyDay=dk; F.buySlots=[]; F.buyDone={};
-  Object.keys(BUYERS).forEach(function(k){ for(var j=0;j<2;j++){ var h=PO.hash(dk+'buyer'+k+j); if(h%10<2) continue;                        // 다섯 번에 한 번은 그 시간에 안 온다
+  Object.keys(BUYERS).forEach(function(k){ for(var j=0;j<2;j++){ var h=PO.hash(dk+'buyer'+k+j); if(h%10<(BUYERS[k].self.length<10?4:2)) continue;   // 그 시간에 안 오는 날도 있다 (새 바이어는 조금 더 자주 빠진다)
     var st=j? 13*60+30+h%190 : 10*60+h%110; F.buySlots.push({k:k, key:k+j, st:st, end:st+10+(h>>4)%9}); } }); }
 function f2Buyers(F,now,off){
   var A=F.actors, d=new Date(), t=d.getHours()*60+d.getMinutes(), work=B.workDay?B.workDay():false;
@@ -933,7 +943,7 @@ function f2Buyers(F,now,off){
     if(off && a.path) step(a,now);
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
     if(a.ph!=='out' && !a.talkUntil && now>a.nextTalk){ a.bubble=buyerSay(k,'self'); a.talkUntil=now+3400; a.nextTalk=now+9000+Math.random()*9000; }
-    if(a.btAt && now>a.btAt){ a.btAt=0; var bt=A.npcBartender; if(bt && bt.visible && bt.onBar){ bt.bubble=b.bt; bt.talkUntil=now+3000; bt.orderCool=now+15000; bt.tx=Math.max(24*T-1,Math.min(32*T-1,a.x)); } }
+    if(a.btAt && now>a.btAt){ a.btAt=0; var bt=A.npcBartender; if(bt && bt.visible && bt.onBar){ bt.bubble=a.koOrder?['네, 금방','만들어 드릴게요']:b.bt; bt.talkUntil=now+3000; bt.orderCool=now+15000; bt.tx=Math.max(24*T-1,Math.min(32*T-1,a.x)); } }
     if(a.ph==='pick' && now>a.until){
       if(now>a.leaveAt){ a.ph='out'; a.leaving=true; a.stepMs=300; setGoal(F,a,{c:F.lobby.c,r:F.lobby.r,face:'up'},now); if(!a.path) a.visible=false; continue; }
       var bt0=A.npcBartender, barOn=bt0 && bt0.visible && bt0.onBar, g=null;
@@ -942,7 +952,7 @@ function f2Buyers(F,now,off){
       if(!g){ a.until=now+3000; continue; }
       a.lastSpot=a.atBar?'bar':g; a.ph='go'; setGoal(F,a,{c:g.c,r:g.r,face:g.face,sit:g.sit,pt:g.pt},now); if(!a.path){ a.ph='pick'; a.until=now+2000; } }
     else if(a.ph==='go' && !a.path){ a.ph='stay';
-      if(a.atBar){ a.until=now+40000+Math.random()*30000; a.bubble=Math.random()<0.2?['자몽 에이드','주세요!']:b.order; a.talkUntil=now+3000; a.nextTalk=now+12000; a.btAt=now+1600; }
+      if(a.atBar){ a.until=now+40000+Math.random()*30000; a.koOrder=Math.random()<0.2; a.bubble=a.koOrder?['자몽 에이드','주세요!']:b.order; a.talkUntil=now+3000; a.nextTalk=now+12000; a.btAt=now+1600; }
       else a.until=now+15000+Math.random()*20000; }
     else if(a.ph==='stay' && now>a.until){ a.ph='pick'; a.until=now+300; }
     else if(a.ph==='out' && (!a.visible || !a.path)){ a.visible=false; delete A['by_'+k]; }
@@ -1991,6 +2001,9 @@ var NPC_INFO={
   buyer_jp: { name:'노토 네코', role:'일본 바이어 · 2층 로비 손님', bio:'마네키네코. 도쿄에서 온 문구 수입사 바이어예요. 서류철을 꼭 쥐고 일본어로 수출 이야기를 중얼거려요. 한국어는 인사 정도.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
   buyer_us: { name:'마이클 스캇', role:'미국 바이어 · 2층 로비 손님', bio:'흰머리수리. 1층 스토어 쇼핑백을 늘 들고 다녀요. 영어로 선적 얘기를 하다가 혼자 농담하고 혼자 웃어요.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
   buyer_it: { name:'카포네 마또띠', role:'이탈리아 바이어 · 2층 로비 손님', bio:'늑대. 밀라노에서 온 종이 수입사 바이어예요. 견본 종이를 들고 다니며 이탈리아어로 감탄해요. 바에선 늘 에스프레소.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
+  buyer_jp2:{ name:'이누 사토시', role:'일본 바이어 · 2층 로비 손님', bio:'시바견. 오사카 문구 도매상 바이어예요. 남색 정장에 서류가방, 지우개와 도장 모양 굿즈에 약해요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
+  buyer_jp3:{ name:'켄지 코테츠', role:'일본 바이어 · 2층 로비 손님', bio:'사슴. 나라에서 온 화지(和紙) 문구점 바이어예요. 인사할 때 고개를 꾸벅 숙이고, 바에선 녹차를 찾아요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
+  buyer_it2:{ name:'돈 빈센조', role:'이탈리아 바이어 · 2층 로비 손님', bio:'이탈리안 그레이하운드. 검은 정장에 버건디 넥타이, 말수는 적지만 거래는 깔끔해요. 더블 에스프레소만 마셔요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
   visitor:  { name:'방문객', role:'2층 로비 손님', bio:'로비를 둘러보며 작품을 보거나 바에서 음료를 마셔요.', hours:'평일 09:00~18:00' }
 };
 // 그림 속 사람을 눌렀을 때: 직원이면 원래 프로필, 아니면 짧은 소개 카드
