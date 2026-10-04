@@ -1496,10 +1496,31 @@ function pBarCounter(w){ return obj(w,52,function(g){          // 타원형 바 
 function pBarStool(){ return obj(24,36,function(g){
   R(g,10,12,4,20,'#b8bec4'); R(g,10,12,1,20,'#eef1f3'); ell(g,12,33,8,2,'#9aa2a8'); ell(g,12,26,6,1,'#c9cfd4');
   ell(g,12,8,11,5,'#8a5a3a'); ell(g,12,6,11,4,'#a87050'); ell(g,9,5,4,1,'#c89070'); }); }
-function pMagShelf(){ return obj(96,80,function(g){            // 표지가 보이는 잡지 선반
+// 독서 코너 책장: 표지가 보이게 세워 둔 세계문학 전집 (세로로 긴 크림색 표지 · 위에 제목과 지은이 · 가운데 명화 · 아래 출판사 표시)
+function bookPainting(g,x,y,k){                                   // 표지 그림 9×10 (세로)
+  if(k===0){ R(g,x,y,9,10,'#2f3a2c'); ell(g,x+4,y+4,2,2,'#e8c4a0'); R(g,x+2,y+1,5,2,'#3a2418'); R(g,x+2,y+2,1,3,'#3a2418'); R(g,x+1,y+7,7,3,'#1e1e28'); R(g,x+3,y+7,3,1,'#f4efe2'); }   // 초상화
+  else if(k===1){ R(g,x,y,9,4,'#9cc4e4'); P(g,x+7,y+1,'#fbe8a0'); R(g,x,y+4,9,6,'#6a9a52'); R(g,x,y+7,9,3,'#4f8040'); R(g,x+1,y+2,2,5,'#2f5a2c'); R(g,x+5,y+8,3,1,'#d8c060'); }   // 들판
+  else if(k===2){ R(g,x,y,9,10,'#1c2a5a'); P(g,x+3,y+1,'#f8e070'); P(g,x+6,y+3,'#f8e070'); P(g,x+4,y+5,'#f8e070'); R(g,x+6,y+1,2,2,'#fbe8a0'); R(g,x+5,y+3,2,1,'#5a7ac0'); R(g,x+1,y+2,2,8,'#14240f'); R(g,x,y+5,3,5,'#1a2c16'); R(g,x+3,y+8,6,2,'#2a3a4a'); }   // 별이 빛나는 밤
+  else if(k===3){ R(g,x,y,9,5,'#c8d8e8'); R(g,x,y+5,9,5,'#4a7aa8'); R(g,x,y+5,9,1,'#8ab0d0'); R(g,x+1,y+8,7,1,'#6a9ac0'); R(g,x+4,y+1,1,4,'#5a4030'); R(g,x+5,y+2,2,3,'#fbf6ea'); R(g,x+2,y+5,5,1,'#7a5a40'); }   // 바다와 돛단배
+  else if(k===4){ R(g,x,y,9,10,'#2a2420'); [['#e85a4a',2,2],['#f2c24a',5,1],['#f7a8c8',6,4],['#fbf6ea',3,4],['#c84a6a',1,5]].forEach(function(f){ R(g,x+f[1],y+f[2],2,2,f[0]); }); R(g,x+3,y+7,3,3,'#7a6a5a'); R(g,x+3,y+7,3,1,'#9a8a7a'); }   // 꽃 정물
+  else if(k===5){ R(g,x,y,9,10,'#6a8a5a'); R(g,x,y,9,3,'#8aa878'); R(g,x+3,y+1,3,1,'#3a2418'); R(g,x+3,y+2,3,2,'#e8c4a0'); R(g,x+2,y+4,5,5,'#c8324a'); R(g,x+1,y+8,7,2,'#b02a40'); }   // 붉은 드레스
+  else if(k===6){ R(g,x,y,9,10,'#e8dcc8'); R(g,x+1,y+1,7,2,'#5a6a8a'); R(g,x+3,y+3,3,2,'#f0d0b8'); R(g,x+2,y+5,5,5,'#8ab0c8'); R(g,x+7,y+4,2,4,'#f7c8d0'); }   // 모자 쓴 여인
+  else if(k===7){ R(g,x,y,9,10,'#b8c8d8'); R(g,x,y+3,3,7,'#a8785a'); R(g,x+3,y+1,3,9,'#c89870'); R(g,x+6,y+4,3,6,'#8a6a50'); P(g,x+1,y+5,'#3a3028'); P(g,x+4,y+3,'#3a3028'); P(g,x+4,y+6,'#3a3028'); P(g,x+7,y+6,'#3a3028'); R(g,x,y+9,9,1,'#7a6a5a'); }   // 옛 거리
+  else if(k===8){ R(g,x,y,9,10,'#f2e6c8'); R(g,x+1,y+2,4,4,'#e89a5a'); R(g,x+4,y+5,4,4,'#5a8ac0'); R(g,x+2,y+8,6,1,'#3a3a3a'); }   // 추상
+  else { R(g,x,y,9,10,'#d8d0e8'); R(g,x,y+6,9,4,'#8a9a6a'); R(g,x+2,y+2,5,1,'#f8f4fa'); R(g,x+4,y+3,1,5,'#5a4a3a'); R(g,x+3,y+4,3,2,'#7a9a5a'); }   // 겨울 나무
+}
+function pMagShelf(){ return obj(96,80,function(g){            // 표지가 보이는 책장 (세계문학 전집)
   var w='#f7f3ec'; R(g,0,0,96,6,'#fffdf8'); R(g,0,6,96,74,w); R(g,93,6,3,74,'#dcd4c6');
-  var cs=['#f28a8a','#8ac2f2','#f2d06a','#9ad89a','#c8a8ec','#f5b890','#6fc4b8','#f7a8c8'];
-  [8,32,56].forEach(function(y,r){ R(g,4,y,88,20,'#ebe4d8'); for(var i=0;i<5;i++){ var c=cs[(r*3+i)%cs.length]; R(g,7+i*17,y+3,14,17,c); R(g,7+i*17,y+3,14,2,sh(c,0.4)); tri(g,10+i*17,y+16,14+i*17,y+9,18+i*17,y+16,'#fffdf6'); }
+  var ord=[0,2,5,1,4,9, 3,6,0,7,2,8, 5,1,9,4,3,6], tw=[7,9,6,8,7,9,6,8,9,7,8,6,9,7,8,6,9,7];
+  [8,32,56].forEach(function(y,r){ R(g,4,y,88,20,'#e4dccc'); R(g,4,y,88,1,'#d2c8b4');
+    for(var i=0;i<6;i++){ var n=r*6+i, x=4+i*15, by=y+2, cv='#f4efe2';
+      R(g,x+1,by+1,13,18,'rgba(90,70,40,0.18)');                                                 // 그림자
+      R(g,x,by,13,18,cv); R(g,x,by,13,1,'#fbf8f0'); R(g,x+12,by,1,18,'#d8cfbb'); R(g,x,by+17,13,1,'#d0c6b0'); R(g,x,by,1,18,'#e8e0cf');
+      var t=tw[n]; R(g,x+6-(t>>1),by+2,t,1,'#2a2622');                                           // 제목
+      R(g,x+6-((t-3)>>1),by+3,Math.max(3,t-3),1,'#4a443c');                                      // 제목 둘째 줄
+      R(g,x+5,by+5,3,1,'#9a8c74');                                                               // 지은이
+      bookPainting(g,x+2,by+6,ord[n]);                                                            // 명화
+      R(g,x+5,by+16,3,1,'#b8a888'); }                                                             // 출판사 표시
     R(g,4,y+20,88,2,'#fffdf8'); R(g,4,y+21,88,1,'#dcd4c6'); }); }); }
 function pLantern(){ return obj(56,104,function(g){           // 석등
   var s='#b8b4ac', sl='#d4d0c8', sd='#8a867e';
