@@ -30,7 +30,7 @@ const { open, enter, goFloor, clickArt, suite } = require('./lib');
   await page.evaluate(() => { const Q = window.__f1Guests = window.__f1Guests || {}; Q.t1 = { kind: 'staff', id: 'kimnote', name: '김팀장', why: 'buy' }; Q.sec = { kind: 'sec', name: '오보안', look: 'guard' }; Q.boss = { kind: 'boss', own: true }; Q.vguard = { kind: 'vguard', own: true }; });
   await page.waitForTimeout(3000);
   const v = await page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors, R = window.__pixOffice.floors['1'].robot; return { names: Object.values(A).filter(a => a.visible && a.qkey).map(a => a.name), boss: window.__bossAtF1, robot: !!R.goal }; });
-  T.check('3층 직원·보안요원·사장님·경비가 1층에 내려온다', ['김팀장', '오보안', '사장님', '경비'].every(n => v.names.includes(n)), v.names.join(','));
+  T.check('3층 직원·보안요원·사장님·유경비가 1층에 내려온다', ['김팀장', '오보안', '사장님', '유경비'].every(n => v.names.includes(n)), v.names.join(','));
   T.check('사장님이 1층에 계신 동안은 표시가 켜진다 (3층 방문과 겹치지 않게)', v.boss === true);
   T.check('R-도우미가 1층을 돌아다닌다', v.robot);
   let back = false; for (let i = 0; i < 30 && !back; i++) { await page.waitForTimeout(4000); back = await page.evaluate(() => { const Q = window.__f1Guests; return !!(Q.t1 && Q.t1.done) && !!(Q.sec && Q.sec.done); }); }
