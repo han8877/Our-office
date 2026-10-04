@@ -919,7 +919,10 @@ var BUYERS={
     order:['緑茶は','ありますか？'], bt:['녹차요?','네, 따뜻하게 드릴게요'], hi:['コテツです。','どうぞよろしく'], bye:['本日は','ありがとうございました'] },
   it2:{ name:'돈 빈센조', nat:'it', look:{id:'buyerIt2',kind:'greyhound',shirt:'#2a2a30',pants:'#222228',tie:'#8a2434',item:'case'},
     self:[['Pazienza…'],['Nessun','problema.'],['Il caffè coreano…','non male.'],['Questo affare','si chiude oggi.'],['Un regalo','per la famiglia.']],
-    order:['Un espresso doppio,','grazie'], bt:['더블 에스프레소,','바로 드릴게요'], hi:['Vincenzo.','Piacere.'], bye:['Arrivederci.','A presto.'] }
+    order:['Un espresso doppio,','grazie'], bt:['더블 에스프레소,','바로 드릴게요'], hi:['Vincenzo.','Piacere.'], bye:['Arrivederci.','A presto.'] },
+  us2:{ name:'드와이트 슈루트', nat:'us', look:{id:'buyerUs2',kind:'bulldog',shirt:'#c8a040',pants:'#4a4238',tie:'#5a4030',item:'case',acc:'glasses',accC:'#4a4038'},
+    self:[['Bears. Beets.','Battlestar Galactica.'],['Identity theft','is not a joke.'],['Assistant to the','regional manager.'],['Beet farm','paper? Hmm.'],['Question.','Is it waterproof?'],['False.','This is premium paper.']],
+    order:['Beet juice.','Do you have it?'], bt:['비트 주스는…','자몽 에이드 어떠세요?'], hi:['Dwight Schrute.','Assistant to the RM.'], bye:['Good.','We have a deal.'] }
 };
 // 같은 나라 바이어끼리 로비에서 자기 나라 말로 수다 (가끔 서로 한국어 연습)
 var BUYER_CHAT={
@@ -2094,6 +2097,7 @@ var NPC_INFO={
   buyer_it: { name:'카포네 마또띠', role:'이탈리아 바이어 · 2층 로비 손님', bio:'늑대. 밀라노에서 온 종이 수입사 바이어예요. 견본 종이를 들고 다니며 이탈리아어로 감탄해요. 바에선 늘 에스프레소.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
   buyer_jp2:{ name:'이누 사토시', role:'일본 바이어 · 2층 로비 손님', bio:'시바견. 오사카 문구 도매상 바이어예요. 남색 정장에 서류가방, 지우개와 도장 모양 굿즈에 약해요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
   buyer_jp3:{ name:'켄지 코테츠', role:'일본 바이어 · 2층 로비 손님', bio:'사슴. 나라에서 온 화지(和紙) 문구점 바이어예요. 인사할 때 고개를 꾸벅 숙이고, 바에선 녹차를 찾아요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
+  buyer_us2:{ name:'드와이트 슈루트', role:'미국 바이어 · 2층 로비 손님', bio:'불독. 겨자색 셔츠에 안경, 서류가방. 마이클 스캇과 같은 회사인데 본인 말로는 "지역 매니저의 보좌". 바에서 비트 주스를 찾아요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
   buyer_it2:{ name:'돈 빈센조', role:'이탈리아 바이어 · 2층 로비 손님', bio:'이탈리안 그레이하운드. 검은 정장에 버건디 넥타이, 말수는 적지만 거래는 깔끔해요. 더블 에스프레소만 마셔요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
   visitor:  { name:'방문객', role:'2층 로비 손님', bio:'로비를 둘러보며 작품을 보거나 바에서 음료를 마셔요.', hours:'평일 09:00~18:00' }
 };

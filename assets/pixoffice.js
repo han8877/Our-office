@@ -871,7 +871,7 @@ function drawHeadNew(g,K,p,dir,blink){
       R(g,cx-12,cy+2,2,1,'#f2a0b0'); P(g,cx-11,cy+3,'#c87a8a'); R(g,cx-4,cy+3,3,2,blush);
       R(g,cx-7,cy+7,13,2,'#d83a3a'); R(g,cx-7,cy+7,13,1,'#e85a50'); disc(g,cx-6,cy+10,2,'#f2c030'); P(g,cx-7,cy+9,'#fff0a0'); R(g,cx-7,cy+11,3,1,'#a87818'); }
     if(k==='tuxedo'){ ell(g,cx-6,cy+4,6,4,F); tri(g,cx-9,cy+1,cx-6,cy-3,cx-4,cy+1,F); R(g,cx-12,cy+2,2,1,'#f2a0b0'); P(g,cx-11,cy+3,'#c87a8a');   // 하얀 주둥이·턱 · 연두빛 노란 눈
-      if(blink) R(g,cx-7,cy-1,3,1,'#c8c4b8'); else { R(g,cx-7,cy-3,3,3,'#d8d860'); P(g,cx-6,cy-2,'#1a1a14'); P(g,cx-7,cy-3,'#ffffff'); } R(g,cx-2,cy+3,3,2,blush); }
+      if(blink) R(g,cx-7,cy-1,3,1,'#c8c4b8'); else { R(g,cx-7,cy-3,3,3,'#e0b850'); R(g,cx-7,cy-3,2,3,'#120f14'); P(g,cx-7,cy-3,'#ffffff'); } R(g,cx-2,cy+3,3,2,blush); }
     if(k==='bulldog'){ ell(g,cx-8,cy+3,5,4,F); ell(g,cx-6,cy+6,5,3,F); R(g,cx-6,cy+8,5,1,sh(F,-0.25)); R(g,cx-13,cy+1,3,3,'#2a2426'); P(g,cx-13,cy+1,'#6a6266');   // 납작 코 · 처진 볼살 · 아랫니
       P(g,cx-11,cy+5,'#ffffff'); R(g,cx-12,cy+6,4,1,sh(F,-0.35)); R(g,cx-8,cy-5,4,2,sh(d,-0.3)); P(g,cx-4,cy-6,sh(d,-0.3)); eyes(cx-5,null,cy-2); R(g,cx-1,cy+3,3,2,blush); }
     if(k==='greyhound'){ ell(g,cx-9,cy+3,7,3,f); ell(g,cx-9,cy+4,6,2,F); R(g,cx-16,cy+2,2,2,'#2a2426'); R(g,cx-8,cy-6,6,2,F);   // 길고 가는 주둥이 · 흰 줄무늬
@@ -919,7 +919,7 @@ function drawHeadNew(g,K,p,dir,blink){
     R(g,cx-13,cy+2,4,1,'#d8d0c8'); R(g,cx-13,cy+4,4,1,'#d8d0c8'); R(g,cx+10,cy+2,4,1,'#d8d0c8'); R(g,cx+10,cy+4,4,1,'#d8d0c8'); R(g,cx-9,cy+2,2,2,blush); R(g,cx+8,cy+2,2,2,blush);
     R(g,cx-9,cy+7,19,2,'#d83a3a'); R(g,cx-9,cy+7,19,1,'#e85a50'); disc(g,cx,cy+10,2,'#f2c030'); P(g,cx-1,cy+9,'#fff0a0'); R(g,cx-1,cy+11,3,1,'#a87818'); }   // 빨간 목줄 · 금방울
   if(k==='tuxedo'){ ell(g,cx,cy+5,7,4,F); tri(g,cx-3,cy+2,cx,cy-5,cx+3,cy+2,F);                       // 턱시도: 이마로 올라가는 흰 줄 · 하얀 주둥이와 턱
-    [cx-7,cx+4].forEach(function(ex){ if(blink) R(g,ex,cy,3,1,'#c8c4b8'); else { R(g,ex,cy-2,3,3,'#d8d860'); P(g,ex+1,cy-1,'#1a1a14'); P(g,ex,cy-2,'#ffffff'); } });
+    [cx-7,cx+4].forEach(function(ex){ if(blink) R(g,ex,cy,3,1,'#c8c4b8'); else { ell(g,ex+1,cy-1,2,2,'#e0b850'); R(g,ex,cy-2,3,3,'#120f14'); P(g,ex,cy-2,'#ffffff'); P(g,ex+2,cy,'#6a6070'); } });   // 동그랗고 까만 눈동자 · 반짝
     R(g,cx-1,cy+2,2,1,'#f2a0b0'); P(g,cx-1,cy+3,'#c87a8a'); P(g,cx-2,cy+4,'#b8a8a8'); P(g,cx+1,cy+4,'#b8a8a8');
     R(g,cx-13,cy+3,4,1,'#e8e4dc'); R(g,cx-13,cy+5,4,1,'#e8e4dc'); R(g,cx+10,cy+3,4,1,'#e8e4dc'); R(g,cx+10,cy+5,4,1,'#e8e4dc'); R(g,cx-8,cy+3,2,2,blush); R(g,cx+7,cy+3,2,2,blush); }
   if(k==='bulldog'){ R(g,cx-1,cy-8,3,8,F); ell(g,cx,cy+4,8,4,F); ell(g,cx-5,cy+6,5,3,F); ell(g,cx+5,cy+6,5,3,F);   // 흰 줄 · 넓은 주둥이 · 처진 볼살 · 아랫니 · 미간 주름
@@ -2015,7 +2015,7 @@ var F2LOOK={
   bartender:{id:'bartender', kind:'redpanda', shirt:'#2c2a30', pants:'#26242a', bow:'#8a2434'},
   server:   {id:'server',    kind:'badger',   shirt:'#fbf7ef', pants:'#2c2a30', tie:'#2c2a30', apron:'#3a3438'},
   serverTray:{id:'server',   kind:'badger',   shirt:'#fbf7ef', pants:'#2c2a30', tie:'#2c2a30', apron:'#3a3438', item:'tray'},
-  v5:{id:'v5', kind:'calico',  shirt:'#f2efe6', pants:'#b8b2a4', scarf:'#a8bfa0', item:'paper'}
+  v5:{id:'v5', kind:'tuxedo',  shirt:'#f2efe6', pants:'#b8b2a4', scarf:'#a8bfa0', item:'paper'}
 };
 MAP2.SWITCH=SWITCH2; MAP2.SIGN=SIGN2; MAP2.CLOCK=CLOCK2; MAP2.TANK=TANK2;
 // 자리: 안내 직원은 카운터 뒤, 보안요원은 데스크 뒤
