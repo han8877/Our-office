@@ -922,7 +922,7 @@ var BUYERS={
     order:['Un espresso doppio,','grazie'], bt:['더블 에스프레소,','바로 드릴게요'], hi:['Vincenzo.','Piacere.'], bye:['Arrivederci.','A presto.'] },
   us2:{ name:'드와이트 슈루트', nat:'us', look:{id:'buyerUs2',kind:'bulldog',shirt:'#c8a040',pants:'#4a4238',tie:'#5a4030',item:'case',acc:'glasses',accC:'#4a4038'},
     self:[['Bears. Beets.','Battlestar Galactica.'],['Identity theft','is not a joke.'],['Assistant to the','regional manager.'],['Beet farm','paper? Hmm.'],['Question.','Is it waterproof?'],['False.','This is premium paper.']],
-    order:['Beet juice.','Do you have it?'], bt:['비트 주스는…','자몽 에이드 어떠세요?'], hi:['Dwight Schrute.','Assistant to the RM.'], bye:['Good.','We have a deal.'] }
+    order:['Beet juice.','Do you have it?'], bt:['비트 주스','나왔습니다'], hi:['Dwight Schrute.','Assistant to the RM.'], bye:['Good.','We have a deal.'] }
 };
 // 같은 나라 바이어끼리 로비에서 자기 나라 말로 수다 (가끔 서로 한국어 연습)
 var BUYER_CHAT={

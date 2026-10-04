@@ -66,7 +66,7 @@ const { open, enter, goFloor, suite } = require('./lib');
   T.check('바이어: 같은 나라 둘이 다가가 수다를 떤다', chat);
   T.check('바이어: 3층 직원이 내려와 바이어를 응대한다', hostCall && host, JSON.stringify({ hostCall, host }));
   const lunch = await Y.page.evaluate(async () => { window.__dt += 15 * 60000; const A = window.__pixOffice.floors['2'].actors, r = Math.random; Math.random = () => 0.1;
-    const a = A.by_jp2; if (a) { a.leaveAt = 0; a.ph = 'pick'; a.until = 0; a.host = null; a.mate = null; } await new Promise(z => setTimeout(z, 400)); Math.random = r;
+    const a = A.by_jp2; if (a) { a.leaveAt = 0; a.ph = 'pick'; a.until = 0; a.host = null; a.mate = null; } await new Promise(z => setTimeout(z, 3000)); Math.random = r;   // 떠날 곳을 고를 때까지 넉넉히
     for (let i = 0; i < 40 && A.by_jp2; i++) await new Promise(z => setTimeout(z, 500));
     const q = (window.__b1Guests || {}).buy_jp2, j = A.by_jp2; return q ? { group: q.group, crew: q.crew } : { had: !!a, ph: j && j.ph, dest: j && j.dest, rq: !!(window.__roofGuests || {}).buy_jp2 }; });
   T.check('바이어: 점심때 떠나면 같은 나라끼리 지하 식당으로', lunch && lunch.group === 'buyers_jp', JSON.stringify(lunch));
