@@ -922,7 +922,7 @@ var BUYERS={
     order:['Un espresso doppio,','grazie'], bt:['더블 에스프레소,','바로 드릴게요'], hi:['Vincenzo.','Piacere.'], bye:['Arrivederci.','A presto.'] },
   us2:{ name:'드와이트 슈루트', nat:'us', look:{id:'buyerUs2',kind:'bulldog',shirt:'#c8a040',pants:'#4a4238',tie:'#5a4030',item:'case',acc:'glasses',accC:'#4a4038'},
     self:[['Bears. Beets.','Battlestar Galactica.'],['Identity theft','is not a joke.'],['Assistant to the','regional manager.'],['Beet farm','paper? Hmm.'],['Question.','Is it waterproof?'],['False.','This is premium paper.']],
-    order:['Beet juice.','Do you have it?'], bt:['비트 주스','나왔습니다'], hi:['Dwight Schrute.','Assistant to the RM.'], bye:['Good.','We have a deal.'] }
+    order:['Beet juice.','Do you have it?'], bt:['비트 주스','나왔습니다'], thanks:['Perfect.','Like Schrute Farms.'], hi:['Dwight Schrute.','Assistant to the RM.'], bye:['Good.','We have a deal.'] }
 };
 // 같은 나라 바이어끼리 로비에서 자기 나라 말로 수다 (가끔 서로 한국어 연습)
 var BUYER_CHAT={
@@ -981,7 +981,7 @@ function f2Buyers(F,now,off){
     if(a.replyAt && now>a.replyAt){ a.bubble=a.replyLine; a.talkUntil=now+3300; a.replyAt=0; }
     var chatty = a.ph==='go'||a.ph==='stay'||a.ph==='pick';
     if(chatty && !a.talkUntil && !a.replyAt && now>a.nextTalk){ a.bubble=buyerSay(k,'self'); a.talkUntil=now+3400; a.nextTalk=now+9000+Math.random()*9000; }
-    if(a.btAt && now>a.btAt){ a.btAt=0; var bt=A.npcBartender; if(bt && bt.visible && bt.onBar){ bt.bubble=a.koOrder?['네, 금방','만들어 드릴게요']:b.bt; bt.talkUntil=now+3000; bt.orderCool=now+15000; bt.tx=Math.max(24*T-1,Math.min(32*T-1,a.x)); } }
+    if(a.btAt && now>a.btAt){ a.btAt=0; var bt=A.npcBartender; if(bt && bt.visible && bt.onBar){ bt.bubble=a.koOrder?['네, 금방','만들어 드릴게요']:b.bt; bt.talkUntil=now+3000; if(b.thanks && !a.koOrder){ a.replyLine=b.thanks; a.replyAt=now+3400; } bt.orderCool=now+15000; bt.tx=Math.max(24*T-1,Math.min(32*T-1,a.x)); } }
     if(a.hostAt && now>a.hostAt && a.ph==='stay' && !a.atBar){ a.hostAt=0; if(typeof window.__buyerHost==='function') window.__buyerHost(k,b.name); }
     if((a.ph==='waitChat'||a.ph==='chat'||a.ph==='toChat') && (!a.mate || A[a.mate.id]!==a.mate || (a.ph==='waitChat' && now>a.until))){ a.ph='pick'; a.until=now+500; a.mate=null; a.script=null; a.plateDy=0; }
     if(a.ph==='hosted' && (!a.host || A[a.host.id]!==a.host)){ a.ph='pick'; a.until=now+500; a.host=null; }
@@ -1094,7 +1094,7 @@ function activeFloor(){
 // ---- 2층 라운지 바 직원 (게임 기록에는 없고 그림에만 있는 사람): 바텐더 박(레서판다) · 강서빙(오소리) ----
 // 안내 직원이 근무하는 동안 나와 있다. 바텐더 박은 카운터 뒤를 오가고,
 // 강서빙은 출퇴근 때만 엘리베이터를 오가고 근무 중에는 라운지 바 난간 안에서만 쟁반을 나른다
-var BAR_LINES=[['어서 오세요'],['오늘의 추천은','자몽 에이드예요'],['얼음 넉넉히','넣어드릴게요'],['잔 닦는 중이에요']];
+var BAR_LINES=[['어서 오세요'],['비트 주스도','새로 들였어요'],['오늘의 추천은','자몽 에이드예요'],['얼음 넉넉히','넣어드릴게요'],['잔 닦는 중이에요']];
 var SRV_LINES=[['주문하신 음료','나왔습니다'],['필요하신 거 있으면','불러주세요'],['천천히 쉬다 가세요']];
 var SRV_BAR={ c:33, r:13, face:'up' };                                     // 카운터 끝: 음료를 받는 자리
 var SRV_SPOTS=[{c:25,r:14,face:'up'},{c:27,r:14,face:'up'},{c:29,r:14,face:'up'},{c:31,r:14,face:'up'},{c:24,r:13,face:'up'}];   // 바 의자 뒤
@@ -1183,7 +1183,7 @@ function npcTick(F,now){
   if(!bt.talkUntil && now>(bt.orderCool||0)){
     for(var oid in A){ var o=A[oid]; if(!o.visible||o.npc||!o.bubble||!o.tile) continue;
       if(o.tile.c>=23 && o.tile.c<=34 && o.tile.r>=13 && o.tile.r<=16 && /주세요|메뉴판/.test(o.bubble.join(' '))){
-        bt.bubble=[/메뉴판/.test(o.bubble.join(' '))?'여기 있습니다':'네, 금방 만들어 드릴게요']; bt.talkUntil=now+3000; bt.orderCool=now+15000;
+        bt.bubble=/메뉴판/.test(o.bubble.join(' '))?['여기 있습니다']:/비트/.test(o.bubble.join(' '))?['비트 주스','나왔습니다']:['네, 금방 만들어 드릴게요']; bt.talkUntil=now+3000; bt.orderCool=now+15000;
         bt.tx=Math.max(24*T-1, Math.min(32*T-1, o.x)); break; } } }
   [[bt,BAR_LINES],[sv,SRV_LINES]].forEach(function(p){ var a=p[0], L=p[1];
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; a.nextTalk=now+18000+Math.random()*30000; }
