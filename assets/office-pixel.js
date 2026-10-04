@@ -872,7 +872,7 @@ function f2Meets(F,now,off){
       var used={}; for(var k in A){ if(A[k].venue) used[A[k].venue.name]=1; }
       var free=F2M_VENUES.filter(function(v){ return !used[v.name]; }); if(!free.length){ q.done=true; continue; }
       var ven=lab5Pick(free), ci=Math.floor(Math.random()*F2M_CLIENTS.length), cl=f2mClient(ci), cp={}; for(var kk in look) cp[kk]=look[kk];
-      var bfree=Object.keys(BUYERS).filter(function(bk){ return !A['by_'+bk] && !buyerInMeet(A,bk); }), byk=(bfree.length && Math.random()<0.3) ? lab5Pick(bfree) : null;   // 가끔 외국인 바이어와 회의
+      var bfree=Object.keys(BUYERS).filter(function(bk){ return !A['by_'+bk] && !buyerInMeet(A,bk) && !buyerAway(bk); }), byk=(bfree.length && Math.random()<0.3) ? lab5Pick(bfree) : null;   // 가끔 외국인 바이어와 회의
       if(byk) cl={ name:BUYERS[byk].name, look:BUYERS[byk].look };
       s=npcActor(F,sid,cp,staffName(q.id)); s.sid=q.id; s.venue=ven; s.visible=true; s.stepMs=300; placeAt(F,s,{c:F.lobby.c,r:F.lobby.r,face:'down'}); setGoal(F,s,ven.a,now);
       c=npcActor(F,cid,cl.look,cl.name); c.plateDy=16; c.venue=ven; c.visible=false; c.stepMs=320; c.until=now+2600; if(byk) c.buyer=byk;

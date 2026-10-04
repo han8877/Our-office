@@ -23,6 +23,7 @@ async function open({ time, viewport, init } = {}) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', e => errors.push(e.message));
+  page.on('console', m => { if (m.type() === 'warning' && /^pixOffice/.test(m.text())) errors.push(m.text()); });   // 층마다 그림 쪽 오류는 console.warn 으로 삼켜지므로 여기서 잡는다
   page.on('dialog', d => d.accept());
   await page.goto(PAGE);
   return { browser, ctx, page, errors };
