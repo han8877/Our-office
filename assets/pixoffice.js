@@ -881,8 +881,8 @@ function drawHeadNew(g,K,p,dir,blink){
       R(g,cx-7,cy+7,13,2,'#d83a3a'); R(g,cx-7,cy+7,13,1,'#e85a50'); disc(g,cx-6,cy+10,2,'#f2c030'); P(g,cx-7,cy+9,'#fff0a0'); R(g,cx-7,cy+11,3,1,'#a87818'); }
     if(k==='tuxedo'){ ell(g,cx-6,cy+4,6,4,F); tri(g,cx-9,cy+1,cx-6,cy-3,cx-4,cy+1,F); R(g,cx-12,cy+2,2,1,'#f2a0b0'); P(g,cx-11,cy+3,'#c87a8a');   // 하얀 주둥이·턱 · 연두빛 노란 눈
       if(blink) R(g,cx-7,cy-1,3,1,'#c8c4b8'); else { R(g,cx-7,cy-3,3,3,'#e0b850'); R(g,cx-7,cy-3,2,3,'#120f14'); P(g,cx-7,cy-3,'#ffffff'); } R(g,cx-2,cy+3,3,2,blush); }
-    if(k==='croc'){ R(g,cx-18,cy-1,14,6,f); R(g,cx-18,cy-1,14,1,sh(f,0.1)); R(g,cx-18,cy+3,14,2,F); P(g,cx-17,cy-2,d); R(g,cx-18,cy+2,15,1,sh(d,-0.2));   // 길고 납작한 주둥이 · 이빨 · 콧구멍
-      for(var tz=0;tz<6;tz++){ P(g,cx-17+tz*2,cy+3,'#ffffff'); P(g,cx-16+tz*2,cy+1,'#ffffff'); }
+    if(k==='croc'){ R(g,cx-15,cy-1,12,6,f); R(g,cx-16,cy,1,4,f); R(g,cx-15,cy-1,12,1,sh(f,0.1)); R(g,cx-15,cy+3,12,2,F); R(g,cx-16,cy-2,3,2,f); P(g,cx-15,cy-2,d); R(g,cx-16,cy+2,13,1,sh(d,-0.2));   // 길고 납작한 주둥이(끝까지) · 콧구멍 혹 · 이빨
+      for(var tz=0;tz<6;tz++){ P(g,cx-15+tz*2,cy+3,'#ffffff'); P(g,cx-14+tz*2,cy+1,'#ffffff'); }
       disc(g,cx-3,cy-5,3,f); if(blink) R(g,cx-5,cy-5,4,1,d); else { R(g,cx-5,cy-6,4,3,'#e8b830'); R(g,cx-4,cy-6,1,3,'#1a1410'); P(g,cx-5,cy-6,'#fff4c0'); }
       for(var sc=0;sc<3;sc++) R(g,cx+1+sc*3,cy-3+(sc%2)*3,2,2,d); }
     if(k==='rhino'){ R(g,cx-14,cy,10,6,f); ell(g,cx-12,cy+3,4,3,F); tri(g,cx-15,cy+1,cx-13,cy-9,cx-9,cy+1,'#7a6a52'); tri(g,cx-14,cy,cx-13,cy-7,cx-10,cy,'#d8c49a'); tri(g,cx-9,cy,cx-8,cy-6,cx-5,cy,'#7a6a52'); tri(g,cx-8,cy-1,cx-8,cy-4,cx-6,cy-1,'#d8c49a');   // 코 위 두 뿔
@@ -902,6 +902,7 @@ function drawHeadNew(g,K,p,dir,blink){
       R(g,cx-15,cy+1,10,3,'#f08a30'); R(g,cx-15,cy+1,10,1,'#f8a858'); R(g,cx-8,cy-1,3,3,'#24242a'); P(g,cx-15,cy+3,'#24242a'); R(g,cx-2,cy+3,3,2,blush); }
     if(p.acc==='glasses'){ var glc=p.accC||'#3a3040'; ring(g,cx-5,cy-1,3,glc); R(g,cx-2,cy-1,6,1,glc); }
     if(p.acc==='monocle'){ ring(g,cx-5,cy-1,3,'#e8c050'); line(g,cx-3,cy+2,cx+1,cy+9,'#e8c050'); }
+    if(p.acc==='shadesUp'||p.acc==='shadesOn'){ var sy2=p.acc==='shadesUp'?cy-8:(k==='croc'?cy-5:cy-3); R(g,cx-7,sy2,5,3,'#1d1f24'); R(g,cx-7,sy2,5,1,'#e8c050'); R(g,cx-2,sy2,8,1,'#e8c050'); }
     drawHat(g,p,dir,cx,cy,rx,ry); return; }
   // 정면
   if(k==='duck'){ R(g,cx-1,cy-12,2,4,f); R(g,cx+1,cy-11,2,3,sh(f,0.1)); R(g,cx-3,cy-10,2,2,sh(f,-0.05));
@@ -964,6 +965,8 @@ function drawHeadNew(g,K,p,dir,blink){
     [cx-6,cx+3].forEach(function(ex){ if(blink) R(g,ex,cy,3,1,eye); else { R(g,ex,cy-1,2,2,'#24242a'); P(g,ex,cy-1,'#ffffff'); } });
     R(g,cx-1,cy,3,2,'#24242a'); P(g,cx-2,cy+1,'#24242a'); P(g,cx+2,cy+1,'#24242a'); R(g,cx-2,cy+2,5,5,'#f08a30'); R(g,cx-2,cy+2,5,1,'#f8a858'); P(g,cx,cy+7,'#24242a'); R(g,cx-9,cy+3,3,2,blush); R(g,cx+7,cy+3,3,2,blush); }
   if(p.acc==='glasses'){ var gl=p.accC||'#3a3040'; ring(g,cx-4,cy,3,gl); ring(g,cx+5,cy,3,gl); R(g,cx-1,cy,3,1,gl); }
+  if(p.acc==='shadesUp'||p.acc==='shadesOn'){ var ey=p.acc==='shadesUp'?cy-8:(k==='croc'?cy-4:cy-2), sg='#1d1f24', sgg='#e8c050';   // 선글라스: 머리 위에 걸치거나 쓰거나 (금테)
+    R(g,cx-9,ey,7,3,sg); R(g,cx+3,ey,7,3,sg); R(g,cx-2,ey,5,1,sgg); R(g,cx-9,ey,7,1,sgg); R(g,cx+3,ey,7,1,sgg); P(g,cx-7,ey+1,'#5a6a7a'); P(g,cx+5,ey+1,'#5a6a7a'); }
   if(p.acc==='monocle'){ var mg='#e8c050'; ring(g,cx+5,cy-1,3,mg); P(g,cx+4,cy-3,'#ffffff'); line(g,cx+8,cy,cx+10,cy+9,mg); }   // 금테 외알 안경 · 줄
   drawHat(g,p,dir,cx,cy,rx,ry);
 }
@@ -1161,7 +1164,7 @@ function drawFit(g,p,dir,s,sD){ var f=p.fit, c=p.fitC||'#ffffff', side=dir==='le
 }
 function drawBody(g,K,p,dir,frame,sit){
   if(p.shell && dir==='down') drawShell(g,'down');                     // 앞에선 몸 뒤로 껍질 가장자리만
-  var s=p.shirt, sD=sh(s,-0.22), sL=sh(s,0.28), pa=p.pantsC, pD=sh(pa,-0.28), sho='#5a4034', shoL='#7e5e4c', hand=K.hand||K.f;
+  var s=p.shirt, sD=sh(s,-0.22), sL=sh(s,0.28), pa=p.pantsC, pD=sh(pa,-0.28), sho=p.shoe||'#5a4034', shoL=sh(sho,0.2), hand=K.hand||K.f;
   if(dir==='left'){
     var legA = frame===1 ? [-3,2] : frame===2 ? [2,-3] : [0,0];
     if(sit){ R(g,9,35,11,4,pa); R(g,9,35,11,1,sh(pa,0.2)); R(g,7,38,5,3,sho); R(g,7,38,5,1,shoL); }   // 앉음: 허벅지가 앞으로
@@ -1197,12 +1200,17 @@ function drawBody(g,K,p,dir,frame,sit){
   if(dir==='up'&&p.bag){ R(g,10,27,12,10,p.bag); R(g,10,27,12,1,sh(p.bag,0.25)); R(g,12,31,8,1,sh(p.bag,-0.25)); }
   if(dir==='down'&&p.bag){ R(g,11,27,2,8,sh(p.bag,-0.1)); R(g,19,27,2,8,sh(p.bag,-0.1)); }
   if(dir==='down'&&p.tie){ R(g,15,27,2,2,p.tie); R(g,15,29,2,6,sh(p.tie,-0.1)); }
+  if(p.turtle){ if(dir==='down'){ R(g,13,25,6,3,p.turtle); R(g,14,27,4,9,p.turtle); R(g,13,27,1,9,sD); R(g,18,27,1,9,sD); } else R(g,13,25,6,2,p.turtle); }   // 앞섶을 연 코트 속 터틀넥
+  if(p.opencollar&&dir==='down'){ var oc=p.opencollar; R(g,14,26,4,2,oc); P(g,13,26,oc); P(g,18,26,oc); R(g,15,28,2,8,oc); P(g,15,28,sh(hand,-0.05)); }   // 단추 푼 셔츠 깃
+  if(p.track){ var tw='#fbfaf6'; if(dir==='down'){ R(g,8,28,1,7,tw); R(g,23,28,1,7,tw); R(g,15,26,1,10,'#c8c8cc'); if(!sit){ R(g,11,36,1,4,tw); R(g,20,36,1,4,tw); } } else if(dir==='left'){ R(g,16,28,1,7,tw); } else { R(g,8,28,1,7,tw); R(g,23,28,1,7,tw); } }   // 트레이닝복 흰 줄
+  if(p.goldChain&&dir==='down'){ var gc2='#e8c050'; P(g,13,26,gc2); P(g,14,27,gc2); R(g,15,28,2,1,gc2); P(g,17,27,gc2); P(g,18,26,gc2); P(g,16,29,'#fff2b0'); }   // 금목걸이
+  if(p.watch&&dir!=='up'){ if(dir==='down') R(g,22,34,3,1,'#e8c050'); else R(g,14,34,4,1,'#e8c050'); }   // 금시계
   if(dir==='down'&&p.rich){ var rg='#e8c050'; R(g,18,28,3,2,rg); P(g,19,27,'#fff2b0'); for(var wc=0;wc<6;wc++) P(g,11+wc,32+(wc%2),rg); P(g,13,30,rg); P(g,13,33,rg); P(g,13,35,rg); R(g,23,37,2,1,rg); }   // 금 포켓치프 · 시곗줄 · 단추 · 반지
   if(p.scarf&&dir!=='up'){ R(g,11,25,10,3,p.scarf); R(g,15,28,3,4,sh(p.scarf,-0.15)); }
   if(p.scarf&&dir==='up'){ R(g,11,25,10,2,p.scarf); }
   if(p.badge) drawBadge(g,dir);
   if(dir==='down') drawCarry(g,p,'down',22);
-  if(dir==='up'&&(p.item==='basket'||p.item==='cup'||p.item==='shopbag')) drawCarry(g,p,'up',22);   // 뒷모습: 옆구리에 든 장바구니 · 컵
+  if(dir==='up'&&(p.item==='basket'||p.item==='cup'||p.item==='shopbag'||p.item==='luxbag')) drawCarry(g,p,'up',22);   // 뒷모습: 옆구리에 든 장바구니 · 컵
   if(p.shell && dir==='up') drawShell(g,'up');
 }
 // 사원증: 남색 목줄에 흰 카드 (앞: 가슴에 달랑 · 옆: 몸 앞쪽 · 뒤: 목덜미 줄만)
@@ -1227,6 +1235,8 @@ function drawCarry(g,p,dir,hx){
   else if(it==='ramen'){ var rx=dir==='down'?11:hx-2; R(g,rx,30,10,8,'#fbfaf6'); R(g,rx,32,10,2,'#d8402e'); R(g,rx-1,29,12,2,'#e8e4dc'); R(g,rx+7,25,1,5,'#c89a5a'); R(g,rx+9,25,1,5,'#c89a5a'); }
   else if(it==='shopbag'){ var sx=dir==='down'?hx-3:dir==='up'?19:hx-2; R(g,sx+2,29,1,4,'#8a6a48'); R(g,sx+7,29,1,4,'#8a6a48'); R(g,sx+2,29,6,1,'#8a6a48');   // 종이 쇼핑백 (끄적끄적 초록 띠)
     R(g,sx,32,10,9,'#efe4cc'); R(g,sx,32,10,1,'#faf4e6'); R(g,sx,35,10,2,'#5a8a5a'); P(g,sx+4,35,'#f6e8a8'); R(g,sx+9,33,1,8,'#d8c8a8'); }
+  else if(it==='luxbag'){ var lx=dir==='down'?hx-3:dir==='up'?19:hx-2; R(g,lx+3,31,1,2,'#e8c050'); R(g,lx+6,31,1,2,'#e8c050'); R(g,lx+3,30,4,1,'#e8c050');   // 검은 명품 쇼핑백 (금 끈)
+    R(g,lx+1,33,8,7,'#1e1c22'); R(g,lx+1,33,8,1,'#3a3844'); R(g,lx+4,35,2,2,'#e8c050'); R(g,lx+8,34,1,6,'#121016'); }
   else if(it==='cane'){ var kx=dir==='down'?hx+3:hx+1; R(g,kx,36,1,8,'#26222a'); R(g,kx-1,34,3,2,'#e8c050'); P(g,kx-1,34,'#fff2b0'); P(g,kx,44,'#e8c050'); }   // 금 손잡이 지팡이
   else if(it==='paper'){ R(g,hx-1,32,6,8,'#ffffff'); R(g,hx,34,4,1,'#b8b2a6'); R(g,hx,36,3,1,'#b8b2a6'); }
 }
