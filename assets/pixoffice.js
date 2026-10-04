@@ -2996,7 +2996,7 @@ function pWindowShow(){ return obj(192,56,function(g){ R(g,0,30,192,26,'#d9b98a'
   for(var t=0;t<3;t++){ var x=12+t*62; for(var h=0;h<5;h++) patCover(g,x+(h%2),26-h*5,26,5,t*5+h); }
   var cx=160, cy=14; disc(g,cx,cy,10,'#ffffff'); tri(g,cx-9,cy-4,cx-6,cy-14,cx-2,cy-6,'#ffffff'); tri(g,cx+2,cy-6,cx+6,cy-14,cx+9,cy-4,'#ffffff'); R(g,cx-4,cy-1,2,2,INKB); R(g,cx+3,cy-1,2,2,INKB); P(g,cx,cy+2,'#e87090'); R(g,cx-10,cy+8,20,12,'#f2d098'); }); }
 onTile(pWindowShow(),2,27,7,27);
-onTile(pPlant('tall','#ffffff'),5,8,5,8); onTile(pTrash(),13,26,13,26);
+onTile(pPlant('tall','#ffffff'),5,8,5,8); onTile(pTrash(),12,26,12,26);
 // 천창: 유리 블록으로 들어오는 자연광 (가운데 통로)
 (function(){ for(var r=0;r<3;r++) for(var c=0;c<11;c++){ var x=3*T+8+c*T, y=12*T+4+r*20; R(bgc,x,y,T-8,16,'rgba(255,255,255,0.35)'); R(bgc,x,y,T-8,1,'rgba(255,255,255,0.6)'); } })();
 
@@ -3220,7 +3220,30 @@ things.push({sy:30*T, draw:function(g){ var y=29*T-4;
   tx(g,'ENTRANCE',17*T+8,y+18,8,'#8a8278','center'); }});
 function pAFrame(title,l1,l2,col){ return obj(40,56,function(g){ tri(g,2,56,20,0,38,56,'#ffffff'); R(g,6,10,28,36,col); R(g,6,10,28,2,'#ffffff'); tx(g,title,20,18,6,'#ffffff','center'); tx(g,l1,20,30,6,'#ffffff','center'); tx(g,l2,20,40,6,'#ffffff','center'); }); }
 lazyItem(function(){ return pAFrame('TODAY','나인','콜드브루',MOON_NAVY); },20*T+2,28*T-56,28*T);
-lazyItem(function(){ return pAFrame('NEW','무늬','노트',ORG); },13*T+6,28*T-56,28*T);
+lazyItem(function(){ return pAFrame('NEW','무늬','노트',ORG); },11*T+22,29*T-58,29*T-2);
+// 정문 왼쪽 경비실 (13~14열, 27~28행): 유리창 부스. 경비가 안에 있으면(STATE.guardBooth) 얼굴이 보이고, 순찰 나가면 빈 의자
+var GUARD_BOOTH={ x:13*T, y:29*T-86, w:64, h:86, exit:{ c:15, r:27, face:'left' } };
+(function(){ var bx=GUARD_BOOTH.x, by=GUARD_BOOTH.y, GS=null;
+  things.push({ sy:29*T-6, draw:function(g){
+    R(g,bx+2,by+82,62,4,'rgba(60,50,40,0.18)');                                                         // 그림자
+    R(g,bx,by+6,64,76,'#d9d4c8'); R(g,bx,by+6,64,2,'#ece8de'); R(g,bx+62,by+6,2,76,'#b8b2a4');          // 몸체
+    R(g,bx-2,by,68,8,'#5a6470'); R(g,bx-2,by,68,2,'#7a8490'); R(g,bx-2,by+7,68,1,'#3a424c');             // 지붕
+    R(g,bx+16,by+9,32,10,'#2f4157'); R(g,bx+17,by+10,30,8,'#3c5070'); tx(g,'경비실',bx+32,by+14,8,'#f4efe2','center');   // 명판
+    R(g,bx+3,by+21,58,34,'#2a3440'); R(g,bx+4,by+22,56,32,'#a8c8da');                                    // 유리창 (안이 비친다)
+    R(g,bx+6,by+30,10,8,'#1e2630'); R(g,bx+7,by+31,8,6,'#5aa0c8'); R(g,bx+7,by+34,8,1,'#8ac8e8');         // CCTV 모니터 넷 (왼쪽)
+    R(g,bx+17,by+30,10,8,'#1e2630'); R(g,bx+18,by+31,8,6,'#6ab0a0'); R(g,bx+18,by+33,4,1,'#a8e0c8');
+    R(g,bx+6,by+39,10,8,'#1e2630'); R(g,bx+7,by+40,8,6,'#7a98c8'); R(g,bx+17,by+39,10,8,'#1e2630'); R(g,bx+18,by+40,8,6,'#5aa0c8'); R(g,bx+19,by+42,5,1,'#c8e8f8');
+    g.save(); g.beginPath(); g.rect(bx+4,by+22,56,32); g.clip();
+    if(STATE.guardBooth){ if(!GS){ var lk={}; for(var k in VISITORS.visitorGuard) lk[k]=VISITORS.visitorGuard[k]; GS=buildSprites(lk).down[0]; } g.drawImage(GS,bx+27,by+20); }   // 경비 (얼굴이 창 한가운데)
+    else { R(g,bx+36,by+40,20,14,'#3a424c'); R(g,bx+36,by+40,20,2,'#5a6470'); }                         // 빈 의자 등받이
+    g.restore();
+    R(g,bx+4,by+22,56,1,'rgba(255,255,255,0.6)'); R(g,bx+5,by+23,2,30,'rgba(255,255,255,0.3)');           // 유리 반사
+    R(g,bx+2,by+54,60,5,'#b8a888'); R(g,bx+2,by+54,60,1,'#d8c8a8');                                       // 창턱
+    R(g,bx+5,by+51,10,4,'#fbfaf6'); R(g,bx+6,by+52,8,1,'#b8b2a6');                                        // 방문록
+    R(g,bx+17,by+49,3,6,'#c8a04a'); R(g,bx+17,by+49,3,1,'#e8c870');                                       // 보온병
+    R(g,bx+22,by+52,6,3,'#2f4157'); R(g,bx+24,by+51,2,1,'#f2c24a');                                       // 호출 벨 (얼굴과 떨어진 왼쪽)
+    R(g,bx+4,by+60,56,20,'#cfc9bb'); for(var i=0;i<3;i++) R(g,bx+6+i*19,by+62,16,16,'#d9d4c8');           // 아래 판넬
+  } }); block(13,27,14,28); })();
 
 // 조명: 카페는 따뜻한 햇살 느낌, 가게는 밝은 흰 트랙 조명
 things.push({sy:9999, draw:function(g){
@@ -3235,7 +3258,7 @@ things.push({sy:9999, draw:function(g){
 }});
 
 softBlit(SHC,6,0.26); softBlit(SHC2,2,0.30);   // 물건 그림자
-MAP1.fontOK=fontReady(); MAP1.LOBBY={ c:2, r:3 }; MAP1.ELEV={ x:32, y:0, w:128, h:96 }; MAP1.DOOR={ c:17, r:28 };
+MAP1.fontOK=fontReady(); MAP1.BOOTH=GUARD_BOOTH; MAP1.LOBBY={ c:2, r:3 }; MAP1.ELEV={ x:32, y:0, w:128, h:96 }; MAP1.DOOR={ c:17, r:28 };
 useMap(MAP3);
 return MAP1;
 }

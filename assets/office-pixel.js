@@ -664,7 +664,7 @@ function f1Visitors(F,now,off,O,t){
       a=npcActor(F,id,cp,''); a.qkey=key; a.q=q; a.visible=true; a.stepMs=q.kind==='boss'?340:q.kind==='staff'?300:260; a.plan=f1Plan(q); a.pi=-1; a.stayUntil=0; a.out=false; a.look0=cp;
       a.lines = q.kind==='staff' ? F1_WHY_LINES[q.why]||F1_WHY_LINES.trend : q.kind==='sec' ? F1_SEC_LINES : q.kind==='boss' ? F1_BOSS_LINES : F1_VG_LINES;
       a.npcKey = q.kind==='sec' ? (q.look==='guardLeo'?'guardLeo':'guard') : q.kind==='boss' ? 'boss' : q.kind==='vguard' ? 'visitorGuard' : null; a.sid=q.kind==='staff'?q.id:null;
-      placeAt(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'down' });
+      var st0 = q.kind==='vguard' && M.BOOTH ? M.BOOTH.exit : { c:M.LOBBY.c, r:M.LOBBY.r, face:'down' }; placeAt(F,a,{ c:st0.c, r:st0.r, face:st0.face||'down' });   // 경비는 정문 옆 경비실에서 나온다
       if(q.kind==='boss'){ var hm=A.f1ham; if(hm && hm.visible){ hm.bubble=['사장님 오셨어요!']; hm.talkUntil=now+2600; } }
     }
     a.name = q.kind==='staff' ? staffName(q.id) : q.kind==='sec' ? q.name : q.kind==='boss' ? '사장님' : '경비';
@@ -686,7 +686,7 @@ function f1Visitors(F,now,off,O,t){
       var cur=a.pi>=0?a.plan[a.pi]:null; if(cur && cur.cup){ var cc={}; for(var k2 in a.look0) cc[k2]=a.look0[k2]; cc.item='cup'; a.spr=PO.buildSprites(cc); }
       a.stayUntil=0; a.pi++;
       if(a.pi<a.plan.length){ var nx=a.plan[a.pi]; setGoal(F,a,{ c:nx.c, r:nx.r, face:nx.face },now); if(!a.path){ a.stayUntil=0; } }
-      else { a.out=true; a.bubble=null; a.talkUntil=0; setGoal(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); }
+      else { a.out=true; a.bubble=null; a.talkUntil=0; var en = q.kind==='vguard' && M.BOOTH ? M.BOOTH.exit : { c:M.LOBBY.c, r:M.LOBBY.r, face:'up' }; setGoal(F,a,{ c:en.c, r:en.r, face:en.face||'up' },now); }
     }
   }
   var ba=A.v_boss; window.__bossAtF1 = !!(ba && ba.visible);
@@ -706,6 +706,38 @@ function f1LunchGo(id,S,d,boot){
   if(Q[key] && Q[key].day===dk) return;
   if(boot && t>=end-4) return;                                                     // 접속했을 때 거의 끝났으면 내려가 있는 것으로만
   Q[key]={ kind:'dinner', id:id, name:S.name, group:'f1'+S.shop, day:dk, leaveAt:(end-3)*60+(['f1ham','f1jin'].indexOf(id)>=0?0:25), crew:S.shop==='store'?'f1store':'f1cafe', meal:'lunch' };
+}
+// ---- 1층 정문 경비실: 경비는 평소 부스 안에 앉아 있다가, 옥상 순찰 · 3층 점검 · 식사 땐 엘리베이터로 오가고 1층 한 바퀴는 부스에서 바로 나간다 ----
+var BOOTH_LINES=[['어서 오세요~'],['좋은 하루 되세요'],['택배는 경비실에','맡겨 주세요'],['엘리베이터는','안쪽에 있어요'],['천천히 둘러보세요'],['오늘도 이상 무!'],['CCTV 이상 없고…'],['보온병 커피가','최고지'],['방문록에','성함 적어 주세요'],['정문 유리','반짝반짝하네']];
+var BOOTH_RAIN=[['우산은 입구에서','털어 주세요'],['바닥 미끄러워요,','조심하세요']], BOOTH_NIGHT=[['곧 정문','닫을 시간입니다'],['늦게까지','고생 많으세요']];
+function guardAway(){                                              // 1층 밖(옥상 · 3층 · 지하 식당)에 가 있나
+  var QR=window.__roofGuests||{}, QB=window.__b1Guests||{};
+  if(QR.guard && !QR.guard.done) return true;
+  if(B.visitorPresent && B.visitorPresent('visitorGuard')) return true;
+  for(var k in QB){ var q=QB[k]; if(q && !q.done && q.id==='visitorGuard') return true; }
+  return false;
+}
+function f1GuardBooth(F,now,off,O){
+  var M=F.map, BT=M.BOOTH; if(!BT) return;
+  var away=guardAway(), round=!!(F.actors.v_vguard && F.actors.v_vguard.visible), w=F.actors.g1_walk;
+  if(F.guardAway==null) F.guardAway=away;                                                   // 접속했을 때는 걷지 않고 그 자리에
+  if(away!==F.guardAway){ F.guardAway=away;
+    if(w){ delete F.actors.g1_walk; w=null; }
+    var lk={}; for(var k in PO.VISITORS.visitorGuard) lk[k]=PO.VISITORS.visitorGuard[k];
+    w=npcActor(F,'g1_walk',lk,'경비'); w.visible=true; w.stepMs=280; w.npcKey='visitorGuard';
+    if(away){ placeAt(F,w,{ c:BT.exit.c, r:BT.exit.r, face:'left' }); setGoal(F,w,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); w.goIn=false; w.bubble=lab5Pick([['순찰 다녀오겠습니다'],['옥상 한 바퀴!'],['잠깐 자리 비웁니다']]); w.talkUntil=now+2600; }
+    else { placeAt(F,w,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'down' }); setGoal(F,w,{ c:BT.exit.c, r:BT.exit.r, face:'left' },now); w.goIn=true; }
+  }
+  if(w){ if(off) step(w,now); if(w.talkUntil && now>w.talkUntil){ w.bubble=null; w.talkUntil=0; }
+    if(!w.path){ delete F.actors.g1_walk; w=null; } }
+  PO.STATE.guardBooth = !away && !round && !w;
+  // 부스 안에서 가끔 한마디 (손님이 있을 때 더 자주)
+  var BB=F.boothTalk=F.boothTalk||{ until:0, next:now+8000 };
+  if(BB.until && now>BB.until){ BB.lines=null; BB.until=0; }
+  if(PO.STATE.guardBooth && !BB.until && now>BB.next){
+    var guests=0; for(var gk in F.actors){ var ga=F.actors[gk]; if(ga.guest && ga.visible) guests++; }
+    var h=new Date().getHours(), wx=B.weather(), pool = (wx==='rain'||wx==='snow') && Math.random()<0.4 ? BOOTH_RAIN : (h>=21||h<7) && Math.random()<0.5 ? BOOTH_NIGHT : BOOTH_LINES;
+    BB.lines=lab5Pick(pool); BB.until=now+3000; BB.next=now+(guests?20000:40000)+Math.random()*30000; }
 }
 function f1Tick(F,now,off){
   var d=new Date(), t=d.getHours()*60+d.getMinutes(), M=F.map, O=f1Open(t), A=F.actors;
@@ -753,7 +785,7 @@ function f1Tick(F,now,off){
     var wantS=O.store && nS<Math.round(6*busy), wantC=O.cafe && (peak ? nC<Math.round(6*busy) : (nC<3 && Math.random()<0.6));
     if(wantS && (!wantC || Math.random()<0.5)) f1Guest(F,now,'store'); else if(wantC) f1Guest(F,now,'cafe'); }
   if(!F.f1Warm && (O.store||O.cafe)){ F.f1Warm=true; for(var w=0;w<5;w++){ var wg=f1Guest(F,now,O.store&&(w<3||!O.cafe)?'store':'cafe'); if(wg.todo.length){ var wt=wg.todo.shift(); wg.cur=wt; placeAt(F,wg,wt.seat?{c:wt.seat[0],r:wt.seat[1],face:wt.seat[2],sit:true}:{c:wt.g.c,r:wt.g.r,face:wt.g.face}); wg.ph='stay'; wg.until=now+3000+Math.random()*6000; } } }   // 이미 영업 중이면 손님 몇 명은 벌써 구경 중
-  f1Visitors(F,now,off,O,t); f1Robot(F,now,off);
+  f1Visitors(F,now,off,O,t); f1Robot(F,now,off); f1GuardBooth(F,now,off,O);
   var taken={}; for(var id2 in A){ var s=A[id2]; if(s.guest && s.seatK) taken[s.seatK]=1; }
   for(var gid in A){ var a=A[gid]; if(!a.guest || !a.visible) continue;
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
@@ -1818,6 +1850,7 @@ function frame(now){
     if(a.bubble) drawBubble(g,cx,top+4,a.bubble,'#6f5a4a');
     else { var b=PO.BALLOONS[EMO_BAL[a.emo]||'dots']; if(b) g.drawImage(b,Math.round(a.x)+2,top-22+Math.round(Math.sin(now*0.012)*1.5)); } });
   if(F.robot.bubble) drawBubble(g,Math.round(F.robot.x)+16,Math.round(F.robot.feet)-(F.robot.tall||36),F.robot.bubble,'#6f9aa6');
+  if(F.key==='1' && M.BOOTH && F.boothTalk && F.boothTalk.lines && PO.STATE.guardBooth) drawBubble(g,M.BOOTH.x+44,M.BOOTH.y+4,F.boothTalk.lines,'#6f5a4a');   // 경비실 창 너머 한마디
   if(F.key==='5' && F.vac && F.vac.bubble) drawBubble(g,Math.round(F.vac.x)+15,Math.round(F.vac.feet)-16,F.vac.bubble,'#6f9aa6');
   // 시간대 색 · 조명
   var tint=PO.TINT[ph];
@@ -1849,7 +1882,7 @@ var NPC_INFO={
   guard:    { name:'오보안', role:'2층 보안요원', bio:'회색곰. 표보안과 하루씩 교대해요. 20분마다 옥상 순찰, 씩씩한 군인 말투.', hours:'매일 08:00~21:00' },
   guardLeo: { name:'표보안', role:'2층 보안요원', bio:'사자. 오보안과 하루씩 교대해요. 20분마다 옥상 순찰, 저녁엔 가끔 바에서 몰래 한 잔.', hours:'매일 08:00~21:00' },
   visitorPlayer:{ name:'연주자 조', role:'첼리스트 · 방문 연주자', bio:'낙타. 금요일 다섯 시면 옥상 연못가에 의자를 놓고 15분 동안 첼로를 켜요. 곡 순서는 매주 바뀌고, 마지막은 늘 즉흥곡 앙코르.', hours:'금요일 17:00~17:15 옥상' },
-  visitorGuard:{ name:'경비', role:'건물 경비', bio:'원숭이. 30분마다 옥상을 돌고, 주말엔 당직 직원과 함께 사무실을 지켜요. 어항 밥은 경비 담당.', hours:'매시 15분·45분 옥상 순찰' },
+  visitorGuard:{ name:'경비', role:'건물 경비 · 1층 정문 경비실', bio:'원숭이. 평소엔 1층 정문 옆 경비실에서 CCTV를 보며 손님을 맞고, 30분마다 옥상을 돌아요. 주말엔 당직 직원과 함께 사무실을 지켜요. 어항 밥은 경비 담당.', hours:'1층 경비실 상주 · 매시 15분·45분 옥상 순찰' },
   boss:     { name:'사장님', role:'(주)끄적끄적문구 대표', bio:'호랑이. 외부 약속이 많아서 구내식당엔 일주일에 세 번쯤 오세요.', hours:'' },
   robot:    { name:'R-도우미', role:'쾌적한 환경 담당 로봇', bio:'온도·습도·미세먼지를 살피며 층을 돌아다녀요. 식당에선 식사 예절도 챙겨요.', hours:'언제나 근무 중' },
   f1ham:    { name:'함 매니저', role:'1층 끄적끄적문구 스토어 · 매니저', bio:'코알라. 계산대를 지키며 손님을 맞고, 틈틈이 진열대를 정리해요. 선물 포장 솜씨가 좋아요.', hours:'매일 08:30~08:40 사이 출근 · 21:10 퇴근 (영업 10~21시)' },
@@ -1968,7 +2001,8 @@ cvs.addEventListener('click', function(e){
   if(secretClick(F,p)){ e.stopPropagation(); return; }
   if(F.key==='3' && inRect(p,PO.BRONZE_TROPHY,2)){ e.stopPropagation(); if(window.__sfx) window.__sfx('click'); openTrophy(); return; }
   if(F.key==='3' && inRect(p,PO.CU_BOX,2)){ e.stopPropagation(); var cn=performance.now(); if(!CU.at || cn-CU.at>CU_SHOW-600){ CU.at=cn; if(window.__sfx) window.__sfx('click'); } return; }
-  if(F.key==='5' && inRect(p,PO.MAP5.BOARD_RECT)){ e.stopPropagation(); openMemoBoard(); return; }   // 한교수의 메모 보드 크게 보기
+  if(F.key==='5' && inRect(p,PO.MAP5.BOARD_RECT)){ e.stopPropagation(); openMemoBoard(); return; }
+  if(F.key==='1' && F.map.BOOTH && inRect(p,F.map.BOOTH)){ e.stopPropagation(); B.openNpcProfile(NPC_INFO.visitorGuard); return; }   // 정문 경비실   // 한교수의 메모 보드 크게 보기
   if(F.key==='5' && inRect(p,PO.MAP5.LIGHTSW,4)){ e.stopPropagation(); PO.STATE.lab5Light=(PO.STATE.lab5Light===false); if(window.__sfx) window.__sfx('click'); return; }   // 연구소 조명 스위치
   if(F.key==='5' && vacNightHit(F,p)){ e.stopPropagation(); F.vac.bubble=['저는 한교수님의','지시만 이행합니다']; F.vac.bubbleUntil=performance.now()+3200; return; }   // 충전 중인 청소기
   if(F.key==='5' && inRect(p,PO.MAP5.DOOR)){ e.stopPropagation(); F.doorClickUntil=performance.now()+8000; return; }   // 문 앞 선반만 왼쪽으로 밀린다
@@ -1981,6 +2015,7 @@ cvs.addEventListener('click', function(e){
 });
 cvs.addEventListener('mousemove', function(e){ var F=activeFloor(); if(!F) return; var p=artXY(e);
   var sw=(F.key==='3' && SECRET.openAt && !SECRET.closeAt && !SECRET.seqAt && inRect(p,PO.HIDDEN_SW,4)) || (F.key==='5' && (inRect(p,PO.MAP5.DOOR)||inRect(p,PO.MAP5.KIOSK)||inRect(p,PO.MAP5.LIGHTSW,4)||inRect(p,PO.MAP5.BOARD_RECT)||vacNightHit(F,p)));
+  if(F.key==='1' && F.map.BOOTH && inRect(p,F.map.BOOTH)) sw=true;
   cvs.style.cursor=(sw||onSwitch(F,p)||onElevator(F,p)||hitProfile(F,p))?'pointer':'default'; });
 
 requestAnimationFrame(frame);

@@ -57,6 +57,14 @@ const { open, enter, goFloor, clickArt, suite } = require('./lib');
   const am = await page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors; return ['f1ham', 'f1seo'].filter(k => A[k] && A[k].visible); });
   T.check('8:41: 함 매니저·서 스태프 출근 완료', am.length === 2, am.join(','));
   errors.push(...e2);
+  // 정문 경비실: 평소엔 경비가 부스 안, 옥상 순찰 가면 부스를 나와 엘리베이터로
+  const G = await open({ time: '2026-09-29T11:12:00' });
+  await enter(G.page); await goFloor(G.page, '1'); await G.page.waitForTimeout(2500);
+  const g1 = await G.page.evaluate(() => { const F = window.__pixOffice.floors['1'], B = F.map.BOOTH; return { booth: window.PixOffice.STATE.guardBooth, blocked: !!(B && F.map.blocked[27][13] && F.map.blocked[28][14]), exit: B && !F.map.blocked[B.exit.r][B.exit.c] }; });
+  await G.page.evaluate(() => { window.__dt += 3 * 60 * 1000; }); await G.page.waitForTimeout(2500);
+  const g2 = await G.page.evaluate(() => ({ booth: window.PixOffice.STATE.guardBooth, walk: !!window.__pixOffice.floors['1'].actors.g1_walk }));
+  T.check('1층 정문 경비실: 경비가 부스에 있다가 옥상 순찰 땐 나와서 엘리베이터로', g1.booth && g1.blocked && g1.exit && !g2.booth && g2.walk, JSON.stringify([g1, g2]));
+  errors.push(...G.errors); await G.browser.close();
   T.check('페이지 오류 없음', errors.length === 0, errors.join(' / '));
   await browser.close(); T.done();
 })();
