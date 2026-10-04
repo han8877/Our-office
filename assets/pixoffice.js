@@ -1356,7 +1356,7 @@ STAFF.forEach(function(p){ p.badge=true; });   // 우리 회사 직원만 사원
 var VISITORS={
   visitorBoss:    {id:'visitorBoss',    kind:'bosstiger', shirt:'#96897a', pants:'#4a4038', acc:'glasses', accC:'#ffd84a'},   // 사장님: 금테 안경
   visitorCourier: {id:'visitorCourier', kind:'pup',     shirt:'#3a7ac0', pants:'#2f4a6a', hat:'#3a7ac0', carry:'box'},
-  visitorVendor:  {id:'visitorVendor',  kind:'greycat', shirt:'#5c8f5c', pants:'#3e4a44'},
+  visitorVendor:  {id:'visitorVendor',  kind:'greycat', shirt:'#5c8f5c', pants:'#3e4a44', acc:'glasses', accC:'#e87aa8'},   // 업체 직원: 분홍 안경
   visitorFixer:   {id:'visitorFixer',   kind:'goat',    shirt:'#6f8196', pants:'#3e4c5c', hat:'#9aa2a8', carry:'tool'},
   visitorPlayer:  {id:'visitorPlayer',  kind:'camel',   shirt:'#2f2f36', pants:'#26262c', bow:'#8f2f3a'},
   visitorGuard:   {id:'visitorGuard',   kind:'guardmk', shirt:'#2f4157', pants:'#243449', hat:'#2f4157', hatBadge:true}
