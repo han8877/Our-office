@@ -834,7 +834,7 @@ function drawHeadNew(g,K,p,dir,blink){
     else { tri(g,cx-11,cy-4,cx-8,cy-14,cx-3,cy-8,f); tri(g,cx+11,cy-4,cx+8,cy-14,cx+3,cy-8,f); if(!back){ tri(g,cx-9,cy-6,cx-8,cy-11,cx-5,cy-8,ti); tri(g,cx+9,cy-6,cx+8,cy-11,cx+5,cy-8,ti); } } }
   if(k==='porcupine'){                                                         // 호저: 머리 뒤로 흑백 띠가 있는 긴 가시
     var qa0=side?Math.PI*1.35:Math.PI*1.08, qa1=side?Math.PI*2.15:Math.PI*1.92, qn=side?11:14;
-    for(var q=0;q<qn;q++){ var qt=qa0+(qa1-qa0)*q/(qn-1), qr=(q%2?9:11)+(back?1:0), ox=cx+(side?3:0), x0=ox+Math.round(Math.cos(qt)*6), y0=cy-1+Math.round(Math.sin(qt)*5), x1=ox+Math.round(Math.cos(qt)*(6+qr)), y1=cy-1+Math.round(Math.sin(qt)*(5+qr));
+    for(var q=0;q<qn;q++){ var qt=qa0+(qa1-qa0)*q/(qn-1), qr=(q%2?7:9)+(back?1:0), ox=cx+(side?3:0), x0=ox+Math.round(Math.cos(qt)*6), y0=cy-1+Math.round(Math.sin(qt)*5), x1=ox+Math.round(Math.cos(qt)*(6+qr)), y1=cy-1+Math.round(Math.sin(qt)*(5+qr));
       var xm=Math.round((x0+x1)/2), ym=Math.round((y0+y1)/2); line(g,x0,y0,xm,ym,q%3===1?'#efe6d6':'#2a2228'); line(g,xm,ym,x1,y1,q%3===1?'#2a2228':'#efe6d6'); P(g,x1,y1,'#fbf8f0'); } }
   if(k==='rpandaW'){ var rg=d, rw='#ffffff';                                  // 회색 둥근 귀 · 흰 테
     if(side){ disc(g,cx+5,cy-7,4,rg); disc(g,cx+5,cy-7,2,rw); }
