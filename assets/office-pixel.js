@@ -937,7 +937,7 @@ var F2M_TEAM={
   lead:[[['전체 톤은','차분하게 가죠'],['디자인실장님 감각','믿습니다']],[['브랜드 방향이','명확하네요'],['각지본색이','저희 원칙이라서요']],[['패턴은 굵게,','색은 두 가지만'],['덜어낼수록','세련되네요']]]
 };
 var F2M_BYE=[[['그럼 다음 주에','다시 뵐게요'],['좋습니다,','연락드릴게요']],[['샘플 나오면','바로 보내 드릴게요'],['기대하겠습니다!']],[['오늘 회의','정말 좋았어요'],['저도요.','잘 부탁드립니다']]];
-var F2M_CLIENTS=[['P사 문대리','mouse'],['M사 지과장','jindo',{acc:'glasses',accC:'#1e1c22'}],['디자인랩 한실장','sparrow'],['H사 이팀장','dogWB'],['브랜드 협업 차대표','penguin'],['인쇄소 곽실장','goat'],['유통사 변과장','rabbitSp'],['굿즈 스튜디오 모실장','dogBW']];
+var F2M_CLIENTS=[['P사 문대리','mouse'],['M사 지과장','jindo',{acc:'glasses',accC:'#1e1c22'}],['디자인랩 명실장','sparrow'],['H사 이팀장','dogWB'],['브랜드 협업 차대표','penguin'],['인쇄소 곽실장','goat'],['유통사 변과장','rabbitSp'],['굿즈 스튜디오 모실장','dogBW']];
 function f2mClient(i){ var cl=F2M_CLIENTS[i%F2M_CLIENTS.length], sh=['#3a4a6a','#5a5f6a','#4a3a3a','#2e3440','#6a5a4a'][i%5];
   var look={ id:'f2client'+i, kind:cl[1], shirt:sh, pants:'#2e3038', tie:['#c8403a','#e8c46a','#5a8a6a','#8aa0c0'][i%4], item:'case' }; if(cl[2]) for(var x in cl[2]) look[x]=cl[2][x];   // 뿔테 안경 같은 덧붙임
   return { name:cl[0], look:look }; }
