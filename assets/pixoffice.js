@@ -821,7 +821,7 @@ KIND.wolf     = {f:'#9a9590',F:'#f2efe8',d:'#5a5652',nk:'wolf'};        // 늑�
 KIND.shiba    = {f:'#e0904a',F:'#fbf3e8',d:'#a8622a',nk:'shiba'};       // 시바견 (일본 후보)
 KIND.deer     = {f:'#c08a58',F:'#f6ead8',d:'#7a5032',nk:'deer'};        // 나라 사슴 (일본 후보)
 KIND.maneki   = {f:'#fdfbf6',F:'#ffffff',d:'#e4ddd0',nk:'maneki'};      // 마네키네코 (일본 후보)
-KIND.pig      = {f:'#f6bcc4',F:'#fbd6dc',d:'#d88894',nk:'pig'};         // 돼지 (고영양사)
+KIND.pig      = {f:'#f6bcc4',F:'#fbd6dc',d:'#d88894',nk:'pig'};         // 돼지 (고영양)
 KIND.otter    = {f:'#8a6244',F:'#ecdcc4',d:'#5a3e2a',nk:'otter',hand:'#6a4a32'};   // 수달 (주방 직원)
 function drawHeadNew(g,K,p,dir,blink){
   var f=K.f, F=K.F, d=K.d, fD=sh(f,-0.18), fL=sh(f,0.3), eye='#2c1c20', blush='#f7a2ae', nose='#4a2c28';
@@ -2970,7 +2970,7 @@ var B1LOOK={
   cashier:{id:'b1cashier', kind:'chicken', shirt:'#f2a65a', pants:'#4a4038', apron:'#6a8a5a'},
   cook1:  {id:'b1cook1',   kind:'meerkat', shirt:'#fbfbf8', pants:'#3a3f46', chef:true, coat:true, apron:'#f4f4f0'},
   cook2:  {id:'b1cook2',   kind:'meerkat', shirt:'#fbfbf8', pants:'#3a3f46', chef:true, coat:true, apron:'#f4f4f0'},
-  diet:   {id:'b1diet',    kind:'pig',     shirt:'#fbfbf8', pants:'#4a4a56', gown:true, gownIn:'#8ab0d8', acc:'glasses', accC:'#1e1c22', shoe:'#3a3036'},   // 고영양사
+  diet:   {id:'b1diet',    kind:'pig',     shirt:'#fbfbf8', pants:'#4a4a56', gown:true, gownIn:'#8ab0d8', acc:'glasses', accC:'#1e1c22', shoe:'#3a3036'},   // 고영양
   sim:    {id:'b1sim',     kind:'otter',   shirt:'#fbfbf8', pants:'#3a3f46', bandana:'#d8343a', apron:'#f4a0bc', gloves:'#e2384a', shoe:'#2a2e34'},   // 심주방 (빨간 두건)
   seol:   {id:'b1seol',    kind:'otter',   shirt:'#fbfbf8', pants:'#3a3f46', bandana:'#2f6ad0', apron:'#f4a0bc', gloves:'#e2384a', shoe:'#2a2e34'}    // 설주방 (파란 두건)
 };

@@ -1567,7 +1567,7 @@ function ccFixedRoster(){
     { key:'b1cook2', fl:'B1', aid:'b1cook2', look:PO.B1LOOK.cook2, name:'주요리', npc:'b1cook2', at:60, grp:'b1' },
     { key:'b1sim', fl:'B1', aid:'b1sim', look:PO.B1LOOK.sim, name:'심주방', npc:'b1sim', at:64, grp:'b1k' },
     { key:'b1seol', fl:'B1', aid:'b1seol', look:PO.B1LOOK.seol, name:'설주방', npc:'b1seol', at:68, grp:'b1k' },
-    { key:'b1diet', fl:'B1', aid:'b1diet', look:PO.B1LOOK.diet, name:'고영양사', npc:'b1diet', at:72, grp:'b1d' },
+    { key:'b1diet', fl:'B1', aid:'b1diet', look:PO.B1LOOK.diet, name:'고영양', npc:'b1diet', at:72, grp:'b1d' },
     { key:'f1ham', fl:'1', aid:'f1ham', look:F1_STAFF.f1ham.look, name:'함 매니저', npc:'f1ham', at:76, grp:'f1' },
     { key:'f1seo', fl:'1', aid:'f1seo', look:F1_STAFF.f1seo.look, name:'서 스태프', npc:'f1seo', at:82, grp:'f1' },
     { key:'f1jin', fl:'1', aid:'f1jin', look:F1_STAFF.f1jin.look, name:'바리스타 진', npc:'f1jin', at:96, grp:'f1' },
@@ -1798,7 +1798,7 @@ function lunchPlan(key){
 }
 var B1_CREW_LOOK={ b1cashier:'cashier', b1cook1:'cook1', b1cook2:'cook2', b1sim:'sim', b1seol:'seol', b1diet:'diet' };
 function b1Look(id){ if(/^buyer_/.test(id)) return (BUYERS[id.slice(6)]||{}).look; if(id==='boss') return PO.VISITORS.visitorBoss; if(F1_STAFF[id]) return F1_STAFF[id].look; if(B1_CREW_LOOK[id]) return PO.B1LOOK[B1_CREW_LOOK[id]]; return STAFFLOOK[id] || PO.VISITORS[id] || PO.F2LOOK[id]; }
-function b1Name(id){ if(/^buyer_/.test(id)) return (BUYERS[id.slice(6)]||{}).name; if(id==='boss') return '사장님'; if(F1_STAFF[id]) return F1_STAFF[id].name; if(id==='b1cashier') return '현계산'; if(id==='b1cook1') return '윤요리'; if(id==='b1cook2') return '주요리'; if(id==='b1sim') return '심주방'; if(id==='b1seol') return '설주방'; if(id==='b1diet') return '고영양사'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; return staffName(id); }
+function b1Name(id){ if(/^buyer_/.test(id)) return (BUYERS[id.slice(6)]||{}).name; if(id==='boss') return '사장님'; if(F1_STAFF[id]) return F1_STAFF[id].name; if(id==='b1cashier') return '현계산'; if(id==='b1cook1') return '윤요리'; if(id==='b1cook2') return '주요리'; if(id==='b1sim') return '심주방'; if(id==='b1seol') return '설주방'; if(id==='b1diet') return '고영양'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; return staffName(id); }
 function b1MakeDiner(F,key,id,seat,now){
   var look=b1Look(id); if(!look) return null;
   var c1={}, c2={}; for(var k in look){ c1[k]=look[k]; c2[k]=look[k]; } c2.item='foodtray';
@@ -1890,7 +1890,7 @@ function b1CrewLunch(n,i,d){
   if(ns>=15*3600+16*60) return;
   Q[key]={ kind:'dinner', id:id, name:n.name, group:'kitchen', day:dk, leaveAt:15*3600+18*60+i*15, crew:'kitchen', meal:'lunch', skipPay:true };
 }
-// ---- 지하 식당 새 식구: 심주방 · 설주방 (수달, 주방 안 자리를 옮겨 다니며 일한다) · 고영양사 (돼지, 쉼터 책상 → 가끔 식당을 돌며 직원들과 이야기) ----
+// ---- 지하 식당 새 식구: 심주방 · 설주방 (수달, 주방 안 자리를 옮겨 다니며 일한다) · 고영양 (돼지, 쉼터 책상 → 가끔 식당을 돌며 직원들과 이야기) ----
 var B1K_ST={ rice:{c:11,r:4,face:'up'}, pot1:{c:13,r:4,face:'up'}, pot2:{c:15,r:4,face:'up'}, range1:{c:17,r:4,face:'up'}, range2:{c:19,r:4,face:'up'}, fryer:{c:21,r:4,face:'up'},
   prep:{c:25,r:4,face:'up'}, prep2:{c:28,r:4,face:'up'}, trim:{c:30,r:8,face:'left'}, sink:{c:32,r:10,face:'right',dx:9}, dish:{c:30,r:11,face:'left'} };
 var B1K_PLAN=[ { until:11*60, st:['prep','prep2','trim','rice','pot1','pot2','sink'] }, { until:13*60+10, st:['rice','pot1','pot2','range1','range2','fryer','dish','sink'] },
@@ -1926,7 +1926,7 @@ var B1D_SEAT={ x:28*T+14, feet:28*T+6 };
 function b1dRestPath(){ var R=PO.MAPB.REST; return R.route.concat([{x:R.sofaIn, feet:R.lane},{x:R.sofaIn, feet:R.sofaRow},{x:B1D_SEAT.x, feet:R.sofaRow},{x:B1D_SEAT.x, feet:B1D_SEAT.feet}]); }
 function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
   var M=PO.MAPB, C=M.CREW, CY=C.feet, DOOR_X=2*T-1, min=Math.floor(nowSec/60);
-  var ot=[npcActor(F,'b1sim',PO.B1LOOK.sim,'심주방'), npcActor(F,'b1seol',PO.B1LOOK.seol,'설주방')], di=npcActor(F,'b1diet',PO.B1LOOK.diet,'고영양사');
+  var ot=[npcActor(F,'b1sim',PO.B1LOOK.sim,'심주방'), npcActor(F,'b1seol',PO.B1LOOK.seol,'설주방')], di=npcActor(F,'b1diet',PO.B1LOOK.diet,'고영양');
   // 미뤄 둔 대답
   if(F.b1Rep && F.b1Rep.length){ F.b1Rep=F.b1Rep.filter(function(q){ if(now<q.at) return true; if(q.who.visible) b1kSay(q.who,q.line,now,3000); return false; }); }
   var plan=B1K_PLAN.filter(function(p){ return min<p.until; })[0]||B1K_PLAN[3];
@@ -1965,9 +1965,9 @@ function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
         if(ck.name!=='윤요리') l0=[l0[0].replace('윤요리님','주요리님')]; b1kSay(a,l0,now,2800); b1kReply(F,ck,pr[1],now+2900); }
       else if(b.b1ph==='work' && !b.talkUntil){ var pp=B1K_PAIR[Math.floor(Math.random()*B1K_PAIR.length)]; b1kSay(a,pp[0],now,2800); b1kReply(F,b,pp[1],now+2900);
         if(B1K_ST[a.st].r===B1K_A && B1K_ST[b.st].r===B1K_A){ a.dir=a.x<b.x?'right':'left'; b.dir=a.x<b.x?'left':'right'; setTimeout(function(){ [a,b].forEach(function(n){ if(n.b1ph==='work') n.dir=B1K_ST[n.st].face; }); },6500); } } } }
-  // 고영양사: 08:30~17:30 · 쉼터 영양사 책상 · 가끔 식당을 돌며 이야기
+  // 고영양: 08:30~17:30 · 쉼터 영양사 책상 · 가끔 식당을 돌며 이야기
   var dIn=8*3600+30*60, dOut=17*3600+30*60, dHere=nowSec>=dIn && nowSec<dOut;
-  if(dHere && kLunch){ dHere=false; b1NewLunch('b1diet','고영양사',5,d); di.atLunch=true; }
+  if(dHere && kLunch){ dHere=false; b1NewLunch('b1diet','고영양',5,d); di.atLunch=true; }
   if(di.talkUntil && now>di.talkUntil){ di.bubble=null; di.talkUntil=0; }
   if(!di.b1ph){ if(dHere){ di.visible=true; di.x=B1D_SEAT.x; di.feet=B1D_SEAT.feet; di.dir='down'; di.onFurn=true; di.b1ph='desk'; di.until=now+40000+Math.random()*50000; di.nextTalk=now+6000+Math.random()*10000; } else { di.b1ph='off'; di.visible=false; } }
   if(di.b1ph==='off'){ if(dHere){ di.b1ph='in'; di.visible=true; di.onFurn=false; di.x=DOOR_X; di.feet=C.lobbyFeet; di.spd=0;
@@ -2046,7 +2046,7 @@ function b1Tick(F,now,off){
     }
     if(n.b1ph==='out'){ if(!n.wp) b1CrewOut(n,DOOR_X); var outDone=wpStep(n,now); if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; } if(outDone){ n.wp=null; n.b1ph='off'; n.visible=false; n.bubble=null; } }
   });
-  b1NewCrew(F,now,nowSec,d,[cs,k1,k2],busy,kLunch);                                                     // 심주방 · 설주방 · 고영양사
+  b1NewCrew(F,now,nowSec,d,[cs,k1,k2],busy,kLunch);                                                     // 심주방 · 설주방 · 고영양
   var restOn=[cs,k1,k2,F.actors.b1sim,F.actors.b1seol].filter(function(n){ return n && (n.b1ph==='rest'||n.b1ph==='toRest'); });   // 누가 쉬면 선풍기, 소파에 앉으면 TV
   PO.STATE.b1RestOn=restOn.length>0; PO.STATE.b1TvOn=restOn.some(function(n){ return n.rest && n.rest.spot.indexOf('sofa')===0; });
   if(open && F.payNow && now-F.payNow<300 && !cs.talkUntil){ cs.bubble=['맛있게 드세요']; cs.talkUntil=now+1800; }
@@ -2311,7 +2311,7 @@ var NPC_INFO={
   b1cook2:  { name:'주요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 신메뉴 연구가 취미라 가끔 오늘의 반찬이 깜짝 바뀌어요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
   b1sim:    { name:'심주방', role:'지하 1층 구내식당 · 주방', bio:'빨간 두건에 분홍 앞치마, 빨간 고무장갑을 낀 수달. 국솥과 화구 사이를 바쁘게 오가고, 마늘 까기는 누구보다 빨라요.', hours:'매일 07:55 출근 · 21:05 퇴근' },
   b1seol:   { name:'설주방', role:'지하 1층 구내식당 · 주방', bio:'파란 두건에 분홍 앞치마를 두른 수달. 튀김과 설거지 담당. 퇴식구로 들어온 식판을 받아 바로 싱크대로 옮겨요.', hours:'매일 08:05 출근 · 21:10 퇴근' },
-  b1diet:   { name:'고영양사', role:'지하 1층 구내식당 · 영양사', bio:'영양사 가운에 검은 안경을 쓴 돼지. 쉼터 책상에서 식단과 영양 성분을 짜고, 가끔 주방과 배식대를 돌며 간과 온도를 챙겨요.', hours:'매일 08:30 출근 · 17:30 퇴근' },
+  b1diet:   { name:'고영양', role:'지하 1층 구내식당 · 영양사', bio:'영양사 가운에 검은 안경을 쓴 돼지. 쉼터 책상에서 식단과 영양 성분을 짜고, 가끔 주방과 배식대를 돌며 간과 온도를 챙겨요.', hours:'매일 08:30 출근 · 17:30 퇴근' },
   bartender:{ name:'바텐더 박', role:'2층 라운지 바 · 바텐더', bio:'레서판다. 오늘의 추천은 늘 자몽 에이드. 잔 닦는 시간이 제일 좋대요.', hours:'안내 직원 근무 시간 · 점심 13~14시' },
   server:   { name:'강서빙', role:'2층 라운지 바 · 홀서빙', bio:'오소리. 바 안에서만 쟁반을 나르고, 손님 이야기를 잘 들어줘요.', hours:'안내 직원 근무 시간 · 점심 13~14시' },
   yun:      { name:'윤안내', role:'2층 안내데스크', bio:'토끼. 방문객을 친절하고 다정하게 맞아요. 점심은 강안내와 함께 구내식당에서.', hours:'평일 08:30~18:00' },
