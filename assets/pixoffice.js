@@ -1810,6 +1810,33 @@ function pStaffDoor(w,h){ return obj(w,h,function(g){          // 관계자 전�
   R(g,w-7,26,5,9,'#2a2e34'); R(g,w-6,27,3,2,'#6fd0c0'); R(g,w-6,31,3,1,'#c8323a'); }); }
 function pSconce(){ return obj(14,24,function(g){               // 황동 벽등
   R(g,5,6,4,14,'#c9a25c'); R(g,5,6,1,14,'#e2c27e'); R(g,2,0,10,9,'#fbeec8'); R(g,2,0,10,1,'#fffbe8'); R(g,3,8,8,1,'#e8d2a0'); R(g,4,19,6,3,'#b08a4a'); }); }
+function pHistoryWall(w,h){ return obj(w,h,function(g){          // 회사 역사 전시 벽: 짙은 남색 벽 · 조명 든 원목 선반 셋 · 상패 · 상장 · 트로피
+  vgrad(g,0,0,w,h,'#22304e','#18223a',6); for(var sx=58;sx<w;sx+=50) R(g,sx,0,1,h,'#1a2540');
+  R(g,0,0,w,1,'#34446a'); R(g,0,h-2,w,2,'#121a2e');
+  tx(g,'HISTORY',28,8,10,'#e2c27e','center'); R(g,8,14,40,1,'#c9a25c');
+  var SH=[26,48,70], YR=['2019','2022','2025'];
+  R(g,51,22,1,46,'#8a7448');                                          // 왼쪽 연표: 금빛 세로줄과 해마다 점
+  SH.forEach(function(sy,i){ txt3(g,30,sy-6,YR[i],'#e2c27e'); R(g,49,sy-6,5,5,'#c9a25c'); P(g,51,sy-4,'#fff4d0'); });
+  SH.forEach(function(sy){                                            // 선반 위 벽에 번지는 따뜻한 빛
+    for(var k=0;k<14;k++) R(g,58,sy-1-k,w-62,1,mix('#7a6a4c','#1e2a46',Math.sqrt(k/14)));
+    R(g,58,sy-21,w-62,1,'#fff1c8'); for(var k2=1;k2<4;k2++) R(g,58,sy-21+k2,w-62,1,mix('#e8d29a','#1e2a46',k2/4));   // 위 선반 밑 LED
+  });
+  function plaque(x,b){ R(g,x,b-14,11,14,'#6a3e22'); R(g,x,b-14,11,1,'#8a5a36'); R(g,x+2,b-11,7,6,'#d8b46a'); R(g,x+3,b-10,5,1,'#8a6a2a'); R(g,x+3,b-8,4,1,'#8a6a2a'); R(g,x+3,b-4,5,1,'#c9a25c'); }
+  function cert(x,b){ R(g,x,b-13,16,13,'#c9a25c'); R(g,x,b-13,16,1,'#e8cc8a'); R(g,x+2,b-11,12,9,'#f6f1e4'); R(g,x+4,b-9,8,1,'#7a6a58'); R(g,x+4,b-7,6,1,'#b0a490'); R(g,x+4,b-5,7,1,'#b0a490'); P(g,x+11,b-4,'#c8323a'); }
+  function crystal(x,b){ R(g,x,b-3,9,3,'#2a2e34'); R(g,x,b-3,9,1,'#4a5058'); R(g,x+2,b-17,5,14,'#bfe0ee'); R(g,x+3,b-18,3,1,'#bfe0ee'); R(g,x+2,b-17,1,14,'#ffffff'); R(g,x+6,b-16,1,13,'#8ab8d0'); R(g,x+3,b-10,3,2,'#e2c27e'); }
+  function blue(x,b){ R(g,x,b-3,9,3,'#2a2e34'); R(g,x,b-3,9,1,'#4a5058'); ell(g,x+4.5,b-10,3.5,7,'#3a78c8'); R(g,x+3,b-15,1,8,'#9ac8f2'); R(g,x+5,b-8,2,3,'#2a5aa0'); }
+  function cup(x,b){ R(g,x+1,b-4,9,4,'#5a3a22'); R(g,x+1,b-4,9,1,'#7a5236'); R(g,x+4,b-7,3,3,'#c9a25c'); R(g,x+1,b-14,9,7,'#d8b46a'); R(g,x+2,b-8,7,1,'#b08a4a'); R(g,x+2,b-14,1,6,'#fff0b8'); R(g,x,b-13,1,3,'#c9a25c'); R(g,x+10,b-13,1,3,'#c9a25c'); }
+  function photo(x,b){ R(g,x,b-12,15,12,'#1c1c20'); R(g,x+1,b-11,13,10,'#8ab0c8'); R(g,x+1,b-5,13,4,'#6a8a5a'); [3,7,11].forEach(function(px,i){ R(g,x+px,b-8,2,3,['#c8323a','#f4f1ea','#3a78c8'][i]); P(g,x+px,b-9,'#f2d0b0'); }); }
+  function medal(x,b){ R(g,x,b-3,8,3,'#2a2e34'); R(g,x+3,b-12,2,9,'#2a2e34'); R(g,x+1,b-15,2,5,'#c8323a'); R(g,x+5,b-15,2,5,'#3a78c8'); disc(g,x+4,b-8,3,'#e2c27e'); P(g,x+3,b-9,'#fff4d0'); }
+  var ROWS=[                                                          // 해마다 놓인 것들 (x는 선반 시작에서부터)
+    [['plaque',4],['cert',20],['crystal',42],['photo',58],['cup',82],['plaque',100],['cert',118],['blue',142],['plaque',160],['crystal',180]],
+    [['cert',4],['blue',26],['plaque',40],['plaque',54],['medal',74],['cert',90],['crystal',112],['photo',128],['cup',152],['cert',170],['blue',190]],
+    [['crystal',4],['plaque',18],['cup',36],['cert',54],['blue',76],['photo',92],['plaque',114],['crystal',132],['cert',148],['medal',170],['plaque',184]]
+  ], F={plaque:plaque,cert:cert,crystal:crystal,blue:blue,cup:cup,photo:photo,medal:medal};
+  SH.forEach(function(sy,i){ ROWS[i].forEach(function(it){ F[it[0]](60+it[1],sy); }); });
+  SH.forEach(function(sy){                                            // 원목 선반 (윗면은 빛을 받아 밝다)
+    R(g,58,sy,w-62,1,'#f0c890'); R(g,58,sy+1,w-62,2,'#b07a48'); R(g,58,sy+3,w-62,1,'#6a4428'); R(g,58,sy+4,w-62,1,'#141c30'); });
+}); }
 var MEDIA_PAL=[
   ['#2b3a5c','#3f6e8e','#6fb3b8','#a8dcc8','#f2e6c8','#f6c7b0'],   // 새벽 바다
   ['#3a2f5c','#6a5a9e','#a88ad0','#e6b8d8','#f8dccc','#fff4de'],   // 라일락 노을
@@ -2068,7 +2095,9 @@ var SIGN2={ x:9*T, y:30, w:288 }; wallItem(pSignBoard(SIGN2.w),SIGN2.x,SIGN2.y);
 var CLOCK2={ cx:19*T+16, cy:52 };
 // 벽: 층 안내 화면 · 황동 벽등 · 미디어아트 월 (그림 액자 셋 대신)
 var DIR2={ x:202, y:26, w:76, h:54 }, MEDIA2={ x:776, y:22, w:256, h:62 };   // 미디어아트 월: 갤러리 벤치 위 가운데쯤, 오른쪽엔 관계자 문 자리를 남긴다
-wallItem(pBezel(DIR2.w,DIR2.h),DIR2.x,DIR2.y); wallItem(pBezel(MEDIA2.w,MEDIA2.h),MEDIA2.x,MEDIA2.y);
+wallItem(pBezel(DIR2.w,DIR2.h),DIR2.x,DIR2.y);
+var HISTORY2={ x:768, y:20, w:270, h:76 };                           // 미디어아트 월 자리: 회사 역사 전시 벽
+lazyItem(function(){ return pHistoryWall(HISTORY2.w,HISTORY2.h); },HISTORY2.x,HISTORY2.y,1);
 // 미디어아트 월 오른쪽: 관계자외 출입금지 문 (짙은 월넛 문 · 황동 손잡이 · 카드 리더 · 위에 안내판)
 var STAFFDOOR2={ x:1058, y:28, w:42, h:68 };
 wallItem(pStaffDoor(STAFFDOOR2.w,STAFFDOOR2.h),STAFFDOOR2.x,STAFFDOOR2.y);
@@ -2080,7 +2109,7 @@ lazyItem(function(){ return obj(48,25,function(g){ R(g,0,0,48,25,'#fbf8f2'); R(g
   STAFFDOOR2.x-3, 2, 2);
 wallItem(pSconce(),20*T+18,34); wallItem(pSconce(),22*T+12,34);
 things.push({sy:1, draw:function(g){ var t=performance.now();
-  drawMedia(g,MEDIA2.x+4,MEDIA2.y+4,MEDIA2.w-8,MEDIA2.h-10,t); drawDirectory(g,DIR2.x+3,DIR2.y+3,DIR2.w-6,DIR2.h-9,t); }});
+  drawDirectory(g,DIR2.x+3,DIR2.y+3,DIR2.w-6,DIR2.h-9,t); }});
 // 보안 데스크
 onTileFx(pGuardDesk2(),1,24,3,24,drawCCTV); onTile(pTrash(),4,23,4,23); onTile(pStool2(),4,26,4,26); onTile(pPlant('tall','#f4f1ea'),1,27,1,27); onTile(pAirPurifier(),3,27,3,27);
 // 안내데스크: 카운터 뒤에 안내 직원 둘이 선다
