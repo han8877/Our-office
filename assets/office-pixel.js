@@ -1732,7 +1732,7 @@ function b1Chat(F,a,now){
 }
 var B1_CASHIER_LINES=[['맛있게 드세요'],['카드 찍어 주세요'],['오늘 반찬 맛있어요'],['식판은 반납대에','부탁해요']];
 var B1_COOK_LINES=[['오늘은 제육볶음이에요'],['국 뜨끈해요'],['밥 더 드릴까요?'],['반찬 새로 채웠어요'],['맛있게 드세요~']];
-var B1_ROBOT_SPOTS=[[4,9],[10,12],[18,12],[4,18],[12,17],[18,20],[10,22],[12,27],[22,14],[28,13],[31,17],[8,28],[16,28],[22,22],[3,21]];
+var B1_ROBOT_SPOTS=[[4,9],[10,12],[18,12],[4,18],[12,17],[19,20],[10,22],[12,27],[22,16],[28,13],[31,17],[8,28],[16,28],[22,25],[3,21],[26,22]];
 var B1_TEAM={}; PO.STAFF.forEach(function(p){ B1_TEAM[p.id]=p.team; });
 function b1Rng(seed){ var x=seed||1; return function(){ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; }
 function b1Open(d){ var h=d.getHours(); return h>=8 && h<21; }
@@ -1756,8 +1756,10 @@ function lunchPlan(key){
   if(boss && groups.length){ var bg=groups[Math.floor(rng()*groups.length)]; if(bg.length>=4) groups.push(['boss']); else bg.unshift('boss'); }
   // 자리: 테이블마다 위아래로 마주 보게 채운다 (혼자면 이끼 바)
   var used={}, seats=PO.MAPB.SEATS, order={};
-  ['A','B','C','X'].forEach(function(t){ order[t]=seats.filter(function(st){ return st.table===t; }).sort(function(a,b){ return a.col-b.col || (a.side==='top'?-1:1); }); });
-  function take(n,pref){ var tables=pref==='X'?['X','A','B','C']:['A','B','C','X'].sort(function(){ return rng()-0.5; }).filter(function(t){ return t!=='X'; }).concat(['X']);
+  var tbls=[]; seats.forEach(function(st){ if(tbls.indexOf(st.table)<0) tbls.push(st.table); }); if(tbls.indexOf('X')<0) tbls.push('X');   // 긴 테이블 A·B·C · 4인 테이블 · (이끼 바 X)
+  tbls.forEach(function(t){ order[t]=seats.filter(function(st){ return st.table===t; }).sort(function(a,b){ return a.col-b.col || (a.side==='top'?-1:1); }); });
+  function take(n,pref){ var main=tbls.filter(function(t){ return t!=='X'; }), small=main.filter(function(t){ return 'ABC'.indexOf(t)<0; });
+    var tables=pref==='X'?['X'].concat(small,['A','B','C']):main.slice().sort(function(){ return rng()-0.5; }).concat(['X']);
     for(var ti=0;ti<tables.length;ti++){ var list=order[tables[ti]];
       for(var st=0;st+n<=list.length;st++){ var ok=true; for(var q=0;q<n;q++) if(used[list[st+q].id]) ok=false; if(ok){ var out=[]; for(var q2=0;q2<n;q2++){ used[list[st+q2].id]=1; out.push(list[st+q2]); } return out; } } }
     return null; }
