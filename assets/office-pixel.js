@@ -1949,7 +1949,7 @@ function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
     if(n.b1ph==='fromRest'){ if(wpStep(n,now)){ var S6=B1K_ST[n.st]; n.dir=S6.face; n.rest=null;
         if(here){ n.b1ph='work'; n.until=now+10000+Math.random()*10000; } else { n.b1ph='out'; n.wp=b1kPath(S6.c,S6.r,27,B1K_A).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); } } return; }
     if(n.b1ph==='work'){
-      var SW=B1K_ST[n.st]; if(SW){ n.x=b1kX(SW.c)+(SW.dx||0); n.feet=b1kF(SW.r); n.walking=false; n.frame=0; }   // 일하는 동안은 제자리에 붙어 있는다
+      var SW=B1K_ST[n.st]; if(SW){ n.x=b1kX(SW.c)+(SW.dx||0); n.feet=b1kF(SW.r)+(n.st==='sink' && Math.floor(now/320)%2 ? 1 : 0); n.walking=false; n.frame=0; }   // 설거지할 땐 몸이 살짝 들썩인다   // 일하는 동안은 제자리에 붙어 있는다
       if(!here){ var S2=B1K_ST[n.st]; n.b1ph='out'; n.wp=b1kPath(S2.c,S2.r,27,B1K_A).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(n,kLunch?[['우리도 밥 먹으러!'],['배고파요~']][i]:[['수고하셨습니다~'],['내일 봬요!']][i],now,2600); return; }
       if(n.hold && now<n.hold) return;
       if(idle && !n.talkUntil){ var sp=b1TakeRest(F,n,i?['sofa0','desk1']:['desk1','sofa0']); if(sp){ n.rest={spot:sp}; n.b1ph='toRest'; n.spd=0; n.wp=b1kRestPath(n); return; } }
@@ -2116,7 +2116,7 @@ function b1Washing(F,list,now){                                                 
       var px=cx+Math.round(Math.cos(a)*3), py=cy+Math.round(Math.sin(a)*2);
       g.fillStyle='rgba(216,236,244,0.9)'; g.beginPath(); g.ellipse(X+20,cy,15,7,0,0,Math.PI*2); g.fill();                        // 물
       g.fillStyle='#fbfaf6'; g.beginPath(); g.ellipse(px,py,7,3,0,0,Math.PI*2); g.fill(); g.fillStyle='#e8e4dc'; g.fillRect(px-4,py,8,1);   // 닦는 접시
-      var ax=Math.round(n.x)+22; g.fillStyle='#fbfbf8'; g.fillRect(ax,cy-3,4,3); g.fillStyle=gc; g.fillRect(ax+4,cy-3,px-9-ax-4+1,3); g.fillRect(px-9,py-2,4,4); g.fillRect(px+5,py-1,4,4);   // 소매 → 장갑 낀 팔이 싱크대 안으로                           // 싱크대 턱에 걸친 팔 · 접시를 쥔 두 손
+      var sx=px+Math.round(Math.cos(a*2.3)*4), sy=py-1+Math.round(Math.sin(a*2.3)*1); g.fillStyle='#4a9a4a'; g.fillRect(sx-2,sy-1,5,2); g.fillStyle='#f2c230'; g.fillRect(sx-2,sy-3,5,2);   // 접시 위를 문지르는 수세미                           // 싱크대 턱에 걸친 팔 · 접시를 쥔 두 손
       for(var k=0;k<5;k++){ var u=((t/700)+k/5)%1, bx=cx-10+k*5; g.fillStyle='rgba(255,255,255,'+(0.9*(1-u)).toFixed(2)+')'; g.beginPath(); g.arc(bx,cy-4-Math.round(u*8),1+(k%2),0,Math.PI*2); g.fill(); }   // 거품
       if(Math.floor(t/240)%3===0){ g.fillStyle='#9ad8f6'; g.fillRect(px-3,py-5,1,1); g.fillRect(px+4,py-6,1,1); } } }); }); }   // 튀는 물방울
 function b1Trays(F,list,now){
