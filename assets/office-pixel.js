@@ -1761,7 +1761,8 @@ var B1_COOK_LINES=[['오늘은 제육볶음이에요'],['국 뜨끈해요'],['�
 var B1_ROBOT_SPOTS=[[5,9],[10,12],[18,12],[4,18],[12,17],[19,19],[10,23],[3,27],[23,15],[26,13],[26,18],[24,23],[4,21],[14,23],[20,23],[26,22]];
 var B1_TEAM={}; PO.STAFF.forEach(function(p){ B1_TEAM[p.id]=p.team; });
 function b1Rng(seed){ var x=seed||1; return function(){ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; }
-function b1Open(d){ var h=d.getHours(); return h>=8 && h<21; }
+function b1Open(d){ var m=d.getHours()*60+d.getMinutes(); return m>=8*60 && m<16*60+50; }   // 배식 08:00~16:50 (17:00~17:10 식당 식구 퇴근)
+var B1_CLOSE=16*3600+50*60, B1_OUT=17*3600;
 // 오늘 점심: 누가 옥상에 가고(3명), 누가 식당에서 어떤 무리로 어디 앉는지
 var LUNCH_PLAN={ key:null };
 function lunchPlan(key){
@@ -1931,7 +1932,7 @@ function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
   if(F.b1Rep && F.b1Rep.length){ F.b1Rep=F.b1Rep.filter(function(q){ if(now<q.at) return true; if(q.who.visible) b1kSay(q.who,q.line,now,3000); return false; }); }
   var plan=B1K_PLAN.filter(function(p){ return min<p.until; })[0]||B1K_PLAN[3];
   function pick(n,other){ var c=plan.st.filter(function(s){ return s!==n.st && s!==(other&&other.st) && s!==(other&&other.goSt); }); return c[Math.floor(Math.random()*c.length)]||'prep'; }
-  ot.forEach(function(n,i){ var other=ot[1-i], inAt=7*3600+55*60+i*10*60, outAt=21*3600+5*60+i*5*60, here=nowSec>=inAt && nowSec<outAt;
+  ot.forEach(function(n,i){ var other=ot[1-i], inAt=7*3600+55*60+i*10*60, outAt=B1_OUT+(5+i*2)*60, here=nowSec>=inAt && nowSec<outAt;   // 심주방 17:05 · 설주방 17:07
     if(here && kLunch){ here=false; b1NewLunch(n.id,n.name,3+i,d); n.atLunch=true; }
     var idle=here && !busy && now-(F.b1IdleSince||now)>30000+i*6000;
     if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; }
@@ -1966,7 +1967,7 @@ function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
       else if(b.b1ph==='work' && !b.talkUntil){ var pp=B1K_PAIR[Math.floor(Math.random()*B1K_PAIR.length)]; b1kSay(a,pp[0],now,2800); b1kReply(F,b,pp[1],now+2900);
         if(B1K_ST[a.st].r===B1K_A && B1K_ST[b.st].r===B1K_A){ a.dir=a.x<b.x?'right':'left'; b.dir=a.x<b.x?'left':'right'; setTimeout(function(){ [a,b].forEach(function(n){ if(n.b1ph==='work') n.dir=B1K_ST[n.st].face; }); },6500); } } } }
   // 고영양: 08:30~17:30 · 쉼터 영양사 책상 · 가끔 식당을 돌며 이야기
-  var dIn=8*3600+30*60, dOut=17*3600+30*60, dHere=nowSec>=dIn && nowSec<dOut;
+  var dIn=8*3600+30*60, dOut=B1_OUT+9*60, dHere=nowSec>=dIn && nowSec<dOut;
   if(dHere && kLunch){ dHere=false; b1NewLunch('b1diet','고영양',5,d); di.atLunch=true; }
   if(di.talkUntil && now>di.talkUntil){ di.bubble=null; di.talkUntil=0; }
   if(!di.b1ph){ if(dHere){ di.visible=true; di.x=B1D_SEAT.x; di.feet=B1D_SEAT.feet; di.dir='down'; di.onFurn=true; di.b1ph='desk'; di.until=now+40000+Math.random()*50000; di.nextTalk=now+6000+Math.random()*10000; } else { di.b1ph='off'; di.visible=false; } }
@@ -1997,21 +1998,22 @@ function b1Tick(F,now,off){
   var d=new Date(), open=b1Open(d), M=PO.MAPB, nowSec=d.getHours()*3600+d.getMinutes()*60+d.getSeconds(), key=d.toDateString();
   // 조명: 여는 시각에 켜지고 닫는 시각에 꺼진다. 그 사이엔 스위치로 마음대로
   if(!b1SwitchBound){ b1SwitchBound=true; var sw=byId('b1LightSwitch'); if(sw) sw.addEventListener('click', function(){ b1Light.on=!b1Light.on; }); }
-  PO.STATE.b1ConvOn = open;   // 퇴식구 컨베이어: 문을 닫는 21시부터 멈춘다
-  // 식당 직원이 있는 시간(07:50~21:10)엔 불이 켜진다 (문은 08~21시)
-  var tSec=nowSec, staffTime = tSec>=7*3600+50*60 && tSec<21*3600+10*60;
+  PO.STATE.b1ConvOn = open;   // 퇴식구 컨베이어: 문을 닫는 16:50부터 멈춘다
+  // 식당 직원이 있는 시간(07:50~17:15)엔 불이 켜진다 (배식은 08:00~16:50) · 그 뒤에도 자판기 손님이 있으면 켜 둔다
+  var tSec=nowSec, anyGuest=false; for(var lg in F.actors){ var la=F.actors[lg]; if(la.visible && /^b1d_/.test(lg)) anyGuest=true; }
+  var staffTime = (tSec>=7*3600+50*60 && tSec<17*3600+15*60) || anyGuest;
   if(b1Light.openPrev!==staffTime){ b1Light.openPrev=staffTime; b1Light.on=staffTime; }
   var lo=byId('b1LightOverlay'); if(lo){ var op=b1Light.on?'0':(staffTime?'0.55':'0.62'); if(lo.style.opacity!==op) lo.style.opacity=op; }
   // 식당 직원: 계산 닭 한 명 · 조리 미어캣 둘. 07:50부터 한 명씩 엘리베이터에서 내려 주방 통로로 걸어 들어오고,
-  // 21시에 문을 닫으면 마감 정리 후 21:05부터 한 명씩 엘리베이터로 걸어 나간다
+  // 16:50에 배식을 마치면 마감 정리 후 17:00부터 한 명씩 엘리베이터로 걸어 나간다
   var cs=npcActor(F,'b1cashier',PO.B1LOOK.cashier,'현계산'), k1=npcActor(F,'b1cook1',PO.B1LOOK.cook1,'윤요리'), k2=npcActor(F,'b1cook2',PO.B1LOOK.cook2,'주요리');
   var CR=M.CREW, CY=CR.feet, DOOR_X=2*T-1, POST_X=CR.posts;              // 계산대는 줄 맨 앞, 조리 둘은 배식대 뒤 (주방 쪽)
   var guests=0; for(var gid in F.actors){ var ga=F.actors[gid]; if(ga.visible && !/^b1(c|sim|seol|diet)/.test(gid)) guests++; }
-  var busy = guests>0 || (open && nowSec>=11*3600+40*60 && nowSec<13*3600+5*60) || nowSec>=21*3600;   // 손님이 있거나 점심 준비·배식 시간, 마감 정리
+  var busy = guests>0 || (open && nowSec>=11*3600+40*60 && nowSec<13*3600+5*60) || nowSec>=B1_CLOSE;   // 손님이 있거나 점심 준비·배식 시간, 마감 정리
   if(busy || F.b1IdleSince==null) F.b1IdleSince=now;
   var kLunch = nowSec>=15*3600 && nowSec<15*3600+20*60;                // 주방 식구 점심: 15:00~15:20, 손님이 다 빠진 식당에서 셋이 같이
   [cs,k1,k2].forEach(function(n,i){
-    var inAt=7*3600+50*60+i*45, outAt=21*3600+5*60+i*40, here = nowSec>=inAt && nowSec<outAt;
+    var inAt=7*3600+50*60+i*45, outAt=B1_OUT+i*90, here = nowSec>=inAt && nowSec<outAt;   // 17:00 · 17:01:30 · 17:03
     if(here && kLunch){ here=false; b1CrewLunch(n,i,d); n.atLunch=true; }
     var idle=here && !busy && now-F.b1IdleSince>15000+i*5000;           // 손님이 나가고 조금 지나면 한 명씩 휴게실로
     if(!n.b1ph){ n.feet=CY; n.dir='down'; n.onFurn=false; n.wp=null; n.spd=0;   // 접속한 순간: 한가하면 휴게실, 손님이 있으면 제자리, 근무 시간이 아니면 없음
@@ -2039,7 +2041,7 @@ function b1Tick(F,now,off){
         if(Math.abs(n.x-n.tx)<1) n.spd=0;
         if(i>0){ if(now>n.until && Math.abs(n.x-n.tx)<1){ n.tx=(CR.c0+Math.floor(Math.random()*(CR.c1-CR.c0+1)))*T-1; n.until=now+3000+Math.random()*6000; } barStep(n,now); }
         else barStep(n,now);                                                                       // 계산대: 휴게실에서 돌아올 때만 걷는다
-        var closing = nowSec>=21*3600;                                                                  // 문 닫은 뒤: 마감 정리
+        var closing = nowSec>=B1_CLOSE;                                                                  // 문 닫은 뒤: 마감 정리
         if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; n.nextTalk=now+15000+Math.random()*25000; }
         else if(!n.talkUntil && now>n.nextTalk){ n.bubble=closing?[['정산 맞춰볼게요'],['배식대 닦는 중'],['내일 재료 확인!']][i]:(i===0?B1_CASHIER_LINES:B1_COOK_LINES)[Math.floor(Math.random()*(i===0?B1_CASHIER_LINES:B1_COOK_LINES).length)]; n.talkUntil=now+3000; }
       }
@@ -2082,6 +2084,7 @@ function b1Tick(F,now,off){
   // 저녁 (야근하는 사람이 내려왔을 때)
   var Q=window.__b1Guests||{};
   for(var gk in Q){ var q=Q[gk]; if(q.done) continue; var did='b1d_'+q.id, da=F.actors[did];
+    if(!da && q.kind==='dinner' && !open && nowSec>=B1_CLOSE){ q.kind='snack'; q.item='ramen'; }   // 배식이 끝난 뒤 내려온 손님은 자판기 라면으로
     if(!da){ var used={}; for(var ak in F.actors){ var o=F.actors[ak]; if(o.seatInfo && o.visible) used[o.seatInfo.id]=1; }
       if(LUNCH_PLAN.key===key && d.getHours()===12) LUNCH_PLAN.diners.forEach(function(dn){ used[dn.seat.id]=1; });   // 점심 자리는 비워 둔다
       var mate=null; for(var ak2 in F.actors){ var o2=F.actors[ak2]; if(o2.dinnerGroup===q.group && o2.seatInfo) mate=o2.seatInfo; }
@@ -2306,12 +2309,12 @@ var NPC_INFO={
   nam:      { name:'남박사', role:'5층 색채·종이 연구소 · 연구원', bio:'거북이. 오늘의 색을 고르고 종이 결을 살피며 연구소를 느릿느릿 돌아다녀요. 혼잣말이 많아요.', hours:'평일 08:00~08:30 사이 출근 · 18:30 퇴근' },
   han:      { name:'한교수', role:'5층 연구소 · 교수', bio:'부엉이. 연구소 안쪽 자기 방 의자에 앉아 있을 때가 많아요. 말수가 적고 기록을 좋아해요. 가끔 강철 문 너머 서버실에 다녀와요.', hours:'매일 07:00~22:00' },
   r0:       { name:'R-0', role:'차세대 도우미 로봇', bio:'흰 곡면 몸에 검은 바이저, 푸른 눈. 바퀴 없이 떠서 가장 안쪽 서버실을 천천히 돌며 알 수 없는 말을 해요. 누가 만들었는지는 아무도 몰라요.', hours:'꺼진 적이 없어요' },
-  b1cashier:{ name:'현계산', role:'지하 1층 구내식당 · 계산', bio:'닭. 계산대에서 식판을 확인하고 "맛있게 드세요"를 건네요. 오늘 반찬 추천은 현계산에게 물어보면 돼요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
-  b1cook1:  { name:'윤요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 배식대 반찬을 채우고 국을 끓여요. 밥을 넉넉히 퍼 주기로 유명해요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
-  b1cook2:  { name:'주요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 신메뉴 연구가 취미라 가끔 오늘의 반찬이 깜짝 바뀌어요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
-  b1sim:    { name:'심주방', role:'지하 1층 구내식당 · 주방', bio:'빨간 두건에 분홍 앞치마, 빨간 고무장갑을 낀 수달. 국솥과 화구 사이를 바쁘게 오가고, 마늘 까기는 누구보다 빨라요.', hours:'매일 07:55 출근 · 21:05 퇴근' },
-  b1seol:   { name:'설주방', role:'지하 1층 구내식당 · 주방', bio:'파란 두건에 분홍 앞치마를 두른 수달. 튀김과 설거지 담당. 퇴식구로 들어온 식판을 받아 바로 싱크대로 옮겨요.', hours:'매일 08:05 출근 · 21:10 퇴근' },
-  b1diet:   { name:'고영양', role:'지하 1층 구내식당 · 영양사', bio:'영양사 가운에 검은 안경을 쓴 돼지. 쉼터 책상에서 식단과 영양 성분을 짜고, 가끔 주방과 배식대를 돌며 간과 온도를 챙겨요.', hours:'매일 08:30 출근 · 17:30 퇴근' },
+  b1cashier:{ name:'현계산', role:'지하 1층 구내식당 · 계산', bio:'닭. 계산대에서 식판을 확인하고 "맛있게 드세요"를 건네요. 오늘 반찬 추천은 현계산에게 물어보면 돼요.', hours:'매일 07:50 출근 · 17:00 퇴근' },
+  b1cook1:  { name:'윤요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 배식대 반찬을 채우고 국을 끓여요. 밥을 넉넉히 퍼 주기로 유명해요.', hours:'매일 07:50 출근 · 17:00 퇴근' },
+  b1cook2:  { name:'주요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 신메뉴 연구가 취미라 가끔 오늘의 반찬이 깜짝 바뀌어요.', hours:'매일 07:50 출근 · 17:00 퇴근' },
+  b1sim:    { name:'심주방', role:'지하 1층 구내식당 · 주방', bio:'빨간 두건에 분홍 앞치마, 빨간 고무장갑을 낀 수달. 국솥과 화구 사이를 바쁘게 오가고, 마늘 까기는 누구보다 빨라요.', hours:'매일 07:55 출근 · 17:05 퇴근' },
+  b1seol:   { name:'설주방', role:'지하 1층 구내식당 · 주방', bio:'파란 두건에 분홍 앞치마를 두른 수달. 튀김과 설거지 담당. 퇴식구로 들어온 식판을 받아 바로 싱크대로 옮겨요.', hours:'매일 08:05 출근 · 17:07 퇴근' },
+  b1diet:   { name:'고영양', role:'지하 1층 구내식당 · 영양사', bio:'영양사 가운에 검은 안경을 쓴 돼지. 쉼터 책상에서 식단과 영양 성분을 짜고, 가끔 주방과 배식대를 돌며 간과 온도를 챙겨요.', hours:'매일 08:30 출근 · 17:09 퇴근' },
   bartender:{ name:'바텐더 박', role:'2층 라운지 바 · 바텐더', bio:'레서판다. 오늘의 추천은 늘 자몽 에이드. 잔 닦는 시간이 제일 좋대요.', hours:'안내 직원 근무 시간 · 점심 13~14시' },
   server:   { name:'강서빙', role:'2층 라운지 바 · 홀서빙', bio:'오소리. 바 안에서만 쟁반을 나르고, 손님 이야기를 잘 들어줘요.', hours:'안내 직원 근무 시간 · 점심 13~14시' },
   yun:      { name:'윤안내', role:'2층 안내데스크', bio:'토끼. 방문객을 친절하고 다정하게 맞아요. 점심은 강안내와 함께 구내식당에서.', hours:'평일 08:30~18:00' },
