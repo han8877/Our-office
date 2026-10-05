@@ -2502,7 +2502,8 @@ function pLongTable(w){ return obj(w,72,function(g){                 // 원목 �
   R(g,8,70,6,2,'rgba(0,0,0,0.12)'); R(g,w-14,70,6,2,'rgba(0,0,0,0.12)');
   R(g,10,24,w-20,14,'#6a8a3a'); R(g,10,24,w-20,1,'#8aa850');
   for(var i=0;i<(w-20)/3;i++){ var x=12+i*3, bump=Math.floor(rnd(i*2.3)*4); ell(g,x,30-bump/2,3,4+bump/2,['#4f7a2e','#6a9a3a','#86b04a','#5a8a34'][i%4]); }
-  for(var s2=0;s2<w/60;s2++){ var sx=20+Math.floor(rnd(s2*5.3)*(w-40)); ell(g,sx,31,4,3,'#b8b2a6'); ell(g,sx-1,30,2,1,'#d8d2c6'); } }); }
+  for(var s2=0;s2<w/60;s2++){ var sx=20+Math.floor(rnd(s2*5.3)*(w-40)); ell(g,sx,31,4,3,'#b8b2a6'); ell(g,sx-1,30,2,1,'#d8d2c6'); }
+  for(var fl=0;fl<w/11;fl++){ var fx=13+Math.floor(rnd(fl*4.7+1)*(w-26)), fy=25+Math.floor(rnd(fl*2.3+7)*11); disc(g,fx,fy,1,'#f2c230'); P(g,fx,fy,'#fff4a0'); if(fl%3===0){ P(g,fx+1,fy-1,'#f8d850'); } } }); }   // 노란 꽃
 function pTable2(){ return obj(2*T,72,function(g,w){ R(g,0,4,w,54,'#d9ae78'); R(g,0,4,w,2,'#ecc896'); for(var y=12;y<56;y+=9) R(g,0,y,w,1,'#c89c66'); R(g,0,4,2,54,'#ecc896'); R(g,w-2,4,2,54,'#c08a54'); ell(g,14,46,3,1,'#b8884e'); R(g,4,10,10,1,'#ecd0a0'); R(g,0,58,w,8,'#b8864e'); R(g,0,58,w,1,'#d0a068'); R(g,6,66,6,6,'#8a6444'); R(g,w-12,66,6,6,'#8a6444'); R(g,w/2-8,26,16,10,'#6a8a3a'); R(g,w/2-6,22,3,6,'#8aa850'); R(g,w/2+2,21,3,7,'#8aa850'); }); }   // 커뮤니티룸 4인 테이블 (가운데 작은 화분)
 function pWovenStool(){ return obj(26,30,function(g){                // 등나무 끈을 엮은 원목 스툴
   R(g,2,10,3,20,'#b08254'); R(g,21,10,3,20,'#b08254'); R(g,2,22,22,2,'#b08254');
@@ -2781,7 +2782,7 @@ function pDietDesk(){ return obj(64,52,function(g){                     // 영�
   R(g,4,14,16,8,'#e8ecee'); R(g,6,12,12,2,'#c9cfd4'); disc(g,12,18,2,'#3a8ae8'); }); }
 
 // 영양사 자리: 쉼터 아래쪽 (컴퓨터로 식단 · 영양 성분 정리)
-put(pDietDesk(),28*T,27*T-20,27*T+30,[28,27,29,27]); things.push({img:pChairBack('#a8c0a0'),x:28*T+13,y:28*T+6-32,sy:28*T+5});
+put(pDietDesk(),28*T,28*T-16,28*T+32,[28,28,29,28]); things.push({img:pChairBack('#a8c0a0'),x:28*T+13,y:28*T+6-32,sy:28*T+5});
 function pKWall(len,hh){ hh=hh||46; return obj(len,hh,function(g,w,h){                  // 주방 가림벽 (불투명): 위 스테인리스 턱 · 흰 타일
   R(g,0,0,w,6,SSL); R(g,0,0,w,1,'#ffffff'); R(g,0,6,w,2,SSD); R(g,0,8,w,h-8,'#f4f6f4');
   for(var y=8;y<h;y+=10) R(g,0,y,w,1,'#dfe4e2'); for(var y2=8,o=0;y2<h;y2+=10,o^=1) for(var x=o*10;x<w;x+=20) R(g,x,y2,1,10,'#dfe4e2'); R(g,0,h-4,w,4,'#c8d0ce'); }); }
@@ -2820,6 +2821,11 @@ function pTrayCart(){ return obj(60,52,function(g){                       // 식
   R(g,54,2,3,12,SSD); R(g,52,2,6,2,'#2a2e34');                                                                            // 미는 손잡이
   for(var k=0;k<7;k++){ R(g,10,34-k*3,40,2,k%2?'#a07448':'#b88a5c'); R(g,10,34-k*3,40,1,'#d8aa7a'); }
   [10,50].forEach(function(x){ disc(g,x,48,4,'#2a2e34'); disc(g,x,48,2,'#6a7278'); P(g,x,48,'#c9cfd4'); }); }); }
+put(obj(62,54,function(g){ ell(g,31,52,29,2,'rgba(0,0,0,0.12)');                                                              // 다듬을 채소: 마늘 바구니 · 양파 망 · 대파 단 · 깐 마늘 볼
+  R(g,2,30,30,20,'#c89a64'); R(g,2,30,30,2,'#dcb682'); for(var x=4;x<32;x+=4) R(g,x,33,2,15,'#b0844e'); for(var k=0;k<9;k++){ disc(g,7+(k%5)*5,28-Math.floor(k/5)*4,3,'#f4eedc'); P(g,6+(k%5)*5,26-Math.floor(k/5)*4,'#ffffff'); P(g,7+(k%5)*5,25-Math.floor(k/5)*4,'#c8b088'); }
+  for(var k2=0;k2<6;k2++){ disc(g,40+(k2%3)*7,44-Math.floor(k2/3)*7,4,'#d8a050'); P(g,39+(k2%3)*7,42-Math.floor(k2/3)*7,'#f0c878'); } for(var nx=34;nx<62;nx+=3) R(g,nx,32,1,18,'rgba(200,60,40,0.5)');
+  for(var k3=0;k3<6;k3++){ R(g,8+k3*3,4,2,18,k3%2?'#8ac868':'#5aa040'); R(g,8+k3*3,20,2,6,'#f2f6e8'); } R(g,6,16,20,2,'#c8a060');
+  ell(g,48,22,9,4,'#fbfaf6'); ell(g,48,21,7,2,'#f4eedc'); P(g,46,20,'#ffffff'); P(g,50,21,'#ffffff'); }),28*T,9*T-54,9*T,[28,7,29,8]);
 onTile(pDishShelf(4*T),31,3,34,4); onTile(pDishwasher(),33,6,34,7); onTile(pTrayCart(),33,8,34,8);
 // 주방 세로 (퇴식구 바로 뒤): 30열에서 식판을 받아 오른쪽 벽 싱크대로 · 식판 카트 · 잔반 통
 onTile(pKSink(4*T),31,9,34,10); onTile(pTrayCart(),33,12,34,12);

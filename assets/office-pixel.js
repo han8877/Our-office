@@ -1864,6 +1864,89 @@ function b1CrewLunch(n,i,d){
   if(ns>=15*3600+16*60) return;
   Q[key]={ kind:'dinner', id:id, name:n.name, group:'kitchen', day:dk, leaveAt:15*3600+18*60+i*15, crew:'kitchen', meal:'lunch', skipPay:true };
 }
+// ---- 지하 식당 새 식구: 심주방 · 설주방 (수달, 주방 안 자리를 옮겨 다니며 일한다) · 고영양사 (돼지, 쉼터 책상 → 가끔 식당을 돌며 직원들과 이야기) ----
+var B1K_ST={ rice:{c:11,r:5,face:'up'}, pot1:{c:13,r:5,face:'up'}, pot2:{c:15,r:5,face:'up'}, range1:{c:17,r:5,face:'up'}, range2:{c:19,r:5,face:'up'}, fryer:{c:21,r:5,face:'up'},
+  prep:{c:25,r:5,face:'up'}, prep2:{c:28,r:5,face:'up'}, trim:{c:30,r:8,face:'left'}, sink:{c:30,r:10,face:'right'}, dish:{c:30,r:11,face:'left'} };
+var B1K_PLAN=[ { until:11*60, st:['prep','prep2','trim','rice','pot1','pot2'] }, { until:13*60+10, st:['rice','pot1','pot2','range1','range2','fryer','dish'] },
+  { until:16*60, st:['dish','sink','trim','prep','sink','dish'] }, { until:24*60, st:['prep','pot1','range1','range2','sink','trim','fryer'] } ];
+var B1K_SOLO={ rice:[['밥 뜸 들이는 중'],['쌀 씻은 물','버리지 말자'],['오늘 밥 고슬고슬하다']], pot1:[['된장 한 숟갈 더'],['국 간 좀 볼까'],['두부 넣는다~']], pot2:[['곰국 오래 끓는 중'],['파 송송 썰어 올리고'],['국물 진하다!']],
+  range1:[['불 세게!'],['제육 볶는 중'],['웍질 한 번 더!']], range2:[['채소 볶음 나갑니다'],['기름 두르고~'],['간장 살짝!']], fryer:[['돈가스 바삭하게~'],['튀김 기름 온도 175도'],['기름 튄다, 조심!']],
+  prep:[['양파 다듬는 중'],['칼질 리듬 좋고'],['당근 채 썰기']], prep2:[['양념장 만드는 중'],['샐러드 채소 씻었어요'],['닭가슴살 손질']], trim:[['마늘 까는 중…'],['대파 다듬기'],['양파는 눈이 맵다ㅠ']],
+  sink:[['뽀득뽀득'],['고무장갑 최고'],['물 온도 딱 좋다']], dish:[['식판 들어옵니다~'],['잔반 적어서 기분 좋다'],['수저는 따로!']] };
+var B1K_PAIR=[[['설주방, 마늘 좀 까 줘'],['벌써 반 망 깠어!']],[['오늘 튀김 누가 해?'],['내가 할게, 넌 국 봐']],[['불 줄여, 불!'],['앗, 고마워']],[['식판 들어온다~'],['내가 받을게!']],
+  [['점심 끝나면','커피 한 잔?'],['콜!']],[['이 양파 진짜 맵다'],['나도 눈물 나ㅠ']],[['간 좀 봐 줄래?'],['음… 딱 좋아!']],[['고무장갑 구멍 났어'],['새 거 서랍에 있어']],
+  [['오늘 몇 인분이지?'],['영양사님이 150이래']],[['두건 새로 샀어?'],['응, 빨강이 더 잘 보여서']],[['칼 갈아 놨어'],['오, 잘 든다!']],[['국자 어디 뒀어?'],['국솥 옆 걸이에!']]];
+var B1K_TO_COOK=[[['윤요리님, 국 채워 드릴까요?'],['응, 한 통 부탁해']],[['반찬 하나 더 나가요~'],['고마워!']],[['밥 새로 했어요'],['따끈하네, 좋다']],[['제육 한 판 더 볶을까요?'],['응, 줄 길어졌어']]];
+var B1D_SOLO=[['이번 주 칼로리','계산 중'],['단백질 조금 더','넣어야지'],['알레르기 표','업데이트'],['저염 레시피','찾는 중'],['오늘 잔반량 기록'],['제철 채소가 뭐더라'],['식단표 인쇄해야지'],['비타민 D…','생선 넣을까'],['다음 달 특식은','삼계탕!']];
+var B1D_TALK={ otter:[[['오늘 국 간 어때요?'],['딱 좋아요!']],[['나트륨 조금만','줄여 볼까요'],['간장 반 스푼 뺄게요']],[['튀김 기름','언제 갈았어요?'],['어제 새로 갈았어요']],[['내일 채소 발주','확인했어요?'],['양파 두 망 더 넣었어요']],
+    [['손 씻기 체크!'],['30초 박박 씻었어요']],[['저염 메뉴 반응','어때요?'],['국물 다 드시던데요']],[['알레르기 표시','붙였죠?'],['땅콩 표시 완료!']],[['칼은 색깔별로','나눠 쓰기!'],['빨강은 고기용이요']]],
+  cook:[[['샐러드 드레싱은','따로 내 주세요'],['네, 옆에 둘게요']],[['반찬 온도','괜찮아요?'],['국은 70도 넘어요']],[['다음 주 식단','초안 나왔어요'],['신메뉴 있어요?']],[['오늘 잔반 적네요'],['제육이 인기였어요']],[['밥 양 조금','줄여 볼까요?'],['더 달라는 분이 많아요']]],
+  cashier:[[['오늘 몇 분 드셨어요?'],['벌써 120명 넘었어요']],[['식권 정산','부탁해요'],['네, 오후에 드릴게요']],[['손님들 반응 어때요?'],['국이 최고래요']]] };
+function b1kX(c){ return c*T-1; } function b1kF(r){ return (r+1)*T+2; }
+function b1kPath(fc,fr,tc,tr){ var p=[];                                                     // 주방 안 길: 5행 통로 · 30열 세로 통로 (가로 먼저)
+  if(fr>5) p.push({x:b1kX(30), feet:b1kF(5)});
+  var tcol=tr>5?30:tc; p.push({x:b1kX(tcol), feet:b1kF(5)}); if(tr>5) p.push({x:b1kX(30), feet:b1kF(tr)}); return p; }
+function b1kSay(n,line,now,ms){ n.bubble=line; n.talkUntil=now+(ms||3000); }
+function b1kReply(F,who,line,at){ (F.b1Rep=F.b1Rep||[]).push({ who:who, line:line, at:at }); }
+var B1D_SEAT={ x:28*T+14, feet:28*T+6 };
+function b1dRestPath(){ var R=PO.MAPB.REST; return R.route.concat([{x:R.sofaIn, feet:R.lane},{x:R.sofaIn, feet:R.sofaRow},{x:B1D_SEAT.x, feet:R.sofaRow},{x:B1D_SEAT.x, feet:B1D_SEAT.feet}]); }
+function b1NewCrew(F,now,nowSec,d,crew){
+  var M=PO.MAPB, C=M.CREW, CY=C.feet, DOOR_X=2*T-1, min=Math.floor(nowSec/60);
+  var ot=[npcActor(F,'b1sim',PO.B1LOOK.sim,'심주방'), npcActor(F,'b1seol',PO.B1LOOK.seol,'설주방')], di=npcActor(F,'b1diet',PO.B1LOOK.diet,'고영양사');
+  // 미뤄 둔 대답
+  if(F.b1Rep && F.b1Rep.length){ F.b1Rep=F.b1Rep.filter(function(q){ if(now<q.at) return true; if(q.who.visible) b1kSay(q.who,q.line,now,3000); return false; }); }
+  var plan=B1K_PLAN.filter(function(p){ return min<p.until; })[0]||B1K_PLAN[3];
+  function pick(n,other){ var c=plan.st.filter(function(s){ return s!==n.st && s!==(other&&other.st) && s!==(other&&other.goSt); }); return c[Math.floor(Math.random()*c.length)]||'prep'; }
+  ot.forEach(function(n,i){ var other=ot[1-i], inAt=7*3600+55*60+i*10*60, outAt=21*3600+5*60+i*5*60, here=nowSec>=inAt && nowSec<outAt;
+    if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; }
+    if(!n.b1ph){ n.onFurn=false; n.spd=0;
+      if(here){ var s0=i?'pot1':'rice'; s0=plan.st[i%plan.st.length]===other.st?plan.st[(i+1)%plan.st.length]:plan.st[i%plan.st.length]; var S0=B1K_ST[s0];
+        n.st=s0; n.x=b1kX(S0.c); n.feet=b1kF(S0.r); n.dir=S0.face; n.visible=true; n.b1ph='work'; n.until=now+8000+Math.random()*15000; n.nextTalk=now+4000+Math.random()*12000; }
+      else { n.b1ph='off'; n.visible=false; } }
+    if(n.b1ph==='off'){ if(here){ var s1=pick(n,other), S1=B1K_ST[s1]; n.b1ph='in'; n.visible=true; n.x=DOOR_X; n.feet=C.lobbyFeet; n.spd=0; n.goSt=s1;
+        n.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:CY},{x:b1kX(27), feet:CY},{x:b1kX(27), feet:b1kF(5)}].concat(b1kPath(27,5,S1.c,S1.r)); b1kSay(n,[['출근했어요!'],['오늘도 힘내자!']][i],now,2600); } return; }
+    if(n.b1ph==='in'||n.b1ph==='move'){ if(n.hold && now<n.hold) return; if(wpStep(n,now)){ n.st=n.goSt; n.goSt=null; var S=B1K_ST[n.st]; n.dir=S.face; n.b1ph='work'; n.until=now+15000+Math.random()*20000; n.nextTalk=Math.min(n.nextTalk||0,now+3000+Math.random()*5000); } return; }
+    if(n.b1ph==='out'){ if(wpStep(n,now)){ n.b1ph='off'; n.visible=false; n.bubble=null; n.wp=null; } return; }
+    if(n.b1ph==='work'){
+      if(!here){ var S2=B1K_ST[n.st]; n.b1ph='out'; n.wp=b1kPath(S2.c,S2.r,27,5).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(n,[['수고하셨습니다~'],['내일 봬요!']][i],now,2600); return; }
+      if(n.hold && now<n.hold) return;
+      if(now>n.until && !n.talkUntil){ var s3=pick(n,other), S3=B1K_ST[s3], S4=B1K_ST[n.st]; n.goSt=s3; n.b1ph='move'; n.wp=b1kPath(S4.c,S4.r,S3.c,S3.r); return; }
+      if(!n.talkUntil && now>n.nextTalk){ var pool=B1K_SOLO[n.st]||B1K_SOLO.prep; b1kSay(n,pool[Math.floor(Math.random()*pool.length)],now,3000); n.nextTalk=now+14000+Math.random()*22000; } } });
+  // 수달끼리 · 수달과 조리 직원 이야기
+  if(!F.b1kChat) F.b1kChat=now+12000+Math.random()*15000;
+  if(now>F.b1kChat){ F.b1kChat=now+25000+Math.random()*35000;
+    var a=ot[Math.floor(Math.random()*2)], b=ot[0]===a?ot[1]:ot[0];
+    if(a.b1ph==='work' && !a.talkUntil){
+      var cooks=crew.slice(1).filter(function(k){ return k.visible && k.b1ph==='work' && !k.talkUntil; });
+      if(Math.random()<0.3 && cooks.length){ var ck=cooks[Math.floor(Math.random()*cooks.length)], pr=B1K_TO_COOK[Math.floor(Math.random()*B1K_TO_COOK.length)], l0=pr[0].slice();
+        if(ck.name!=='윤요리') l0=[l0[0].replace('윤요리님','주요리님')]; b1kSay(a,l0,now,2800); b1kReply(F,ck,pr[1],now+2900); }
+      else if(b.b1ph==='work' && !b.talkUntil){ var pp=B1K_PAIR[Math.floor(Math.random()*B1K_PAIR.length)]; b1kSay(a,pp[0],now,2800); b1kReply(F,b,pp[1],now+2900);
+        if(B1K_ST[a.st].r===5 && B1K_ST[b.st].r===5){ a.dir=a.x<b.x?'right':'left'; b.dir=a.x<b.x?'left':'right'; setTimeout(function(){ [a,b].forEach(function(n){ if(n.b1ph==='work') n.dir=B1K_ST[n.st].face; }); },6500); } } } }
+  // 고영양사: 08:30~17:30 · 쉼터 영양사 책상 · 가끔 식당을 돌며 이야기
+  var dIn=8*3600+30*60, dOut=17*3600+30*60, dHere=nowSec>=dIn && nowSec<dOut;
+  if(di.talkUntil && now>di.talkUntil){ di.bubble=null; di.talkUntil=0; }
+  if(!di.b1ph){ if(dHere){ di.visible=true; di.x=B1D_SEAT.x; di.feet=B1D_SEAT.feet; di.dir='down'; di.onFurn=true; di.b1ph='desk'; di.until=now+40000+Math.random()*50000; di.nextTalk=now+6000+Math.random()*10000; } else { di.b1ph='off'; di.visible=false; } }
+  if(di.b1ph==='off'){ if(dHere){ di.b1ph='in'; di.visible=true; di.onFurn=false; di.x=DOOR_X; di.feet=C.lobbyFeet; di.spd=0;
+      di.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:CY}].concat(b1dRestPath()); b1kSay(di,['좋은 아침이에요!'],now,2600); } return; }
+  if(di.b1ph==='in'||di.b1ph==='back'){ if(wpStep(di,now)){ di.x=B1D_SEAT.x; di.feet=B1D_SEAT.feet; di.dir='down'; di.onFurn=true; di.b1ph='desk'; di.until=now+50000+Math.random()*70000; di.nextTalk=now+5000+Math.random()*8000; } return; }
+  if(di.b1ph==='leave'){ if(wpStep(di,now)){ di.b1ph='off'; di.visible=false; di.bubble=null; di.wp=null; } return; }
+  if(di.b1ph==='desk'){
+    if(!dHere){ di.onFurn=false; di.b1ph='leave'; di.spd=0; var rp=b1dRestPath().reverse(); di.wp=rp.concat([{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(di,['먼저 들어가 볼게요~'],now,2600); return; }
+    if(!di.talkUntil && now>di.nextTalk){ b1kSay(di,B1D_SOLO[Math.floor(Math.random()*B1D_SOLO.length)],now,3200); di.nextTalk=now+18000+Math.random()*25000; }
+    if(now>di.until && !di.talkUntil){                                                       // 돌아보기: 수달 · 조리 직원 · 계산 직원 중 하나에게
+      var tg=[]; ot.forEach(function(n){ if(n.b1ph==='work') tg.push({n:n, kind:'otter'}); }); crew.forEach(function(n,k){ if(n.visible && n.b1ph==='work') tg.push({n:n, kind:k?'cook':'cashier'}); });
+      if(!tg.length){ di.until=now+30000; return; }
+      var t=tg[Math.floor(Math.random()*tg.length)], R=PO.MAPB.REST, out=b1dRestPath().reverse().slice(0,-1), spot;   // 쉼터 → 주방 안쪽(6행 · 27열)
+      if(t.kind==='otter'){ var S5=B1K_ST[t.n.st]; t.n.hold=now+40000; out.push({x:b1kX(27), feet:b1kF(5)});
+        if(S5.r>5){ out=out.concat(b1kPath(27,5,30,S5.r-1)); spot={face:'down'}; } else { var sc=S5.c+(S5.c>=27?-1:1); out=out.concat(b1kPath(27,5,sc,5)); spot={face:sc<S5.c?'right':'left'}; } }
+      else { t.n.tx=t.n.x; t.n.until=now+40000; out.push({x:b1kX(27), feet:CY}); out.push({x:t.n.x+30, feet:CY}); spot={face:'left'}; }
+      di.onFurn=false; di.b1ph='go'; di.spd=0; di.trip={ t:t, face:spot.face, out:out }; di.wp=out.slice(); return; } }
+  if(di.b1ph==='go'){ if(wpStep(di,now)){ var tr=di.trip; di.dir=tr.face; var pool2=B1D_TALK[tr.t.kind], pr2=pool2[Math.floor(Math.random()*pool2.length)];
+      b1kSay(di,pr2[0],now,3000); if(tr.t.n.visible) b1kReply(F,tr.t.n,pr2[1],now+3100); if(tr.t.kind==='otter'){ tr.t.n.dir=tr.face==='left'?'right':tr.face==='right'?'left':'up'; }
+      di.b1ph='chat'; di.until=now+7000; } return; }
+  if(di.b1ph==='chat'){ if(now>di.until){ var tr2=di.trip; tr2.t.n.hold=0; if(tr2.t.kind==='otter' && tr2.t.n.b1ph==='work') tr2.t.n.dir=B1K_ST[tr2.t.n.st].face;
+      di.b1ph='back'; di.spd=0; di.wp=tr2.out.slice(0,-1).reverse(); } return; }
+}
 var b1Light={ on:true, openPrev:null }, b1SwitchBound=false;
 function b1Tick(F,now,off){
   F.lunchDone=F.lunchDone||{};
@@ -1879,7 +1962,7 @@ function b1Tick(F,now,off){
   // 21시에 문을 닫으면 마감 정리 후 21:05부터 한 명씩 엘리베이터로 걸어 나간다
   var cs=npcActor(F,'b1cashier',PO.B1LOOK.cashier,'현계산'), k1=npcActor(F,'b1cook1',PO.B1LOOK.cook1,'윤요리'), k2=npcActor(F,'b1cook2',PO.B1LOOK.cook2,'주요리');
   var CR=M.CREW, CY=CR.feet, DOOR_X=2*T-1, POST_X=CR.posts;              // 계산대는 줄 맨 앞, 조리 둘은 배식대 뒤 (주방 쪽)
-  var guests=0; for(var gid in F.actors){ var ga=F.actors[gid]; if(ga.visible && !/^b1c/.test(gid)) guests++; }
+  var guests=0; for(var gid in F.actors){ var ga=F.actors[gid]; if(ga.visible && !/^b1(c|sim|seol|diet)/.test(gid)) guests++; }
   var busy = guests>0 || (open && nowSec>=11*3600+40*60 && nowSec<13*3600+5*60) || nowSec>=21*3600;   // 손님이 있거나 점심 준비·배식 시간, 마감 정리
   if(busy || F.b1IdleSince==null) F.b1IdleSince=now;
   var kLunch = nowSec>=15*3600 && nowSec<15*3600+20*60;                // 주방 식구 점심: 15:00~15:20, 손님이 다 빠진 식당에서 셋이 같이
@@ -1919,6 +2002,7 @@ function b1Tick(F,now,off){
     }
     if(n.b1ph==='out'){ if(!n.wp) b1CrewOut(n,DOOR_X); var outDone=wpStep(n,now); if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; } if(outDone){ n.wp=null; n.b1ph='off'; n.visible=false; n.bubble=null; } }
   });
+  b1NewCrew(F,now,nowSec,d,[cs,k1,k2]);                                                     // 심주방 · 설주방 · 고영양사
   var restOn=[cs,k1,k2].filter(function(n){ return n.b1ph==='rest'||n.b1ph==='toRest'; });   // 누가 쉬면 선풍기, 소파에 앉으면 TV
   PO.STATE.b1RestOn=restOn.length>0; PO.STATE.b1TvOn=restOn.some(function(n){ return n.rest && n.rest.spot.indexOf('sofa')===0; });
   if(open && F.payNow && now-F.payNow<300 && !cs.talkUntil){ cs.bubble=['맛있게 드세요']; cs.talkUntil=now+1800; }
@@ -2006,7 +2090,7 @@ function catchUp(now){
       if(gone){ if(a.q) a.q.done=true; else FB.lunchDone[id+key]=1; delete FB.actors[id]; continue; }
       if(a.ph!=='eat'){ var st=a.seatInfo; a.path=null; a.tile={c:st.c,r:st.r}; a.goal={c:st.c,r:st.r,face:st.dir}; a.wait=0;   // 먹으러 가던 중이면 자리에 앉혀 둔다
         if(a.snack) a.spr=a.sprPlain; b1Sit(a,now); } }
-    ['b1cashier','b1cook1','b1cook2'].forEach(function(k){ var n=FB.actors[k]; if(n){ n.b1ph=null; n.bubble=null; n.talkUntil=0; } });   // 식당 직원: 다음 틱에 시각대로 자리·퇴근
+    ['b1cashier','b1cook1','b1cook2','b1sim','b1seol','b1diet'].forEach(function(k){ var n=FB.actors[k]; if(n){ n.b1ph=null; n.bubble=null; n.talkUntil=0; n.wp=null; n.hold=0; } }); FB.b1Rep=[];   // 식당 직원: 다음 틱에 시각대로 자리·퇴근
     if(FB.robot){ FB.robot.path=null; FB.robot.nextMove=0; }
     FB.vendUse=null;
   }
@@ -2167,6 +2251,9 @@ var NPC_INFO={
   b1cashier:{ name:'현계산', role:'지하 1층 구내식당 · 계산', bio:'닭. 계산대에서 식판을 확인하고 "맛있게 드세요"를 건네요. 오늘 반찬 추천은 현계산에게 물어보면 돼요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
   b1cook1:  { name:'윤요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 배식대 반찬을 채우고 국을 끓여요. 밥을 넉넉히 퍼 주기로 유명해요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
   b1cook2:  { name:'주요리', role:'지하 1층 구내식당 · 조리', bio:'하얀 요리사 모자를 쓴 미어캣. 신메뉴 연구가 취미라 가끔 오늘의 반찬이 깜짝 바뀌어요.', hours:'매일 07:50 출근 · 21:05 퇴근' },
+  b1sim:    { name:'심주방', role:'지하 1층 구내식당 · 주방', bio:'빨간 두건에 분홍 앞치마, 빨간 고무장갑을 낀 수달. 국솥과 화구 사이를 바쁘게 오가고, 마늘 까기는 누구보다 빨라요.', hours:'매일 07:55 출근 · 21:05 퇴근' },
+  b1seol:   { name:'설주방', role:'지하 1층 구내식당 · 주방', bio:'파란 두건에 분홍 앞치마를 두른 수달. 튀김과 설거지 담당. 퇴식구로 들어온 식판을 받아 바로 싱크대로 옮겨요.', hours:'매일 08:05 출근 · 21:10 퇴근' },
+  b1diet:   { name:'고영양사', role:'지하 1층 구내식당 · 영양사', bio:'영양사 가운에 검은 안경을 쓴 돼지. 쉼터 책상에서 식단과 영양 성분을 짜고, 가끔 주방과 배식대를 돌며 간과 온도를 챙겨요.', hours:'매일 08:30 출근 · 17:30 퇴근' },
   bartender:{ name:'바텐더 박', role:'2층 라운지 바 · 바텐더', bio:'레서판다. 오늘의 추천은 늘 자몽 에이드. 잔 닦는 시간이 제일 좋대요.', hours:'안내 직원 근무 시간 · 점심 13~14시' },
   server:   { name:'강서빙', role:'2층 라운지 바 · 홀서빙', bio:'오소리. 바 안에서만 쟁반을 나르고, 손님 이야기를 잘 들어줘요.', hours:'안내 직원 근무 시간 · 점심 13~14시' },
   yun:      { name:'윤안내', role:'2층 안내데스크', bio:'토끼. 방문객을 친절하고 다정하게 맞아요. 점심은 강안내와 함께 구내식당에서.', hours:'평일 08:30~18:00' },
