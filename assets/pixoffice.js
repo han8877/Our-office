@@ -1811,15 +1811,15 @@ function pStaffDoor(w,h){ return obj(w,h,function(g){          // 관계자 전�
 function pSconce(){ return obj(14,24,function(g){               // 황동 벽등
   R(g,5,6,4,14,'#c9a25c'); R(g,5,6,1,14,'#e2c27e'); R(g,2,0,10,9,'#fbeec8'); R(g,2,0,10,1,'#fffbe8'); R(g,3,8,8,1,'#e8d2a0'); R(g,4,19,6,3,'#b08a4a'); }); }
 function pHistoryWall(w,h){ return obj(w,h,function(g){          // 회사 역사 전시 벽: 짙은 남색 벽 · 조명 든 원목 선반 셋 · 상패 · 상장 · 트로피
-  vgrad(g,0,0,w,h,'#22304e','#18223a',6); for(var sx=58;sx<w;sx+=50) R(g,sx,0,1,h,'#1a2540');
-  R(g,0,0,w,1,'#34446a'); R(g,0,h-2,w,2,'#121a2e');
+  vgrad(g,0,0,w,h,'#2e4068','#22304e',6); for(var sx=58;sx<w;sx+=50) R(g,sx,0,1,h,'#26365a');
+  R(g,0,0,w,1,'#44567e'); R(g,0,h-2,w,2,'#1a2440');
   tx(g,'HISTORY',28,8,10,'#e2c27e','center'); R(g,8,14,40,1,'#c9a25c');
   var SH=[26,48,70], YR=['2019','2022','2025'];
   R(g,51,22,1,46,'#8a7448');                                          // 왼쪽 연표: 금빛 세로줄과 해마다 점
   SH.forEach(function(sy,i){ txt3(g,30,sy-6,YR[i],'#e2c27e'); R(g,49,sy-6,5,5,'#c9a25c'); P(g,51,sy-4,'#fff4d0'); });
   SH.forEach(function(sy){                                            // 선반 위 벽에 번지는 따뜻한 빛
-    for(var k=0;k<14;k++) R(g,58,sy-1-k,w-62,1,mix('#7a6a4c','#1e2a46',Math.sqrt(k/14)));
-    R(g,58,sy-21,w-62,1,'#fff1c8'); for(var k2=1;k2<4;k2++) R(g,58,sy-21+k2,w-62,1,mix('#e8d29a','#1e2a46',k2/4));   // 위 선반 밑 LED
+    for(var k=0;k<14;k++) R(g,58,sy-1-k,w-62,1,mix('#86765a','#2a3a5e',Math.sqrt(k/14)));
+    R(g,58,sy-21,w-62,1,'#fff1c8'); for(var k2=1;k2<4;k2++) R(g,58,sy-21+k2,w-62,1,mix('#e8d29a','#2a3a5e',k2/4));   // 위 선반 밑 LED
   });
   function plaque(x,b){ R(g,x,b-14,11,14,'#6a3e22'); R(g,x,b-14,11,1,'#8a5a36'); R(g,x+2,b-11,7,6,'#d8b46a'); R(g,x+3,b-10,5,1,'#8a6a2a'); R(g,x+3,b-8,4,1,'#8a6a2a'); R(g,x+3,b-4,5,1,'#c9a25c'); }
   function cert(x,b){ R(g,x,b-13,16,13,'#c9a25c'); R(g,x,b-13,16,1,'#e8cc8a'); R(g,x+2,b-11,12,9,'#f6f1e4'); R(g,x+4,b-9,8,1,'#7a6a58'); R(g,x+4,b-7,6,1,'#b0a490'); R(g,x+4,b-5,7,1,'#b0a490'); P(g,x+11,b-4,'#c8323a'); }
@@ -1835,7 +1835,7 @@ function pHistoryWall(w,h){ return obj(w,h,function(g){          // 회사 역�
   ], F={plaque:plaque,cert:cert,crystal:crystal,blue:blue,cup:cup,photo:photo,medal:medal};
   SH.forEach(function(sy,i){ ROWS[i].forEach(function(it){ F[it[0]](60+it[1],sy); }); });
   SH.forEach(function(sy){                                            // 원목 선반 (윗면은 빛을 받아 밝다)
-    R(g,58,sy,w-62,1,'#f0c890'); R(g,58,sy+1,w-62,2,'#b07a48'); R(g,58,sy+3,w-62,1,'#6a4428'); R(g,58,sy+4,w-62,1,'#141c30'); });
+    R(g,58,sy,w-62,1,'#f0c890'); R(g,58,sy+1,w-62,2,'#b07a48'); R(g,58,sy+3,w-62,1,'#6a4428'); R(g,58,sy+4,w-62,1,'#1c2844'); });
 }); }
 var MEDIA_PAL=[
   ['#2b3a5c','#3f6e8e','#6fb3b8','#a8dcc8','#f2e6c8','#f6c7b0'],   // 새벽 바다
