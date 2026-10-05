@@ -462,6 +462,24 @@ function drawArtArrow(g,now){
 }
 // 사물함 위 동(청동) 트로피 (누르는 자리) · 눌렀을 때 크게 보여 줄 그림: 청동 컵 + 월넛 받침 + 황동 명패
 var BRONZE_TROPHY={ x:14*T+108, y:2*T+8, w:20, h:26 };
+// 도쿄 액자 뒷면 (크게): 나무 테두리 뒷면 · 크라프트 뒷판 · 걸이 철사 · 고정 쇠 · 왼쪽 아래 노란 포스트잇 '9 그리고 어항아래'
+function tokyoBackBig(S){ var W0=112, H0=80, c=cv(W0*S,H0*S), g=c.getContext('2d'); g.imageSmoothingEnabled=false; g.save(); g.scale(S,S);
+  R(g,0,0,W0,H0,'#8a5a2a'); R(g,0,0,W0,2,'#a87440'); R(g,0,H0-2,W0,2,'#6a4220'); R(g,0,0,2,H0,'#a87440'); R(g,W0-2,0,2,H0,'#6a4220');                 // 나무 테두리 뒷면
+  for(var y=3;y<H0-3;y+=5) R(g,1,y,4,1,'#7a4c22'); for(var y2=3;y2<H0-3;y2+=5) R(g,W0-5,y2,4,1,'#7a4c22');
+  R(g,6,6,W0-12,H0-12,'#c8a46e'); R(g,6,6,W0-12,1,'#d8b884'); R(g,6,H0-7,W0-12,1,'#a88450');                                                     // 크라프트 뒷판
+  for(var k=0;k<90;k++){ P(g,7+Math.floor(rnd(k*3.3)*(W0-14)),7+Math.floor(rnd(k*7.1)*(H0-14)),k%3?'#b8935e':'#d4b27c'); }
+  R(g,8,8,W0-16,1,'#a88450'); R(g,8,H0-9,W0-16,1,'#a88450');                                                                                     // 테이프 자국
+  [[4,12],[4,H0-16],[W0-8,12],[W0-8,H0-16],[W0/2-2,3],[W0/2-2,H0-7]].forEach(function(q){ R(g,q[0],q[1],4,4,'#9aa2a8'); R(g,q[0],q[1],4,1,'#dfe3e5'); P(g,q[0]+1,q[1]+2,'#5a6068'); });   // 고정 쇠
+  [[20,14],[W0-24,14]].forEach(function(q){ R(g,q[0],q[1],4,5,'#9aa2a8'); R(g,q[0]+1,q[1]+1,2,3,'#c8a46e'); });                                   // D링
+  for(var x=24;x<W0-24;x++){ var yy=16-Math.round(Math.sin((x-24)/(W0-48)*Math.PI)*8); P(g,x,yy,'#7a8288'); P(g,x,yy+1,'#c9cfd4'); }              // 걸이 철사
+  R(g,W0-38,H0-24,26,12,'#fbf8f0'); R(g,W0-38,H0-24,26,2,'#c84a3a');                                                                             // 액자 가게 스티커
+  R(g,W0-35,H0-19,20,1,'#9a8a7a'); R(g,W0-35,H0-16,14,1,'#9a8a7a');
+  R(g,11,H0-34,32,28,'rgba(0,0,0,0.12)'); R(g,10,H0-36,32,28,'#f8e060'); R(g,10,H0-36,32,5,'#f2d040'); R(g,10,H0-36,32,1,'#fbec90');               // 왼쪽 아래 노란 포스트잇
+  R(g,40,H0-10,2,2,'#e8c840'); P(g,41,H0-9,'#d8b030');
+  g.restore();
+  g.fillStyle='#2a2a3a'; g.textAlign='left'; g.textBaseline='middle'; g.font=Math.round(S*5.2)+'px NeoDGM, sans-serif';
+  g.save(); g.translate(13*S,(H0-24)*S); g.rotate(-0.04); g.fillText('9 그리고',0,-1*S); g.fillText('어항아래',0,6*S); g.restore();
+  return c; }
 function trophyBig(S){
   S=S||4; var W0=130, H0=172, c=cv(W0*S,H0*S), g=c.getContext('2d');
   function r(x,y,w,h,col){ g.fillStyle=col; g.fillRect(Math.round(x*S),Math.round(y*S),Math.round(w*S),Math.round(h*S)); }
@@ -1432,7 +1450,7 @@ wallItem(pLogoBoard(),40,32); SIGNS.push(['끄적끄적문구',40+84,32+17]);
 wallItem(pAC(),220,30);
 wallItem(pPainting('seoul'),21*T+16,30);
 wallItem(pWhiteboard(),29*T+10,28);
-wallItem(pPainting('tokyo'),24*T+4,30);
+wallItem(pPainting('tokyo'),24*T+4,30); var TOKYO_RECT={ x:24*T+4, y:30, w:56, h:40 };   // 누르면 액자 뒷면이 보인다
 wallItem(pSwitch(),SWITCH.x,SWITCH.y);
 
 // ---- 칸막이 ----
@@ -3757,6 +3775,6 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, CU_BOX:CU_BOX, drawCuTag:drawCuTag, BRONZE_TROPHY:BRONZE_TROPHY, trophyBig:trophyBig, MAP5:MAP5, MAP1:MAP1, buildMap1:function(){ return buildMap1({logo:SHOPLOGO}); }, fontReady:fontReady, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, CU_BOX:CU_BOX, drawCuTag:drawCuTag, BRONZE_TROPHY:BRONZE_TROPHY, TOKYO_RECT:TOKYO_RECT, tokyoBackBig:tokyoBackBig, trophyBig:trophyBig, MAP5:MAP5, MAP1:MAP1, buildMap1:function(){ return buildMap1({logo:SHOPLOGO}); }, fontReady:fontReady, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
 })();

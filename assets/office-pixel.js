@@ -2434,6 +2434,18 @@ function openTrophy(){
   var big=PO.trophyBig(4), c=ov.querySelector('canvas'); c.width=big.width; c.height=big.height; c.getContext('2d').drawImage(big,0,0);
   ov.style.display='flex';
 }
+// 도쿄 액자: 누르면 뒷면이 크게 — 왼쪽 아래에 노란 포스트잇
+function openTokyoBack(){
+  var ov=byId('tokyoBackView');
+  if(!ov){ ov=document.createElement('div'); ov.id='tokyoBackView';
+    ov.style.cssText='position:fixed;inset:0;z-index:9999;background:radial-gradient(ellipse at center,rgba(40,30,22,0.94),rgba(8,6,6,0.97));display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;box-sizing:border-box;cursor:zoom-out';
+    ov.innerHTML='<div style="font-family:NeoDGM,sans-serif;color:#e8dcc4;font-size:15px;letter-spacing:1px">도쿄 액자 뒷면</div><canvas style="max-width:min(92vw,640px);width:100%;height:auto;image-rendering:pixelated;filter:drop-shadow(0 10px 24px rgba(0,0,0,0.6))"></canvas><div style="font-family:NeoDGM,sans-serif;color:#9a927e;font-size:12px">누르면 닫혀요</div>';
+    ov.addEventListener('click', function(){ ov.style.display='none'; });
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape' && ov.style.display!=='none') ov.style.display='none'; });
+    document.body.appendChild(ov); }
+  var big=PO.tokyoBackBig(6), c=ov.querySelector('canvas'); c.width=big.width; c.height=big.height; c.getContext('2d').drawImage(big,0,0);
+  ov.style.display='flex';
+}
 function openMemoBoard(){
   var ov=byId('memoBoardView');
   if(!ov){ ov=document.createElement('div'); ov.id='memoBoardView';
@@ -2450,6 +2462,7 @@ cvs.addEventListener('click', function(e){
   var F=activeFloor(); if(!F) return;
   var p=artXY(e);
   if(secretClick(F,p)){ e.stopPropagation(); return; }
+  if(F.key==='3' && PO.TOKYO_RECT && inRect(p,PO.TOKYO_RECT,2)){ e.stopPropagation(); if(window.__sfx) window.__sfx('click'); openTokyoBack(); return; }
   if(F.key==='3' && inRect(p,PO.BRONZE_TROPHY,2)){ e.stopPropagation(); if(window.__sfx) window.__sfx('click'); openTrophy(); return; }
   if(F.key==='3' && inRect(p,PO.CU_BOX,2)){ e.stopPropagation(); var cn=performance.now(); if(!CU.at || cn-CU.at>CU_SHOW-600){ CU.at=cn; if(window.__sfx) window.__sfx('click'); } return; }
   if(F.key==='5' && inRect(p,PO.MAP5.BOARD_RECT)){ e.stopPropagation(); openMemoBoard(); return; }
