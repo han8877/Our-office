@@ -1732,7 +1732,7 @@ function b1Chat(F,a,now){
 }
 var B1_CASHIER_LINES=[['맛있게 드세요'],['카드 찍어 주세요'],['오늘 반찬 맛있어요'],['식판은 반납대에','부탁해요']];
 var B1_COOK_LINES=[['오늘은 제육볶음이에요'],['국 뜨끈해요'],['밥 더 드릴까요?'],['반찬 새로 채웠어요'],['맛있게 드세요~']];
-var B1_ROBOT_SPOTS=[[5,9],[10,12],[18,12],[4,18],[12,17],[19,20],[10,22],[12,27],[22,16],[25,13],[25,18],[8,28],[16,28],[22,25],[4,21],[25,26]];
+var B1_ROBOT_SPOTS=[[5,9],[10,12],[18,12],[4,18],[12,17],[19,20],[10,23],[3,27],[22,16],[25,13],[25,18],[19,28],[22,25],[4,22],[25,26],[14,23]];
 var B1_TEAM={}; PO.STAFF.forEach(function(p){ B1_TEAM[p.id]=p.team; });
 function b1Rng(seed){ var x=seed||1; return function(){ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; }
 function b1Open(d){ var h=d.getHours(); return h>=8 && h<21; }
@@ -1800,14 +1800,14 @@ function b1Step(F,a,now,M,nowSec){
       F.vendUse={ kind:a.snack, tile:a.vendTile||M.VEND.ice, until:now+(a.snack==='ramen'?3800:2200) }; break;
     case 'vend': a.spr=b1Spr(a,a.snack==='ramen'?'ramen':'icecream');
       if(a.afterMeal){ a.ph='out'; b1Say(a,B1_SNACK_LINES.ice,now); setGoal(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); break; }   // 후식: 먹으면서 올라간다
-      a.ph='toSeat'; setGoal(F,a,{ c:a.seatInfo.c, r:a.seatInfo.r, face:a.seatInfo.side==='top'?'down':'up' },now); break;
+      a.ph='toSeat'; setGoal(F,a,{ c:a.seatInfo.c, r:a.seatInfo.r, face:a.seatInfo.dir },now); break;
     case 'toPay': a.dir='up'; a.ph='pay'; a.payWait=now+9000; break;
     case 'pay': var cash=F.actors.b1cashier;                                                               // 계산 직원이 휴게실에서 오는 중이면 조금 기다린다
       if(!(cash && cash.b1ph==='work' && Math.abs(cash.x-cash.tx)<2) && now<a.payWait){ a.wait=now+300; break; }
       if(!a.paid){ a.paid=true; a.wait=now+1400; F.payNow=now; if(window.__sfx && activeFloor()===F) window.__sfx('beep'); break; }
       a.ph='toLine'; setGoal(F,a,{ c:M.LINE.c0+Math.floor(Math.random()*(M.LINE.c1-M.LINE.c0+1)), r:M.LINE.r, face:'up' },now); break;
     case 'toLine': a.dir='up'; a.wait=now+2200; a.ph='line'; break;
-    case 'line': a.spr=a.sprTray; a.ph='toSeat'; setGoal(F,a,{ c:a.seatInfo.c, r:a.seatInfo.r, face:a.seatInfo.side==='top'?'down':'up' },now); break;
+    case 'line': a.spr=a.sprTray; a.ph='toSeat'; setGoal(F,a,{ c:a.seatInfo.c, r:a.seatInfo.r, face:a.seatInfo.dir },now); break;
     case 'toSeat': b1Sit(a,now); break;
     case 'eat':
       if(nowSec>=a.leaveSec){ a.onFurn=false; a.bubble=null;
@@ -1986,7 +1986,7 @@ function b1Trays(F,list,now){
   for(var id in F.actors){ var a=F.actors[id]; if(!a.visible||a.ph!=='eat'||!a.seatInfo) continue;
     (function(a){ var st=a.seatInfo, tot=Math.max(60,a.leaveSec-(a.sitSec||nowSec)); if(!a.sitSec) a.sitSec=nowSec;
       var left=Math.max(0,Math.min(1,(a.leaveSec-nowSec)/tot));
-      list.push({ sy:(st.table==='X'?14*T:st.side==='top'?st.feet+2*T-1:st.feet-26)+0.2, draw:function(g){ if(a.snack) PO.drawSnack(g,st.tray.x,st.tray.y,a.snack,left,now); else PO.drawMealTray(g,st.tray.x,st.tray.y,left); } }); })(a); }
+      list.push({ sy:(st.traySy!=null?st.traySy:(st.table==='X'?14*T:st.side==='top'?st.feet+2*T-1:st.feet-26)+0.2), draw:function(g){ if(a.snack) PO.drawSnack(g,st.tray.x,st.tray.y,a.snack,left,now); else PO.drawMealTray(g,st.tray.x,st.tray.y,left); } }); })(a); }
   if(F.vendUse && now<F.vendUse.until){ var vu=F.vendUse, vx=T+30, vy=vu.tile.r*T-18;             // 자판기 사용 중: 불빛 · 라면 김
     list.push({ sy:(vu.tile.r+2)*T, draw:function(g){ var ph=Math.floor(now/250)%2; g.fillStyle=ph?'rgba(255,240,160,0.8)':'rgba(255,255,255,0.5)'; g.fillRect(T+52,vu.tile.r*T-38,8,4);
       if(vu.kind==='ramen'){ g.fillStyle='rgba(255,255,255,0.75)'; for(var i=0;i<3;i++){ var yy=vy-((now/40+i*12)%30); g.fillRect(vx+i*5,yy,2,5); } } } }); }
