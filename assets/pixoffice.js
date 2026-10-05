@@ -2648,11 +2648,16 @@ var MENUB=[]; for(var mi=0;mi<5;mi++) MENUB.push({ x:14*T+mi*65, y:8*T-66, w:60,
 wallItem(pAC(),27*T+6,22);
 wallItem(obj(36,34,function(g){ R(g,0,0,36,34,'#d83a2a'); R(g,2,2,32,30,'#fff8ec'); tx(g,'불조심',18,7,7,'#d83a2a','center');   // 시계와 냉난방기 사이 (조금 아래): 불조심 포스터
   tri(g,18,13,12,27,24,27,'#f08030'); tri(g,18,18,15,27,21,27,'#f8c040'); R(g,10,27,16,2,'#6a4a32'); R(g,5,30,26,1,'#d83a2a'); }),25*T+12,52);
-var FRUIT_ART=obj(84,54,function(g){ R(g,0,0,84,54,'#8a6044'); R(g,0,0,84,2,'#b08458'); R(g,4,4,76,46,'#eef4e6'); R(g,4,36,76,14,'#c8b090'); R(g,4,36,76,2,'#dccaa8');   // 과일 그림 (계산대 쪽 가림벽)
-  ell(g,42,36,24,6,'#fbfaf6'); disc(g,28,30,7,'#d8302a'); P(g,26,26,'#f8a0a0'); R(g,28,22,1,3,'#6a4a2a'); R(g,29,22,4,2,'#5aa040');                       // 사과
-  disc(g,44,29,7,'#f2a030'); P(g,42,25,'#f8d090'); P(g,44,22,'#5aa040');                                                                                   // 오렌지
-  for(var k=0;k<7;k++) disc(g,56+(k%3)*4,24+Math.floor(k/3)*4,2,'#7a3a8a'); R(g,59,19,1,4,'#6a4a2a');                                                     // 포도
-  ell(g,22,14,10,3,'#f2d040'); ell(g,22,13,8,2,'#f8e070'); R(g,12,13,2,2,'#6a5a2a'); disc(g,66,12,5,'#e8506a'); P(g,64,10,'#ffffff'); });   // 바나나 · 복숭아
+var FRUIT_ART=obj(84,54,function(g){ R(g,0,0,84,54,'#8a6044'); R(g,0,0,84,2,'#b08458'); R(g,0,52,84,2,'#6a4a32');   // 해바라기 그림 (계산대 쪽 가림벽): 세 송이 · 줄기 · 잎
+  vgrad(g,4,4,76,46,'#cfe6f2','#f4ecd4',6); R(g,4,40,76,10,'#c8a870'); R(g,4,40,76,1,'#d8bc88');                                            // 하늘 · 탁자
+  R(g,32,30,20,14,'#3a6a9a'); R(g,32,30,20,2,'#5a8aba'); R(g,34,32,2,10,'#6a9aca'); R(g,30,42,24,3,'#2e5a86');                               // 파란 꽃병
+  function stem(x0,y0,x1,y1){ line(g,x0,y0,x1,y1,'#4a7a2a'); line(g,x0+1,y0,x1+1,y1,'#5a8a34'); }
+  function leaf(x,y,d){ ell(g,x,y,7,3,'#3e7e2e'); ell(g,x+d,y-1,5,2,'#5a9a40'); line(g,x-6*d,y+1,x+6*d,y-1,'#2e5e22'); P(g,x+2*d,y-2,'#8ac060'); }
+  function sun(x,y,r){ for(var a=0;a<12;a++){ var an=a/12*Math.PI*2; ell(g,x+Math.round(Math.cos(an)*(r+2)),y+Math.round(Math.sin(an)*(r+2)),2,2,a%2?'#f2c020':'#f8d84a'); }
+    disc(g,x,y,r,'#6a3a1a'); disc(g,x-1,y-1,r-2,'#8a5a2a'); for(var k=0;k<5;k++) P(g,x-2+((k*3)%5),y-2+((k*2)%5),'#4a2a10'); }
+  stem(40,30,24,19); stem(42,30,42,15); stem(44,30,60,20);
+  leaf(29,26,1); leaf(55,26,-1); leaf(34,21,-1); leaf(50,22,1);
+  sun(24,18,5); sun(42,14,6); sun(60,19,5); });   // 왼쪽 · 가운데(제일 큰 것) · 오른쪽
 var MENU_BEZEL=pBezel(60,50); things.push({sy:8*T-0.5, draw:function(g){ g.drawImage(FRUIT_ART,9*T+8,8*T-70); MENUB.forEach(function(m){ g.drawImage(MENU_BEZEL,m.x-1,m.y-1); }); drawMenuBoards(g); }});
 function drawMenuBoards(g){
   var names=[['한식','제육볶음'],['국·찌개','된장찌개'],['면','우동'],['일품','돈가스'],['샐러드','닭가슴살']], food=['#b8502a','#c8883a','#e8d8a8','#d89848','#6aa84a'];
