@@ -2116,7 +2116,10 @@ function b1Washing(F,list,now){                                                 
       var px=cx+Math.round(Math.cos(a)*3), py=cy+Math.round(Math.sin(a)*2);
       g.fillStyle='rgba(216,236,244,0.9)'; g.beginPath(); g.ellipse(X+20,cy,15,7,0,0,Math.PI*2); g.fill();                        // 물
       g.fillStyle='#fbfaf6'; g.beginPath(); g.ellipse(px,py,7,3,0,0,Math.PI*2); g.fill(); g.fillStyle='#e8e4dc'; g.fillRect(px-4,py,8,1);   // 닦는 접시
-      var sx=px+Math.round(Math.cos(a*2.3)*4), sy=py-1+Math.round(Math.sin(a*2.3)*1); g.fillStyle='#4a9a4a'; g.fillRect(sx-2,sy-1,5,2); g.fillStyle='#f2c230'; g.fillRect(sx-2,sy-3,5,2);   // 접시 위를 문지르는 수세미                           // 싱크대 턱에 걸친 팔 · 접시를 쥔 두 손
+      var sh=Math.round(n.x)+19, shy=Math.round(n.feet)-17, rub=Math.round((Math.sin(t/150)+1)*2), tx=sh+13+rub, ty=shy+2+(rub>2?1:0);   // 앞으로 뻗은 팔: 어깨 → 소매 → 고무장갑 → 손끝 수세미 (문지르듯 앞뒤로)
+      g.fillStyle='#fbfbf8'; g.fillRect(sh,shy,5,4); g.fillStyle='#d8d4cc'; g.fillRect(sh,shy+3,5,1);
+      g.fillStyle=gc; g.fillRect(sh+5,shy+1,tx-sh-5,3); g.fillRect(tx-1,ty-1,4,4); g.fillStyle='rgba(255,255,255,0.35)'; g.fillRect(sh+5,shy+1,tx-sh-5,1);
+      g.fillStyle='#f2c230'; g.fillRect(tx+2,ty-2,4,3); g.fillStyle='#4a9a4a'; g.fillRect(tx+2,ty+1,4,2);                           // 싱크대 턱에 걸친 팔 · 접시를 쥔 두 손
       for(var k=0;k<5;k++){ var u=((t/700)+k/5)%1, bx=cx-10+k*5; g.fillStyle='rgba(255,255,255,'+(0.9*(1-u)).toFixed(2)+')'; g.beginPath(); g.arc(bx,cy-4-Math.round(u*8),1+(k%2),0,Math.PI*2); g.fill(); }   // 거품
       if(Math.floor(t/240)%3===0){ g.fillStyle='#9ad8f6'; g.fillRect(px-3,py-5,1,1); g.fillRect(px+4,py-6,1,1); } } }); }); }   // 튀는 물방울
 function b1Trays(F,list,now){
