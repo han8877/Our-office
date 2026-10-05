@@ -1297,7 +1297,7 @@ window.__npcStatus=function(id){
   if(/^b1(c|sim|seol|diet)/.test(id) && t>=15*60 && t<15*60+20) return { online:true, text:'점심시간' };   // 주방 식구는 식당에서 먹는다
   return { online:false, text: t<8*60 ? '출근 전' : '퇴근' };
 };
-(function(){ var base=window.__npcStatus, MAP={ nam:'5:nam', han:'5:han', bartender:'2:npcBartender', server:'2:npcServer', b1cashier:'B1:b1cashier', b1cook1:'B1:b1cook1', b1cook2:'B1:b1cook2',
+(function(){ var base=window.__npcStatus, MAP={ nam:'5:nam', han:'5:han', bartender:'2:npcBartender', server:'2:npcServer', b1cashier:'B1:b1cashier', b1cook1:'B1:b1cook1', b1cook2:'B1:b1cook2', b1sim:'B1:b1sim', b1seol:'B1:b1seol', b1diet:'B1:b1diet',
     f1ham:'1:f1ham', f1seo:'1:f1seo', f1jin:'1:f1jin', f1ryu:'1:f1ryu', f1woo:'1:f1woo' };
   window.__npcStatus=function(id){ var k=MAP[id]; if(k && window.__ccAway && window.__ccAway[k]) return { online:true, text:'옥상 연주회' }; return base(id); }; })();   // 금요일 연주회를 듣는 중
 function barStep(a,now){                                          // 바텐더: 카운터 뒤를 옆으로만 오간다
@@ -1544,6 +1544,9 @@ function ccFixedRoster(){
     { key:'b1cashier', fl:'B1', aid:'b1cashier', look:PO.B1LOOK.cashier, name:'현계산', npc:'b1cashier', at:48, grp:'b1' },
     { key:'b1cook1', fl:'B1', aid:'b1cook1', look:PO.B1LOOK.cook1, name:'윤요리', npc:'b1cook1', at:54, grp:'b1' },
     { key:'b1cook2', fl:'B1', aid:'b1cook2', look:PO.B1LOOK.cook2, name:'주요리', npc:'b1cook2', at:60, grp:'b1' },
+    { key:'b1sim', fl:'B1', aid:'b1sim', look:PO.B1LOOK.sim, name:'심주방', npc:'b1sim', at:64, grp:'b1k' },
+    { key:'b1seol', fl:'B1', aid:'b1seol', look:PO.B1LOOK.seol, name:'설주방', npc:'b1seol', at:68, grp:'b1k' },
+    { key:'b1diet', fl:'B1', aid:'b1diet', look:PO.B1LOOK.diet, name:'고영양사', npc:'b1diet', at:72, grp:'b1d' },
     { key:'f1ham', fl:'1', aid:'f1ham', look:F1_STAFF.f1ham.look, name:'함 매니저', npc:'f1ham', at:76, grp:'f1' },
     { key:'f1seo', fl:'1', aid:'f1seo', look:F1_STAFF.f1seo.look, name:'서 스태프', npc:'f1seo', at:82, grp:'f1' },
     { key:'f1jin', fl:'1', aid:'f1jin', look:F1_STAFF.f1jin.look, name:'바리스타 진', npc:'f1jin', at:96, grp:'f1' },
@@ -1564,6 +1567,8 @@ var CC_TALK={
   nam:['이 소리는 밤색이야','첼로 색은 먹색 17호','음에도 결이 있지','종이에 받아 적고 싶군','한교수님, 좋지요?'],
   han:['…오래전에 들은 곡이군','음은 기록되지 않아도 남지','흠.','이 시각엔 좀 낫군','조… 기억해 둬야겠어','관찰은 잠시 쉬지'],
   b1:['오늘 저녁 메뉴 생각이 안 나네','국 끓는 소리보다 좋다','앉으니까 다리가 풀린다','이런 날엔 잡채지','주방 불 끄고 왔죠?'],
+  b1k:['튀김기 불 껐어요, 걱정 마요','두건 벗으니 시원하다','이 곡 들으며 마늘 까면 좋겠다','고무장갑 벗고 박수 쳐야지','설거지 쌓인 거 잊자','국자 대신 박수!'],
+  b1d:['오늘 식단표 짜다 올라왔어요','음악도 영양 만점이네','마음에도 비타민','다음 주 특식은 이 곡처럼 부드럽게','칼로리 걱정 없는 시간'],
   f1:['카페 BGM으로 틀고 싶다','손님들도 들으면 좋을 텐데','엽서에 이 장면 그려야지','진아, 원두 생각 나지?','매장 잠깐 비워도 괜찮겠지'],
   f2:['로비에서도 연주해 주시면','바에 첼로 곡 어울리겠다','이 곡 칵테일 이름으로 하자','안내데스크 잠깐 비웠어요','자몽 에이드 생각나네'],
   sec:['…좋군. 이상 무!','근무 중이지만 잠깐만','경계 태세… 잠시 해제','난간 이상 없음, 음악 이상 없음']

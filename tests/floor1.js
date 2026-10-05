@@ -5,6 +5,7 @@ const { open, enter, goFloor, clickArt, suite } = require('./lib');
   const T = suite('floor1');
   let { browser, page, errors } = await open({ time: '2026-09-28T13:00:00' }); let e2 = [];
   await enter(page); await goFloor(page, '1'); await page.waitForTimeout(2500);
+  await page.evaluate(() => { window.__pixOffice.floors['1'].giftNext = performance.now() + 1e9; });   // 유경비 간식 배달(무작위)은 이 시험에선 끈다: 쉼터 확인이 흔들리지 않게
   const S = () => page.evaluate(() => { const A = window.__pixOffice.floors['1'].actors, out = { staff: [], guests: [] };
     for (const id in A) { const a = A[id]; if (!a.visible) continue; if (a.guest) out.guests.push({ id, shop: a.shop, ph: a.ph, sit: a.onFurn, todo: a.todo.length, c: a.tile && a.tile.c, r: a.tile && a.tile.r }); else out.staff.push(id); }
     return out; });

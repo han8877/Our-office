@@ -36,7 +36,7 @@ const { open, enter, goFloor, suite } = require('./lib');
       away: Object.keys(window.__ccAway || {}).length, st: window.__npcStatus('f1jin').text }; });
   T.check('연주회: 금요일 17시대는 연주 중', cc.phase === 'play', cc.phase);
   T.check('연주회: 조 · 사장님 · 남박사 · 한교수가 옥상에', cc.jo && cc.boss && cc.nam && cc.han, JSON.stringify(cc));
-  T.check('연주회: 다른 층 직원 15명이 올라와 자기 층에선 빠진다', cc.fixed >= 17 && cc.away === 15, JSON.stringify(cc));
+  T.check('연주회: 다른 층 직원 18명이 올라와 자기 층에선 빠진다', cc.fixed >= 20 && cc.away === 18, JSON.stringify(cc));
   T.check('연주회: 3층 직원도 올라온다', cc.f3 >= 4, JSON.stringify(cc));
   T.check('연주회: 메신저 상태는 "옥상 연주회"', cc.st === '옥상 연주회', cc.st);
   T.check('연주회: 페이지 오류 없음', C.errors.length === 0, C.errors.join(' / '));
@@ -68,7 +68,9 @@ const { open, enter, goFloor, suite } = require('./lib');
   T.check('바이어: 같은 나라 둘이 다가가 수다를 떤다', chat);
   T.check('바이어: 3층 직원이 내려와 바이어를 응대한다', hostCall && host, JSON.stringify({ hostCall, host }));
   const lunch = await Y.page.evaluate(async () => { const A = window.__pixOffice.floors['2'].actors, r = Math.random; Math.random = () => 0.1;
-    const a = A.by_jp2; if (a) { a.leaveAt = 0; a.ph = 'pick'; a.until = 0; a.host = null; a.mate = null; } await new Promise(z => setTimeout(z, 3000)); Math.random = r;   // 떠날 곳을 고를 때까지 넉넉히
+    const a = A.by_jp2, m = A.by_jp; if (m && /chat|Chat/.test(m.ph)) { m.ph = 'pick'; m.until = 0; m.mate = null; m.path = null; }   // 수다 걸러 오던 짝이 다시 붙잡지 않게
+    if (a) { a.leaveAt = 0; a.ph = 'pick'; a.until = 0; a.host = null; a.mate = null; a.replyAt = 0; }
+    for (let i = 0; i < 40 && A.by_jp2 && A.by_jp2.ph !== 'out'; i++) await new Promise(z => setTimeout(z, 250)); Math.random = r;   // 떠날 곳을 고를 때까지 붙잡아 둔다
     for (let i = 0; i < 40 && A.by_jp2; i++) await new Promise(z => setTimeout(z, 500));
     const q = (window.__b1Guests || {}).buy_jp2, j = A.by_jp2; return q ? { group: q.group, crew: q.crew } : { had: !!a, ph: j && j.ph, dest: j && j.dest, rq: !!(window.__roofGuests || {}).buy_jp2 }; });
   T.check('바이어: 점심때 떠나면 같은 나라끼리 지하 식당으로', lunch && lunch.group === 'buyers_jp', JSON.stringify(lunch));
