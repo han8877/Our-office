@@ -1732,7 +1732,7 @@ function b1Chat(F,a,now){
 }
 var B1_CASHIER_LINES=[['맛있게 드세요'],['카드 찍어 주세요'],['오늘 반찬 맛있어요'],['식판은 반납대에','부탁해요']];
 var B1_COOK_LINES=[['오늘은 제육볶음이에요'],['국 뜨끈해요'],['밥 더 드릴까요?'],['반찬 새로 채웠어요'],['맛있게 드세요~']];
-var B1_ROBOT_SPOTS=[[4,5],[10,9],[17,9],[4,15],[12,15],[18,20],[10,21],[12,26],[20,13],[16,8],[8,27],[14,27],[20,19],[22,7],[3,21]];
+var B1_ROBOT_SPOTS=[[4,9],[10,12],[18,12],[4,18],[12,17],[18,20],[10,22],[12,27],[22,14],[28,13],[31,17],[8,28],[16,28],[22,22],[3,21]];
 var B1_TEAM={}; PO.STAFF.forEach(function(p){ B1_TEAM[p.id]=p.team; });
 function b1Rng(seed){ var x=seed||1; return function(){ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; }
 function b1Open(d){ var h=d.getHours(); return h>=8 && h<21; }
@@ -1834,10 +1834,16 @@ var B1_REST_LINES={ desk:[['내일 재료','발주 넣어야지'],['이번 주 �
   cash:[['오늘 매출','정리 중'],['카드 전표','맞춰보는 중'],['영수증 용지','주문해야겠다'],['손님 오시면','바로 나가야지']],
   sofa:[['아이고 다리야'],['선풍기 바람','시원하다'],['오 요리 대결','프로 하네'],['5분만','눈 좀 붙일까'],['드라마 재방송','또 하네'],['야구 몇 대 몇이야?']] };
 var B1_BACK_LINES=[['어서 오세요!'],['손님 오셨다!'],['네~ 갑니다!']];
-function b1RestPath(spot,back){ var R=PO.MAPB.REST, k=+spot.slice(-1);
-  if(spot.indexOf('desk')===0) return [{x:R.desks[k], feet:R.lane}];
-  var p=[{x:R.sofaIn, feet:R.lane},{x:R.sofaIn, feet:R.sofaRow},{x:R.sofa[k], feet:R.sofaRow}];
-  return back ? p.reverse() : p; }
+function b1RestPath(spot){ var R=PO.MAPB.REST, k=+spot.slice(-1), p=[{x:R.gate, feet:R.lane}];   // 배식대 뒤 → 주방 오른쪽 문(25열) → 아래로 쉼터 윗줄
+  if(spot.indexOf('desk')===0) return p.concat([{x:R.desks[k], feet:R.lane}]);
+  return p.concat([{x:R.sofaIn, feet:R.lane},{x:R.sofaIn, feet:R.sofaRow},{x:R.sofa[k], feet:R.sofaRow}]); }
+function b1RestBack(n){ var R=PO.MAPB.REST, CY=PO.MAPB.CREW.feet, p=[];                // 어디에 있든 쉼터 윗줄 → 25열 → 배식대 뒤 줄로
+  if(n.feet>R.lane+10){ var y=Math.min(n.feet,R.sofaRow); p.push({x:n.x, feet:y},{x:R.sofaIn, feet:y},{x:R.sofaIn, feet:R.lane}); }
+  else if(n.feet>R.lane+0.5) p.push({x:n.x, feet:R.lane});
+  if(n.feet>CY+1){ p.push({x:R.gate, feet:Math.min(n.feet,R.lane)}); p.push({x:R.gate, feet:CY}); }
+  return p; }
+function b1CrewIn(n,post){ var C=PO.MAPB.CREW; n.feet=C.lobbyFeet; n.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:C.feet},{x:post, feet:C.feet}]; }   // 엘리베이터 → 5열 → 주방 왼쪽 문
+function b1CrewOut(n,doorX){ var C=PO.MAPB.CREW; n.wp=[{x:C.lx, feet:C.feet},{x:C.lx, feet:C.lobbyFeet},{x:doorX, feet:C.lobbyFeet}]; }
 function b1RestSit(n,rs){ var R=PO.MAPB.REST, k=+rs.spot.slice(-1), desk=rs.spot.indexOf('desk')===0; n.walking=false;
   n.x=desk?R.desks[k]:R.sofa[k]; n.feet=desk?R.deskFeet:R.sofaFeet; n.dir=desk?'down':'up'; n.onFurn=true; n.path=null; n.frame=0; n.wp=null; }
 function wpStep(n,now){                                               // 정해진 점을 따라 걷는다 (가로 먼저, 그다음 세로)
@@ -1873,7 +1879,7 @@ function b1Tick(F,now,off){
   // 식당 직원: 계산 닭 한 명 · 조리 미어캣 둘. 07:50부터 한 명씩 엘리베이터에서 내려 주방 통로로 걸어 들어오고,
   // 21시에 문을 닫으면 마감 정리 후 21:05부터 한 명씩 엘리베이터로 걸어 나간다
   var cs=npcActor(F,'b1cashier',PO.B1LOOK.cashier,'현계산'), k1=npcActor(F,'b1cook1',PO.B1LOOK.cook1,'윤요리'), k2=npcActor(F,'b1cook2',PO.B1LOOK.cook2,'주요리');
-  var DOOR_X=2*T-1, POST_X=[6*T-1,13*T-1,19*T-1];                        // 계산대는 입구 옆, 조리 둘은 배식대 뒤
+  var CR=M.CREW, CY=CR.feet, DOOR_X=2*T-1, POST_X=CR.posts;              // 계산대는 줄 맨 앞, 조리 둘은 배식대 뒤 (주방 쪽)
   var guests=0; for(var gid in F.actors){ var ga=F.actors[gid]; if(ga.visible && !/^b1c/.test(gid)) guests++; }
   var busy = guests>0 || (open && nowSec>=11*3600+40*60 && nowSec<13*3600+5*60) || nowSec>=21*3600;   // 손님이 있거나 점심 준비·배식 시간, 마감 정리
   if(busy || F.b1IdleSince==null) F.b1IdleSince=now;
@@ -1882,37 +1888,37 @@ function b1Tick(F,now,off){
     var inAt=7*3600+50*60+i*45, outAt=21*3600+5*60+i*40, here = nowSec>=inAt && nowSec<outAt;
     if(here && kLunch){ here=false; b1CrewLunch(n,i,d); n.atLunch=true; }
     var idle=here && !busy && now-F.b1IdleSince>15000+i*5000;           // 손님이 나가고 조금 지나면 한 명씩 휴게실로
-    if(!n.b1ph){ n.feet=4*T+2; n.dir='down'; n.onFurn=false; n.wp=null; n.spd=0;   // 접속한 순간: 한가하면 휴게실, 손님이 있으면 제자리, 근무 시간이 아니면 없음
+    if(!n.b1ph){ n.feet=CY; n.dir='down'; n.onFurn=false; n.wp=null; n.spd=0;   // 접속한 순간: 한가하면 휴게실, 손님이 있으면 제자리, 근무 시간이 아니면 없음
       if(here && !busy){ n.b1ph='rest'; n.visible=true; n.rest={spot:B1_REST_SPOTS[i][0]}; b1RestSit(n,n.rest); n.tx=n.x; n.until=now; n.nextTalk=now+5000+Math.random()*8000; }
       else if(here){ n.b1ph='work'; n.visible=true; n.x=n.tx=POST_X[i]; n.until=now+3000; n.nextTalk=now+8000+Math.random()*15000; }
       else { n.b1ph='off'; n.visible=false; } }
-    if(n.b1ph==='work' && idle && Math.abs(n.x-n.tx)<1){ n.restN=(n.restN||0)+1; n.b1ph='toRest'; n.spd=0; n.rest={spot:B1_REST_SPOTS[i][n.restN%2]}; n.wp=b1RestPath(n.rest.spot,false); n.bubble=null; n.talkUntil=0; }
-    if(n.b1ph==='toRest'){ if(busy){ n.b1ph='fromRest'; n.spd=0.1; n.wp=[{x:n.x, feet:4*T+2}]; return; }
+    if(n.b1ph==='work' && idle && Math.abs(n.x-n.tx)<1){ n.restN=(n.restN||0)+1; n.b1ph='toRest'; n.spd=0; n.rest={spot:B1_REST_SPOTS[i][n.restN%2]}; n.wp=b1RestPath(n.rest.spot); n.bubble=null; n.talkUntil=0; }
+    if(n.b1ph==='toRest'){ if(busy){ n.b1ph='fromRest'; n.spd=0.1; n.wp=b1RestBack(n); return; }
       if(wpStep(n,now)){ b1RestSit(n,n.rest); n.b1ph='rest'; n.nextTalk=now+4000+Math.random()*6000; } return; }
     if(n.b1ph==='rest'){
-      if(busy || !here){ n.b1ph='fromRest'; n.onFurn=false; n.spd=busy?0.1:0.05; var R0=PO.MAPB.REST;
-        n.wp=n.rest.spot.indexOf('desk')===0 ? [{x:n.x, feet:R0.lane}] : b1RestPath(n.rest.spot,true);
+      if(busy || !here){ n.b1ph='fromRest'; n.onFurn=false; n.spd=busy?0.1:0.05;
+        n.wp=b1RestBack(n);
         if(busy && here){ n.bubble=B1_BACK_LINES[i]; n.talkUntil=now+2200; } else { n.bubble=null; n.talkUntil=0; } return; }
       var desk=n.rest.spot.indexOf('desk')===0, pool=desk?(i===0?B1_REST_LINES.cash:B1_REST_LINES.desk):B1_REST_LINES.sofa;
       if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; n.nextTalk=now+14000+Math.random()*20000; }
       else if(!n.talkUntil && now>n.nextTalk){ n.bubble=pool[Math.floor(Math.random()*pool.length)]; n.talkUntil=now+3200; }
       return; }
     if(n.b1ph==='fromRest'){ if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; }
-      if(wpStep(n,now)){ n.feet=4*T+2; n.dir='down'; if(here){ n.b1ph='work'; n.tx=POST_X[i]; n.until=now+2000; n.nextTalk=now+9000; } else { n.b1ph='out'; n.tx=DOOR_X; n.spd=0; } } return; }
-    if(n.b1ph==='off'){ if(here){ n.b1ph='in'; n.visible=true; n.x=DOOR_X; n.tx=POST_X[i]; n.stepMs=260; b1Say(n,n.atLunch?[['잘 먹었다!'],['자, 저녁 준비!'],['배부르다~']][i]:[['좋은 아침입니다!'],['오늘도 맛있게 해봅시다'],['출근 완료!']][i][0].split('|'),now,2600); n.atLunch=false; } return; }
-    if(n.b1ph==='in'){ barStep(n,now); if(Math.abs(n.x-n.tx)<1){ n.b1ph='work'; n.spd=0; n.dir='down'; n.until=now+3000; n.nextTalk=now+10000+Math.random()*10000; } }
+      if(wpStep(n,now)){ n.feet=CY; n.dir='down'; if(here){ n.b1ph='work'; n.tx=POST_X[i]; n.until=now+2000; n.nextTalk=now+9000; } else { n.b1ph='out'; n.tx=DOOR_X; n.spd=0; b1CrewOut(n,DOOR_X); } } return; }
+    if(n.b1ph==='off'){ if(here){ n.b1ph='in'; n.visible=true; n.x=DOOR_X; n.tx=POST_X[i]; n.stepMs=260; n.spd=0; b1CrewIn(n,POST_X[i]); b1Say(n,n.atLunch?[['잘 먹었다!'],['자, 저녁 준비!'],['배부르다~']][i]:[['좋은 아침입니다!'],['오늘도 맛있게 해봅시다'],['출근 완료!']][i][0].split('|'),now,2600); n.atLunch=false; } return; }
+    if(n.b1ph==='in'){ if(wpStep(n,now)){ n.b1ph='work'; n.spd=0; n.dir='down'; n.until=now+3000; n.nextTalk=now+10000+Math.random()*10000; } }
     else if(n.b1ph==='work'){
-      if(!here){ n.b1ph='out'; n.tx=DOOR_X; b1Say(n,kLunch?[['우리도 밥 먹자!'],['점심시간~'],['배고파요']][i]:[['수고하셨습니다~'],['내일 봬요!'],['마감 청소 끝!']][i],now,2600); }
+      if(!here){ n.b1ph='out'; n.tx=DOOR_X; n.spd=0; b1CrewOut(n,DOOR_X); b1Say(n,kLunch?[['우리도 밥 먹자!'],['점심시간~'],['배고파요']][i]:[['수고하셨습니다~'],['내일 봬요!'],['마감 청소 끝!']][i],now,2600); }
       else {
         if(Math.abs(n.x-n.tx)<1) n.spd=0;
-        if(i>0){ if(now>n.until && Math.abs(n.x-n.tx)<1){ n.tx=(10+Math.floor(Math.random()*13))*T-1; n.until=now+3000+Math.random()*6000; } barStep(n,now); }
+        if(i>0){ if(now>n.until && Math.abs(n.x-n.tx)<1){ n.tx=(CR.c0+Math.floor(Math.random()*(CR.c1-CR.c0+1)))*T-1; n.until=now+3000+Math.random()*6000; } barStep(n,now); }
         else barStep(n,now);                                                                       // 계산대: 휴게실에서 돌아올 때만 걷는다
         var closing = nowSec>=21*3600;                                                                  // 문 닫은 뒤: 마감 정리
         if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; n.nextTalk=now+15000+Math.random()*25000; }
         else if(!n.talkUntil && now>n.nextTalk){ n.bubble=closing?[['정산 맞춰볼게요'],['배식대 닦는 중'],['내일 재료 확인!']][i]:(i===0?B1_CASHIER_LINES:B1_COOK_LINES)[Math.floor(Math.random()*(i===0?B1_CASHIER_LINES:B1_COOK_LINES).length)]; n.talkUntil=now+3000; }
       }
     }
-    if(n.b1ph==='out'){ barStep(n,now); if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; } if(Math.abs(n.x-DOOR_X)<1){ n.b1ph='off'; n.visible=false; n.bubble=null; } }
+    if(n.b1ph==='out'){ if(!n.wp) b1CrewOut(n,DOOR_X); var outDone=wpStep(n,now); if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; } if(outDone){ n.wp=null; n.b1ph='off'; n.visible=false; n.bubble=null; } }
   });
   var restOn=[cs,k1,k2].filter(function(n){ return n.b1ph==='rest'||n.b1ph==='toRest'; });   // 누가 쉬면 선풍기, 소파에 앉으면 TV
   PO.STATE.b1RestOn=restOn.length>0; PO.STATE.b1TvOn=restOn.some(function(n){ return n.rest && n.rest.spot.indexOf('sofa')===0; });

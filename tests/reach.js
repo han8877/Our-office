@@ -16,8 +16,7 @@ const KNOWN_ISOLATED_3F = ['5,3', '31,3', '32,3', '5,4', '31,4', '32,4', '1,5', 
     out.iso3 = []; for (let r = 3; r < 29; r++) for (let c = 1; c < 35; c++) { if (M3.blocked[r][c]) continue; if (!PO.bfs(from3, { c, r }, M3)) out.iso3.push(c + ',' + r); }
     const MB = PO.MAPB, L = MB.LOBBY, tg = [['계산대', MB.PAY], ['퇴식구 식판', MB.RETURN], ['잔반', MB.SCRAP], ['수저', MB.SPOON], ['아이스크림', MB.VEND.ice], ['로봇 충전', MB.DOCK]];
     MB.VEND.ramen.forEach((v, i) => tg.push(['라면' + (i + 1), v]));
-    if (MB.KITCHEN) ['prep', 'sink', 'fridge', 'rice'].forEach(k => tg.push(['주방 ' + k, MB.KITCHEN[k]]));   // 주방 · 영양사 자리도 걸어서 닿는지
-    if (MB.KITCHEN) tg.push(['식자재 창고', { c: 27, r: 25 }]);
+    out.b1staff = MB.KITCHEN ? ['prep', 'sink', 'rice'].map(k => MB.KITCHEN[k]).concat([{ c: 30, r: 6 }, { c: 30, r: 26 }]).filter(t => PO.bfs({ c: L.c, r: L.r }, t, MB)).length : 0;   // 주방 · 창고 · 쉼터엔 손님이 못 들어간다
     MB.SEATS.forEach(s => tg.push(['자리 ' + s.id, { c: s.c, r: s.r }]));
     for (let c = MB.LINE.c0; c <= MB.LINE.c1; c++) tg.push(['배식 ' + c, { c, r: MB.LINE.r }]);
     out.b1 = tg.filter(t => !PO.bfs({ c: L.c, r: L.r }, t[1], MB)).map(t => t[0]);
@@ -37,6 +36,7 @@ const KNOWN_ISOLATED_3F = ['5,3', '31,3', '32,3', '5,4', '31,4', '32,4', '1,5', 
   const newIso = r.iso3.filter(k => !KNOWN_ISOLATED_3F.includes(k));
   T.check('3층: 새로 고립된 칸이 없다', newIso.length === 0, newIso.join(' '));
   T.check('지하 1층: 입구에서 계산대·배식대·자리·퇴식구·자판기까지', r.b1.length === 0, r.b1.join(', '));
+  T.check('지하 1층: 주방·식자재 창고·쉼터엔 손님 길이 없다', r.b1staff === 0);
   T.check('5층: 엘리베이터에서 두 사람 자리·강철 문 앞·청소기 충전 독까지', r.f5.length === 0, r.f5.join(', '));
   T.check('1층: 엘리베이터에서 정문·계산대·공방·키오스크·픽업대·퇴식대·카페 자리까지', r.f1.length === 0, r.f1.join(', '));
   T.check('1층: 카페 자리는 의자 칸이다', r.f1seatBlocked);

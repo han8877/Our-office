@@ -2565,19 +2565,18 @@ function drawSnack(g,x,y,kind,left,t){                               // 테이�
 }
 var MAPB=newMap(); useMap(MAPB);
 terrazzo(bgc,1,3,34,28,'#dccbb0');
-kitchenTiles(bgc,5,3,25,3);
+kitchenTiles(bgc,7,3,25,8);                                        // 주방 바닥 (배식대 뒤 위쪽 가로로)
+(function(g){ for(var r=3;r<=8;r++) for(var c=27;c<=34;c++){ var x=c*T, y=r*T; R(g,x,y,T,T,(r+c)%2?'#c8ccca':'#d2d6d4'); R(g,x,y,T,1,'#b8bcba'); R(g,x,y,1,T,'#b8bcba'); } })(bgc);   // 식자재 창고 바닥 (회색 타일)
 paintOuterWalls(bgc);
-slatWall(bgc,5*T,FACE_TOP,2*T,FACE_BOT-FACE_TOP); subwayTiles(bgc,7*T,FACE_TOP,19*T,FACE_BOT-FACE_TOP);
-R(bgc,26*T,FACE_TOP,9*T,FACE_BOT-FACE_TOP,'#f1e6d0'); for(var wx=26*T+3; wx<35*T; wx+=7) P(bgc,wx,FACE_TOP+8+(wx%29),'#e6d8bc');   // 휴게실 벽: 크림색 + 나무 징두리
-R(bgc,26*T,FACE_BOT-22,9*T,22,'#c99a6a'); R(bgc,26*T,FACE_BOT-22,9*T,2,'#dcb488'); for(var px=26*T; px<35*T; px+=16) R(bgc,px,FACE_BOT-20,1,20,'#b08254');
+slatWall(bgc,5*T,FACE_TOP,2*T,FACE_BOT-FACE_TOP); subwayTiles(bgc,7*T,FACE_TOP,28*T,FACE_BOT-FACE_TOP);
 block(0,0,COLS-1,2); block(0,0,0,ROWS-1); block(COLS-1,0,COLS-1,ROWS-1); block(0,ROWS-1,COLS-1,ROWS-1);
-block(5,3,25,3);                                                      // 주방 (조리·계산 직원만)
+block(7,3,25,8); block(27,3,34,8);                                    // 주방 · 식자재 창고 (주방 식구만)
 var ELEVB=[pElevator(false,'B1'),pElevator(true,'B1')];
 things.push({sy:3*T-1, draw:function(g){ g.drawImage(ELEVB[STATE.elevB1Open?1:0],T-1,-1); }});
 var SWITCHB={ x:5*T+8, y:46, w:18, h:26 }; wallItem(pSwitch(),SWITCHB.x,SWITCHB.y);
 // 벽: 메뉴 화면 다섯 · 냉난방기
-var MENUB=[]; for(var mi=0;mi<5;mi++){ MENUB.push({ x:10*T+mi*84, y:24, w:78, h:56 }); wallItem(pBezel(78,56),10*T+mi*84,24); }
-wallItem(pAC(),23*T+4,30);
+var MENUB=[]; for(var mi=0;mi<5;mi++){ MENUB.push({ x:12*T+mi*84, y:24, w:78, h:56 }); wallItem(pBezel(78,56),12*T+mi*84,24); }
+wallItem(pAC(),30*T+8,30);
 things.push({sy:1, draw:function(g){ drawMenuBoards(g); }});
 function drawMenuBoards(g){
   var names=[['한식','제육볶음'],['국·찌개','된장찌개'],['면','우동'],['일품','돈가스'],['샐러드','닭가슴살']], food=['#b8502a','#c8883a','#e8d8a8','#d89848','#6aa84a'];
@@ -2588,28 +2587,31 @@ function drawMenuBoards(g){
     g.fillStyle='#5c4a3a'; g.fillText(names[i][1],x+w/2,y+33); });
   g.textAlign='left'; }
 // 들어오자마자 계산대 → 식판 받는 곳 → 배식대 (왼쪽에서 오른쪽으로) · 메뉴 모형 진열장
-onTile(pPosCounter(),5,4,7,5);
-onTile(pTrayStation(),8,4,9,5);
-onTile(pServeLine(14*T),10,4,23,5);
-onTile(pSampleCase(),1,7,4,7);
-onTile(pCooler(),20,8,20,8); onTile(pCupBin(),21,8,21,8);           // 정수기 · 종이컵 버리는 통 (음료 냉장고는 식자재 창고로)
+// 주방 바로 앞에 한 줄로: 계산대 → 식판 → 배식대 (조리·계산 직원은 주방 쪽에 선다)
+onTile(pPosCounter(),7,9,9,10);
+onTile(pTrayStation(),10,9,11,10);
+onTile(pServeLine(13*T),12,9,24,10);
+onTile(pSampleCase(),1,6,4,6);
+onTile(pCooler(),33,10,33,10); onTile(pCupBin(),34,10,34,10);         // 정수기 · 종이컵 버리는 통 (음료 냉장고는 식자재 창고로)
 
-// ---- 주방 식구 사무·휴게실 (냉장고 뒤, 계산대 옆 칸막이 안): 컴퓨터 자리 셋 · 소파 · TV · 선풍기 · 쓰레기통 ----
-woodRect(bgc,26,3,34,8); carpet(bgc,31,5,34,6,'#cfc2a6');
+// ---- 주방 식구 쉼터 (오른쪽 아래, 칸막이 안): 컴퓨터 자리 셋 · 소파 · TV · 선풍기 · 쓰레기통 · 영양사 자리 ----
+// 주방 오른쪽 끝(25열) 문으로 나와 25열을 따라 내려가 쉼터 윗줄(21행)로 들어간다
+woodRect(bgc,26,21,34,28); carpet(bgc,31,23,34,24,'#cfc2a6');
 function pPartition(len){ return obj(12,len,function(g,w,h){ R(g,0,0,12,h,'#a87c52'); R(g,0,0,3,h,'#c99a6a'); R(g,9,0,3,h,'#8a6040'); R(g,0,0,12,3,'#dcb488'); for(var y=24;y<h;y+=48) R(g,2,y,8,2,'#8a6040'); R(g,0,h-10,12,10,'#8a6040'); }); }
-put(pPartition(4*T),25*T+10,5*T,9*T,[25,4,25,8]);
+function pPartitionH(len){ return obj(len,30,function(g,w){ R(g,0,4,w,26,'#a87c52'); R(g,0,4,w,4,'#dcb488'); R(g,0,26,w,4,'#8a6040'); for(var x=24;x<w;x+=48) R(g,x,10,2,14,'#8a6040'); }); }
+put(pPartition(7*T),25*T+10,22*T,29*T,[25,22,25,28]); put(pPartitionH(9*T),26*T,21*T-30,21*T-1,[26,20,34,20]);
 function pStandFan(){ return obj(30,62,function(g){ ell(g,15,59,11,3,'#c9cfd4'); ell(g,15,58,9,2,'#eef1f3'); R(g,14,26,3,32,'#dfe3e5'); R(g,14,26,1,32,'#ffffff');
   R(g,9,46,12,4,'#e8ecee'); R(g,11,47,2,2,'#6ac8f0'); R(g,15,47,2,2,'#9aa2a8'); disc(g,15,13,13,'#eef4f8'); ring(g,15,13,13,'#b8c4cc'); ring(g,15,13,9,'#d0d8de'); R(g,13,24,5,4,'#dfe3e5'); }); }
 function drawFan(g,x,y,t){ var on=STATE.b1RestOn, a=on?t*0.03:0.4, cx=x+15, cy=y+13;
   for(var b=0;b<3;b++){ var an=a+b*Math.PI*2/3; ell(g,cx+Math.round(Math.cos(an)*6),cy+Math.round(Math.sin(an)*6),4,3,on?'rgba(140,200,235,0.75)':'#8ac8e8'); }
   disc(g,cx,cy,2,'#6a7278'); for(var r=4;r<13;r+=4) ring(g,cx,cy,r,'rgba(160,172,180,0.5)'); }
-onTileFx(pStandFan(),30,6,30,6,drawFan);
+onTileFx(pStandFan(),30,24,30,24,drawFan);
 function pSnackTable(){ return obj(60,40,function(g){ R(g,0,16,60,24,'#c99a6a'); R(g,0,16,60,3,'#dcb488'); R(g,0,38,60,2,'#8a6444'); R(g,4,22,24,14,'#b08254'); R(g,32,22,24,14,'#b08254'); disc(g,24,29,1,'#e8d0a0'); disc(g,36,29,1,'#e8d0a0');
   R(g,6,2,12,14,'#e8ecee'); R(g,6,2,12,2,'#ffffff'); R(g,17,5,3,7,'#c9cfd4'); R(g,8,0,8,3,'#3a3f46'); P(g,8,12,'#e04a4a');                          // 전기포트
   R(g,24,8,7,8,'#f2787a'); R(g,24,8,7,1,'#f8a8a8'); R(g,33,8,7,8,'#6fb7e8'); R(g,33,8,7,1,'#a8d8f8');                                         // 머그컵
   R(g,43,6,15,10,'#c49a6c'); for(var x=44;x<57;x+=3) R(g,x,6,1,10,'#a87c50'); R(g,45,3,4,4,'#f2c24a'); R(g,50,2,4,5,'#e8503a'); R(g,54,4,3,3,'#6aa84a'); }); }   // 과자 바구니
-onTile(pSnackTable(),27,6,28,6); onTile(pTrash(),26,6,26,6);
-onTileFx(pTV(),32,3,33,4,function(g,x,y,t){ if(!STATE.b1TvOn) return; var sx=x+3, sy=y+3, sc=Math.floor(t/5000)%3;   // 휴게 중엔 TV가 켜진다
+onTile(pSnackTable(),27,24,28,24); onTile(pTrash(),26,24,26,24);
+onTileFx(pTV(),32,21,33,22,function(g,x,y,t){ if(!STATE.b1TvOn) return; var sx=x+3, sy=y+3, sc=Math.floor(t/5000)%3;   // 휴게 중엔 TV가 켜진다
   if(sc===0){ R(g,sx,sy,58,32,'#2a5a9a'); R(g,sx,sy+24,58,8,'#e8ecf2'); R(g,sx,sy+24,12,8,'#d83a3a'); R(g,sx+14-(Math.floor(t/60)%40),sy+27,30,2,'#3a4048');   // 뉴스
     disc(g,sx+36,sy+12,5,'#f2d0a8'); R(g,sx+29,sy+17,14,7,'#3a3f46'); R(g,sx+35,sy+17,2,4,'#e8ecee'); R(g,sx+4,sy+4,18,10,'#8ac0e8'); }
   else if(sc===1){ R(g,sx,sy,58,32,'#f4e6c8'); R(g,sx,sy+22,58,10,'#c99a6a'); ell(g,sx+22,sy+20,12,5,'#5a6068'); ell(g,sx+22,sy+18,10,3,'#c85a2a');   // 요리 방송
@@ -2617,19 +2619,21 @@ onTileFx(pTV(),32,3,33,4,function(g,x,y,t){ if(!STATE.b1TvOn) return; var sx=x+3
   else { R(g,sx,sy,58,32,'#4a9a4a'); R(g,sx,sy,58,6,'#2a3a5a'); for(var k2=0;k2<6;k2++) R(g,sx+4+k2*9,sy+2,5,2,'#f2d06a');                     // 야구 중계
     tri(g,sx+29,sy+10,sx+45,sy+26,sx+13,sy+26,'#c8a060'); P(g,sx+29+Math.round(Math.sin(t*0.004)*10),sy+18,'#ffffff'); R(g,sx+40,sy+26,16,6,'#1e2024'); R(g,sx+42,sy+28,12,1,'#f2d06a'); }
   g.fillStyle='rgba(255,255,255,0.08)'; g.fillRect(sx,sy,58,2); });
-onTile(pSofaBack('#7a9ab8'),31,6,34,6);
-[0,1,2].forEach(function(k){ var cx=26+k*2; put(pDesk(hash('b1desk'+k)%97),cx*T,4*T-16,4*T+32,[cx,4,cx+1,4]); things.push({img:pChairBack(['#e8a05a','#8ab0c8','#a8c890'][k]),x:cx*T+13,y:4*T+6-32,sy:4*T+5}); });
-block(26,3,34,8);
-// 벽: 근무표 · 시계 · 앞치마 걸이
-lazyItem(function(){ return obj(84,50,function(g){ R(g,0,0,84,50,'#8a6048'); R(g,2,2,80,46,'#fbf6ea'); R(g,2,2,80,11,'#6a8a5a'); tx(g,'주방 식구 쉼터',42,8,9,'#fbf6e6','center');
+onTile(pSofaBack('#7a9ab8'),31,24,34,24);
+[0,1,2].forEach(function(k){ var cx=26+k*2; put(pDesk(hash('b1desk'+k)%97),cx*T,22*T-16,22*T+32,[cx,22,cx+1,22]); things.push({img:pChairBack(['#e8a05a','#8ab0c8','#a8c890'][k]),x:cx*T+13,y:22*T+6-32,sy:22*T+5}); });
+block(26,21,34,28);
+lazyItem(function(){ return obj(80,14,function(g){ R(g,0,0,80,14,'#6a8a5a'); tx(g,'주방 식구 쉼터',40,7,9,'#fbf6e6','center'); }); },28*T,20*T+6,21*T);
+// 벽 (식자재 창고 위): 근무표 · 시계 / 주방 위: 앞치마 걸이 · '주방' 표지
+lazyItem(function(){ return obj(84,50,function(g){ R(g,0,0,84,50,'#8a6048'); R(g,2,2,80,46,'#fbf6ea'); R(g,2,2,80,11,'#6a8a5a'); tx(g,'주방 근무표',42,8,9,'#fbf6e6','center');
   for(var r=0;r<4;r++){ R(g,6,17+r*7,72,1,'#d8ccb4'); tx(g,['월','화','수','목'][r],10,20+r*7,7,'#6a5444','center'); for(var c=0;c<3;c++) R(g,20+c*20,18+r*7,14,4,[ '#f2a65a','#fbfbf8','#e8ecee'][c]); }
-  R(g,20,44,14,2,'#f2a65a'); R(g,40,44,14,2,'#c9cfd4'); disc(g,76,6,2,'#e04a4a'); }); },26*T+8,FACE_TOP+6,1);
-things.push({sy:1, draw:function(g){ var d=new Date(); drawClock(g,{h:d.getHours(),m:d.getMinutes()},{cx:30*T+8,cy:FACE_TOP+26}); }});
+  R(g,20,44,14,2,'#f2a65a'); R(g,40,44,14,2,'#c9cfd4'); disc(g,76,6,2,'#e04a4a'); }); },26*T+20,FACE_TOP+6,1);
+things.push({sy:1, draw:function(g){ var d=new Date(); drawClock(g,{h:d.getHours(),m:d.getMinutes()},{cx:34*T+4,cy:FACE_TOP+26}); }});
 wallItem(obj(56,46,function(g){ R(g,0,0,56,4,'#8a6048'); R(g,0,0,56,1,'#b08254'); [6,24,42].forEach(function(x,i){ disc(g,x+4,4,2,'#c9cfd4');
   if(i<2){ R(g,x-1,8,10,6,'#fbfbf8'); R(g,x-3,14,14,30,i?'#6a8a5a':'#f4f4f0'); R(g,x-3,14,14,2,'#ffffff'); R(g,x,24,8,8,sh(i?'#6a8a5a':'#f4f4f0',-0.1)); }   // 앞치마
-  else { R(g,x-2,8,12,10,'#fbfbf8'); ell(g,x+4,8,7,5,'#ffffff'); R(g,x-2,17,12,3,'#e8e8e4'); } }); }),33*T-4,FACE_TOP+10);   // 조리 모자
-// ---- 주방 (배식대 오른쪽 끝 통로로 이어진다) · 식자재 창고 (주방 아래, 주방으로만 드나든다) ----
-// 손님 동선(엘리베이터 → 계산 → 식판 → 배식대 → 테이블 → 퇴식구 → 엘리베이터)은 왼쪽에 그대로 두고, 오른쪽을 주방 식구 구역으로 쓴다
+  else { R(g,x-2,8,12,10,'#fbfbf8'); ell(g,x+4,8,7,5,'#ffffff'); R(g,x-2,17,12,3,'#e8e8e4'); } }); }),7*T+8,FACE_TOP+10);   // 조리 모자
+lazyItem(function(){ return obj(44,14,function(g){ R(g,0,0,44,14,'#2a2e34'); tx(g,'주 방',22,7,9,'#fbf6e6','center'); }); },9*T+12,FACE_TOP+14,1);
+// ---- 주방 (배식대 바로 뒤, 위쪽에 가로로) · 식자재 창고 (주방 오른쪽, 주방으로만 드나든다) ----
+// 주방 식구는 엘리베이터 앞 → 5열 → 주방 왼쪽 문(6열 8행)으로 들어오고, 오른쪽 끝(25열 9·10행)으로 식당에 나간다
 var SS='#c9cfd4', SSL='#e8ecee', SSD='#8e979e';                        // 스테인리스
 function pLowWallH(len){ return obj(len,26,function(g,w){ R(g,0,0,w,7,SSL); R(g,0,0,w,2,'#ffffff'); R(g,0,7,w,19,'#eef2f0'); for(var x=0;x<w;x+=16){ R(g,x,7,1,19,'#d6dcda'); } R(g,0,16,w,1,'#d6dcda'); R(g,0,24,w,2,'#c8d0ce'); }); }
 function pLowWallV(len){ return obj(12,len,function(g,w,h){ R(g,0,0,12,h,'#eef2f0'); R(g,0,0,3,h,'#ffffff'); R(g,9,0,3,h,'#d0d8d6'); for(var y=0;y<h;y+=16) R(g,0,y,12,1,'#d6dcda'); R(g,0,h-8,12,8,'#c8d0ce'); }); }
@@ -2686,43 +2690,40 @@ function pDietDesk(){ return obj(64,52,function(g){                     // 영�
   R(g,4,14,16,8,'#e8ecee'); R(g,6,12,12,2,'#c9cfd4'); disc(g,12,18,2,'#3a8ae8'); }); }
 
 // 영양사 자리: 쉼터 아래쪽 (컴퓨터로 식단 · 영양 성분 정리)
-put(pDietDesk(),26*T,7*T-20,7*T+30,[26,7,27,7]); things.push({img:pChairBack('#a8c0a0'),x:26*T+13,y:8*T+6-32,sy:8*T+5});
-lazyItem(function(){ return obj(40,14,function(g){ R(g,0,0,40,14,'#6a8a5a'); tx(g,'영양사',20,7,9,'#fbf6e6','center'); }); },28*T+4,7*T-2,7*T+31);
-// 주방 바닥 · 벽
-kitchenTiles(bgc,22,10,34,19);
-put(pLowWallH(3*T),21*T,10*T-26,10*T-1,[21,9,23,9]); put(pLowWallH(10*T),25*T,10*T-26,10*T-1,[25,9,34,9]);   // 위쪽: 배식대 끝 통로(24열)로 드나든다
-put(pLowWallV(19*T),21*T+10,10*T,29*T,[21,9,21,28]);
-put(pLowWallH(3*T),22*T,21*T-26,21*T-1,[22,20,24,20]); put(pLowWallH(9*T),26*T,21*T-26,21*T-1,[26,20,34,20]);    // 주방 ↔ 창고 문 (25열)
-lazyItem(function(){ return obj(44,14,function(g){ R(g,0,0,44,14,'#2a2e34'); tx(g,'주 방',22,7,9,'#fbf6e6','center'); }); },22*T+8,9*T+4,10*T);
-lazyItem(function(){ return obj(60,14,function(g){ R(g,0,0,60,14,'#2a2e34'); tx(g,'식자재 창고',30,7,9,'#fbf6e6','center'); }); },22*T+10,20*T+4,21*T+2);
-// 주방: 뒷벽 쪽 대형 밥솥 · 국솥 둘 · 화구 둘 · 튀김기, 오른쪽 냉장고, 가운데 조리대, 아래 설거지 싱크대
-onTile(pRiceCooker(),22,10,23,11);
-onTileFx(pSoupPot('#c8803a'),25,10,26,11,function(g,x,y,t){ for(var k=0;k<3;k++){ var u=((t/900)+k/3)%1; R(g,x+18+k*10,y+10-Math.round(u*14),2,4,'rgba(255,255,255,'+(0.5*(1-u)).toFixed(2)+')'); } });   // 된장국 김
-onTileFx(pSoupPot('#e8d8b0'),27,10,28,11,function(g,x,y,t){ for(var k=0;k<3;k++){ var u=((t/1000)+k/3)%1; R(g,x+18+k*10,y+10-Math.round(u*14),2,4,'rgba(255,255,255,'+(0.5*(1-u)).toFixed(2)+')'); } });   // 곰국 김
-onTileFx(pRange(),29,10,30,11,function(g,x,y,t){ var f=Math.floor(t/120)%2; R(g,x+12,y+28,8,2,f?'#f08030':'#f8c040'); });
-onTile(pRange(),31,10,32,11);
-onTileFx(pFryer(),33,10,34,11,function(g,x,y,t){ var b=Math.floor(t/200)%3; P(g,x+12+b*3,y+22,'#fff4c0'); P(g,x+40-b*3,y+25,'#fff4c0'); });
-onTile(pKFridge(),33,13,34,15);
-onTile(pPrepTable(7*T),24,14,30,15);
-onTile(pKSink(6*T),27,18,32,19); onTile(pTrash(),33,19,33,19);
-// 창고 바닥 (회색 타일): 쌀 포대 · 채소 선반 둘 · 냉장고 · 음료 냉장고 · 채소 상자
-(function(g){ for(var r=21;r<=28;r++) for(var c=22;c<=34;c++){ var x=c*T, y=r*T; R(g,x,y,T,T,(r+c)%2?'#c8ccca':'#d2d6d4'); R(g,x,y,T,1,'#b8bcba'); R(g,x,y,1,T,'#b8bcba'); } })(bgc);
-onTile(pRiceSacks(),22,21,23,22);
-onTile(pVegShelf(),27,21,29,22); onTile(pVegShelf(),30,21,32,22);
-onTile(pKFridge(),33,21,34,23);
-put(pDrinkFridge('drink'),31*T,29*T-112,29*T,[31,26,33,28]);
-onTile(pVegCrates(),22,27,24,28);
+put(pDietDesk(),26*T,25*T-20,25*T+30,[26,25,27,25]); things.push({img:pChairBack('#a8c0a0'),x:26*T+13,y:26*T+6-32,sy:26*T+5});
+lazyItem(function(){ return obj(40,14,function(g){ R(g,0,0,40,14,'#6a8a5a'); tx(g,'영양사',20,7,9,'#fbf6e6','center'); }); },28*T+4,25*T-2,25*T+31);
+// 주방 벽: 왼쪽(6열, 8행이 주방 식구 문) · 창고 칸막이(26열, 5행이 창고 문) · 창고 앞 낮은 벽
+put(pLowWallV(5*T),6*T+10,3*T,8*T,[6,3,6,7]);
+put(pLowWallV(2*T),26*T+10,3*T,5*T,[26,3,26,4]); put(pLowWallV(4*T),26*T+10,6*T,10*T,[26,6,26,9]);
+put(pLowWallH(8*T),27*T,10*T-26,10*T-1,[27,9,34,9]);
+lazyItem(function(){ return obj(60,14,function(g){ R(g,0,0,60,14,'#2a2e34'); tx(g,'식자재 창고',30,7,9,'#fbf6e6','center'); }); },29*T,9*T+10,10*T+1);
+// 주방: 뒷벽 쪽 대형 밥솥 · 국솥 둘 · 화구 둘 · 튀김기 · 설거지 싱크대, 가운데 조리대 · 냉장고
+onTile(pRiceCooker(),7,3,8,4);
+onTileFx(pSoupPot('#c8803a'),9,3,10,4,function(g,x,y,t){ for(var k=0;k<3;k++){ var u=((t/900)+k/3)%1; R(g,x+18+k*10,y+10-Math.round(u*14),2,4,'rgba(255,255,255,'+(0.5*(1-u)).toFixed(2)+')'); } });   // 된장국 김
+onTileFx(pSoupPot('#e8d8b0'),11,3,12,4,function(g,x,y,t){ for(var k=0;k<3;k++){ var u=((t/1000)+k/3)%1; R(g,x+18+k*10,y+10-Math.round(u*14),2,4,'rgba(255,255,255,'+(0.5*(1-u)).toFixed(2)+')'); } });   // 곰국 김
+onTileFx(pRange(),13,3,14,4,function(g,x,y,t){ var f=Math.floor(t/120)%2; R(g,x+12,y+28,8,2,f?'#f08030':'#f8c040'); });
+onTile(pRange(),15,3,16,4);
+onTileFx(pFryer(),17,3,18,4,function(g,x,y,t){ var b=Math.floor(t/200)%3; P(g,x+12+b*3,y+22,'#fff4c0'); P(g,x+40-b*3,y+25,'#fff4c0'); });
+onTile(pKSink(6*T),19,3,24,4); onTile(pTrash(),25,3,25,3);
+onTile(pPrepTable(7*T),9,6,15,7);
+onTile(pKFridge(),22,5,23,7);
+// 식자재 창고: 채소 선반 둘 · 냉장고 · 쌀 포대 · 채소 상자 · 음료 냉장고
+onTile(pVegShelf(),27,3,29,4); onTile(pVegShelf(),30,3,32,4);
+onTile(pKFridge(),33,3,34,5);
+onTile(pRiceSacks(),27,7,28,8);
+onTile(pVegCrates(),29,8,31,8);
+put(pDrinkFridge('drink'),32*T,9*T-112,9*T,[32,6,34,8]);
 // 긴 테이블 셋 (각 10석) · 등나무 스툴
-var B1_SEATS=[], B1_TABLES=[[10,11,13,'A'],[16,17,19,'B'],[22,23,25,'C']], STOOLC=[7,9,11,13,15];
+var B1_SEATS=[], B1_TABLES=[[13,14,16,'A'],[18,19,21,'B'],[23,24,26,'C']], STOOLC=[7,9,11,13,15], STOOLB=[8,10,12,14,16];   // 아래쪽 의자는 한 칸씩 어긋나게 (다음 테이블 위쪽 의자와 같은 줄을 나눠 쓴다)
 B1_TABLES.forEach(function(t){ var top=t[0], tr=t[1], bot=t[2];
   put(pLongTable(11*T),6*T,(tr+2)*T-72,(tr+2)*T,[6,tr,16,tr+1]);
-  STOOLC.forEach(function(c,i){
+  STOOLC.forEach(function(c,i){ var cb=STOOLB[i];
     put(pWovenStool(),c*T+3,(top+1)*T-30,(top+1)*T,[c,top,c,top]);
-    put(pWovenStool(),c*T+3,(bot+1)*T-30,bot*T+10,[c,bot,c,bot]);
+    put(pWovenStool(),cb*T+3,(bot+1)*T-30,bot*T+10,[cb,bot,cb,bot]);
     B1_SEATS.push({ id:t[3]+'t'+i, table:t[3], side:'top', col:i, x:c*T+16-17, feet:(top+1)*T+1, dir:'down', c:c, r:top-1, tray:{x:c*T+16, y:tr*T+10} });
-    B1_SEATS.push({ id:t[3]+'b'+i, table:t[3], side:'bot', col:i, x:c*T+16-17, feet:bot*T+26, dir:'up', c:c, r:bot+1, tray:{x:c*T+24, y:(tr+1)*T+6} }); }); });
+    B1_SEATS.push({ id:t[3]+'b'+i, table:t[3], side:'bot', col:i, x:cb*T+16-17, feet:bot*T+26, dir:'up', c:cb, r:bot+1, tray:{x:cb*T+16, y:(tr+1)*T+6} }); }); });
 // 오른쪽: 기둥(R·G 표지) · 이끼 화단 · 높은 이끼 바 (4석)
-[[19,10,'R','#f07a2a'],[19,23,'G','#f2c230']].forEach(function(pl){ put(pSlatPillar(),pl[0]*T-4,(pl[1]+1)*T-124,(pl[1]+1)*T,[pl[0],pl[1],pl[0],pl[1]]);
+[[19,14,'R','#f07a2a'],[19,24,'G','#f2c230']].forEach(function(pl){ put(pSlatPillar(),pl[0]*T-4,(pl[1]+1)*T-124,(pl[1]+1)*T,[pl[0],pl[1],pl[0],pl[1]]);
   things.push({sy:(pl[1]+1)*T+0.1, draw:function(g){ var x=pl[0]*T+16, y=(pl[1]+1)*T-120; R(g,x-1,y-26,2,26,'#6a6f76');   // 천장에 매단 알록달록 글자 표지
   g.font='bold 30px sans-serif'; g.textBaseline='top'; g.textAlign='center'; g.lineWidth=4; g.strokeStyle='#5a3a24'; g.strokeText(pl[2],x,y); g.fillStyle=pl[3]; g.fillText(pl[2],x,y); g.textAlign='left'; }}); });
 // 식기 반납대 · 쓰레기통 셋 · 공기청정기 둘 · 냉난방기(스탠드) · 화분
@@ -2736,19 +2737,22 @@ things.push({sy:18*T+0.1, draw:function(g){ var t=performance.now(), E=STATE.b1R
   (E.scrap||[]).forEach(function(t0){ var u=(t-t0)/900; if(u<0||u>1) return; for(var k=0;k<6;k++){ var sx=X0+50-Math.round(u*(10+k*2)), sy=10*T+122+Math.round(Math.sin(u*Math.PI)*-8)+k*3; R(g,sx,sy,2,2,['#f4f0e0','#d8583a','#6aa84a'][k%3]); } });
   (E.spoon||[]).forEach(function(t0){ var u=(t-t0)/700; if(u<0||u>1) return; var sx=X0+28+Math.round((1-u)*16), sy=10*T+176+Math.round(u*14); R(g,sx,sy,1,9,'#eef1f3'); ell(g,sx,sy,1,2,'#ffffff'); });
   g.font='10px NeoDGM, sans-serif'; g.textBaseline='top'; R(g,X0+14,10*T-22,50,16,'#2a2e34'); g.fillStyle='#fbf6e6'; g.fillText('퇴식구',X0+20,10*T-19); }});
-onTile(pPlant('bush','#e8e2d6'),5,9,5,9);
+onTile(pPlant('bush','#e8e2d6'),1,8,1,8);
 onTile(pTrash(),5,27,5,27);
 onTile(pAirPurifier(),18,21,18,21);
 onTile(pOliveTree(),19,26,20,27);
-onTile(pPlant('tall','#e8e2d6'),18,15,18,15); onTile(pPlant('monstera','#e8e2d6'),3,28,3,28);
+onTile(pPlant('tall','#e8e2d6'),18,17,18,17); onTile(pPlant('monstera','#e8e2d6'),3,28,3,28);
 onTile(pIceVending(),1,19,2,21); onTile(pRamenVending(),1,22,2,24);   // 아이스크림 자판기 · 라면 자판기
-// 조각품 둘: 광택 나는 빨간 사과 · 커다란 숟가락과 포크 (핀조명)
-spot(bgc,20*T+16,18*T-4,24,8); onTile(pArtB1('apple'),20,16,20,17); onTile(pPlant('bush','#4a4e56'),18,27,18,27);
+// 조각품: 광택 나는 빨간 사과 (핀조명) · 오른쪽: 커피·차 코너 · 셀프 코너 · 화분
+onTile(pTeaStation(),28,11,32,12); onTile(pSelfCorner(),29,15,32,15);
+onTile(pPlant('monstera','#e8e2d6'),34,14,34,14); onTile(pPlant('tall','#e8e2d6'),27,15,27,15); onTile(pAirPurifier(),34,18,34,18);
+spot(bgc,22*T+16,19*T-4,24,8); onTile(pArtB1('apple'),22,17,22,18); onTile(pPlant('bush','#4a4e56'),18,27,18,27);
 MAPB.VEND={ ice:{c:3,r:20,face:'left'}, ramen:[{c:3,r:23,face:'left'}], iceX:T+34, ramenY:[23*T-22] };
 MAPB.SWITCH=SWITCHB; MAPB.ELEV={x:32,y:0,w:128,h:96}; MAPB.SEATS=B1_SEATS; MAPB.RETURN=B1_RETURN; MAPB.SCRAP=B1_SCRAP; MAPB.SPOON=B1_SPOON;
-MAPB.REST={ lane:4*T+2, desks:[26*T+14,28*T+14,30*T+14], deskFeet:4*T+6, sofaIn:34*T-4, sofaRow:5*T+22, sofa:[31*T+14,33*T+2], sofaFeet:6*T+12 };   // 휴게실 자리
-MAPB.LINE={ r:6, c0:10, c1:22 }; MAPB.PAY={ c:6, r:6 }; MAPB.LOBBY={ c:2, r:3 }; MAPB.DOCK={ c:20, r:24 };
-MAPB.KITCHEN={ door:{c:24,r:9}, store:{c:25,r:20}, rice:{c:22,r:12}, pots:[{c:25,r:12},{c:27,r:12}], range:[{c:29,r:12},{c:31,r:12}], fryer:{c:33,r:12}, fridge:{c:32,r:14}, prep:{c:27,r:16}, sink:{c:29,r:17}, diet:{c:26,r:8} };   // 주방 식구가 설 자리 (나중에 쓴다)
+MAPB.REST={ gate:25*T-1, lane:22*T+2, desks:[26*T+14,28*T+14,30*T+14], deskFeet:22*T+6, sofaIn:34*T-4, sofaRow:23*T+22, sofa:[31*T+14,33*T+2], sofaFeet:24*T+12 };   // 쉼터 자리 (gate: 주방에서 내려가는 25열)
+MAPB.CREW={ feet:9*T+2, lobbyFeet:4*T+2, lx:5*T-1, posts:[8*T-1,15*T-1,21*T-1], c0:12, c1:23 };   // 주방 식구가 배식대 뒤에 서는 줄 · 엘리베이터에서 들어오는 길
+MAPB.LINE={ r:11, c0:12, c1:23 }; MAPB.PAY={ c:8, r:11 }; MAPB.LOBBY={ c:2, r:3 }; MAPB.DOCK={ c:23, r:27 };
+MAPB.KITCHEN={ gate:{c:25,r:9}, store:{c:26,r:5}, rice:{c:7,r:5}, pots:[{c:9,r:5},{c:11,r:5}], range:[{c:13,r:5},{c:15,r:5}], fryer:{c:17,r:5}, sink:{c:21,r:5}, fridge:{c:22,r:8}, prep:{c:12,r:8}, diet:{c:26,r:26} };   // 주방 식구가 설 자리 (나중에 쓴다)
 var B1LOOK={
   cashier:{id:'b1cashier', kind:'chicken', shirt:'#f2a65a', pants:'#4a4038', apron:'#6a8a5a'},
   cook1:  {id:'b1cook1',   kind:'meerkat', shirt:'#fbfbf8', pants:'#3a3f46', chef:true, coat:true, apron:'#f4f4f0'},
