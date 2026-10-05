@@ -1294,7 +1294,7 @@ window.__npcStatus=function(id){
     return { online:true, text:'순찰 중' }; }
   var n=FLOORS.B1 && FLOORS.B1.actors[id];
   if(n && n.visible) return { online:true, text:'' };
-  if(/^b1c/.test(id) && t>=15*60 && t<15*60+20) return { online:true, text:'점심시간' };   // 주방 식구는 식당에서 먹는다
+  if(/^b1(c|sim|seol|diet)/.test(id) && t>=15*60 && t<15*60+20) return { online:true, text:'점심시간' };   // 주방 식구는 식당에서 먹는다
   return { online:false, text: t<8*60 ? '출근 전' : '퇴근' };
 };
 (function(){ var base=window.__npcStatus, MAP={ nam:'5:nam', han:'5:han', bartender:'2:npcBartender', server:'2:npcServer', b1cashier:'B1:b1cashier', b1cook1:'B1:b1cook1', b1cook2:'B1:b1cook2',
@@ -1770,9 +1770,9 @@ function lunchPlan(key){
   LUNCH_PLAN={ key:key, roof:roof, diners:diners, boss:boss };
   return LUNCH_PLAN;
 }
-var B1_CREW_LOOK={ b1cashier:'cashier', b1cook1:'cook1', b1cook2:'cook2' };
+var B1_CREW_LOOK={ b1cashier:'cashier', b1cook1:'cook1', b1cook2:'cook2', b1sim:'sim', b1seol:'seol', b1diet:'diet' };
 function b1Look(id){ if(/^buyer_/.test(id)) return (BUYERS[id.slice(6)]||{}).look; if(id==='boss') return PO.VISITORS.visitorBoss; if(F1_STAFF[id]) return F1_STAFF[id].look; if(B1_CREW_LOOK[id]) return PO.B1LOOK[B1_CREW_LOOK[id]]; return STAFFLOOK[id] || PO.VISITORS[id] || PO.F2LOOK[id]; }
-function b1Name(id){ if(/^buyer_/.test(id)) return (BUYERS[id.slice(6)]||{}).name; if(id==='boss') return '사장님'; if(F1_STAFF[id]) return F1_STAFF[id].name; if(id==='b1cashier') return '현계산'; if(id==='b1cook1') return '윤요리'; if(id==='b1cook2') return '주요리'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; return staffName(id); }
+function b1Name(id){ if(/^buyer_/.test(id)) return (BUYERS[id.slice(6)]||{}).name; if(id==='boss') return '사장님'; if(F1_STAFF[id]) return F1_STAFF[id].name; if(id==='b1cashier') return '현계산'; if(id==='b1cook1') return '윤요리'; if(id==='b1cook2') return '주요리'; if(id==='b1sim') return '심주방'; if(id==='b1seol') return '설주방'; if(id==='b1diet') return '고영양사'; if(id==='yun') return '윤안내'; if(id==='kang') return '강안내'; return staffName(id); }
 function b1MakeDiner(F,key,id,seat,now){
   var look=b1Look(id); if(!look) return null;
   var c1={}, c2={}; for(var k in look){ c1[k]=look[k]; c2[k]=look[k]; } c2.item='foodtray';
@@ -1884,13 +1884,20 @@ var B1D_TALK={ otter:[[['오늘 국 간 어때요?'],['딱 좋아요!']],[['나�
   cashier:[[['오늘 몇 분 드셨어요?'],['벌써 120명 넘었어요']],[['식권 정산','부탁해요'],['네, 오후에 드릴게요']],[['손님들 반응 어때요?'],['국이 최고래요']]] };
 function b1kX(c){ return c*T-1; } function b1kF(r){ return (r+1)*T+2; }
 function b1kPath(fc,fr,tc,tr){ var p=[];                                                     // 주방 안 길: 5행 통로 · 30열 세로 통로 (가로 먼저)
-  if(fr>5) p.push({x:b1kX(30), feet:b1kF(5)});
-  var tcol=tr>5?30:tc; p.push({x:b1kX(tcol), feet:b1kF(5)}); if(tr>5) p.push({x:b1kX(30), feet:b1kF(tr)}); return p; }
+  if(fr>5) p.push({x:b1kX(30), feet:b1kF(fr)}, {x:b1kX(30), feet:b1kF(5)});
+  var tcol=tr>5?30:tc; p.push({x:b1kX(tcol), feet:b1kF(5)}); if(tr>5){ p.push({x:b1kX(30), feet:b1kF(tr)}); if(tc!==30) p.push({x:b1kX(tc), feet:b1kF(tr)}); } return p; }
+function b1TakeRest(F,n,prefs){ var used={}; for(var id in F.actors){ var a=F.actors[id]; if(a!==n && a.rest && (a.b1ph==='rest'||a.b1ph==='toRest')) used[a.rest.spot]=1; }   // 쉼터 자리 다섯을 나눠 앉는다
+  return prefs.concat(['desk0','desk1','desk2','sofa0','sofa1']).filter(function(sp){ return !used[sp]; })[0]||null; }
+function b1kRestPath(n){ var R=PO.MAPB.REST, S=B1K_ST[n.st], tail=b1RestPath(n.rest.spot).slice(R.route.length);   // 주방 자리 → 30열 → 쉼터 윗줄 → 자리
+  var head = S.r>5 ? [{x:b1kX(30), feet:b1kF(S.r)}] : b1kPath(S.c,S.r,30,5); return head.concat([{x:b1kX(30), feet:R.lane}]).concat(tail); }
+function b1kRestBack(n){ var full=b1kRestPath(n), S=B1K_ST[n.st], idx=full.length-(n.wp?n.wp.length:0); return full.slice(0,idx).reverse().concat([{x:b1kX(S.c), feet:b1kF(S.r)}]); }
+function b1NewLunch(id,name,idx,d){ var Q=window.__b1Guests=window.__b1Guests||{}, key='kl_'+id, dk=d.toDateString(), ns=d.getHours()*3600+d.getMinutes()*60;   // 새 식구도 15:00 주방 식구 점심에
+  if((Q[key] && Q[key].day===dk) || ns>=15*3600+16*60) return; Q[key]={ kind:'dinner', id:id, name:name, group:'kitchen', day:dk, leaveAt:15*3600+18*60+idx*15, crew:'kitchen', meal:'lunch', skipPay:true }; }
 function b1kSay(n,line,now,ms){ n.bubble=line; n.talkUntil=now+(ms||3000); }
 function b1kReply(F,who,line,at){ (F.b1Rep=F.b1Rep||[]).push({ who:who, line:line, at:at }); }
 var B1D_SEAT={ x:28*T+14, feet:28*T+6 };
 function b1dRestPath(){ var R=PO.MAPB.REST; return R.route.concat([{x:R.sofaIn, feet:R.lane},{x:R.sofaIn, feet:R.sofaRow},{x:B1D_SEAT.x, feet:R.sofaRow},{x:B1D_SEAT.x, feet:B1D_SEAT.feet}]); }
-function b1NewCrew(F,now,nowSec,d,crew){
+function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
   var M=PO.MAPB, C=M.CREW, CY=C.feet, DOOR_X=2*T-1, min=Math.floor(nowSec/60);
   var ot=[npcActor(F,'b1sim',PO.B1LOOK.sim,'심주방'), npcActor(F,'b1seol',PO.B1LOOK.seol,'설주방')], di=npcActor(F,'b1diet',PO.B1LOOK.diet,'고영양사');
   // 미뤄 둔 대답
@@ -1898,18 +1905,26 @@ function b1NewCrew(F,now,nowSec,d,crew){
   var plan=B1K_PLAN.filter(function(p){ return min<p.until; })[0]||B1K_PLAN[3];
   function pick(n,other){ var c=plan.st.filter(function(s){ return s!==n.st && s!==(other&&other.st) && s!==(other&&other.goSt); }); return c[Math.floor(Math.random()*c.length)]||'prep'; }
   ot.forEach(function(n,i){ var other=ot[1-i], inAt=7*3600+55*60+i*10*60, outAt=21*3600+5*60+i*5*60, here=nowSec>=inAt && nowSec<outAt;
+    if(here && kLunch){ here=false; b1NewLunch(n.id,n.name,3+i,d); n.atLunch=true; }
+    var idle=here && !busy && now-(F.b1IdleSince||now)>30000+i*6000;
     if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; }
     if(!n.b1ph){ n.onFurn=false; n.spd=0;
       if(here){ var s0=i?'pot1':'rice'; s0=plan.st[i%plan.st.length]===other.st?plan.st[(i+1)%plan.st.length]:plan.st[i%plan.st.length]; var S0=B1K_ST[s0];
         n.st=s0; n.x=b1kX(S0.c); n.feet=b1kF(S0.r); n.dir=S0.face; n.visible=true; n.b1ph='work'; n.until=now+8000+Math.random()*15000; n.nextTalk=now+4000+Math.random()*12000; }
       else { n.b1ph='off'; n.visible=false; } }
     if(n.b1ph==='off'){ if(here){ var s1=pick(n,other), S1=B1K_ST[s1]; n.b1ph='in'; n.visible=true; n.x=DOOR_X; n.feet=C.lobbyFeet; n.spd=0; n.goSt=s1;
-        n.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:CY},{x:b1kX(27), feet:CY},{x:b1kX(27), feet:b1kF(5)}].concat(b1kPath(27,5,S1.c,S1.r)); b1kSay(n,[['출근했어요!'],['오늘도 힘내자!']][i],now,2600); } return; }
+        n.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:CY},{x:b1kX(27), feet:CY},{x:b1kX(27), feet:b1kF(5)}].concat(b1kPath(27,5,S1.c,S1.r)); b1kSay(n,n.atLunch?[['잘 먹었다!'],['배부르다~']][i]:[['출근했어요!'],['오늘도 힘내자!']][i],now,2600); n.atLunch=false; } return; }
     if(n.b1ph==='in'||n.b1ph==='move'){ if(n.hold && now<n.hold) return; if(wpStep(n,now)){ n.st=n.goSt; n.goSt=null; var S=B1K_ST[n.st]; n.dir=S.face; n.b1ph='work'; n.until=now+15000+Math.random()*20000; n.nextTalk=Math.min(n.nextTalk||0,now+3000+Math.random()*5000); } return; }
     if(n.b1ph==='out'){ if(wpStep(n,now)){ n.b1ph='off'; n.visible=false; n.bubble=null; n.wp=null; } return; }
+    if(n.b1ph==='toRest'){ if(busy||!here){ n.b1ph='fromRest'; n.spd=0.1; n.wp=b1kRestBack(n); return; } if(wpStep(n,now)){ b1RestSit(n,n.rest); n.b1ph='rest'; n.nextTalk=now+5000+Math.random()*8000; } return; }
+    if(n.b1ph==='rest'){ if(busy||!here){ n.b1ph='fromRest'; n.onFurn=false; n.spd=busy?0.1:0.05; n.wp=b1kRestBack(n); if(busy && here) b1kSay(n,[['손님 오셨다!'],['네~ 갑니다!']][i],now,2200); return; }
+      if(!n.talkUntil && now>n.nextTalk){ var rp=n.rest.spot.indexOf('desk')===0?B1_REST_LINES.desk:B1_REST_LINES.sofa; b1kSay(n,rp[Math.floor(Math.random()*rp.length)],now,3200); n.nextTalk=now+16000+Math.random()*22000; } return; }
+    if(n.b1ph==='fromRest'){ if(wpStep(n,now)){ var S6=B1K_ST[n.st]; n.dir=S6.face; n.rest=null;
+        if(here){ n.b1ph='work'; n.until=now+10000+Math.random()*10000; } else { n.b1ph='out'; n.wp=b1kPath(S6.c,S6.r,27,5).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); } } return; }
     if(n.b1ph==='work'){
-      if(!here){ var S2=B1K_ST[n.st]; n.b1ph='out'; n.wp=b1kPath(S2.c,S2.r,27,5).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(n,[['수고하셨습니다~'],['내일 봬요!']][i],now,2600); return; }
+      if(!here){ var S2=B1K_ST[n.st]; n.b1ph='out'; n.wp=b1kPath(S2.c,S2.r,27,5).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(n,kLunch?[['우리도 밥 먹으러!'],['배고파요~']][i]:[['수고하셨습니다~'],['내일 봬요!']][i],now,2600); return; }
       if(n.hold && now<n.hold) return;
+      if(idle && !n.talkUntil){ var sp=b1TakeRest(F,n,i?['sofa0','desk1']:['desk1','sofa0']); if(sp){ n.rest={spot:sp}; n.b1ph='toRest'; n.spd=0; n.wp=b1kRestPath(n); return; } }
       if(now>n.until && !n.talkUntil){ var s3=pick(n,other), S3=B1K_ST[s3], S4=B1K_ST[n.st]; n.goSt=s3; n.b1ph='move'; n.wp=b1kPath(S4.c,S4.r,S3.c,S3.r); return; }
       if(!n.talkUntil && now>n.nextTalk){ var pool=B1K_SOLO[n.st]||B1K_SOLO.prep; b1kSay(n,pool[Math.floor(Math.random()*pool.length)],now,3000); n.nextTalk=now+14000+Math.random()*22000; } } });
   // 수달끼리 · 수달과 조리 직원 이야기
@@ -1924,14 +1939,15 @@ function b1NewCrew(F,now,nowSec,d,crew){
         if(B1K_ST[a.st].r===5 && B1K_ST[b.st].r===5){ a.dir=a.x<b.x?'right':'left'; b.dir=a.x<b.x?'left':'right'; setTimeout(function(){ [a,b].forEach(function(n){ if(n.b1ph==='work') n.dir=B1K_ST[n.st].face; }); },6500); } } } }
   // 고영양사: 08:30~17:30 · 쉼터 영양사 책상 · 가끔 식당을 돌며 이야기
   var dIn=8*3600+30*60, dOut=17*3600+30*60, dHere=nowSec>=dIn && nowSec<dOut;
+  if(dHere && kLunch){ dHere=false; b1NewLunch('b1diet','고영양사',5,d); di.atLunch=true; }
   if(di.talkUntil && now>di.talkUntil){ di.bubble=null; di.talkUntil=0; }
   if(!di.b1ph){ if(dHere){ di.visible=true; di.x=B1D_SEAT.x; di.feet=B1D_SEAT.feet; di.dir='down'; di.onFurn=true; di.b1ph='desk'; di.until=now+40000+Math.random()*50000; di.nextTalk=now+6000+Math.random()*10000; } else { di.b1ph='off'; di.visible=false; } }
   if(di.b1ph==='off'){ if(dHere){ di.b1ph='in'; di.visible=true; di.onFurn=false; di.x=DOOR_X; di.feet=C.lobbyFeet; di.spd=0;
-      di.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:CY}].concat(b1dRestPath()); b1kSay(di,['좋은 아침이에요!'],now,2600); } return; }
+      di.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:CY}].concat(b1dRestPath()); b1kSay(di,di.atLunch?['잘 먹었습니다~']:['좋은 아침이에요!'],now,2600); di.atLunch=false; } return; }
   if(di.b1ph==='in'||di.b1ph==='back'){ if(wpStep(di,now)){ di.x=B1D_SEAT.x; di.feet=B1D_SEAT.feet; di.dir='down'; di.onFurn=true; di.b1ph='desk'; di.until=now+50000+Math.random()*70000; di.nextTalk=now+5000+Math.random()*8000; } return; }
   if(di.b1ph==='leave'){ if(wpStep(di,now)){ di.b1ph='off'; di.visible=false; di.bubble=null; di.wp=null; } return; }
   if(di.b1ph==='desk'){
-    if(!dHere){ di.onFurn=false; di.b1ph='leave'; di.spd=0; var rp=b1dRestPath().reverse(); di.wp=rp.concat([{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(di,['먼저 들어가 볼게요~'],now,2600); return; }
+    if(!dHere){ di.onFurn=false; di.b1ph='leave'; di.spd=0; var rp=b1dRestPath().reverse(); di.wp=rp.concat([{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(di,kLunch?['같이 밥 먹어요~']:['먼저 들어가 볼게요~'],now,2600); return; }
     if(!di.talkUntil && now>di.nextTalk){ b1kSay(di,B1D_SOLO[Math.floor(Math.random()*B1D_SOLO.length)],now,3200); di.nextTalk=now+18000+Math.random()*25000; }
     if(now>di.until && !di.talkUntil){                                                       // 돌아보기: 수달 · 조리 직원 · 계산 직원 중 하나에게
       var tg=[]; ot.forEach(function(n){ if(n.b1ph==='work') tg.push({n:n, kind:'otter'}); }); crew.forEach(function(n,k){ if(n.visible && n.b1ph==='work') tg.push({n:n, kind:k?'cook':'cashier'}); });
@@ -1974,7 +1990,7 @@ function b1Tick(F,now,off){
       if(here && !busy){ n.b1ph='rest'; n.visible=true; n.rest={spot:B1_REST_SPOTS[i][0]}; b1RestSit(n,n.rest); n.tx=n.x; n.until=now; n.nextTalk=now+5000+Math.random()*8000; }
       else if(here){ n.b1ph='work'; n.visible=true; n.x=n.tx=POST_X[i]; n.until=now+3000; n.nextTalk=now+8000+Math.random()*15000; }
       else { n.b1ph='off'; n.visible=false; } }
-    if(n.b1ph==='work' && idle && Math.abs(n.x-n.tx)<1){ n.restN=(n.restN||0)+1; n.b1ph='toRest'; n.spd=0; n.rest={spot:B1_REST_SPOTS[i][n.restN%2]}; n.wp=b1RestPath(n.rest.spot); n.bubble=null; n.talkUntil=0; }
+    if(n.b1ph==='work' && idle && Math.abs(n.x-n.tx)<1){ var rn=(n.restN||0)+1, rsp=b1TakeRest(F,n,[B1_REST_SPOTS[i][rn%2],B1_REST_SPOTS[i][(rn+1)%2]]); if(rsp){ n.restN=rn; n.b1ph='toRest'; n.spd=0; n.rest={spot:rsp}; n.wp=b1RestPath(n.rest.spot); n.bubble=null; n.talkUntil=0; } }
     if(n.b1ph==='toRest'){ if(busy){ n.b1ph='fromRest'; n.spd=0.1; n.wp=b1RestBack(n); return; }
       if(wpStep(n,now)){ b1RestSit(n,n.rest); n.b1ph='rest'; n.nextTalk=now+4000+Math.random()*6000; } return; }
     if(n.b1ph==='rest'){
@@ -2002,8 +2018,8 @@ function b1Tick(F,now,off){
     }
     if(n.b1ph==='out'){ if(!n.wp) b1CrewOut(n,DOOR_X); var outDone=wpStep(n,now); if(n.talkUntil && now>n.talkUntil){ n.bubble=null; n.talkUntil=0; } if(outDone){ n.wp=null; n.b1ph='off'; n.visible=false; n.bubble=null; } }
   });
-  b1NewCrew(F,now,nowSec,d,[cs,k1,k2]);                                                     // 심주방 · 설주방 · 고영양사
-  var restOn=[cs,k1,k2].filter(function(n){ return n.b1ph==='rest'||n.b1ph==='toRest'; });   // 누가 쉬면 선풍기, 소파에 앉으면 TV
+  b1NewCrew(F,now,nowSec,d,[cs,k1,k2],busy,kLunch);                                                     // 심주방 · 설주방 · 고영양사
+  var restOn=[cs,k1,k2,F.actors.b1sim,F.actors.b1seol].filter(function(n){ return n && (n.b1ph==='rest'||n.b1ph==='toRest'); });   // 누가 쉬면 선풍기, 소파에 앉으면 TV
   PO.STATE.b1RestOn=restOn.length>0; PO.STATE.b1TvOn=restOn.some(function(n){ return n.rest && n.rest.spot.indexOf('sofa')===0; });
   if(open && F.payNow && now-F.payNow<300 && !cs.talkUntil){ cs.bubble=['맛있게 드세요']; cs.talkUntil=now+1800; }
   // R-도우미: 운영 중엔 통로를 돌아다니고, 닫으면 충전 자리로
