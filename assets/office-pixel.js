@@ -1732,7 +1732,7 @@ function b1Chat(F,a,now){
 }
 var B1_CASHIER_LINES=[['맛있게 드세요'],['카드 찍어 주세요'],['오늘 반찬 맛있어요'],['식판은 반납대에','부탁해요']];
 var B1_COOK_LINES=[['오늘은 제육볶음이에요'],['국 뜨끈해요'],['밥 더 드릴까요?'],['반찬 새로 채웠어요'],['맛있게 드세요~']];
-var B1_ROBOT_SPOTS=[[4,9],[10,12],[18,12],[4,18],[12,17],[19,20],[10,22],[12,27],[22,16],[28,13],[31,17],[8,28],[16,28],[22,25],[3,21],[26,22]];
+var B1_ROBOT_SPOTS=[[5,9],[10,12],[18,12],[4,18],[12,17],[19,20],[10,22],[12,27],[22,16],[25,13],[25,18],[8,28],[16,28],[22,25],[4,21],[25,26]];
 var B1_TEAM={}; PO.STAFF.forEach(function(p){ B1_TEAM[p.id]=p.team; });
 function b1Rng(seed){ var x=seed||1; return function(){ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; }
 function b1Open(d){ var h=d.getHours(); return h>=8 && h<21; }
@@ -1812,14 +1812,14 @@ function b1Step(F,a,now,M,nowSec){
     case 'eat':
       if(nowSec>=a.leaveSec){ a.onFurn=false; a.bubble=null;
         if(a.snack==='ice'){ a.spr=a.sprPlain; a.ph='out'; setGoal(F,a,{ c:M.LOBBY.c, r:M.LOBBY.r, face:'up' },now); break; }
-        a.spr=a.snack==='ramen'?b1Spr(a,'ramen'):a.sprTray; a.ph='toSpoon'; setGoal(F,a,{ c:M.SPOON.c, r:M.SPOON.r, face:'left' },now); break; }
+        a.spr=a.snack==='ramen'?b1Spr(a,'ramen'):a.sprTray; a.ph='toSpoon'; setGoal(F,a,{ c:M.SPOON.c, r:M.SPOON.r, face:M.SPOON.face||'left' },now); break; }
       if(a.snackGuest){ if(!a.talkUntil && now>a.nextTalk){ b1Say(a,B1_SNACK_LINES[a.snack],now); a.nextTalk=now+10000+Math.random()*12000; } break; }
       if(a.snack && !a.talkUntil && now>a.nextTalk && Math.random()<0.5){ b1Say(a,B1_SNACK_LINES[a.snack],now); a.nextTalk=now+12000+Math.random()*15000; break; }
       b1Chat(F,a,now);
       break;
-    case 'toSpoon': a.dir='left'; a.wait=now+700; a.ph='spoon'; b1Ret('spoon',now); break;                    // 퇴식구: 수저통에 수저를 넣고
-    case 'spoon': a.ph='toScrap'; setGoal(F,a,{ c:M.SCRAP.c, r:M.SCRAP.r, face:'left' },now); break;
-    case 'toScrap': a.dir='left'; a.wait=now+900; a.ph='scrap'; b1Ret('scrap',now); break;                     // 잔반을 털고
+    case 'toSpoon': a.dir=M.SPOON.face||'left'; a.wait=now+700; a.ph='spoon'; b1Ret('spoon',now); break;                    // 퇴식구: 수저통에 수저를 넣고
+    case 'spoon': a.ph='toScrap'; setGoal(F,a,{ c:M.SCRAP.c, r:M.SCRAP.r, face:M.SCRAP.face||'left' },now); break;
+    case 'toScrap': a.dir=M.SCRAP.face||'left'; a.wait=now+900; a.ph='scrap'; b1Ret('scrap',now); break;                     // 잔반을 털고
     case 'scrap': if(a.snack==='ramen'){ a.spr=a.sprPlain; a.ph='returned'; break; }                           // 라면 컵은 국물만 버리고 끝
       a.ph='toReturn'; setGoal(F,a,{ c:M.RETURN.c, r:M.RETURN.r, face:M.RETURN.face||'up' },now); break;
     case 'toReturn': a.dir=M.RETURN.face||'up'; a.wait=now+900; a.ph='returned'; a.spr=a.sprPlain; b1Ret('tray',now); break;   // 식판은 롤러에 올려 창구로
@@ -1836,14 +1836,11 @@ var B1_REST_LINES={ desk:[['내일 재료','발주 넣어야지'],['이번 주 �
   cash:[['오늘 매출','정리 중'],['카드 전표','맞춰보는 중'],['영수증 용지','주문해야겠다'],['손님 오시면','바로 나가야지']],
   sofa:[['아이고 다리야'],['선풍기 바람','시원하다'],['오 요리 대결','프로 하네'],['5분만','눈 좀 붙일까'],['드라마 재방송','또 하네'],['야구 몇 대 몇이야?']] };
 var B1_BACK_LINES=[['어서 오세요!'],['손님 오셨다!'],['네~ 갑니다!']];
-function b1RestPath(spot){ var R=PO.MAPB.REST, k=+spot.slice(-1), p=[{x:R.gate, feet:R.lane}];   // 배식대 뒤 → 주방 오른쪽 문(25열) → 아래로 쉼터 윗줄
+function b1RestPath(spot){ var R=PO.MAPB.REST, k=+spot.slice(-1), p=R.route.slice();   // 배식 통로 → 주방 안쪽 → 창고 옆 34열 → 쉼터 윗줄
   if(spot.indexOf('desk')===0) return p.concat([{x:R.desks[k], feet:R.lane}]);
   return p.concat([{x:R.sofaIn, feet:R.lane},{x:R.sofaIn, feet:R.sofaRow},{x:R.sofa[k], feet:R.sofaRow}]); }
-function b1RestBack(n){ var R=PO.MAPB.REST, CY=PO.MAPB.CREW.feet, p=[];                // 어디에 있든 쉼터 윗줄 → 25열 → 배식대 뒤 줄로
-  if(n.feet>R.lane+10){ var y=Math.min(n.feet,R.sofaRow); p.push({x:n.x, feet:y},{x:R.sofaIn, feet:y},{x:R.sofaIn, feet:R.lane}); }
-  else if(n.feet>R.lane+0.5) p.push({x:n.x, feet:R.lane});
-  if(n.feet>CY+1){ p.push({x:R.gate, feet:Math.min(n.feet,R.lane)}); p.push({x:R.gate, feet:CY}); }
-  return p; }
+function b1RestBack(n){ var R=PO.MAPB.REST, CY=PO.MAPB.CREW.feet, full=b1RestPath(n.rest.spot);   // 지나온 점을 거꾸로 밟아 배식 통로로 (가다가 돌아설 때도, 앉아 있다 일어날 때도)
+  var idx=full.length-(n.wp?n.wp.length:0); return full.slice(0,idx).reverse().concat([{x:R.route[0].x, feet:CY}]); }
 function b1CrewIn(n,post){ var C=PO.MAPB.CREW; n.feet=C.lobbyFeet; n.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:C.feet},{x:post, feet:C.feet}]; }   // 엘리베이터 → 5열 → 주방 왼쪽 문
 function b1CrewOut(n,doorX){ var C=PO.MAPB.CREW; n.wp=[{x:C.lx, feet:C.feet},{x:C.lx, feet:C.lobbyFeet},{x:doorX, feet:C.lobbyFeet}]; }
 function b1RestSit(n,rs){ var R=PO.MAPB.REST, k=+rs.spot.slice(-1), desk=rs.spot.indexOf('desk')===0; n.walking=false;
