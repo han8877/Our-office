@@ -1865,8 +1865,8 @@ function b1CrewLunch(n,i,d){
   Q[key]={ kind:'dinner', id:id, name:n.name, group:'kitchen', day:dk, leaveAt:15*3600+18*60+i*15, crew:'kitchen', meal:'lunch', skipPay:true };
 }
 // ---- 지하 식당 새 식구: 심주방 · 설주방 (수달, 주방 안 자리를 옮겨 다니며 일한다) · 고영양사 (돼지, 쉼터 책상 → 가끔 식당을 돌며 직원들과 이야기) ----
-var B1K_ST={ rice:{c:11,r:5,face:'up'}, pot1:{c:13,r:5,face:'up'}, pot2:{c:15,r:5,face:'up'}, range1:{c:17,r:5,face:'up'}, range2:{c:19,r:5,face:'up'}, fryer:{c:21,r:5,face:'up'},
-  prep:{c:25,r:5,face:'up'}, prep2:{c:28,r:5,face:'up'}, trim:{c:30,r:8,face:'left'}, sink:{c:30,r:10,face:'right'}, dish:{c:30,r:11,face:'left'} };
+var B1K_ST={ rice:{c:11,r:4,face:'up'}, pot1:{c:13,r:4,face:'up'}, pot2:{c:15,r:4,face:'up'}, range1:{c:17,r:4,face:'up'}, range2:{c:19,r:4,face:'up'}, fryer:{c:21,r:4,face:'up'},
+  prep:{c:25,r:4,face:'up'}, prep2:{c:28,r:4,face:'up'}, trim:{c:30,r:8,face:'left'}, sink:{c:30,r:10,face:'right'}, dish:{c:30,r:11,face:'left'} };
 var B1K_PLAN=[ { until:11*60, st:['prep','prep2','trim','rice','pot1','pot2'] }, { until:13*60+10, st:['rice','pot1','pot2','range1','range2','fryer','dish'] },
   { until:16*60, st:['dish','sink','trim','prep','sink','dish'] }, { until:24*60, st:['prep','pot1','range1','range2','sink','trim','fryer'] } ];
 var B1K_SOLO={ rice:[['밥 뜸 들이는 중'],['쌀 씻은 물','버리지 말자'],['오늘 밥 고슬고슬하다']], pot1:[['된장 한 숟갈 더'],['국 간 좀 볼까'],['두부 넣는다~']], pot2:[['곰국 오래 끓는 중'],['파 송송 썰어 올리고'],['국물 진하다!']],
@@ -1883,13 +1883,14 @@ var B1D_TALK={ otter:[[['오늘 국 간 어때요?'],['딱 좋아요!']],[['나�
   cook:[[['샐러드 드레싱은','따로 내 주세요'],['네, 옆에 둘게요']],[['반찬 온도','괜찮아요?'],['국은 70도 넘어요']],[['다음 주 식단','초안 나왔어요'],['신메뉴 있어요?']],[['오늘 잔반 적네요'],['제육이 인기였어요']],[['밥 양 조금','줄여 볼까요?'],['더 달라는 분이 많아요']]],
   cashier:[[['오늘 몇 분 드셨어요?'],['벌써 120명 넘었어요']],[['식권 정산','부탁해요'],['네, 오후에 드릴게요']],[['손님들 반응 어때요?'],['국이 최고래요']]] };
 function b1kX(c){ return c*T-1; } function b1kF(r){ return (r+1)*T+2; }
-function b1kPath(fc,fr,tc,tr){ var p=[];                                                     // 주방 안 길: 5행 통로 · 30열 세로 통로 (가로 먼저)
-  if(fr>5) p.push({x:b1kX(30), feet:b1kF(fr)}, {x:b1kX(30), feet:b1kF(5)});
-  var tcol=tr>5?30:tc; p.push({x:b1kX(tcol), feet:b1kF(5)}); if(tr>5){ p.push({x:b1kX(30), feet:b1kF(tr)}); if(tc!==30) p.push({x:b1kX(tc), feet:b1kF(tr)}); } return p; }
+var B1K_A=4;                                                                                  // 주방 안 통로 줄 (기기 바로 앞)
+function b1kPath(fc,fr,tc,tr){ var p=[], A=B1K_A;                                              // 주방 안 길: 4행 통로 · 30열 세로 통로 (가로 먼저)
+  if(fr>A) p.push({x:b1kX(30), feet:b1kF(fr)}, {x:b1kX(30), feet:b1kF(A)});
+  var tcol=tr>A?30:tc; p.push({x:b1kX(tcol), feet:b1kF(A)}); if(tr>A){ p.push({x:b1kX(30), feet:b1kF(tr)}); if(tc!==30) p.push({x:b1kX(tc), feet:b1kF(tr)}); } return p; }
 function b1TakeRest(F,n,prefs){ var used={}; for(var id in F.actors){ var a=F.actors[id]; if(a!==n && a.rest && (a.b1ph==='rest'||a.b1ph==='toRest')) used[a.rest.spot]=1; }   // 쉼터 자리 다섯을 나눠 앉는다
   return prefs.concat(['desk0','desk1','desk2','sofa0','sofa1']).filter(function(sp){ return !used[sp]; })[0]||null; }
 function b1kRestPath(n){ var R=PO.MAPB.REST, S=B1K_ST[n.st], tail=b1RestPath(n.rest.spot).slice(R.route.length);   // 주방 자리 → 30열 → 쉼터 윗줄 → 자리
-  var head = S.r>5 ? [{x:b1kX(30), feet:b1kF(S.r)}] : b1kPath(S.c,S.r,30,5); return head.concat([{x:b1kX(30), feet:R.lane}]).concat(tail); }
+  var head = S.r>B1K_A ? [{x:b1kX(30), feet:b1kF(S.r)}] : b1kPath(S.c,S.r,30,B1K_A); return head.concat([{x:b1kX(30), feet:R.lane}]).concat(tail); }
 function b1kRestBack(n){ var full=b1kRestPath(n), S=B1K_ST[n.st], idx=full.length-(n.wp?n.wp.length:0); return full.slice(0,idx).reverse().concat([{x:b1kX(S.c), feet:b1kF(S.r)}]); }
 function b1NewLunch(id,name,idx,d){ var Q=window.__b1Guests=window.__b1Guests||{}, key='kl_'+id, dk=d.toDateString(), ns=d.getHours()*3600+d.getMinutes()*60;   // 새 식구도 15:00 주방 식구 점심에
   if((Q[key] && Q[key].day===dk) || ns>=15*3600+16*60) return; Q[key]={ kind:'dinner', id:id, name:name, group:'kitchen', day:dk, leaveAt:15*3600+18*60+idx*15, crew:'kitchen', meal:'lunch', skipPay:true }; }
@@ -1913,16 +1914,16 @@ function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
         n.st=s0; n.x=b1kX(S0.c); n.feet=b1kF(S0.r); n.dir=S0.face; n.visible=true; n.b1ph='work'; n.until=now+8000+Math.random()*15000; n.nextTalk=now+4000+Math.random()*12000; }
       else { n.b1ph='off'; n.visible=false; } }
     if(n.b1ph==='off'){ if(here){ var s1=pick(n,other), S1=B1K_ST[s1]; n.b1ph='in'; n.visible=true; n.x=DOOR_X; n.feet=C.lobbyFeet; n.spd=0; n.goSt=s1;
-        n.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:CY},{x:b1kX(27), feet:CY},{x:b1kX(27), feet:b1kF(5)}].concat(b1kPath(27,5,S1.c,S1.r)); b1kSay(n,n.atLunch?[['잘 먹었다!'],['배부르다~']][i]:[['출근했어요!'],['오늘도 힘내자!']][i],now,2600); n.atLunch=false; } return; }
+        n.wp=[{x:C.lx, feet:C.lobbyFeet},{x:C.lx, feet:CY},{x:b1kX(27), feet:CY},{x:b1kX(27), feet:b1kF(B1K_A)}].concat(b1kPath(27,B1K_A,S1.c,S1.r)); b1kSay(n,n.atLunch?[['잘 먹었다!'],['배부르다~']][i]:[['출근했어요!'],['오늘도 힘내자!']][i],now,2600); n.atLunch=false; } return; }
     if(n.b1ph==='in'||n.b1ph==='move'){ if(n.hold && now<n.hold) return; if(wpStep(n,now)){ n.st=n.goSt; n.goSt=null; var S=B1K_ST[n.st]; n.dir=S.face; n.b1ph='work'; n.until=now+15000+Math.random()*20000; n.nextTalk=Math.min(n.nextTalk||0,now+3000+Math.random()*5000); } return; }
     if(n.b1ph==='out'){ if(wpStep(n,now)){ n.b1ph='off'; n.visible=false; n.bubble=null; n.wp=null; } return; }
     if(n.b1ph==='toRest'){ if(busy||!here){ n.b1ph='fromRest'; n.spd=0.1; n.wp=b1kRestBack(n); return; } if(wpStep(n,now)){ b1RestSit(n,n.rest); n.b1ph='rest'; n.nextTalk=now+5000+Math.random()*8000; } return; }
     if(n.b1ph==='rest'){ if(busy||!here){ n.b1ph='fromRest'; n.onFurn=false; n.spd=busy?0.1:0.05; n.wp=b1kRestBack(n); if(busy && here) b1kSay(n,[['손님 오셨다!'],['네~ 갑니다!']][i],now,2200); return; }
       if(!n.talkUntil && now>n.nextTalk){ var rp=n.rest.spot.indexOf('desk')===0?B1_REST_LINES.desk:B1_REST_LINES.sofa; b1kSay(n,rp[Math.floor(Math.random()*rp.length)],now,3200); n.nextTalk=now+16000+Math.random()*22000; } return; }
     if(n.b1ph==='fromRest'){ if(wpStep(n,now)){ var S6=B1K_ST[n.st]; n.dir=S6.face; n.rest=null;
-        if(here){ n.b1ph='work'; n.until=now+10000+Math.random()*10000; } else { n.b1ph='out'; n.wp=b1kPath(S6.c,S6.r,27,5).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); } } return; }
+        if(here){ n.b1ph='work'; n.until=now+10000+Math.random()*10000; } else { n.b1ph='out'; n.wp=b1kPath(S6.c,S6.r,27,B1K_A).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); } } return; }
     if(n.b1ph==='work'){
-      if(!here){ var S2=B1K_ST[n.st]; n.b1ph='out'; n.wp=b1kPath(S2.c,S2.r,27,5).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(n,kLunch?[['우리도 밥 먹으러!'],['배고파요~']][i]:[['수고하셨습니다~'],['내일 봬요!']][i],now,2600); return; }
+      if(!here){ var S2=B1K_ST[n.st]; n.b1ph='out'; n.wp=b1kPath(S2.c,S2.r,27,B1K_A).concat([{x:b1kX(27), feet:CY},{x:C.lx, feet:CY},{x:C.lx, feet:C.lobbyFeet},{x:DOOR_X, feet:C.lobbyFeet}]); b1kSay(n,kLunch?[['우리도 밥 먹으러!'],['배고파요~']][i]:[['수고하셨습니다~'],['내일 봬요!']][i],now,2600); return; }
       if(n.hold && now<n.hold) return;
       if(idle && !n.talkUntil){ var sp=b1TakeRest(F,n,i?['sofa0','desk1']:['desk1','sofa0']); if(sp){ n.rest={spot:sp}; n.b1ph='toRest'; n.spd=0; n.wp=b1kRestPath(n); return; } }
       if(now>n.until && !n.talkUntil){ var s3=pick(n,other), S3=B1K_ST[s3], S4=B1K_ST[n.st]; n.goSt=s3; n.b1ph='move'; n.wp=b1kPath(S4.c,S4.r,S3.c,S3.r); return; }
@@ -1936,7 +1937,7 @@ function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
       if(Math.random()<0.3 && cooks.length){ var ck=cooks[Math.floor(Math.random()*cooks.length)], pr=B1K_TO_COOK[Math.floor(Math.random()*B1K_TO_COOK.length)], l0=pr[0].slice();
         if(ck.name!=='윤요리') l0=[l0[0].replace('윤요리님','주요리님')]; b1kSay(a,l0,now,2800); b1kReply(F,ck,pr[1],now+2900); }
       else if(b.b1ph==='work' && !b.talkUntil){ var pp=B1K_PAIR[Math.floor(Math.random()*B1K_PAIR.length)]; b1kSay(a,pp[0],now,2800); b1kReply(F,b,pp[1],now+2900);
-        if(B1K_ST[a.st].r===5 && B1K_ST[b.st].r===5){ a.dir=a.x<b.x?'right':'left'; b.dir=a.x<b.x?'left':'right'; setTimeout(function(){ [a,b].forEach(function(n){ if(n.b1ph==='work') n.dir=B1K_ST[n.st].face; }); },6500); } } } }
+        if(B1K_ST[a.st].r===B1K_A && B1K_ST[b.st].r===B1K_A){ a.dir=a.x<b.x?'right':'left'; b.dir=a.x<b.x?'left':'right'; setTimeout(function(){ [a,b].forEach(function(n){ if(n.b1ph==='work') n.dir=B1K_ST[n.st].face; }); },6500); } } } }
   // 고영양사: 08:30~17:30 · 쉼터 영양사 책상 · 가끔 식당을 돌며 이야기
   var dIn=8*3600+30*60, dOut=17*3600+30*60, dHere=nowSec>=dIn && nowSec<dOut;
   if(dHere && kLunch){ dHere=false; b1NewLunch('b1diet','고영양사',5,d); di.atLunch=true; }
@@ -1953,8 +1954,8 @@ function b1NewCrew(F,now,nowSec,d,crew,busy,kLunch){
       var tg=[]; ot.forEach(function(n){ if(n.b1ph==='work') tg.push({n:n, kind:'otter'}); }); crew.forEach(function(n,k){ if(n.visible && n.b1ph==='work') tg.push({n:n, kind:k?'cook':'cashier'}); });
       if(!tg.length){ di.until=now+30000; return; }
       var t=tg[Math.floor(Math.random()*tg.length)], R=PO.MAPB.REST, out=b1dRestPath().reverse().slice(0,-1), spot;   // 쉼터 → 주방 안쪽(6행 · 27열)
-      if(t.kind==='otter'){ var S5=B1K_ST[t.n.st]; t.n.hold=now+40000; out.push({x:b1kX(27), feet:b1kF(5)});
-        if(S5.r>5){ out=out.concat(b1kPath(27,5,30,S5.r-1)); spot={face:'down'}; } else { var sc=S5.c+(S5.c>=27?-1:1); out=out.concat(b1kPath(27,5,sc,5)); spot={face:sc<S5.c?'right':'left'}; } }
+      if(t.kind==='otter'){ var S5=B1K_ST[t.n.st]; t.n.hold=now+40000; out.push({x:b1kX(27), feet:b1kF(B1K_A)});
+        if(S5.r>B1K_A){ out=out.concat(b1kPath(27,B1K_A,30,S5.r-1)); spot={face:'down'}; } else { var sc=S5.c+(S5.c>=27?-1:1); out=out.concat(b1kPath(27,B1K_A,sc,B1K_A)); spot={face:sc<S5.c?'right':'left'}; } }
       else { t.n.tx=t.n.x; t.n.until=now+40000; out.push({x:b1kX(27), feet:CY}); out.push({x:t.n.x+30, feet:CY}); spot={face:'left'}; }
       di.onFurn=false; di.b1ph='go'; di.spd=0; di.trip={ t:t, face:spot.face, out:out }; di.wp=out.slice(); return; } }
   if(di.b1ph==='go'){ if(wpStep(di,now)){ var tr=di.trip; di.dir=tr.face; var pool2=B1D_TALK[tr.t.kind], pr2=pool2[Math.floor(Math.random()*pool2.length)];
