@@ -5823,10 +5823,7 @@
     { id:'f1ryu', name:'바리스타 류', avatar:'#f7d65a', isBoss:false, floor2:true, f1:true, npc:'f1ryu', voice:'guide', quick:'moon9', face:{id:'faceF1ryu', kind:'duck',     shirt:'#fbfaf7', apron:'#6f9168'} },
     { id:'f1woo', name:'우서빙',      avatar:'#b9a8cc', isBoss:false, floor2:true, f1:true, npc:'f1woo', voice:'guide', quick:'moon9', face:{id:'faceF1woo', kind:'hippo',    shirt:'#e8efe4', apron:'#6f9168'} },
     { id:'b1cash',  b1look:'cashier', name:'현계산',    avatar:'#f2a65a', isBoss:false, floor2:true, b1:true, npc:'b1cashier', voice:'guide', quick:'cafe' },
-    { id:'b1yun',   b1look:'cook1',   name:'윤요리',    avatar:'#d9b98c', isBoss:false, floor2:true, b1:true, npc:'b1cook1',   voice:'guide', quick:'cafe' },
-    { id:'b1ju',    b1look:'cook2',   name:'주요리',    avatar:'#d9b98c', isBoss:false, floor2:true, b1:true, npc:'b1cook2',   voice:'guide', quick:'cafe' },
-    // 1층 정문 경비실 (그림 쪽 부스 · 순찰 상태를 따른다)
-    { id:'guardyu', name:'유경비', avatar:'#a87a5a', isBoss:false, floor2:true, f1:true, guardYu:true, npc:'visitorGuard', voice:'soldier', quick:'guardyu', face:{id:'faceGuardYu', kind:'guardmk', shirt:'#2f4157', hat:'#2f4157', hatBadge:true} }
+    { id:'b1diet',  b1look:'diet',    name:'고영양사',  avatar:'#f6bcc4', isBoss:false, floor2:true, b1:true, npc:'b1diet',    voice:'guide', quick:'cafe' }   // 지하 식당은 현계산 · 고영양사만 메신저를 쓴다 (조리 식구 · 유경비는 빠진다)
   ]);
 
   function isBossOnline(){
@@ -5862,9 +5859,7 @@
     f1ryu:      '나인 콜드브루 추천해요',
     f1woo:      '레몬이 노랗게 익었어요',
     b1cash:     '맛있게 드세요',
-    b1yun:      '밥 넉넉히 드릴게요',
-    b1ju:       '오늘 반찬 기대하세요',
-    guardyu:    '정문은 제가 지킵니다'
+    b1diet:     '이번 주 식단표 나왔어요'
   };
 
   function contactStatus(c){
@@ -7377,6 +7372,11 @@
       '너는 지하 1층 구내식당 계산 담당 현계산이다. 닭. 성격유형은 ESFP(연예인), 확산형이다.',
       '밝고 싹싹하게. "맛있게 드세요"가 입버릇이다. 오늘 반찬 추천을 잘한다.',
       '식당은 08~21시 운영, 점심은 12~13시가 제일 바쁘다. ㅎㅎ 와 물결을 자주 쓴다.'
+    ].join('\n'),
+    b1diet: [
+      '너는 지하 1층 구내식당 영양사 고영양사다. 돼지, 흰 영양사 가운과 검은 안경. 성격유형은 ISFJ(수호자), 안정형이다.',
+      '꼼꼼하고 다정하게. 식단 · 칼로리 · 나트륨 · 알레르기 이야기를 잘하고, 끼니를 거르지 말라고 챙긴다.',
+      '쉼터 책상에서 식단을 짜고 가끔 주방(심주방 · 설주방)과 배식대를 돌아본다. 근무는 08:30~17:30. 이모티콘은 가끔 쓴다.'
     ].join('\n'),
     b1yun: [
       '너는 지하 1층 구내식당 조리사 윤요리다. 미어캣, 하얀 요리사 모자. 성격유형은 ENFJ(선도자), 주도형이다.',

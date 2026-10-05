@@ -2669,14 +2669,14 @@ function pSnackTable(){ return obj(60,40,function(g){ R(g,0,16,60,24,'#c99a6a');
   R(g,24,8,7,8,'#f2787a'); R(g,24,8,7,1,'#f8a8a8'); R(g,33,8,7,8,'#6fb7e8'); R(g,33,8,7,1,'#a8d8f8');                                         // 머그컵
   R(g,43,6,15,10,'#c49a6c'); for(var x=44;x<57;x+=3) R(g,x,6,1,10,'#a87c50'); R(g,45,3,4,4,'#f2c24a'); R(g,50,2,4,5,'#e8503a'); R(g,54,4,3,3,'#6aa84a'); }); }   // 과자 바구니
 onTile(pSnackTable(),28,24,29,24); onTile(pTrash(),33,28,33,28);
-onTileFx(pTV(),31,23,32,24,function(g,x,y,t){ if(!STATE.b1TvOn) return; var sx=x+3, sy=y+3, sc=Math.floor(t/5000)%3;   // 휴게 중엔 TV가 켜진다
-  if(sc===0){ R(g,sx,sy,58,32,'#2a5a9a'); R(g,sx,sy+24,58,8,'#e8ecf2'); R(g,sx,sy+24,12,8,'#d83a3a'); R(g,sx+14-(Math.floor(t/60)%40),sy+27,30,2,'#3a4048');   // 뉴스
+onTileFx(pTV(),31,23,32,24,function(g,x,y,t){ if(!STATE.b1TvOn) return; var sx=x+3, sy=y+3, sc=Math.floor(t/5000)%3; g.save(); g.beginPath(); g.rect(sx,sy,58,32); g.clip();   // 휴게 중엔 TV가 켜진다 (화면 안에서만 그린다)
+  if(sc===0){ R(g,sx,sy,58,32,'#2a5a9a'); R(g,sx,sy+24,58,8,'#e8ecf2'); R(g,sx,sy+24,12,8,'#d83a3a'); R(g,sx+58-(Math.floor(t/50)%88),sy+27,30,2,'#3a4048');   // 뉴스
     disc(g,sx+36,sy+12,5,'#f2d0a8'); R(g,sx+29,sy+17,14,7,'#3a3f46'); R(g,sx+35,sy+17,2,4,'#e8ecee'); R(g,sx+4,sy+4,18,10,'#8ac0e8'); }
   else if(sc===1){ R(g,sx,sy,58,32,'#f4e6c8'); R(g,sx,sy+22,58,10,'#c99a6a'); ell(g,sx+22,sy+20,12,5,'#5a6068'); ell(g,sx+22,sy+18,10,3,'#c85a2a');   // 요리 방송
     for(var k=0;k<3;k++) R(g,sx+16+k*6,sy+10-((t/80+k*5)%10),1,4,'rgba(255,255,255,0.8)'); disc(g,sx+46,sy+10,4,'#f2d0a8'); R(g,sx+42,sy+14,9,8,'#fbfbf8'); R(g,sx+42,sy+3,9,4,'#fbfbf8'); }
   else { R(g,sx,sy,58,32,'#4a9a4a'); R(g,sx,sy,58,6,'#2a3a5a'); for(var k2=0;k2<6;k2++) R(g,sx+4+k2*9,sy+2,5,2,'#f2d06a');                     // 야구 중계
     tri(g,sx+29,sy+10,sx+45,sy+26,sx+13,sy+26,'#c8a060'); P(g,sx+29+Math.round(Math.sin(t*0.004)*10),sy+18,'#ffffff'); R(g,sx+40,sy+26,16,6,'#1e2024'); R(g,sx+42,sy+28,12,1,'#f2d06a'); }
-  g.fillStyle='rgba(255,255,255,0.08)'; g.fillRect(sx,sy,58,2); });
+  g.fillStyle='rgba(255,255,255,0.08)'; g.fillRect(sx,sy,58,2); g.restore(); });
 onTile(pSofaBack('#7a9ab8'),30,26,33,26);
 [0,1,2].forEach(function(k){ var cx=28+k*2; put(pDesk(hash('b1desk'+k)%97),cx*T,22*T-16,22*T+32,[cx,22,cx+1,22]); things.push({img:pChairBack(['#e8a05a','#8ab0c8','#a8c890'][k]),x:cx*T+13,y:22*T+6-32,sy:22*T+5}); });
 // 벽 (식자재 창고 위): 근무표 · 시계 / 주방 위: 앞치마 걸이 · '주방' 표지
@@ -2711,14 +2711,22 @@ function pSoupPot(col){ return obj(60,56,function(g){                   // 국�
   for(var k3=0;k3<6;k3++) R(g,15+k3*5,19+(k3%3),2,1,'#6aa84a');                                                      // 파
   R(g,0,22,5,4,SSD); R(g,0,22,5,1,SSL); R(g,55,22,5,4,SSD); R(g,55,22,5,1,SSL);
   R(g,43,4,3,18,'#9aa2a8'); R(g,43,4,1,18,'#dfe3e5'); ell(g,45,20,4,2,SSL); R(g,41,3,7,2,'#5a6068'); }); }
-function pRange(){ return obj(60,46,function(g){                        // 화구 둘: 무쇠 받침 · 파란 불꽃 · 웍 · 앞 손잡이 넷
+function pRange(menu){ return obj(60,46,function(g){                    // 화구 둘: 무쇠 받침 · 가스불 위 프라이팬 둘 · 앞 손잡이 넷 (menu: 팬마다 올린 요리)
   ell(g,30,44,28,2,'rgba(0,0,0,0.12)'); R(g,2,14,56,32,SS); R(g,2,14,56,3,SSL); R(g,2,42,56,4,SSD); R(g,2,14,2,28,SSL); R(g,55,14,3,28,SSD);
   R(g,2,33,56,10,sh(SS,-0.06)); R(g,2,33,56,1,SSD);
-  [16,44].forEach(function(x){ ring(g,x,23,9,'#2a2e34'); ring(g,x,23,8,'#3a3f46'); R(g,x-9,23,18,1,'#2a2e34'); R(g,x,14,1,18,'#2a2e34'); line(g,x-6,17,x+6,29,'#2a2e34'); line(g,x+6,17,x-6,29,'#2a2e34'); disc(g,x,23,3,'#3a3f46'); });
-  for(var a=0;a<8;a++){ var an=a/8*Math.PI*2; P(g,16+Math.round(Math.cos(an)*4),23+Math.round(Math.sin(an)*2),a%2?'#4a8ae8':'#8ac0f8'); }   // 왼쪽: 약불
-  ell(g,44,20,13,6,'#2e3238'); ell(g,44,19,11,4,'#4a4f56'); ell(g,44,19,8,3,'#c8803a'); R(g,40,18,3,1,'#6aa84a'); R(g,45,19,2,1,'#e8503a'); P(g,42,20,'#f2d06a'); P(g,47,18,'#fbf6e6');   // 웍: 볶음
-  R(g,56,17,4,2,'#2e3238'); R(g,57,16,3,1,'#5a3a24');
-  [10,22,38,50].forEach(function(x,i){ disc(g,x,38,3,'#2a2e34'); disc(g,x,38,2,'#4a4f56'); R(g,x,36,1,2,'#e8ecee'); P(g,x+3,34,i===0||i===3?'#f08030':'#6a7278'); }); }); }
+  [16,44].forEach(function(x,i){ ring(g,x,24,9,'#2a2e34'); ring(g,x,24,8,'#3a3f46'); R(g,x-9,24,18,1,'#2a2e34');
+    for(var a=0;a<10;a++){ var an=a/10*Math.PI; P(g,x+Math.round(Math.cos(an)*9),27+Math.round(Math.sin(an)*2),a%2?'#4a8ae8':'#8ac0f8'); }   // 팬 밑으로 번지는 파란 불꽃
+    ell(g,x,21,11,5,'#2a2e34'); ell(g,x,20,10,4,'#3e434a'); ell(g,x,20,8,3,'#4a4f56');                                                         // 프라이팬
+    var hx=i?x+10:x-16; R(g,hx,19,6,2,'#2a2e34'); R(g,i?hx+5:hx-3,18,4,3,'#5a3a24');                                                          // 손잡이 (바깥쪽)
+    var m=(menu||['egg','jeyuk'])[i];
+    if(m==='egg'){ ell(g,x-3,20,4,2,'#fbfaf6'); disc(g,x-3,20,1,'#f2b020'); ell(g,x+4,20,3,2,'#fbfaf6'); P(g,x+4,20,'#f2b020'); }              // 계란 후라이
+    else if(m==='jeyuk'){ ell(g,x,20,7,3,'#b8402a'); for(var k=0;k<5;k++) R(g,x-5+k*2,19+(k%2),2,1,k%2?'#d86040':'#8a2a1a'); P(g,x-2,19,'#6aa84a'); P(g,x+3,20,'#fbfaf6'); }   // 제육볶음
+    else if(m==='veg'){ ell(g,x,20,7,3,'#5a9a3a'); P(g,x-4,19,'#f08030'); P(g,x-1,21,'#f08030'); P(g,x+2,19,'#e8d0a0'); P(g,x+4,20,'#e8443a'); P(g,x,19,'#9ad070'); }   // 채소볶음
+    else if(m==='jeon'){ ell(g,x-2,20,4,2,'#e8b860'); ell(g,x+4,21,3,2,'#e0a848'); P(g,x-3,19,'#6aa84a'); P(g,x+4,20,'#e8443a'); } });           // 전
+  [10,22,38,50].forEach(function(x,i){ disc(g,x,38,3,'#2a2e34'); disc(g,x,38,2,'#4a4f56'); R(g,x,36,1,2,'#e8ecee'); P(g,x+3,34,'#f08030'); }); }); }   // 넷 다 켜짐
+function drawGasFlame(g,x,y,t){ [16,44].forEach(function(cx,i){ for(var a=0;a<6;a++){ var f=(Math.floor(t/110)+a+i)%3, fx=x+cx-9+a*3+(a>2?3:0);   // 가스불 깜빡임 · 김
+    R(g,fx,y+26-f,1,1+f,f?'#4a8ae8':'#9ad0ff'); }
+    var u=((t/700)+i*0.5)%1; R(g,x+cx-2+Math.round(Math.sin(t/300+i)*2),y+12-Math.round(u*10),2,2,'rgba(255,255,255,'+(0.55*(1-u)).toFixed(2)+')'); }); }
 function pFryer(){ return obj(60,50,function(g){                        // 튀김기: 기름통 둘 · 튀김 바구니 · 온도 다이얼
   ell(g,30,48,28,2,'rgba(0,0,0,0.12)'); R(g,2,14,56,36,SS); R(g,2,14,56,3,SSL); R(g,2,46,56,4,SSD); R(g,2,14,2,32,SSL); R(g,55,14,3,32,SSD);
   [6,32].forEach(function(x,i){ R(g,x,17,22,17,'#5a6068'); R(g,x+1,18,20,15,'#3a3028'); R(g,x+2,19,18,13,'#d8a030'); R(g,x+2,19,18,2,'#f0c860');
@@ -2800,8 +2808,7 @@ put(pLowWallV(4*T),27*T+10,17*T,21*T,[27,17,27,20]);
 onTile(pKFridge(),9,3,10,3); onTile(pRiceCooker(),11,3,12,3);
 onTileFx(pSoupPot('#c8803a'),13,3,14,3,function(g,x,y,t){ for(var k=0;k<3;k++){ var u=((t/900)+k/3)%1; R(g,x+18+k*10,y+10-Math.round(u*14),2,4,'rgba(255,255,255,'+(0.5*(1-u)).toFixed(2)+')'); } });   // 된장국 김
 onTileFx(pSoupPot('#e8d8b0'),15,3,16,3,function(g,x,y,t){ for(var k=0;k<3;k++){ var u=((t/1000)+k/3)%1; R(g,x+18+k*10,y+10-Math.round(u*14),2,4,'rgba(255,255,255,'+(0.5*(1-u)).toFixed(2)+')'); } });   // 곰국 김
-onTileFx(pRange(),17,3,18,3,function(g,x,y,t){ var f=Math.floor(t/120)%2; R(g,x+12,y+28,8,2,f?'#f08030':'#f8c040'); });
-onTile(pRange(),19,3,20,3);
+onTileFx(pRange(['egg','jeyuk']),17,3,18,3,drawGasFlame); onTileFx(pRange(['veg','jeon']),19,3,20,3,drawGasFlame);   // 화구 넷: 계란 후라이 · 제육 · 채소볶음 · 전
 onTileFx(pFryer(),21,3,22,3,function(g,x,y,t){ var b=Math.floor(t/200)%3; P(g,x+12+b*3,y+22,'#fff4c0'); P(g,x+40-b*3,y+25,'#fff4c0'); });
 onTile(pTrash(),23,3,23,3); onTile(pPrepTable(7*T),24,3,30,3);
 function pDishShelf(w){ return obj(w,90,function(g){                    // 식기 선반 (철망): 국그릇 · 밥공기 · 접시 · 식판
