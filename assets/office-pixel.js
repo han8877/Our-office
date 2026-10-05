@@ -1732,7 +1732,7 @@ function b1Chat(F,a,now){
 }
 var B1_CASHIER_LINES=[['맛있게 드세요'],['카드 찍어 주세요'],['오늘 반찬 맛있어요'],['식판은 반납대에','부탁해요']];
 var B1_COOK_LINES=[['오늘은 제육볶음이에요'],['국 뜨끈해요'],['밥 더 드릴까요?'],['반찬 새로 채웠어요'],['맛있게 드세요~']];
-var B1_ROBOT_SPOTS=[[5,9],[10,12],[18,12],[4,18],[12,17],[19,20],[10,23],[3,27],[22,16],[25,13],[25,18],[19,28],[22,25],[4,22],[25,26],[14,23]];
+var B1_ROBOT_SPOTS=[[5,9],[10,12],[18,12],[4,18],[12,17],[19,19],[10,22],[3,27],[23,15],[26,13],[26,18],[24,25],[4,21],[26,24],[14,22],[21,27]];
 var B1_TEAM={}; PO.STAFF.forEach(function(p){ B1_TEAM[p.id]=p.team; });
 function b1Rng(seed){ var x=seed||1; return function(){ x=(x*1103515245+12345)&0x7fffffff; return x/0x7fffffff; }; }
 function b1Open(d){ var h=d.getHours(); return h>=8 && h<21; }

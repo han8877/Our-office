@@ -803,6 +803,8 @@ KIND.wolf     = {f:'#9a9590',F:'#f2efe8',d:'#5a5652',nk:'wolf'};        // 늑�
 KIND.shiba    = {f:'#e0904a',F:'#fbf3e8',d:'#a8622a',nk:'shiba'};       // 시바견 (일본 후보)
 KIND.deer     = {f:'#c08a58',F:'#f6ead8',d:'#7a5032',nk:'deer'};        // 나라 사슴 (일본 후보)
 KIND.maneki   = {f:'#fdfbf6',F:'#ffffff',d:'#e4ddd0',nk:'maneki'};      // 마네키네코 (일본 후보)
+KIND.pig      = {f:'#f6bcc4',F:'#fbd6dc',d:'#d88894',nk:'pig'};         // 돼지 (고영양사)
+KIND.otter    = {f:'#8a6244',F:'#ecdcc4',d:'#5a3e2a',nk:'otter',hand:'#6a4a32'};   // 수달 (주방 직원)
 function drawHeadNew(g,K,p,dir,blink){
   var f=K.f, F=K.F, d=K.d, fD=sh(f,-0.18), fL=sh(f,0.3), eye='#2c1c20', blush='#f7a2ae', nose='#4a2c28';
   var side=dir==='left', back=dir==='up', cx=side?17:16, cy=17, rx=11, ry=9, k=K.nk;
@@ -859,12 +861,20 @@ function drawHeadNew(g,K,p,dir,blink){
     if(side){ tri(g,cx+1,cy-6,cx+5,cy-16,cx+9,cy-6,f); tri(g,cx+3,cy-7,cx+5,cy-13,cx+7,cy-7,wi); }
     else { tri(g,cx-11,cy-4,cx-8,cy-16,cx-3,cy-8,f); tri(g,cx+11,cy-4,cx+8,cy-16,cx+3,cy-8,f); if(!back){ tri(g,cx-9,cy-6,cx-8,cy-13,cx-5,cy-8,wi); tri(g,cx+9,cy-6,cx+8,cy-13,cx+5,cy-8,wi); } } }
   if(k==='eagle' && side){ tri(g,cx+6,cy-3,cx+13,cy+3,cx+6,cy+6,sh(f,-0.12)); P(g,cx+11,cy+2,'#cfcac0'); }   // 뒤통수 깃
+  if(k==='pig'){ var pe=sh(f,-0.12), pi='#ee98a8';                              // 돼지: 앞으로 살짝 접힌 세모 귀
+    if(side){ tri(g,cx+1,cy-7,cx+7,cy-13,cx+8,cy-5,pe); tri(g,cx+5,cy-11,cx+7,cy-13,cx+7,cy-9,sh(pe,-0.15)); }
+    else { tri(g,cx-3,cy-8,cx-11,cy-13,cx-11,cy-4,pe); tri(g,cx+3,cy-8,cx+11,cy-13,cx+11,cy-4,pe);
+      if(!back){ tri(g,cx-5,cy-8,cx-10,cy-11,cx-10,cy-6,pi); tri(g,cx+5,cy-8,cx+10,cy-11,cx+10,cy-6,pi); }
+      tri(g,cx-11,cy-13,cx-7,cy-11,cx-10,cy-9,sh(pe,-0.15)); tri(g,cx+11,cy-13,cx+7,cy-11,cx+10,cy-9,sh(pe,-0.15)); } }   // 끝이 앞으로 접힌 작은 귀
+  if(k==='otter'){ if(side) disc(g,cx+5,cy-5,2,d); else { disc(g,cx-10,cy-4,2,d); disc(g,cx+10,cy-4,2,d); } }   // 수달: 작고 낮게 붙은 둥근 귀
   // ---- 머리 ----
   if(k==='hippo'){ rx=12; }
   if(k==='greyhound'){ rx=9; ry=9; }
   if(k==='bulldog'){ rx=12; ry=9; }
   if(k==='croc'){ rx=12; ry=8; }
   if(k==='mouse'){ rx=10; ry=8; }
+  if(k==='pig'){ rx=11; ry=9; }
+  if(k==='otter'){ rx=10; ry=8; }
   if(k==='rhino'){ rx=11; ry=9; }
   if(k==='sheep'){                                                            // 양: 곱슬 털뭉치가 머리를 감싼다
     var wool=f, wd='#e6dfd2'; ell(g,cx,cy-1,11,9,wd);
@@ -890,6 +900,10 @@ function drawHeadNew(g,K,p,dir,blink){
   if(side){
     if(k==='duck'){ R(g,cx-1,cy-12,2,4,f); R(g,cx+1,cy-11,2,3,sh(f,0.1));                                        // 오리: 머리깃 · 납작한 주황 부리
       ell(g,cx-10,cy+3,5,3,'#e8842a'); ell(g,cx-10,cy+2,4,2,'#f8a848'); P(g,cx-13,cy+1,'#c86a1a'); eyes(cx-5,null,cy-2); R(g,cx-3,cy+4,3,2,blush); }
+    if(k==='pig'){ ell(g,cx-10,cy+3,4,4,sh(F,-0.1)); ell(g,cx-11,cy+3,3,3,'#f0a0b0'); R(g,cx-13,cy+2,1,2,'#b86a78'); R(g,cx-11,cy+2,1,2,'#b86a78');   // 돼지: 동그란 코끝 · 콧구멍
+      eyes(cx-5,null,cy-2); R(g,cx-2,cy+4,3,2,blush); }
+    if(k==='otter'){ ell(g,cx-7,cy+3,6,4,F); ell(g,cx-12,cy+1,2,2,'#2a1c18'); P(g,cx-13,cy,'#6a5448'); R(g,cx-10,cy+5,4,1,sh(F,-0.25));   // 수달: 하얀 주둥이 · 까만 코 · 수염
+      P(g,cx-8,cy+2,'#a08a70'); P(g,cx-6,cy+3,'#a08a70'); eyes(cx-5,null,cy-2); R(g,cx-1,cy+2,3,2,blush); }
     if(k==='hippo'){ ell(g,cx-7,cy+4,8,5,sh(F,-0.06)); ell(g,cx-7,cy+3,7,4,F); P(g,cx-12,cy+1,d); P(g,cx-11,cy+1,d); R(g,cx-12,cy+6,6,1,sh(F,-0.3));   // 하마: 앞으로 넓적한 주둥이
       eyes(cx-3,null,cy-4); R(g,cx+1,cy+2,3,2,blush); }
     if(k==='elephant'){ eyes(cx-5,null,cy-2); R(g,cx-2,cy+3,3,2,blush);                                          // 코끼리: 앞으로 내려오다 끝이 말린 코
@@ -948,6 +962,10 @@ function drawHeadNew(g,K,p,dir,blink){
   // 정면
   if(k==='duck'){ R(g,cx-1,cy-12,2,4,f); R(g,cx+1,cy-11,2,3,sh(f,0.1)); R(g,cx-3,cy-10,2,2,sh(f,-0.05));
     eyes(cx-5,cx+4,cy-2); ell(g,cx,cy+5,7,3,'#e8842a'); ell(g,cx,cy+4,6,2,'#f8a848'); P(g,cx-2,cy+3,'#c86a1a'); P(g,cx+2,cy+3,'#c86a1a'); R(g,cx-9,cy+2,3,2,blush); R(g,cx+7,cy+2,3,2,blush); }
+  if(k==='pig'){ ell(g,cx,cy+6,5,3,sh(F,-0.18)); ell(g,cx,cy+5,4,2,'#f08aa0'); R(g,cx-2,cy+5,1,2,'#a85a68'); R(g,cx+2,cy+5,1,2,'#a85a68'); P(g,cx-2,cy+4,'#fbc8d0');   // 돼지: 동그란 코 · 콧구멍
+    eyes(cx-5,cx+4,cy-1); R(g,cx-9,cy+3,2,2,blush); R(g,cx+8,cy+3,2,2,blush); }
+  if(k==='otter'){ ell(g,cx,cy+4,7,4,F); ell(g,cx,cy+2,2,1,'#2a1c18'); P(g,cx-1,cy+1,'#6a5448'); R(g,cx,cy+3,1,2,'#5a4438');   // 수달: 하얀 주둥이 · 까만 코 · 수염 점
+    P(g,cx-4,cy+4,'#a08a70'); P(g,cx-5,cy+5,'#a08a70'); P(g,cx+4,cy+4,'#a08a70'); P(g,cx+5,cy+5,'#a08a70'); eyes(cx-5,cx+4,cy-2); R(g,cx-9,cy+2,2,2,blush); R(g,cx+8,cy+2,2,2,blush); }
   if(k==='hippo'){ ell(g,cx,cy+4,10,5,sh(F,-0.06)); ell(g,cx,cy+3,9,4,F); R(g,cx-4,cy+1,2,2,d); R(g,cx+3,cy+1,2,2,d); R(g,cx-5,cy+6,11,1,sh(F,-0.3));
     eyes(cx-6,cx+5,cy-5); R(g,cx-11,cy+1,2,2,blush); R(g,cx+10,cy+1,2,2,blush); }
   if(k==='elephant'){ eyes(cx-5,cx+4,cy-2);
@@ -1179,6 +1197,11 @@ function drawHat(g,p,dir,cx,cy,rx,ry){
   if(p.chef){ var top0=cy-ry-2, wc='#fbfbf8', wd='#dcdcd6';          // 하얀 요리사 모자
     disc(g,cx-5,top0-1,5,wc); disc(g,cx+5,top0-1,5,wc); disc(g,cx,top0-3,6,wc); P(g,cx-2,top0-6,'#ffffff');
     R(g,cx-rx+2,top0+2,rx*2-3,5,wc); R(g,cx-rx+2,top0+6,rx*2-3,1,wd); R(g,cx-4,top0-1,1,3,wd); R(g,cx+4,top0-1,1,3,wd); return; }
+  if(p.bandana){ var bn=p.bandana, bnd=sh(bn,-0.25), bt0=cy-ry-1, kx=dir==='left'?cx+rx-1:cx;   // 주방 두건: 머리를 감싸고 뒤로 묶은 매듭 · 흰 점무늬
+    ell(g,cx,bt0+3,rx,3,bn); R(g,cx-rx,bt0+3,rx*2+1,2,bn); R(g,cx-rx,bt0+5,rx*2+1,1,bnd); for(var q=cx-rx+3;q<cx+rx-1;q+=4) P(g,q,bt0+2+(q%2),'#fbfaf6');
+    if(dir==='up'){ R(g,cx-2,bt0+5,5,3,bnd); R(g,cx-3,bt0+8,2,4,bn); R(g,cx+2,bt0+8,2,4,bn); }
+    else if(dir==='left'){ R(g,kx,bt0+4,3,3,bnd); R(g,kx+2,bt0+6,2,4,bn); R(g,kx+3,bt0+5,2,3,bn); }
+    return; }
   if(p.beanie){ var bc=p.beanie, bt=cy-ry-1, bl=sh(bc,0.25), bdk=sh(bc,-0.25);          // 1층 손님: 방울 달린 뜨개 모자
     ell(g,cx,bt+4,rx-1,5,bc); R(g,cx-rx+1,bt+5,rx*2-1,3,bc); for(var q=cx-rx+2;q<cx+rx-1;q+=2) R(g,q,bt+6,1,2,bdk); R(g,cx-rx+1,bt+8,rx*2-1,1,bdk); R(g,cx-4,bt+1,6,1,bl);
     disc(g,dir==='left'?cx+1:cx,bt-1,2,'#fbfaf6'); return; }
@@ -1217,7 +1240,7 @@ function drawFit(g,p,dir,s,sD){ var f=p.fit, c=p.fitC||'#ffffff', side=dir==='le
 }
 function drawBody(g,K,p,dir,frame,sit){
   if(p.shell && dir==='down') drawShell(g,'down');                     // 앞에선 몸 뒤로 껍질 가장자리만
-  var s=p.shirt, sD=sh(s,-0.22), sL=sh(s,0.28), pa=p.pantsC, pD=sh(pa,-0.28), sho=p.shoe||'#5a4034', shoL=sh(sho,0.2), hand=K.hand||K.f;
+  var s=p.shirt, sD=sh(s,-0.22), sL=sh(s,0.28), pa=p.pantsC, pD=sh(pa,-0.28), sho=p.shoe||'#5a4034', shoL=sh(sho,0.2), hand=p.gloves||K.hand||K.f;
   if(dir==='left'){
     var legA = frame===1 ? [-3,2] : frame===2 ? [2,-3] : [0,0];
     if(sit){ R(g,9,35,11,4,pa); R(g,9,35,11,1,sh(pa,0.2)); R(g,7,38,5,3,sho); R(g,7,38,5,1,shoL); }   // 앉음: 허벅지가 앞으로
@@ -1227,7 +1250,8 @@ function drawBody(g,K,p,dir,frame,sit){
     if(p.fit) drawFit(g,p,'left',s,sD);
     var ax = frame===1 ? -2 : frame===2 ? 2 : 0;
     if(p.bag) R(g,19,27,5,10,p.bag);
-    R(g,14+ax,28,4,7,sD); R(g,14+ax,35,4,3,hand); R(g,14+ax,35,4,1,sh(hand,0.25));
+    R(g,14+ax,28,4,7,sD); R(g,14+ax,35,4,3,hand); R(g,14+ax,35,4,1,sh(hand,0.25)); if(p.gloves) R(g,14+ax,32,4,3,p.gloves);
+    if(p.gown){ if(!sit) R(g,12,36,10,3,s); R(g,12,38,10,1,sD); R(g,13,27,1,8,sD); }
     if(p.scarf) R(g,12,25,9,3,p.scarf);
     if(p.apron){ R(g,11,32,9,8,p.apron); R(g,11,32,9,1,sh(p.apron,0.3)); }
     if(p.badge) drawBadge(g,'left');
@@ -1248,6 +1272,10 @@ function drawBody(g,K,p,dir,frame,sit){
   var aL = frame===1 ? -1 : frame===2 ? 1 : 0;
   R(g,7,28+aL,3,7,s); R(g,7,28+aL,1,7,sL); R(g,22,28-aL,3,7,sD);
   R(g,7,35+aL,3,3,hand); R(g,22,35-aL,3,3,hand); R(g,7,35+aL,3,1,sh(hand,0.25)); R(g,22,35-aL,3,1,sh(hand,0.25));
+  if(p.gloves){ R(g,7,32+aL,3,3,p.gloves); R(g,22,32-aL,3,3,p.gloves); R(g,6,32+aL,5,1,sh(p.gloves,0.2)); R(g,21,32-aL,5,1,sh(p.gloves,0.2)); }   // 고무장갑 (팔목까지)
+  if(p.gown){ if(!sit) R(g,10,36,12,3,s); R(g,10,38,12,1,sD);                                          // 영양사 가운: 무릎까지 내려온 흰 가운 · 깃 · 주머니
+    if(dir==='down'){ var gi=p.gownIn||'#8ab0d8'; R(g,14,26,4,3,gi); P(g,15,29,gi); P(g,16,29,gi); line(g,12,26,15,30,'#d8d4cc'); line(g,19,26,16,30,'#d8d4cc'); R(g,16,30,1,6,'#d8d4cc'); R(g,11,33,3,1,'#d8d4cc'); R(g,18,33,3,1,'#d8d4cc'); P(g,19,32,'#3a8ae8'); }
+    else R(g,16,28,1,10,sD); }
   if(dir==='down'&&p.carry==='box'){ R(g,8,29,16,10,'#c89a64'); R(g,8,29,16,2,'#dcb682'); R(g,15,29,2,10,'#e8d4a0'); }
   if(dir==='down'&&p.carry==='tool'){ R(g,21,33,8,6,'#2f4157'); R(g,21,33,8,1,'#4a5d78'); R(g,23,31,4,2,'#2f4157'); }
   if(dir==='up'&&p.bag){ R(g,10,27,12,10,p.bag); R(g,10,27,12,1,sh(p.bag,0.25)); R(g,12,31,8,1,sh(p.bag,-0.25)); }
@@ -2589,9 +2617,14 @@ function pHood(w){ return obj(w,58,function(g){ R(g,w/2-10,0,20,22,SSD0); R(g,w/
   for(var y=22;y<50;y++){ var ins=Math.round((50-y)*0.5); R(g,ins,y,w-ins*2,1,y<24?'#eef1f3':'#c9cfd4'); } R(g,0,48,w,6,'#8e979e'); R(g,0,48,w,1,'#eef1f3');
   for(var x=10;x<w-10;x+=12) R(g,x,50,8,3,'#5a6068'); R(g,w-14,40,6,3,'#6af0a8'); }); }
 var SSD0='#8e979e'; wallItem(pHood(6*T-8),11*T+4,38); wallItem(pHood(6*T-8),17*T+4,38);
-var MENUB=[]; for(var mi=0;mi<5;mi++) MENUB.push({ x:14*T-4+mi*78, y:8*T-66, w:74, h:50 });   // 메뉴 화면 다섯: 주방 가림벽(배식대 바로 뒤)에 붙인다
-wallItem(pAC(),27*T+8,30);
-var MENU_BEZEL=pBezel(74,50); things.push({sy:8*T-0.5, draw:function(g){ MENUB.forEach(function(m){ g.drawImage(MENU_BEZEL,m.x-1,m.y-1); }); drawMenuBoards(g); }});
+var MENUB=[]; for(var mi=0;mi<5;mi++) MENUB.push({ x:13*T+4+mi*78, y:8*T-66, w:74, h:50 });   // 메뉴 화면 다섯: 주방 가림벽(배식대 바로 뒤)에 붙인다
+wallItem(pAC(),27*T+6,22);
+var FRUIT_ART=obj(84,54,function(g){ R(g,0,0,84,54,'#8a6044'); R(g,0,0,84,2,'#b08458'); R(g,4,4,76,46,'#eef4e6'); R(g,4,36,76,14,'#c8b090'); R(g,4,36,76,2,'#dccaa8');   // 과일 그림 (계산대 쪽 가림벽)
+  ell(g,42,36,24,6,'#fbfaf6'); disc(g,28,30,7,'#d8302a'); P(g,26,26,'#f8a0a0'); R(g,28,22,1,3,'#6a4a2a'); R(g,29,22,4,2,'#5aa040');                       // 사과
+  disc(g,44,29,7,'#f2a030'); P(g,42,25,'#f8d090'); P(g,44,22,'#5aa040');                                                                                   // 오렌지
+  for(var k=0;k<7;k++) disc(g,56+(k%3)*4,24+Math.floor(k/3)*4,2,'#7a3a8a'); R(g,59,19,1,4,'#6a4a2a');                                                     // 포도
+  ell(g,22,14,10,3,'#f2d040'); ell(g,22,13,8,2,'#f8e070'); R(g,12,13,2,2,'#6a5a2a'); disc(g,66,12,5,'#e8506a'); P(g,64,10,'#ffffff'); });   // 바나나 · 복숭아
+var MENU_BEZEL=pBezel(74,50); things.push({sy:8*T-0.5, draw:function(g){ g.drawImage(FRUIT_ART,9*T+8,8*T-70); MENUB.forEach(function(m){ g.drawImage(MENU_BEZEL,m.x-1,m.y-1); }); drawMenuBoards(g); }});
 function drawMenuBoards(g){
   var names=[['한식','제육볶음'],['국·찌개','된장찌개'],['면','우동'],['일품','돈가스'],['샐러드','닭가슴살']], food=['#b8502a','#c8883a','#e8d8a8','#d89848','#6aa84a'];
   g.textAlign='center'; g.textBaseline='top';
@@ -2604,9 +2637,9 @@ function drawMenuBoards(g){
 // 주방 바로 앞에 한 줄로: 계산대 → 식판 → 배식대 (조리·계산 직원은 주방 쪽에 선다)
 onTile(pPosCounter(),9,9,11,10);
 onTile(pTrayStation(),12,9,13,10);
-onTile(pServeLine(11*T),14,9,24,10);
+onTile(pServeLine(10*T),14,9,23,10);
 onTile(pSampleCase(2*T),1,6,2,6);                                     // 메뉴 모형 진열장 (반 크기 · 다섯 가지)
-onTile(pCooler(),25,10,25,10); onTile(pCupBin(),26,10,26,10);         // B: 배식대 끝 · 퇴식구 옆: 정수기 · 종이컵 버리는 통
+onTile(pCooler(),24,10,24,10); onTile(pCooler(),25,10,25,10); onTile(pCupBin(),26,10,26,10);   // 배식대 끝 · 퇴식구 옆: 정수기 둘 · 종이컵 버리는 통
 
 // ---- 주방 식구 쉼터 (오른쪽 아래, 칸막이 안): 컴퓨터 자리 셋 · 소파 · TV · 선풍기 · 쓰레기통 · 영양사 자리 ----
 // 주방 안쪽 → 퇴식구 뒤 30열을 따라 식자재 창고를 지나 쉼터 윗줄(21행)로 들어간다
@@ -2639,7 +2672,7 @@ lazyItem(function(){ return obj(80,14,function(g){ R(g,0,0,80,14,'#6a8a5a'); tx(
 // 벽 (식자재 창고 위): 근무표 · 시계 / 주방 위: 앞치마 걸이 · '주방' 표지
 lazyItem(function(){ return obj(84,50,function(g){ R(g,0,0,84,50,'#8a6048'); R(g,2,2,80,46,'#fbf6ea'); R(g,2,2,80,11,'#6a8a5a'); tx(g,'주방 근무표',42,8,9,'#fbf6e6','center');
   for(var r=0;r<4;r++){ R(g,6,17+r*7,72,1,'#d8ccb4'); tx(g,['월','화','수','목'][r],10,20+r*7,7,'#6a5444','center'); for(var c=0;c<3;c++) R(g,20+c*20,18+r*7,14,4,[ '#f2a65a','#fbfbf8','#e8ecee'][c]); }
-  R(g,20,44,14,2,'#f2a65a'); R(g,40,44,14,2,'#c9cfd4'); disc(g,76,6,2,'#e04a4a'); }); },31*T+8,FACE_TOP+6,1);
+  R(g,20,44,14,2,'#f2a65a'); R(g,40,44,14,2,'#c9cfd4'); disc(g,76,6,2,'#e04a4a'); }); },27*T+8,48,1);
 things.push({sy:1, draw:function(g){ var d=new Date(); drawClock(g,{h:d.getHours(),m:d.getMinutes()},{cx:34*T+4,cy:FACE_TOP+26}); }});
 wallItem(obj(56,46,function(g){ R(g,0,0,56,4,'#8a6048'); R(g,0,0,56,1,'#b08254'); [6,24,42].forEach(function(x,i){ disc(g,x+4,4,2,'#c9cfd4');
   if(i<2){ R(g,x-1,8,10,6,'#fbfbf8'); R(g,x-3,14,14,30,i?'#6a8a5a':'#f4f4f0'); R(g,x-3,14,14,2,'#ffffff'); R(g,x,24,8,8,sh(i?'#6a8a5a':'#f4f4f0',-0.1)); }   // 앞치마
@@ -2749,7 +2782,7 @@ B1_TABLES.forEach(function(t){ var top=t[0], tr=t[1], bot=t[2];
     B1_SEATS.push({ id:t[3]+'t'+i, table:t[3], side:'top', col:i, x:c*T+16-17, feet:(top+1)*T+1, dir:'down', c:c, r:top-1, tray:{x:c*T+16, y:tr*T+10} });
     B1_SEATS.push({ id:t[3]+'b'+i, table:t[3], side:'bot', col:i, x:cb*T+16-17, feet:bot*T+26, dir:'up', c:cb, r:bot+1, tray:{x:cb*T+16, y:(tr+1)*T+6} }); }); });
 // 오른쪽: 기둥(R·G 표지) · 이끼 화단 · 높은 이끼 바 (4석)
-[[18,14,'R','#f07a2a'],[18,24,'G','#f2c230']].forEach(function(pl){ put(pSlatPillar(),pl[0]*T-4,(pl[1]+1)*T-124,(pl[1]+1)*T,[pl[0],pl[1],pl[0],pl[1]]);
+[[18,14,'R','#f07a2a'],[19,21,'G','#f2c230']].forEach(function(pl){ put(pSlatPillar(),pl[0]*T-4,(pl[1]+1)*T-124,(pl[1]+1)*T,[pl[0],pl[1],pl[0],pl[1]]);
   things.push({sy:(pl[1]+1)*T+0.1, draw:function(g){ var x=pl[0]*T+16, y=(pl[1]+1)*T-120; R(g,x-1,y-26,2,26,'#6a6f76');   // 천장에 매단 알록달록 글자 표지
   g.font='bold 30px sans-serif'; g.textBaseline='top'; g.textAlign='center'; g.lineWidth=4; g.strokeStyle='#5a3a24'; g.strokeText(pl[2],x,y); g.fillStyle=pl[3]; g.fillText(pl[2],x,y); g.textAlign='left'; }}); });
 // 식기 반납대 · 쓰레기통 셋 · 공기청정기 둘 · 냉난방기(스탠드) · 화분
@@ -2765,28 +2798,33 @@ things.push({sy:RET_Y+256+0.1, draw:function(g){ var t=performance.now(), E=STAT
   (E.spoon||[]).forEach(function(t0){ var u=(t-t0)/700; if(u<0||u>1) return; var sx=X0+35-Math.round((1-u)*16), sy=Y0+176+Math.round(u*14); R(g,sx,sy,1,9,'#eef1f3'); ell(g,sx,sy,1,2,'#ffffff'); });
   g.font='10px NeoDGM, sans-serif'; g.textBaseline='top'; R(g,X0-2,Y0-22,50,16,'#2a2e34'); g.fillStyle='#fbf6e6'; g.fillText('퇴식구',X0+4,Y0-19); }});
 onTile(pPlant('bush','#e8e2d6'),1,8,1,8);
+onTile(obj(24,34,function(g){ R(g,2,8,20,26,'#5a6470'); R(g,2,8,20,3,'#7a8490'); R(g,4,30,16,4,'#3a4048'); R(g,6,0,2,10,'#d8302a'); R(g,11,2,2,8,'#3a7ad0'); R(g,16,1,2,9,'#2a2e34'); disc(g,7,0,2,'#d8302a'); }),5,3,5,3);   // 우산꽂이
+onTile(obj(18,52,function(g){ R(g,7,14,4,34,'#c9cfd4'); R(g,2,48,14,4,'#9aa2a8'); R(g,1,6,16,10,'#fbfaf6'); R(g,1,6,16,2,'#3a8ae8'); R(g,6,0,6,7,'#e8f4fa'); R(g,8,-2,2,3,'#3a8ae8'); tx(g,'손소독',9,11,6,'#3a8ae8','center'); }),6,3,6,3);   // 손 소독대
+onTile(obj(30,46,function(g){ R(g,2,4,26,30,'#6a4a32'); R(g,4,6,22,26,'#2e3a32'); tx(g,'오늘의',15,11,7,'#fbf6e6','center'); tx(g,'메뉴',15,19,7,'#f2d06a','center'); ell(g,15,27,7,2,'#fbfaf6'); ell(g,15,26,5,1,'#c8502a');   // 오늘의 메뉴 입간판
+  line(g,4,34,1,45,'#6a4a32'); line(g,26,34,29,45,'#6a4a32'); }),6,6,6,6);
 // D: 커뮤니티룸 둘 (유리벽, 문은 위쪽) · 4인 테이블에 좌우로 두 명씩 마주 앉는다
 function pGlassWallH(len,label){ return obj(len,58,function(g,w){ R(g,0,0,w,4,'#6a7078'); R(g,0,52,w,6,'#6a7078'); g.fillStyle='rgba(190,225,240,0.32)'; g.fillRect(0,4,w,48);
   for(var x=0;x<w;x+=T) R(g,x,4,2,48,'#8a929a'); R(g,4,10,Math.min(40,w-8),1,'rgba(255,255,255,0.7)'); if(label){ R(g,6,16,58,12,'#2a2e34'); tx(g,label,35,22,8,'#fbf6e6','center'); } }); }
 function pGlassWallV(len){ return obj(8,len,function(g,w,h){ R(g,0,0,8,h,'#8a929a'); g.fillStyle='rgba(190,225,240,0.45)'; g.fillRect(2,0,4,h); R(g,0,h-6,8,6,'#6a7078'); }); }
-carpet(bgc,7,25,10,28,'#d8d2c4'); carpet(bgc,12,25,15,28,'#cfd8d0');
-[[6,'J','커뮤니티룸 1'],[11,'K','커뮤니티룸 2']].forEach(function(q){ var c0=q[0];
-  put(pGlassWallH(2*T,q[2]),c0*T,25*T-58,25*T-1,[c0,24,c0+1,24]); put(pGlassWallH(3*T),(c0+3)*T,25*T-58,25*T-1,[c0+3,24,c0+5,24]);   // 문: (c0+2, 24)
-  put(pTable2(),(c0+2)*T,28*T-72,28*T,[c0+2,26,c0+3,27]);
-  [26,27].forEach(function(r,i){
-    put(pWovenStool(),(c0+1)*T+3,(r+1)*T-30,r*T+10,null); put(pWovenStool(),(c0+4)*T+3,(r+1)*T-30,r*T+10,null);
-    B1_SEATS.push({ id:q[1]+'l'+i, table:q[1], side:'left', col:i, x:(c0+1)*T+16-17+4, feet:r*T+26, dir:'right', c:c0+1, r:r, tray:{x:(c0+2)*T+4, y:r*T+6}, traySy:28*T+0.3 });
-    B1_SEATS.push({ id:q[1]+'r'+i, table:q[1], side:'right', col:i, x:(c0+4)*T+16-17-4, feet:r*T+26, dir:'left', c:c0+4, r:r, tray:{x:(c0+3)*T+6, y:r*T+6}, traySy:28*T+0.3 }); }); });
-put(pGlassWallV(4*T),6*T+12,25*T,29*T,[6,25,6,28]); put(pGlassWallV(4*T),11*T+12,25*T,29*T,[11,25,11,28]); put(pGlassWallV(4*T),16*T+12,25*T,29*T,[16,25,16,28]);
+carpet(bgc,5,24,11,28,'#d8d2c4'); carpet(bgc,13,24,19,28,'#cfd8d0');
+[[4,'J','커뮤니티룸 1'],[12,'K','커뮤니티룸 2']].forEach(function(q){ var c0=q[0];   // 벽: c0 · c0+8열, 위(23행) 문은 c0+2열
+  put(pGlassWallH(2*T,q[2]),c0*T,24*T-58,24*T-1,[c0,23,c0+1,23]); put(pGlassWallH(6*T),(c0+3)*T,24*T-58,24*T-1,[c0+3,23,c0+8,23]);
+  put(pTable2(),(c0+3)*T,27*T-72,27*T,[c0+3,25,c0+4,26]);
+  [25,26].forEach(function(r,i){
+    put(pWovenStool(),(c0+2)*T+3,(r+1)*T-30,r*T+10,null); put(pWovenStool(),(c0+5)*T+3,(r+1)*T-30,r*T+10,null);
+    B1_SEATS.push({ id:q[1]+'l'+i, table:q[1], side:'left', col:i, x:(c0+2)*T+16-17+4, feet:r*T+26, dir:'right', c:c0+2, r:r, tray:{x:(c0+3)*T+4, y:r*T+6}, traySy:27*T+0.3 });
+    B1_SEATS.push({ id:q[1]+'r'+i, table:q[1], side:'right', col:i, x:(c0+5)*T+16-17-4, feet:r*T+26, dir:'left', c:c0+5, r:r, tray:{x:(c0+4)*T+6, y:r*T+6}, traySy:27*T+0.3 }); });
+  onTile(pPlant('monstera','#e8e2d6'),c0+7,24,c0+7,24); onTile(pPlant('tall','#e8e2d6'),c0+7,28,c0+7,28); onTile(pPlant('bush','#e8e2d6'),c0+1,28,c0+1,28); });   // 방마다 화분 셋
+[4,12,20].forEach(function(c){ put(pGlassWallV(5*T),c*T+12,24*T,29*T,[c,24,c,28]); });
 // 사과 조형물 둘레: 4인 테이블 넷 (위아래 두 명씩)
-[[20,13,'D'],[23,13,'E'],[20,21,'F'],[23,21,'H']].forEach(function(q){ var c0=q[0], top=q[1], tr=top+1, bot=top+3;
+[[21,13,'D'],[24,13,'E'],[21,20,'F'],[24,20,'H']].forEach(function(q){ var c0=q[0], top=q[1], tr=top+1, bot=top+3;
   put(pLongTable(2*T),c0*T,(tr+2)*T-72,(tr+2)*T,[c0,tr,c0+1,tr+1]);
   [c0,c0+1].forEach(function(c,i){ put(pWovenStool(),c*T+3,(top+1)*T-30,(top+1)*T,[c,top,c,top]); put(pWovenStool(),c*T+3,(bot+1)*T-30,bot*T+10,[c,bot,c,bot]);
     B1_SEATS.push({ id:q[2]+'t'+i, table:q[2], side:'top', col:i, x:c*T+16-17, feet:(top+1)*T+1, dir:'down', c:c, r:top-1, tray:{x:c*T+16, y:tr*T+10} });
     B1_SEATS.push({ id:q[2]+'b'+i, table:q[2], side:'bot', col:i, x:c*T+16-17, feet:bot*T+26, dir:'up', c:c, r:bot+1, tray:{x:c*T+16, y:(tr+1)*T+6} }); }); });
-onTile(pTrash(),4,28,4,28);
-onTile(pAirPurifier(),17,22,17,22);
-onTile(pOliveTree(),19,26,20,27);
+onTile(pTrash(),2,28,2,28);
+onTile(pAirPurifier(),17,21,17,21);
+onTile(pOliveTree(),22,26,23,27);
 onTile(pPlant('tall','#e8e2d6'),18,18,18,18);
 onTile(pIceVending(),1,11,2,13); onTile(pRamenVending(),1,14,2,16);   // 아이스크림 자판기 · 라면 자판기 (왼쪽 벽)
 onTile(pPlant('tall','#e8e2d6'),1,19,1,19); onTile(pPlant('monstera','#e8e2d6'),1,26,1,26);
@@ -2798,12 +2836,12 @@ function pSelfCornerV(){ return obj(44,164,function(g){ R(g,0,6,44,158,'#c99a6a'
   R(g,8,140,26,12,'#fbfaf6'); R(g,8,140,26,2,'#e8e4dc'); R(g,16,136,10,5,'#ffffff'); }); }
 put(pSelfCornerV(),T+2,25*T-164,25*T,[1,20,1,24]);
 onTile(pAirPurifier(),26,22,26,22);
-spot(bgc,22*T+16,20*T-4,24,8); onTile(pArtB1('apple'),22,18,22,19); onTile(pPlant('bush','#4a4e56'),18,27,18,27);
+spot(bgc,23*T+16,19*T-4,24,8); onTile(pArtB1('apple'),23,17,23,18); onTile(pPlant('bush','#4a4e56'),25,28,25,28);
 MAPB.VEND={ ice:{c:3,r:12,face:'left'}, ramen:[{c:3,r:15,face:'left'}], iceX:T+34, ramenY:[15*T-22] };
 MAPB.SWITCH=SWITCHB; MAPB.ELEV={x:32,y:0,w:128,h:96}; MAPB.SEATS=B1_SEATS; MAPB.RETURN=B1_RETURN; MAPB.SCRAP=B1_SCRAP; MAPB.SPOON=B1_SPOON;
 MAPB.REST={ route:[{x:27*T-1, feet:7*T+2},{x:30*T-1, feet:7*T+2},{x:30*T-1, feet:22*T+2}], lane:22*T+2, desks:[28*T+14,30*T+14,32*T+14], deskFeet:22*T+6, sofaIn:34*T-4, sofaRow:25*T+22, sofa:[30*T+14,32*T+2], sofaFeet:26*T+12 };   // 쉼터 자리 · route: 배식 통로 → 주방 안쪽(6행) → 34열 → 쉼터 윗줄
-MAPB.CREW={ feet:9*T+2, lobbyFeet:4*T+2, lx:7*T-1, posts:[10*T-1,17*T-1,22*T-1], c0:14, c1:23 };   // 주방 식구가 배식대 뒤에 서는 줄 · 엘리베이터에서 들어오는 길
-MAPB.LINE={ r:11, c0:14, c1:23 }; MAPB.PAY={ c:10, r:11 }; MAPB.LOBBY={ c:2, r:3 }; MAPB.DOCK={ c:24, r:27 };
+MAPB.CREW={ feet:9*T+2, lobbyFeet:4*T+2, lx:7*T-1, posts:[10*T-1,17*T-1,21*T-1], c0:14, c1:22 };   // 주방 식구가 배식대 뒤에 서는 줄 · 엘리베이터에서 들어오는 길
+MAPB.LINE={ r:11, c0:14, c1:22 }; MAPB.PAY={ c:10, r:11 }; MAPB.LOBBY={ c:2, r:3 }; MAPB.DOCK={ c:25, r:26 };
 MAPB.KITCHEN={ store:{c:33,r:16}, fridge:{c:10,r:6}, rice:{c:11,r:5}, pots:[{c:13,r:5},{c:15,r:5}], range:[{c:17,r:5},{c:19,r:5}], fryer:{c:21,r:5}, prep:{c:27,r:5}, sink:{c:30,r:10}, dish:{c:30,r:9}, pass:{c:27,r:7}, diet:{c:28,r:28} };   // 주방 식구가 설 자리 (나중에 쓴다) · dish: 퇴식구 창구 뒤
 var B1LOOK={
   cashier:{id:'b1cashier', kind:'chicken', shirt:'#f2a65a', pants:'#4a4038', apron:'#6a8a5a'},
