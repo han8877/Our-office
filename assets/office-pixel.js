@@ -744,7 +744,7 @@ function f1Visitors(F,now,off,O,t){
   for(var key in Q){ var q=Q[key], id='v_'+key, a=A[id];
     if(q.done){ if(q.own) delete Q[key]; continue; }
     if(!a){
-      var look = q.kind==='staff' ? STAFFLOOK[q.id] : q.kind==='sec' ? PO.F2LOOK[q.look] : q.kind==='boss' ? PO.VISITORS.visitorBoss : PO.VISITORS.visitorGuard;
+      var look = q.kind==='landlord' ? LANDLORD_LOOK : q.kind==='staff' ? STAFFLOOK[q.id] : q.kind==='sec' ? PO.F2LOOK[q.look] : q.kind==='boss' ? PO.VISITORS.visitorBoss : PO.VISITORS.visitorGuard;
       if(!look){ q.done=true; continue; }
       var cp={}; for(var kk in look) cp[kk]=look[kk]; if(q.kind==='staff' && q.why==='buy') cp.item='basket';
       a=npcActor(F,id,cp,''); a.qkey=key; a.q=q; a.visible=true; a.stepMs=q.kind==='boss'?340:q.kind==='staff'?300:260; a.plan=f1Plan(q); a.pi=-1; a.stayUntil=0; a.out=false; a.look0=cp;
@@ -1379,24 +1379,47 @@ function roofGuestPlan(F,q){
   return ROOF_GUEST_SPOTS.patrol.slice().sort(function(){ return Math.random()-0.5; }).slice(0,3+(Math.random()<0.5?1:0))
     .map(function(sp){ return {c:sp.c,r:sp.r,face:sp.face,stay:stay(3500,6000)}; });
 }
+// 밤 10~11시: 백회장(건물주)이 옥상에 올라와 15분쯤 천천히 거닌다. 난간에서 야경을 보고, 벤치에 앉았다가, 느티나무 부엉이에게 말을 건다
+var LL_NIGHT_LINES=[['이 동네가 옛날엔','다 논밭이었는데'],['그때 이 땅,','빚내서 샀었지'],['저 불빛 하나하나가','다 누군가의 하루겠지'],['아버지도 이런 밤엔','옥상에 올라오셨지'],
+  ['서른에 처음','이 자리에 섰었지'],['벽돌 한 장 한 장,','다 기억나'],['그 사람은…','잘 지내려나'],['남산타워 불빛은','그대로구먼'],['젊을 땐 저 불빛이','다 내 것 같았는데'],['허허…','세월 참 빠르다'],
+  ['첫 세입자가','작은 문방구였지'],['개업 날 먹던 짜장면,','참 맛있었는데'],['비 새는 지붕 고치느라','밤샌 적도 있었지'],['손주 녀석이','벌써 중학생이라니'],['돈은 모았는데','시간은 못 모았구먼'],
+  ['이 바람…','그해 가을 같네'],['집사람이 좋아하던','노래가 뭐였더라'],['…♪ 그 겨울의','찻집 ♪'],['저 다리,','처음 놓일 때 봤지'],['도시는 크는데','나는 늙는구먼'],
+  ['선글라스를 벗어야','별이 보이지'],['별이… 예전보다','적어졌어'],['눈가가 시큰한 건…','바람 탓이야'],['3층 불은','아직 켜져 있나'],['열심히들 사는구먼,','우리 세입자들'],
+  ['내가 저 나이 땐','뭘 했더라'],['그때 그 약속,','못 지켰지…'],['오늘도','수고했다, 백가야'],['이 건물이','나보다 오래 남겠지'],['연못 물소리…','좋구먼'],['어머니 손맛이','그립구먼'],
+  ['다 지나가더라.','좋은 것도, 나쁜 것도'],['계약서보다 악수가','먼저던 시절이 있었지'],['그 시절 친구들,','다 어디서 뭐 하나'],['밤바람이','제법 차네'],['한강 불빛이','반짝반짝하구먼'],
+  ['처음 산 구두,','아직 신발장에 있지'],['그땐 버스비 아끼려고','걸어 다녔는데'],['청춘이란 게…','참 짧더라'],['조금만 더 있다','내려가자'],['7층 테라스엔','정원을 만들어야지'],['이 야경,','공짜라서 좋구먼']];
+var LL_OWL_TALK=[[['자네도','아직 안 자나'],['부엉.']],[['자넨 이 건물보다','여기 먼저 살았지?'],['부엉부엉']],[['내 얘기 좀','들어 주겠나'],['…부엉']],[['자네는 늙지도','않는구먼'],['부우엉~']],
+  [['이 나무 심은 게','나였다네'],['부엉!']],[['외로운 건','자네나 나나'],['…부엉.']],[['한교수랑','닮았다고들 하더군'],['부엉?!']],[['비밀 하나','알려 줄까'],['(고개를 갸웃)']],
+  [['오늘 밤은','같이 좀 있자고'],['부엉.']],[['내일도','여기 있을 건가'],['부엉부엉']],[['허허, 대답이','늘 똑같구먼'],['부엉.']],[['그래도 자네가','제일 말이 통해'],['(눈을 끔뻑)']],
+  [['요즘 쥐는','좀 잡히나'],['부엉…']],[['잘 자게,','친구'],['부엉~']]];
+function landlordNightPlan(F){
+  function stay(a,b){ return a+Math.random()*(b-a); }
+  var view=ROOF_GUEST_SPOTS.view.slice().sort(function(){ return Math.random()-0.5; }), seats=ROOF_GUEST_SPOTS.sit.slice(1).sort(function(){ return Math.random()-0.5; }), gd=ROOF_GUEST_SPOTS.garden.filter(function(sp){ return sp.c!==30; });
+  var P=function(sp,a,b,ex){ var o={c:sp.c,r:sp.r,face:sp.face,sit:sp.sit,stay:stay(a,b)}; for(var k in ex||{}) o[k]=ex[k]; return o; };
+  return [P(view[0],70000,90000), P(seats[0],110000,140000), P({c:31,r:18,face:'up'},100000,120000,{owl:true}), P(view[1],60000,80000), P(seats[1],110000,140000), P(rpick(gd),40000,55000), P(view[2],60000,80000)];
+}
 function roofGuests(F,now,off){
   var Q=window.__roofGuests=window.__roofGuests||{}, d=new Date(), hr=d.getHours(), mn=d.getMinutes();
   // 경비: 매시 15분 · 45분에 옥상을 한 바퀴 돈다 (밤낮 없이)
   if((mn===15||mn===45) && guardOnDuty() && F.guardSlot!==d.toDateString()+hr+':'+mn && !Q.guard && !(B.visitorPresent && B.visitorPresent('visitorGuard'))){ F.guardSlot=d.toDateString()+hr+':'+mn; Q.guard={ kind:'guard', name:'유경비' }; }
+  if(hr===22 && F.llNight!==d.toDateString() && !Q.landlord){ var wxL=B.weather(), llSt=22*60+PO.hash(d.toDateString()+'llnight')%40, tM=hr*60+mn;   // 비·눈 오는 밤엔 안 올라온다
+    if(wxL!=='rain' && wxL!=='snow' && tM>=llSt && tM<llSt+10){ F.llNight=d.toDateString(); Q.landlord={ kind:'landlord', name:'백회장' }; } }
   var night=hr>=18||hr<7;
   for(var key in Q){ var q=Q[key], id='g_'+key, a=F.actors[id];
     if(a && q.kind==='staff') a.name=staffName(q.id);
-    if(q.done){ if(key==='guard') delete Q[key]; continue; }
+    if(q.done){ if(key==='guard'||key==='landlord') delete Q[key]; continue; }
     if(!a){
-      var look = q.kind==='staff' ? PO.STAFF.filter(function(p){ return p.id===q.id; })[0] : q.kind==='buyer' ? (BUYERS[q.bk]||{}).look : q.kind==='sec' ? PO.F2LOOK[q.look] : PO.VISITORS.visitorGuard;
+      var look = q.kind==='landlord' ? LANDLORD_LOOK : q.kind==='staff' ? PO.STAFF.filter(function(p){ return p.id===q.id; })[0] : q.kind==='buyer' ? (BUYERS[q.bk]||{}).look : q.kind==='sec' ? PO.F2LOOK[q.look] : PO.VISITORS.visitorGuard;
       if(!look){ q.done=true; continue; }
       var cp={}; for(var kk in look) cp[kk]=look[kk];
       var wxNow=B.weather(); q.wet=wxNow==='rain'||wxNow==='snow';
-      a=npcActor(F,id,cp,q.name); a.visible=true; a.stepMs=q.kind==='staff'?300:250; a.plan=roofGuestPlan(F,q); a.pi=-1; a.stayUntil=0; a.out=false;
-      a.torch=q.kind!=='staff' && q.kind!=='buyer';
+      a=npcActor(F,id,cp,q.name); a.visible=true; a.stepMs=q.kind==='landlord'?430:q.kind==='staff'?300:250; a.plan=q.kind==='landlord'?landlordNightPlan(F):roofGuestPlan(F,q); a.pi=-1; a.stayUntil=0; a.out=false;
+      a.torch=q.kind!=='staff' && q.kind!=='buyer' && q.kind!=='landlord';
       a.lines = q.kind==='buyer' ? ROOF_BUYER_LINES[BUYERS[q.bk].nat].concat(ROOF_BUYER_LINES.ko) : q.kind==='staff' ? (wxNow==='snow'?ROOF_GUEST_LINES.snow:wxNow==='rain'?ROOF_GUEST_LINES.rain:q.night?ROOF_GUEST_LINES.night:ROOF_GUEST_LINES.work) : q.kind==='sec' ? ROOF_GUEST_LINES.sec : ROOF_GUEST_LINES.guard.concat(night?ROOF_GUEST_LINES.guardNight:[]);
+      if(q.kind==='landlord'){ a.lines=LL_NIGHT_LINES; a.llBag=[]; a.owlBag=[]; a.nextTalk=now+6000; }
       placeAt(F,a,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'down' });
     }
+    if(q.kind==='landlord') landlordNightTalk(F,a,now);
     if(off) step(a,now);
     if(a.talkUntil && now>a.talkUntil){ a.bubble=null; a.talkUntil=0; }
     if(a.path) continue;
@@ -1404,7 +1427,8 @@ function roofGuests(F,now,off){
     if(!a.stayUntil){
       if(a.pi>=0){ var sp=a.plan[a.pi];
         if(sp.sit){ a.x=sp.sit.x; a.feet=sp.sit.feet; a.dir=sp.sit.dir; a.onFurn=true; }
-        if(a.pi===0 || Math.random()<0.6){ a.bubble=[rpick(a.lines)]; a.talkUntil=now+3400; }
+        if(q.kind==='landlord') a.nextTalk=now+1500+Math.random()*2000;
+        else if(a.pi===0 || Math.random()<0.6){ a.bubble=[rpick(a.lines)]; a.talkUntil=now+3400; }
         a.stayUntil=now+sp.stay;
       } else a.stayUntil=now+500;
     }
@@ -1414,6 +1438,16 @@ function roofGuests(F,now,off){
       else { a.out=true; a.bubble=null; a.talkUntil=0; setGoal(F,a,{ c:ROOF_DOOR.c, r:ROOF_DOOR.r, face:'up' },now); }
     }
   }
+}
+// 백회장 밤 산책 혼잣말: 겹치지 않게 섞어 차례로 · 부엉이 앞에선 말을 걸고 부엉이가 대답한다 (F.owlTalk 를 그림에서 말풍선으로)
+function landlordNightTalk(F,a,now){
+  if(F.owlTalk && now>F.owlTalk.until) F.owlTalk=null;
+  if(a.path || !a.stayUntil || a.talkUntil || now<a.nextTalk || a.out) return;
+  var sp=a.plan[a.pi]; if(!sp) return;
+  if(sp.owl){ if(!a.owlBag.length) a.owlBag=LL_OWL_TALK.slice().sort(function(){ return Math.random()-0.5; });
+    var ex=a.owlBag.pop(); a.bubble=ex[0]; a.talkUntil=now+4200; F.owlTalk={ lines:ex[1], at:now+4600, until:now+8200 }; a.nextTalk=now+11000+Math.random()*4000; return; }
+  if(!a.llBag.length) a.llBag=LL_NIGHT_LINES.slice().sort(function(){ return Math.random()-0.5; });
+  a.bubble=a.llBag.pop(); a.talkUntil=now+4600; a.nextTalk=now+9000+Math.random()*7000;
 }
 // 밤 순찰 손전등: 바라보는 쪽으로 부채꼴 불빛
 function drawTorches(F,g,ph){
@@ -2278,6 +2312,7 @@ function frame(now){
     else { var b=PO.BALLOONS[EMO_BAL[a.emo]||'dots']; if(b) g.drawImage(b,Math.round(a.x)+2,top-22+Math.round(Math.sin(now*0.012)*1.5)); } });
   if(F.robot.bubble) drawBubble(g,Math.round(F.robot.x)+16,Math.round(F.robot.feet)-(F.robot.tall||36),F.robot.bubble,'#6f9aa6');
   if(F.key==='1' && M.BOOTH && F.boothTalk && F.boothTalk.lines && PO.STATE.guardBooth) drawBubble(g,M.BOOTH.x+44,M.BOOTH.y+4,F.boothTalk.lines,'#6f5a4a');   // 경비실 창 너머 한마디
+  if(F.key==='L' && F.owlTalk && performance.now()>F.owlTalk.at && PO.MAPR.OWL) drawBubble(g,PO.MAPR.OWL.x,PO.MAPR.OWL.y-4,F.owlTalk.lines,'#8a6a4a');
   if(F.key==='5' && F.vac && F.vac.bubble) drawBubble(g,Math.round(F.vac.x)+15,Math.round(F.vac.feet)-16,F.vac.bubble,'#6f9aa6');
   // 시간대 색 · 조명
   var tint=PO.TINT[ph];
@@ -2331,7 +2366,7 @@ var NPC_INFO={
   f1ryu:    { name:'바리스타 류', role:'1층 MOON 9 COFFEE · 바리스타', bio:'오리. 픽업대에서 음료 이름을 또박또박 불러 줘요. 나인 콜드브루를 제일 좋아해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
   f1woo:    { name:'우서빙', role:'1층 MOON 9 COFFEE · 홀 서빙', bio:'하마. 식물에 물을 주고, 테이블을 닦고, 쓰레기통을 비우고, 갤러리 그림도 챙겨요. 손님 질문엔 뭐든 대답해 줘요. 쉴 땐 직원 쉼터에서 뜨개질을 해요.', hours:'매일 07:40 출근 · 22:10 퇴근' },
   f1shopper:{ name:'손님', role:'1층 스토어 손님', bio:'베이지 장바구니를 들고 진열대를 구경해요.', hours:'영업 10~21시' },
-  landlord: { name:'백회장', role:'7층 건물주 · 회장님', bio:'알비노 하얀 악어. 이 건물의 주인이에요. 카멜 캐시미어 코트에 금테 선글라스, 손에는 늘 갤럭시. 하루 한두 번 1층 카페에 들러 "늘 먹던 걸로" 아메리카노를 받고 레몬나무를 구경해요. 7층은 아직 공사 중.', hours:'날마다 오전·오후 한 번쯤 (안 오는 날도 있어요)' },
+  landlord: { name:'백회장', role:'7층 건물주 · 회장님', bio:'알비노 하얀 악어. 이 건물의 주인이에요. 카멜 캐시미어 코트에 금테 선글라스, 손에는 늘 갤럭시. 하루 한두 번 1층 카페에 들러 "늘 먹던 걸로" 아메리카노를 받고 레몬나무를 구경해요. 7층은 아직 공사 중.', hours:'날마다 오전·오후 한 번쯤 카페 (안 오는 날도 있어요) · 밤 10시쯤 옥상 산책 15분 (비·눈 오는 밤 빼고)' },
   f1cafeguest:{ name:'손님', role:'1층 카페 손님', bio:'키오스크에서 주문하고 픽업대에서 음료를 받아요.', hours:'영업 8~22시' },
   buyer_jp: { name:'노토 네코', role:'일본 바이어 · 2층 로비 손님', bio:'마네키네코. 도쿄에서 온 문구 수입사 바이어예요. 서류철을 꼭 쥐고 일본어로 수출 이야기를 중얼거려요. 한국어는 인사 정도.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (가끔 빠져요)' },
   buyer_us: { name:'마이클 스캇', role:'미국 바이어 · 2층 로비 손님', bio:'흰머리수리. 1층 스토어 쇼핑백을 늘 들고 다녀요. 영어로 선적 얘기를 하다가 혼자 농담하고 혼자 웃어요.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (가끔 빠져요)' },
@@ -2355,6 +2390,7 @@ function actorWho(F,a){
     if(STAFFLOOK[src]) return {staff:src}; if(src==='visitorGuard') return {npc:'visitorGuard'}; return NPC_INFO[src] ? {npc:src} : null; }
   if(F.key==='L'){ if(a.ccNpc && NPC_INFO[a.ccNpc]) return {npc:a.ccNpc}; if(a.sid) return {staff:a.sid}; var m=/^g_(.+)$/.exec(a.id); if(!m) return null; var q=(window.__roofGuests||{})[m[1]];
     if(q && q.kind==='buyer') return {npc:'buyer_'+q.bk};
+    if(m[1]==='landlord') return {npc:'landlord'};
     if(m[1]==='guard') return {npc:'visitorGuard'}; if(m[1]==='sec') return {npc:a.lookId==='guardLeo'?'guardLeo':'guard'}; return q&&q.id&&STAFFLOOK[q.id] ? {staff:q.id} : null; }
   return null;
 }

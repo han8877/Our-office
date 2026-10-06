@@ -2340,7 +2340,7 @@ things.push({img:pShadeSail(10*T+8,5*T-8),x:11*T+12,y:8*T-70,sy:9990});
 // 파라솔 테이블 셋
 [[24,10],[28,10],[26,13]].forEach(function(p){ onTile(pBistro(),p[0],p[1],p[0]+1,p[1]); things.push({img:pParasol(p[0]===26?'#8fae96':'#e8a88c'),x:p[0]*T-16,y:p[1]*T-58,sy:9989}); });
 // 느티나무 (밤엔 부엉이) · 단풍
-onTile(pZelkova(),31,14,33,17); var OWL={ x:31*T+22, y:14*T+2 };
+onTile(pZelkova(),31,14,33,17); var OWL={ x:31*T+22, y:14*T+2 }; MAPR.OWL=OWL;
 onTile(pMaple(),22,16,23,17);
 // 텃밭 · 허브 · 꽃 화단 (왼쪽)
 onTile(pGardenBed(96,'veg'),2,11,4,11); onTile(pGardenBed(96,'herb'),2,14,4,14); onTile(pGardenBed(96,'flower'),2,17,4,17); onTile(pGardenBed(64,'flower'),6,20,7,20);
