@@ -3384,23 +3384,24 @@ function patCover(g,x,y,w,h,k){ var P1=[ORG,COB,EMR,ROSE,LEM,INKB][k%6], P2=[CRM
   var t=k%4; if(t===0){ for(var i=1;i<w;i+=3) R(g,x+i,y,1,h,P2); } else if(t===1){ disc(g,x+Math.floor(w/2),y+Math.floor(h/2),Math.floor(Math.min(w,h)/3),P2); }
   else if(t===2){ tri(g,x,y+h,x+Math.floor(w/2),y+1,x+w,y+h,P2); } else { for(var a=1;a<w;a+=3) for(var b=1;b<h;b+=3) P(g,x+a,y+b,P2); } R(g,x,y,w,1,'rgba(255,255,255,0.4)'); }
 // 1층 대형 통창: 길 건너 가게 1층 · 2차선 도로(차가 오간다) · 가까운 인도와 가로수 밑동(보호 덮개) · 유리 반사 · 밤엔 어둡고 차 불빛
-var STREET_CARS=[{c:'#e04a3a',w:22,v:0.028,o:0,ln:0},{c:'#f4f4f0',w:24,v:0.022,o:150,ln:0},{c:'#2f5fd0',w:20,v:0.031,o:60,ln:1},{c:'#f5c83a',w:22,v:0.026,o:210,ln:1,taxi:true},{c:'#3a3f46',w:26,v:0.02,o:120,ln:1}];
+var STREET_CARS=[{c:'#f4f4f0',w:32,v:0.028,o:0,ln:0},{c:'#9aa0a6',w:34,v:0.022,o:150,ln:0},{c:'#2f5fd0',w:30,v:0.031,o:60,ln:1},{c:'#f4f4f0',w:32,v:0.026,o:210,ln:1},{c:'#8a9098',w:36,v:0.02,o:120,ln:1}];   // 흰색 · 회색 · 파란색 차만
 function drawStreetWindow(g,x,y,w,h,t){
   var ph=roofPhase(), night=ph==='night'||ph==='dusk', dusk=ph==='sunset'||ph==='dawn';
   g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip();
-  R(g,x,y,w,14,night?'#2a2e44':'#cfc6b8');                                                     // 길 건너: 가게 1층들
-  for(var sx=0;sx<w;sx+=42){ var sc=['#e8d8c0','#c8d8d8','#e0c8c8','#d8d0e8'][(sx/42)%4]; R(g,x+sx,y,40,14,night?sh(sc,-0.75):sc); R(g,x+sx+4,y+3,32,8,night?'#f6d88a':'#8aa6b8'); R(g,x+sx+4,y+3,32,1,night?'#ffeeb8':'#b8d0dc'); R(g,x+sx+2,y,36,2,['#c8323a','#2f5fd0','#1f9a6a','#f07a2a'][(sx/42)%4]); }
-  R(g,x,y+14,w,2,night?'#4a4e5e':'#d8d2c8');                                                   // 건너편 인도 연석
-  R(g,x,y+16,w,22,night?'#383c4c':'#5a5e66');                                                   // 도로 2차선
+  R(g,x,y,w,10,night?'#2a2e44':'#cfc6b8');                                                     // 길 건너: 가게 1층들
+  for(var sx=0;sx<w;sx+=42){ var sc=['#e8d8c0','#c8d8d8','#e0c8c8','#d8d0e8'][(sx/42)%4]; R(g,x+sx,y,40,10,night?sh(sc,-0.75):sc); R(g,x+sx+4,y+3,32,6,night?'#f6d88a':'#8aa6b8'); R(g,x+sx+4,y+3,32,1,night?'#ffeeb8':'#b8d0dc'); R(g,x+sx+2,y,36,2,['#c8323a','#2f5fd0','#1f9a6a','#f07a2a'][(sx/42)%4]); }
+  R(g,x,y+10,w,2,night?'#4a4e5e':'#d8d2c8');                                                   // 건너편 인도 연석
+  R(g,x,y+12,w,28,night?'#383c4c':'#5a5e66');                                                   // 도로 2차선
   for(var dx=0;dx<w;dx+=16) R(g,x+dx,y+26,8,1,night?'#8a8a70':'#f2d24a'); // 가운데 노란 점선
-  STREET_CARS.forEach(function(cr){ var span=w+60, p=((t*cr.v+cr.o*7)%span+span)%span, cx=cr.ln===0? x-30+p : x+w+30-p-cr.w, cy=cr.ln===0? y+18 : y+28;
+  STREET_CARS.forEach(function(cr){ var span=w+60, p=((t*cr.v+cr.o*7)%span+span)%span, cx=cr.ln===0? x-30+p : x+w+30-p-cr.w, cy=cr.ln===0? y+13 : y+26;
     var body=night?sh(cr.c,-0.45):cr.c;
-    R(g,cx+2,cy+2,cr.w-4,4,body); R(g,cx,cy+5,cr.w,4,body); R(g,cx+5,cy+3,cr.w-10,2,night?'#3a4258':'#bfe0ee'); R(g,cx+Math.floor(cr.w/2),cy+3,1,2,body);
-    if(cr.taxi) R(g,cx+Math.floor(cr.w/2)-2,cy+1,4,1,'#ffffff');
-    R(g,cx+3,cy+9,4,1,'#1c1c20'); R(g,cx+cr.w-7,cy+9,4,1,'#1c1c20');
-    var front=cr.ln===0? cx+cr.w-1 : cx, back=cr.ln===0? cx : cx+cr.w-1;
-    P(g,front,cy+6,night?'#fff6c8':'#f4f0d8'); P(g,back,cy+6,'#e04a3a');
-    if(night){ g.fillStyle='rgba(255,240,180,0.35)'; g.fillRect(cr.ln===0?front+1:front-10,cy+5,10,3); } });
+    R(g,cx+5,cy+1,cr.w-10,6,body); R(g,cx+5,cy+1,cr.w-10,1,sh(body,0.3)); R(g,cx,cy+6,cr.w,6,body); R(g,cx,cy+6,cr.w,1,sh(body,0.25)); R(g,cx,cy+11,cr.w,1,sh(body,-0.3));   // 지붕 · 차체
+    R(g,cx+7,cy+2,cr.w-14,4,night?'#3a4258':'#bfe0ee'); R(g,cx+Math.floor(cr.w/2),cy+2,1,4,body); R(g,cx+8,cy+2,3,1,'#ffffff');   // 창 · 가운데 기둥
+    R(g,cx+Math.floor(cr.w/2)-3,cy+8,2,1,sh(body,-0.35)); R(g,cx+Math.floor(cr.w/2)+4,cy+8,2,1,sh(body,-0.35));                     // 손잡이
+    R(g,cx+4,cy+11,6,3,'#1c1c20'); R(g,cx+6,cy+12,2,1,'#8a8e94'); R(g,cx+cr.w-10,cy+11,6,3,'#1c1c20'); R(g,cx+cr.w-8,cy+12,2,1,'#8a8e94');   // 바퀴
+    var front=cr.ln===0? cx+cr.w-2 : cx, back=cr.ln===0? cx : cx+cr.w-2;
+    R(g,front,cy+7,2,2,night?'#fff6c8':'#f4f0d8'); R(g,back,cy+7,2,2,'#e04a3a');
+    if(night){ g.fillStyle='rgba(255,240,180,0.35)'; g.fillRect(cr.ln===0?front+2:front-14,cy+6,14,4); } });
   R(g,x,y+38,w,2,night?'#6a6e7a':'#e2ddd2'); R(g,x,y+40,w,h-40,night?'#5e5c6a':'#c8bfb2');      // 연석 · 이쪽 인도 보도블록
   for(var bx=0;bx<w;bx+=8) R(g,x+bx,y+40,1,h-40,night?'#545262':'#b8afa2');
   R(g,x,y+46,w,1,night?'#545262':'#b8afa2');
