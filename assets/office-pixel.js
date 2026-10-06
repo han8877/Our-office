@@ -970,7 +970,7 @@ function f2Meets(F,now,off){
       var used={}; for(var k in A){ if(A[k].venue) used[A[k].venue.name]=1; }
       var free=F2M_VENUES.filter(function(v){ return !used[v.name]; }); if(!free.length){ q.done=true; continue; }
       var ven=lab5Pick(free), ci=Math.floor(Math.random()*F2M_CLIENTS.length), cl=f2mClient(ci), cp={}; for(var kk in look) cp[kk]=look[kk];
-      var bfree=Object.keys(BUYERS).filter(function(bk){ return !A['by_'+bk] && !buyerInMeet(A,bk) && !buyerAway(bk); }), byk=(bfree.length && Math.random()<0.3) ? lab5Pick(bfree) : null;   // 가끔 외국인 바이어와 회의
+      var bfree=Object.keys(BUYERS).filter(function(bk){ return !A['by_'+bk] && !buyerInMeet(A,bk) && !buyerAway(bk); }), byk=(bfree.length && Math.random()<0.45) ? lab5Pick(bfree) : null;   // 가끔 외국인 바이어와 회의
       if(byk) cl={ name:BUYERS[byk].name, look:BUYERS[byk].look };
       s=npcActor(F,sid,cp,staffName(q.id)); s.sid=q.id; s.venue=ven; s.visible=true; s.stepMs=300; placeAt(F,s,{c:F.lobby.c,r:F.lobby.r,face:'down'}); setGoal(F,s,ven.a,now);
       c=npcActor(F,cid,cl.look,cl.name); c.plateDy=16; c.venue=ven; c.visible=false; c.stepMs=320; c.until=now+2600; if(byk) c.buyer=byk;
@@ -1057,8 +1057,8 @@ function buyerSay(k,kind){ var b=BUYERS[k], n=BUYERS[b.nat]; if(Math.random()<0.
 function buyerInMeet(A,k){ for(var id in A){ if(/^mc_/.test(id) && A[id].buyer===k) return true; } return false; }
 function buyerSpotFree(F,g,me){ for(var id in F.actors){ var o=F.actors[id]; if(o===me || !o.visible) continue; var t=o.goal||o.tile; if(t && t.c===g.c && t.r===g.r) return false; } return true; }
 function buyerSlots(F,d){ var dk=d.toDateString(); if(F.buyDay===dk) return; F.buyDay=dk; F.buySlots=[]; F.buyDone={};
-  Object.keys(BUYERS).forEach(function(k){ for(var j=0;j<2;j++){ var h=PO.hash(dk+'buyer'+k+j); if(h%10<(BUYERS[k].self.length<10?4:2)) continue;   // 그 시간에 안 오는 날도 있다 (새 바이어는 조금 더 자주 빠진다)
-    var st=j? 13*60+30+h%190 : 10*60+h%110; F.buySlots.push({k:k, key:k+j, st:st, end:st+10+(h>>4)%9}); } }); }
+  Object.keys(BUYERS).forEach(function(k){ for(var j=0;j<3;j++){ var h=PO.hash(dk+'buyer'+k+j); if(h%10<(BUYERS[k].self.length<10?2:1)) continue;   // 하루 세 번(오전 · 이른 오후 · 늦은 오후) 들른다, 가끔 빠지는 때도 있다
+    var st=j===2? 15*60+30+h%75 : j? 13*60+30+h%110 : 10*60+h%110; F.buySlots.push({k:k, key:k+j, st:st, end:st+15+(h>>4)%12}); } }); }
 function f2Buyers(F,now,off){
   var A=F.actors, d=new Date(), t=d.getHours()*60+d.getMinutes(), work=B.workDay?B.workDay():false, hold=window.__concertHold && window.__concertHold();
   buyerSlots(F,d);
@@ -2333,13 +2333,13 @@ var NPC_INFO={
   f1shopper:{ name:'손님', role:'1층 스토어 손님', bio:'베이지 장바구니를 들고 진열대를 구경해요.', hours:'영업 10~21시' },
   landlord: { name:'백회장', role:'7층 건물주 · 회장님', bio:'알비노 하얀 악어. 이 건물의 주인이에요. 카멜 캐시미어 코트에 금테 선글라스, 손에는 늘 갤럭시. 하루 한두 번 1층 카페에 들러 "늘 먹던 걸로" 아메리카노를 받고 레몬나무를 구경해요. 7층은 아직 공사 중.', hours:'날마다 오전·오후 한 번쯤 (안 오는 날도 있어요)' },
   f1cafeguest:{ name:'손님', role:'1층 카페 손님', bio:'키오스크에서 주문하고 픽업대에서 음료를 받아요.', hours:'영업 8~22시' },
-  buyer_jp: { name:'노토 네코', role:'일본 바이어 · 2층 로비 손님', bio:'마네키네코. 도쿄에서 온 문구 수입사 바이어예요. 서류철을 꼭 쥐고 일본어로 수출 이야기를 중얼거려요. 한국어는 인사 정도.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
-  buyer_us: { name:'마이클 스캇', role:'미국 바이어 · 2층 로비 손님', bio:'흰머리수리. 1층 스토어 쇼핑백을 늘 들고 다녀요. 영어로 선적 얘기를 하다가 혼자 농담하고 혼자 웃어요.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
-  buyer_it: { name:'카포네 마또띠', role:'이탈리아 바이어 · 2층 로비 손님', bio:'늑대. 밀라노에서 온 종이 수입사 바이어예요. 견본 종이를 들고 다니며 이탈리아어로 감탄해요. 바에선 늘 에스프레소.', hours:'평일 오전·오후 한 번씩 (오지 않는 날도 있어요)' },
-  buyer_jp2:{ name:'이누 사토시', role:'일본 바이어 · 2층 로비 손님', bio:'시바견. 오사카 문구 도매상 바이어예요. 남색 정장에 서류가방, 지우개와 도장 모양 굿즈에 약해요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
-  buyer_jp3:{ name:'켄지 코테츠', role:'일본 바이어 · 2층 로비 손님', bio:'사슴. 나라에서 온 화지(和紙) 문구점 바이어예요. 인사할 때 고개를 꾸벅 숙이고, 바에선 녹차를 찾아요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
-  buyer_us2:{ name:'드와이트 슈루트', role:'미국 바이어 · 2층 로비 손님', bio:'불독. 겨자색 셔츠에 안경, 서류가방. 마이클 스캇과 같은 회사인데 본인 말로는 "지역 매니저의 보좌". 바에서 비트 주스를 찾아요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
-  buyer_it2:{ name:'돈 빈센조', role:'이탈리아 바이어 · 2층 로비 손님', bio:'이탈리안 그레이하운드. 검은 정장에 버건디 넥타이, 말수는 적지만 거래는 깔끔해요. 더블 에스프레소만 마셔요.', hours:'평일 가끔 (오지 않는 날이 더 많아요)' },
+  buyer_jp: { name:'노토 네코', role:'일본 바이어 · 2층 로비 손님', bio:'마네키네코. 도쿄에서 온 문구 수입사 바이어예요. 서류철을 꼭 쥐고 일본어로 수출 이야기를 중얼거려요. 한국어는 인사 정도.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (가끔 빠져요)' },
+  buyer_us: { name:'마이클 스캇', role:'미국 바이어 · 2층 로비 손님', bio:'흰머리수리. 1층 스토어 쇼핑백을 늘 들고 다녀요. 영어로 선적 얘기를 하다가 혼자 농담하고 혼자 웃어요.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (가끔 빠져요)' },
+  buyer_it: { name:'카포네 마또띠', role:'이탈리아 바이어 · 2층 로비 손님', bio:'늑대. 밀라노에서 온 종이 수입사 바이어예요. 견본 종이를 들고 다니며 이탈리아어로 감탄해요. 바에선 늘 에스프레소.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (가끔 빠져요)' },
+  buyer_jp2:{ name:'이누 사토시', role:'일본 바이어 · 2층 로비 손님', bio:'시바견. 오사카 문구 도매상 바이어예요. 남색 정장에 서류가방, 지우개와 도장 모양 굿즈에 약해요.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (조금 더 자주 빠져요)' },
+  buyer_jp3:{ name:'켄지 코테츠', role:'일본 바이어 · 2층 로비 손님', bio:'사슴. 나라에서 온 화지(和紙) 문구점 바이어예요. 인사할 때 고개를 꾸벅 숙이고, 바에선 녹차를 찾아요.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (조금 더 자주 빠져요)' },
+  buyer_us2:{ name:'드와이트 슈루트', role:'미국 바이어 · 2층 로비 손님', bio:'불독. 겨자색 셔츠에 안경, 서류가방. 마이클 스캇과 같은 회사인데 본인 말로는 "지역 매니저의 보좌". 바에서 비트 주스를 찾아요.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (조금 더 자주 빠져요)' },
+  buyer_it2:{ name:'돈 빈센조', role:'이탈리아 바이어 · 2층 로비 손님', bio:'이탈리안 그레이하운드. 검은 정장에 버건디 넥타이, 말수는 적지만 거래는 깔끔해요. 더블 에스프레소만 마셔요.', hours:'평일 오전 · 이른 오후 · 늦은 오후에 한 번씩 (조금 더 자주 빠져요)' },
   visitor:  { name:'방문객', role:'2층 로비 손님', bio:'로비를 둘러보며 작품을 보거나 바에서 음료를 마셔요.', hours:'평일 09:00~18:00' }
 };
 // 그림 속 사람을 눌렀을 때: 직원이면 원래 프로필, 아니면 짧은 소개 카드

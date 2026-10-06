@@ -30,7 +30,7 @@ var SHARED=[
   { id:'lobby',   name:'2층 로비 (안내·보안·바)',   icon:'🛎️', who:['yun','kang','guard','bartender','server'], hours:[9*60,18*60], work:true },
   { id:'store',   name:'1층 끄적끄적문구 스토어',   icon:'🛍️', who:['f1ham','f1seo'], hours:[10*60,21*60] },
   { id:'cafe',    name:'1층 MOON 9 COFFEE',         icon:'☕', who:['f1jin','f1ryu','f1woo'], hours:[8*60,22*60] },
-  { id:'b1',      name:'지하 1층 구내식당',         icon:'🍱', who:['b1cashier','b1cook1','b1cook2'], hours:[8*60,21*60] }
+  { id:'b1',      name:'지하 1층 구내식당',         icon:'🍱', who:['b1cashier','b1diet'], hours:[8*60,17*60] }
 ];
 var SHARED_BY={}; SHARED.forEach(function(f){ SHARED_BY[f.id]=f; });
 var LEADS={ kobujang:1, kimnote:1, nabujang:1, jungsti:1, yoohongbo:1, f1ham:1 };   // 팀장급부터 최실장(1층 함 매니저 포함): 8301, 나머지 9401
