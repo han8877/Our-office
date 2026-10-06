@@ -3383,13 +3383,47 @@ var ORG='#f07a2a', COB='#2f5fd0', EMR='#1f9a6a', ROSE='#f28ab0', LEM='#f5c83a', 
 function patCover(g,x,y,w,h,k){ var P1=[ORG,COB,EMR,ROSE,LEM,INKB][k%6], P2=[CRM,LEM,ROSE,CRM,COB,ORG][k%6]; R(g,x,y,w,h,P1);        // 굵은 무늬 표지 (줄 · 원 · 삼각 · 격자)
   var t=k%4; if(t===0){ for(var i=1;i<w;i+=3) R(g,x+i,y,1,h,P2); } else if(t===1){ disc(g,x+Math.floor(w/2),y+Math.floor(h/2),Math.floor(Math.min(w,h)/3),P2); }
   else if(t===2){ tri(g,x,y+h,x+Math.floor(w/2),y+1,x+w,y+h,P2); } else { for(var a=1;a<w;a+=3) for(var b=1;b<h;b+=3) P(g,x+a,y+b,P2); } R(g,x,y,w,1,'rgba(255,255,255,0.4)'); }
+// 1층 대형 통창: 길 건너 가게 1층 · 2차선 도로(차가 오간다) · 가까운 인도와 가로수 밑동(보호 덮개) · 유리 반사 · 밤엔 어둡고 차 불빛
+var STREET_CARS=[{c:'#e04a3a',w:22,v:0.028,o:0,ln:0},{c:'#f4f4f0',w:24,v:0.022,o:150,ln:0},{c:'#2f5fd0',w:20,v:0.031,o:60,ln:1},{c:'#f5c83a',w:22,v:0.026,o:210,ln:1,taxi:true},{c:'#3a3f46',w:26,v:0.02,o:120,ln:1}];
+function drawStreetWindow(g,x,y,w,h,t){
+  var ph=roofPhase(), night=ph==='night'||ph==='dusk', dusk=ph==='sunset'||ph==='dawn';
+  g.save(); g.beginPath(); g.rect(x,y,w,h); g.clip();
+  R(g,x,y,w,14,night?'#2a2e44':'#cfc6b8');                                                     // 길 건너: 가게 1층들
+  for(var sx=0;sx<w;sx+=42){ var sc=['#e8d8c0','#c8d8d8','#e0c8c8','#d8d0e8'][(sx/42)%4]; R(g,x+sx,y,40,14,night?sh(sc,-0.75):sc); R(g,x+sx+4,y+3,32,8,night?'#f6d88a':'#8aa6b8'); R(g,x+sx+4,y+3,32,1,night?'#ffeeb8':'#b8d0dc'); R(g,x+sx+2,y,36,2,['#c8323a','#2f5fd0','#1f9a6a','#f07a2a'][(sx/42)%4]); }
+  R(g,x,y+14,w,2,night?'#4a4e5e':'#d8d2c8');                                                   // 건너편 인도 연석
+  R(g,x,y+16,w,22,night?'#383c4c':'#5a5e66');                                                   // 도로 2차선
+  for(var dx=0;dx<w;dx+=16) R(g,x+dx,y+26,8,1,night?'#8a8a70':'#f2d24a'); // 가운데 노란 점선
+  STREET_CARS.forEach(function(cr){ var span=w+60, p=((t*cr.v+cr.o*7)%span+span)%span, cx=cr.ln===0? x-30+p : x+w+30-p-cr.w, cy=cr.ln===0? y+18 : y+28;
+    var body=night?sh(cr.c,-0.45):cr.c;
+    R(g,cx+2,cy+2,cr.w-4,4,body); R(g,cx,cy+5,cr.w,4,body); R(g,cx+5,cy+3,cr.w-10,2,night?'#3a4258':'#bfe0ee'); R(g,cx+Math.floor(cr.w/2),cy+3,1,2,body);
+    if(cr.taxi) R(g,cx+Math.floor(cr.w/2)-2,cy+1,4,1,'#ffffff');
+    R(g,cx+3,cy+9,4,1,'#1c1c20'); R(g,cx+cr.w-7,cy+9,4,1,'#1c1c20');
+    var front=cr.ln===0? cx+cr.w-1 : cx, back=cr.ln===0? cx : cx+cr.w-1;
+    P(g,front,cy+6,night?'#fff6c8':'#f4f0d8'); P(g,back,cy+6,'#e04a3a');
+    if(night){ g.fillStyle='rgba(255,240,180,0.35)'; g.fillRect(cr.ln===0?front+1:front-10,cy+5,10,3); } });
+  R(g,x,y+38,w,2,night?'#6a6e7a':'#e2ddd2'); R(g,x,y+40,w,h-40,night?'#5e5c6a':'#c8bfb2');      // 연석 · 이쪽 인도 보도블록
+  for(var bx=0;bx<w;bx+=8) R(g,x+bx,y+40,1,h-40,night?'#545262':'#b8afa2');
+  R(g,x,y+46,w,1,night?'#545262':'#b8afa2');
+  [30,124,218].forEach(function(tx0){ var trx=x+tx0;                                             // 가로수: 위로 잎 끝자락, 밑동, 보호 덮개(격자)
+    R(g,trx-1,y,6,44,night?'#3a2c24':'#6a4a32'); R(g,trx,y,1,44,night?'#4a3a2e':'#8a6446'); R(g,trx+4,y+6,1,30,night?'#2c2018':'#4e3424');
+    R(g,trx-8,y+43,22,5,night?'#2a2a30':'#4a4e54'); for(var gx=-7;gx<14;gx+=3) R(g,trx+gx,y+44,1,3,night?'#3a3a42':'#6a6e74');
+    [-14,-6,4,12].forEach(function(ox,i){ ell(g,trx+2+ox,y-1+(i%2)*2,8,5,night?'#1e3a2a':['#3f8a4a','#4f9a56','#3a7a44','#5aa860'][i]); });   // 위로 보이는 잎 끝
+  });
+  if(night){ g.fillStyle='rgba(20,24,60,0.12)'; g.fillRect(x,y,w,h);
+    [77,171].forEach(function(lx){ var gr=g.createRadialGradient(x+lx,y+44,1,x+lx,y+44,30); gr.addColorStop(0,'rgba(255,226,150,0.45)'); gr.addColorStop(1,'rgba(255,226,150,0)'); g.fillStyle=gr; g.fillRect(x+lx-30,y+16,60,h-16); });   // 가로등 불빛
+  } else if(dusk){ g.fillStyle='rgba(240,150,90,0.14)'; g.fillRect(x,y,w,h); }
+  g.fillStyle='rgba(255,255,255,'+(night?0.06:0.22)+')';                                      // 유리 반사: 비스듬한 빛줄기
+  for(var q=0;q<w;q+=63){ g.beginPath(); g.moveTo(x+q+10,y); g.lineTo(x+q+22,y); g.lineTo(x+q+6,y+h); g.lineTo(x+q-6,y+h); g.closePath(); g.fill(); g.fillRect(x+q+26,y,3,h); }
+  g.restore();
+  R(g,x-3,y-2,w+6,3,'#3a3f46'); R(g,x-3,y+h-2,w+6,4,'#3a3f46'); R(g,x-3,y,3,h,'#3a3f46'); R(g,x+w,y,3,h,'#3a3f46');   // 짙은 회색 알루미늄 창틀 · 세로 멀리언
+  for(var m=63;m<w;m+=63) R(g,x+m-1,y,2,h,'#3a3f46');
+  R(g,x-3,y-2,w+6,1,'#5a6068'); R(g,x-3,y+h+1,w+6,1,'#23262e');
+}
 // ① 뒷벽: 흰 회벽 · 로고 액자 · 글자 (네온 없이 담백하게)
 things.push({sy:2, draw:function(g){ var lx=6*T+6, ly=FACE_TOP+4;
   R(g,lx-4,ly-2,88,66,'#ffffff'); R(g,lx-4,ly-2,88,2,'#e8e6e2'); R(g,lx-2,ly,84,62,INKB); R(g,lx,ly+2,80,58,'#ffffff');
   if(RT.logo && RT.logo.complete){ g.imageSmoothingEnabled=false; g.drawImage(RT.logo,lx+2,ly+4,76,52); }
-  var wx=9*T+8, ww=8*T-4, wy=FACE_TOP+2, wh=60; R(g,wx,wy,ww,wh,'#d9b98a'); R(g,wx,wy,ww,2,'#ecd2a8'); R(g,wx,wy+wh-2,ww,2,'#b8966a');   // 색종이 다이아몬드 월 (무지개 순서)
-  for(var r=0;r<7;r++) for(var c=0;c*8<ww-10;c++){ var dx=wx+6+c*8+(r%2)*4, dy=wy+8+r*7, h=Math.round(c/((ww-10)/8)*330), l=62+((r*7)%18);
-    var col='hsl('+h+',60%,'+l+'%)'; tri(g,dx,dy-4,dx+4,dy,dx,dy+4,col); tri(g,dx,dy-4,dx-4,dy,dx,dy+4,col); P(g,dx,dy-3,'rgba(255,255,255,0.7)'); }
+  var wx=9*T+8, ww=8*T-4, wy=FACE_TOP+2, wh=60; drawStreetWindow(g,wx,wy,ww,wh,performance.now());   // 대형 통창: 밖으로 가로수 밑동 · 인도 · 차 다니는 도로
   R(g,wx+4,wy-12,70,12,'#ffffff'); tx(g,'끄적끄적문구',wx+39,wy-6,8,INKB,'center'); }});
 // ② 공방 (뒤쪽): 리소 인쇄기 · 재단기 · 작업대 · 종이 선반 · 말리는 인쇄물 줄
 function pRiso(){ return obj(64,60,function(g){ R(g,0,20,64,40,'#d8dcdf'); R(g,0,20,64,3,'#f0f2f3'); R(g,2,24,44,20,'#e8ebed'); R(g,50,26,10,14,'#3a3f46'); R(g,52,28,6,4,'#6fd0c0');
