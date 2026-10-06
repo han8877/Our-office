@@ -15,7 +15,7 @@ function seeded(seed){ var x=seed||1; return function(){ x=(Math.imul(x,11035152
 function staffById(id){ var st=B.staff||[]; for(var i=0;i<st.length;i++) if(st[i].id===id) return st[i]; return null; }
 function nameOf(id){ var s=staffById(id); return s ? s.name : (OTHER_NAMES[id] || id); }
 var OTHER_NAMES={ boss:'사장님', nam:'남박사', han:'한교수', yun:'윤안내', kang:'강안내', guard:'오보안', guardLeo:'표보안', bartender:'바텐더 박', server:'강서빙',
-  f1ham:'함 매니저', f1seo:'서 스태프', f1jin:'바리스타 진', f1ryu:'바리스타 류', f1woo:'우서빙', b1cashier:'현계산', b1cook1:'윤요리', b1cook2:'주요리' };
+  f1ham:'함 매니저', f1seo:'서 스태프', f1jin:'바리스타 진', f1ryu:'바리스타 류', f1woo:'우서빙', b1cashier:'현계산', b1cook1:'윤요리', b1cook2:'주요리', b1diet:'고영양' };
 
 // ---- 폴더 ----
 // 공유폴더: who = 올리는 사람(3층은 팀원 중 자리에 있는 사람), hours = 올리는 시간대 [시작, 끝] (분), work = 근무일에만
@@ -43,7 +43,7 @@ function personalGroups(){
     { label:'3층 (주)끄적끄적문구', ids:f3 },
     { label:'2층 로비', ids:['yun','kang','guard','guardLeo','bartender','server'] },
     { label:'1층 스토어 · 카페', ids:['f1ham','f1seo','f1jin','f1ryu','f1woo'] },
-    { label:'지하 1층 구내식당', ids:['b1cashier','b1cook1','b1cook2'] } ];
+    { label:'지하 1층 구내식당', ids:['b1diet'] } ];
 }
 function denied(id){ return id==='boss' || id==='han'; }
 function pwOf(id){ return LEADS[id] ? PW_LEAD : PW_STAFF; }
@@ -71,7 +71,7 @@ var PERSONAL_TPL={
   nam:['오늘의_색_{md}.xlsx','한지_샘플_사진_{n}.jpg','색견본_정리_v{v}.hwpx','개인_관찰노트.docx','거북이_사진.jpg'],
   f2:['근무표_{m}월.xlsx','인수인계_메모.docx','교육자료_서비스매너.pptx','개인_사진_{n}.jpg'],
   f1:['매장_업무메모.docx','진열_아이디어_{n}.jpg','교육_자료.pdf','근무표_{m}월.xlsx'],
-  b1:['레시피_노트.hwpx','식재료_단가표.xlsx','요리_사진_{n}.jpg','위생교육_수료증.pdf']
+  b1:['주간_식단표_{m}월.xlsx','영양_성분표_{md}.xlsx','알레르기_표시_안내.pdf','식재료_단가표.xlsx','메뉴_사진_{n}.jpg','위생교육_수료증.pdf']
 };
 function fillName(t,r,d){ d=d||new Date(); return t.replace('{y}',''+(d.getFullYear()%100<10?'0':'')+(d.getFullYear()%100)).replace('{m}',''+(d.getMonth()+1)).replace('{md}',pad(d.getMonth()+1)+pad(d.getDate()))
   .replace('{v}',''+(1+Math.floor(r()*7))).replace('{n}',pad(1+Math.floor(r()*24))); }
