@@ -3425,7 +3425,7 @@ things.push({sy:2, draw:function(g){ var lx=6*T+6, ly=FACE_TOP+4;
   R(g,lx-4,ly-2,88,66,'#ffffff'); R(g,lx-4,ly-2,88,2,'#e8e6e2'); R(g,lx-2,ly,84,62,INKB); R(g,lx,ly+2,80,58,'#ffffff');
   if(RT.logo && RT.logo.complete){ g.imageSmoothingEnabled=false; g.drawImage(RT.logo,lx+2,ly+4,76,52); }
   var wx=9*T+8, ww=8*T-4, wy=FACE_TOP+2, wh=60; drawStreetWindow(g,wx,wy,ww,wh,performance.now());   // 대형 통창: 밖으로 가로수 밑동 · 인도 · 차 다니는 도로
-  R(g,wx+4,wy-12,70,12,'#ffffff'); tx(g,'끄적끄적문구',wx+39,wy-6,8,INKB,'center'); }});
+  R(g,lx+5,wy-12,70,12,'#ffffff'); tx(g,'끄적끄적문구',lx+40,wy-6,8,INKB,'center'); }});   // 명패는 로고 액자 위에
 // ② 공방 (뒤쪽): 리소 인쇄기 · 재단기 · 작업대 · 종이 선반 · 말리는 인쇄물 줄
 function pRiso(){ return obj(64,60,function(g){ R(g,0,20,64,40,'#d8dcdf'); R(g,0,20,64,3,'#f0f2f3'); R(g,2,24,44,20,'#e8ebed'); R(g,50,26,10,14,'#3a3f46'); R(g,52,28,6,4,'#6fd0c0');
   R(g,4,8,40,14,'#c8ccd0'); for(var s=0;s<5;s++){ R(g,6,12-s*2,36,2,[ORG,COB,EMR,ROSE,LEM][s]); } R(g,8,46,34,10,'#b8bcc0'); R(g,10,48,30,2,'#ffffff'); tx(g,'RISO',24,52,5,'#6a6f76','center'); }); }
