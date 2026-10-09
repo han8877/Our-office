@@ -239,6 +239,27 @@ function Intro(){
   requestAnimationFrame(frame);
 }
 
+// ---- 인트로 장면 한 장 (5층 복도 사진 액자용): 낮 팔레트로 멈춘 그림을 w×h 로 줄여 사진처럼 ----
+function introPhoto(w,h){
+  var pal=PAL.day, bw=300, bh=330, buf=cv(bw,bh), bg=buf.getContext('2d'), ox=52, oy=-26, gy=oy+290;
+  var boss=PO.buildSprites({ id:'introBoss', kind:'bosstiger', shirt:'#96897a', pants:'#4a4038', acc:'glasses', accC:'#ffd84a', tie:'#33547f' });
+  sky(bg,bw,bh,pal,gy); sunMoon(bg,ox+212,oy+58,'day',0); clouds(bg,bw,20000,'day',oy+20);
+  range(bg,0,bw,gy-40,70,1.3,pal.far); range(bg,0,bw,gy-10,56,4.1,pal.near); farCity(bg,0,bw,gy,pal,7);
+  apartment(bg,ox-100,oy+80,74,gy,pal,2); apartment(bg,ox+188,oy+72,78,gy,pal,4);
+  tree(bg,ox-55,gy,1,pal); tree(bg,ox+252,gy,1,pal);
+  R(bg,0,gy,bw,bh-gy,'#ddd3c4'); R(bg,0,gy,bw,2,sh('#ddd3c4',-0.25)); for(var py=gy+10; py<bh; py+=12) R(bg,0,py,bw,1,sh('#ddd3c4',-0.08));
+  tree(bg,ox-2,gy,1,pal); tree(bg,ox+198,gy,1,pal);
+  bg.drawImage(facade(pal),ox+FACADE.x-5,oy+FACADE.top-1);
+  var se=document.querySelector('#introStage .introSign span'), tx=(se&&se.textContent)||'끄적끄적문구';
+  bg.font='16px NeoDGM, sans-serif'; bg.textAlign='center'; bg.textBaseline='middle'; bg.fillStyle='#e8cf8a';
+  var tw=bg.measureText(tx).width, sc=Math.min(1,(FACADE.w-50)/Math.max(1,tw)); bg.save(); bg.translate(ox+FACADE.x+FACADE.w/2, oy+FACADE.top+FACADE.signY); bg.scale(sc,1); bg.fillText(tx,0,0); bg.restore(); bg.textAlign='left';
+  lampPost(bg,ox+4,gy+8,pal); lampPost(bg,ox+192,gy+8,pal); var pl=pottedPlant(); bg.drawImage(pl,ox+56,gy-14); bg.drawImage(pl,ox+124,gy-14);
+  PO.ell(bg,ox+98,oy+296,10,2,'rgba(40,30,30,0.2)'); bg.drawImage(boss.down[0],ox+98-17,oy+296-48);
+  var out=cv(w,h), og=out.getContext('2d'); og.imageSmoothingEnabled=true; og.imageSmoothingQuality='high';
+  var cx0=ox-30, cw=FACADE.w+90, ch=Math.round(cw*h/w), cy0=Math.max(0,oy+FACADE.top-14);
+  og.drawImage(buf,cx0,cy0,cw,ch,0,0,w,h); return out;
+}
+
 // ---- 사무실 뒤 도시 배경 ----
 function CityBg(){
   var host=document.getElementById('cityBg'); if(!host) return;
@@ -294,5 +315,5 @@ function roofSky(g,w,h,now,wx){
   g.drawImage(roofCache.c,0,0);
   if(grey){ g.fillStyle=wx==='rain'?'rgba(120,130,140,0.32)':wx==='snow'?'rgba(225,230,238,0.35)':'rgba(190,196,204,0.2)'; g.fillRect(0,0,w,h); }   // 빗속·눈속 먼 풍경은 뿌옇게
 }
-window.PixCity={ Intro:Intro, CityBg:CityBg, facade:facade, PAL:PAL, roofSky:roofSky };
+window.PixCity={ Intro:Intro, introPhoto:introPhoto, CityBg:CityBg, facade:facade, PAL:PAL, roofSky:roofSky };
 })();
