@@ -17,6 +17,7 @@ Copyright (c) 2026 han8877. All rights reserved.
 | `assets/pixoffice.js` | 층별 지도와 모든 픽셀 그림 (가구·캐릭터·반찬·메모 보드 등) |
 | `assets/pixcity.js` | 옥상 하늘과 서울 풍경 |
 | `assets/shop.js` | 온라인샵 |
+| `dot.html` | 도트 편집기: 앞·뒤·옆 캐릭터 그리기 · 레이어 · 프레임 · 팔레트 · 글자 · PNG 저장 (사무실 캐릭터 34×50 기본) |
 | `tests/` | 브라우저로 돌리는 확인 스크립트 ([tests/README.md](tests/README.md)) |
 
 `assets/` 파일을 고치면 `index.html` 안의 `?v=` 꼬리표를 새 값으로 바꿔야 아이패드 사파리가 새 파일을 받는다.
