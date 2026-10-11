@@ -311,15 +311,31 @@ function nTower(g,x,base,h,pal){                                      // N서울
   R(g,x,oy-Math.round(h*0.38),1,Math.round(h*0.3),c); R(g,x-1,oy-12,3,4,c); P(g,x,oy-Math.round(h*0.38)-1,'#e04848');
   if(night){ var hue=['#ff8ab0','#8ad0ff','#b0ff9a','#ffd27a'][Math.floor(Date.now()/600000)%4]; R(g,x-1,base-Math.round(h*0.5),3,Math.round(h*0.3),hue); g.save(); g.globalAlpha=0.25; disc(g,x,oy-5,10,hue); g.restore(); }
 }
-function gwanghwamun(g,x,base,pal){                                   // 광화문: 석축 · 홍예문 셋 · 2층 누각 · 겹처마 기와
-  var night=pal.glow>0.5, stone=night?'#6a6e84':'#d8d0c0', st2=sh(stone,-0.12), wood=night?'#6a3434':'#b0403a', green=night?'#2e5a50':'#3a8a7a', roof=night?'#2a3044':'#4a5462', rl=sh(roof,0.22);
-  R(g,x,base-12,52,12,stone); R(g,x,base-12,52,1,sh(stone,0.2)); for(var sy=base-10; sy<base; sy+=3) for(var sx=x+((sy>>1)%2)*3; sx<x+52; sx+=6) P(g,sx,sy,st2);
-  [13,26,39].forEach(function(ax,i){ ell(g,x+ax,base-3,i===1?4:3,i===1?6:5,night?'#24283a':'#5a4a3e'); });
-  R(g,x+8,base-20,36,8,wood); R(g,x+8,base-20,36,1,green); for(var p=0;p<6;p++) R(g,x+10+p*6,base-19,1,7,sh(wood,-0.3));
-  tri(g,x-2,base-20,x+54,base-20,x+26,base-27,roof); R(g,x+3,base-24,46,4,roof); R(g,x-2,base-21,56,1,rl); P(g,x-3,base-22,roof); P(g,x+55,base-22,roof);
-  R(g,x+12,base-30,28,5,wood); R(g,x+12,base-30,28,1,green);
-  tri(g,x+6,base-30,x+46,base-30,x+26,base-36,roof); R(g,x+10,base-34,32,4,roof); R(g,x+6,base-31,40,1,rl); R(g,x+14,base-37,24,2,roof); P(g,x+5,base-32,roof); P(g,x+47,base-32,roof);
-  if(night){ g.save(); g.globalAlpha=0.3; R(g,x+4,base-34,44,22,'#ffd98a'); g.restore(); for(var k=0;k<4;k++) P(g,x+12+k*9,base-16,'#ffe8a0'); }
+// 광화문: 홍예문 셋 석축 위 2층 누각 · 우진각 지붕(가운데 짧은 흰 용마루, 양끝으로 내려오는 흰 내림마루) · 처마 끝이 살짝 들린 곡선
+function hipRoof(g,cx,eave,half,hgt,ridge,col,lit,white,ridgeOn){
+  var d=sh(col,-0.25), l=sh(col,0.18);
+  for(var dx=-half; dx<=half; dx++){ var a=Math.abs(dx), up=a>half-9 ? Math.round(3.2*Math.pow((a-(half-9))/9,2)) : 0, eb=eave-up;
+    var f=a<=ridge ? 0 : (a-ridge)/(half-ridge), top=eave-hgt+Math.round(hgt*(0.55*f*f+0.45*f)); if(top>eb-1) top=eb-1;
+    R(g,cx+dx,top,1,eb-top+1,(dx&1)?col:sh(col,0.07));                                         // 기와골
+    P(g,cx+dx,eb,l); P(g,cx+dx,eb+1,d);                                                          // 처마 끝 · 그 아래 그늘
+    if(ridgeOn && a<=ridge) { P(g,cx+dx,top,white); P(g,cx+dx,top-1,white); } }
+  if(ridgeOn){ R(g,cx-ridge-1,eave-hgt-3,2,3,d); R(g,cx+ridge,eave-hgt-3,2,3,d); }                // 용마루 양끝 취두
+  for(var t=0;t<=1;t+=0.05){ [-1,1].forEach(function(sg){ var a=ridge+(half-2-ridge)*t, f=(a-ridge)/(half-ridge), top=eave-hgt+Math.round(hgt*(0.55*f*f+0.45*f)), up=a>half-9?Math.round(3.2*Math.pow((a-(half-9))/9,2)):0;
+    var yy=Math.round(top+(eave-up-top)*t*0.85); P(g,cx+sg*Math.round(a),Math.min(yy,eave-up-1),white); }); }   // 내림마루
+}
+function gwanghwamun(g,x,base,pal){
+  var night=pal.glow>0.5, stone=night?'#6a6e84':'#d8d0c0', st2=sh(stone,-0.12), wood=night?'#6a3434':'#b0403a', green=night?'#2e5a50':'#3a8a7a', roof=night?'#2a3044':'#4a5462', white=night?'#9aa0b0':'#ece8de';
+  var W=62, cx=x+31;
+  R(g,x,base-14,W,14,stone); R(g,x,base-14,W,1,sh(stone,0.2)); R(g,x-1,base-15,W+2,1,st2);              // 석축 (윗단 살짝 내밀어)
+  for(var sy=base-12; sy<base; sy+=3) for(var sx=x+((sy>>1)%2)*3; sx<x+W; sx+=6) P(g,sx,sy,st2);
+  [[-17,3,6],[0,4,8],[17,3,6]].forEach(function(a){ var ax=cx+a[0]; ell(g,ax,base-a[2]+2,a[1],a[2],night?'#24283a':'#5a4a3e'); R(g,ax-a[1],base-a[2]+2,a[1]*2+1,a[2]-2,night?'#24283a':'#5a4a3e'); P(g,ax,base-a[2]-a[1]+3,sh(stone,0.25)); });   // 홍예문 셋 (가운데가 크다)
+  R(g,cx-22,base-21,45,7,wood); R(g,cx-22,base-21,45,1,green); R(g,cx-22,base-20,45,1,night?'#3a6a5a':'#5ab0a0');   // 아래층 누각 · 단청 띠
+  for(var p=0;p<8;p++) R(g,cx-21+p*6,base-19,1,5,sh(wood,-0.3));
+  hipRoof(g,cx,base-21,33,5,22,roof,null,white,false);                                                     // 아래층 겹처마 (둘레를 감싸는 지붕)
+  R(g,cx-15,base-31,31,6,wood); R(g,cx-15,base-31,31,1,green); R(g,cx-15,base-30,31,1,night?'#3a6a5a':'#5ab0a0');   // 위층 누각
+  for(var q=0;q<6;q++) R(g,cx-14+q*6,base-29,1,4,sh(wood,-0.3));
+  hipRoof(g,cx,base-31,26,9,9,roof,null,white,true);                                                       // 위층 우진각 지붕
+  if(night){ g.save(); g.globalAlpha=0.28; R(g,cx-24,base-34,49,20,'#ffd98a'); g.restore(); for(var k=0;k<5;k++) P(g,cx-18+k*9,base-17,'#ffe8a0'); for(var k2=0;k2<4;k2++) P(g,cx-12+k2*8,base-28,'#ffe8a0'); }
 }
 function archBridge(g,x0,x1,y,pal,ph){                                // 강 위 아치교: 상판 · 교각 · 강철 아치 · 밤엔 가로등 줄 (8~9시엔 무지개 분수)
   var night=pal.glow>0.5, c=night?'#4a5068':'#c8ccd4', d=sh(c,-0.22), arch=night?'#6a7aa0':'#5a7a9a';
