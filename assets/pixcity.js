@@ -350,8 +350,8 @@ function seoulScene(g,bw,bh,pal,ph,now){
   sky(g,bw,bh,pal,gy); if(night) stars(g,bw,Math.round(bh*0.7),0,pal);
   sunMoon(g,Math.round(bw*0.2),Math.round(gy-S*2.1),ph,0); clouds(g,bw,now*0.2,ph,Math.round(gy-S*2.6));
   var haze=pal.sky[1];
-  peaks(g,0,bw,gy-Math.round(S*0.5),Math.round(S*0.95),2.2,mix(pal.far,haze,0.18),mix(pal.far,'#ffffff',night?0.08:0.35));   // 북한산
-  peaks(g,0,bw,gy-Math.round(S*0.3),Math.round(S*0.6),5.7,sh(pal.far,-0.06),mix(pal.far,'#ffffff',night?0.05:0.25));
+  peaks(g,0,bw,gy-Math.round(S*0.28),Math.round(S*0.5),2.2,mix(pal.far,haze,0.18),mix(pal.far,'#ffffff',night?0.08:0.35));   // 북한산
+  peaks(g,0,bw,gy-Math.round(S*0.16),Math.round(S*0.34),5.7,sh(pal.far,-0.06),mix(pal.far,'#ffffff',night?0.05:0.25));
   var green=night?mix(pal.near,'#1e3a34',0.35):mix(pal.near,'#6a9a6a',0.45);
   hills(g,0,bw,gy-Math.round(S*0.12),Math.round(S*0.32),1.1,green,sh(green,0.18));                     // 인왕산 · 남산 녹지
   var nx=Math.round(bw*0.64); ell(g,nx,gy-Math.round(S*0.3),Math.round(S*0.55),Math.round(S*0.3),green); R(g,nx-Math.round(S*0.55),gy-Math.round(S*0.3),Math.round(S*1.1),Math.round(S*0.3),green);
