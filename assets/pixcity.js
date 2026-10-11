@@ -346,7 +346,7 @@ function archBridge(g,x0,x1,y,pal,ph){                                // 강 위
     if(hr===20||hr===21){ var cols=['#ff6a8a','#ffb84a','#fff06a','#7ae87a','#6ac8ff','#a87aff']; for(var fx=x0+3; fx<x1; fx+=4){ var cc=cols[Math.floor(fx/4)%6]; for(var k=1;k<6;k++) P(g,fx+Math.floor(k/2),y+3+k,cc); } } }   // 반포대교 달빛무지개분수처럼
 }
 function seoulScene(g,bw,bh,pal,ph,now){
-  var night=pal.glow>0.5, gy=Math.round(bh*0.78), S=Math.max(40,Math.min(Math.round(bh*0.2),Math.round(bw*0.42)));
+  var night=pal.glow>0.5, gy=Math.round(bh*0.78), S=Math.max(34,Math.min(Math.round(bh*0.2),Math.round(bw*0.28)));
   sky(g,bw,bh,pal,gy); if(night) stars(g,bw,Math.round(bh*0.7),0,pal);
   sunMoon(g,Math.round(bw*0.2),Math.round(gy-S*2.1),ph,0); clouds(g,bw,now*0.2,ph,Math.round(gy-S*2.6));
   var haze=pal.sky[1];
@@ -358,10 +358,10 @@ function seoulScene(g,bw,bh,pal,ph,now){
   nTower(g,nx,gy-Math.round(S*0.58),Math.round(S*0.95),pal);
   // 빌딩숲 (뒷줄 → 앞줄)
   var x=0, k=0; while(x<bw){ var w=6+Math.floor(rnd(x*0.9+1)*9), h=Math.round(S*(0.25+rnd(x*1.7+2)*0.35)); glassTower(g,x,gy-6,w,h,pal,x+k,(k++)%3); x+=w+1+Math.floor(rnd(x)*3); }
-  seoul63(g,Math.round(bw*0.3),gy-6,Math.round(S*0.95),pal);
+  var x63=Math.max(Math.round(bw*0.3),84); seoul63(g,x63,gy-6,Math.round(S*0.95),pal);
   lotteTower(g,Math.round(bw*0.88),gy-6,Math.round(S*1.55),pal);
   x=Math.floor(rnd(9)*10); k=0; while(x<bw){ var w2=10+Math.floor(rnd(x*0.7+5)*14), h2=Math.round(S*(0.16+rnd(x*1.3+6)*0.16));
-    if(Math.abs(x+w2/2-bw*0.3)>12 && Math.abs(x+w2/2-bw*0.88)>12) aptSlab(g,x,gy-3,w2,h2,pal,k++); x+=w2+4+Math.floor(rnd(x+3)*10); }
+    if(Math.abs(x+w2/2-x63)>12 && Math.abs(x+w2/2-bw*0.88)>12) aptSlab(g,x,gy-3,w2,h2,pal,k++); x+=w2+4+Math.floor(rnd(x+3)*10); }
   gwanghwamun(g,Math.round(bw*0.04),gy-2,pal);
   // 강변북로: 가로수 줄 · 도로 · 차 불빛
   var road=night?'#3a3e50':'#8a8e96'; R(g,0,gy-2,bw,3,road); R(g,0,gy-2,bw,1,sh(road,0.2));
@@ -373,7 +373,7 @@ function seoulScene(g,bw,bh,pal,ph,now){
   vgrad(g,0,wt,bw,wb-wt,wc2,wc,6);
   for(var i=0;i<Math.round(bw*0.5);i++){ var rx=Math.floor(rnd(i*3.1)*bw), ry=wt+2+Math.floor(rnd(i*5.9)*(wb-wt-3)); R(g,rx,ry,3+Math.floor(rnd(i)*8),1,sh(wc,night?0.15:0.22)); }
   g.save(); g.globalAlpha=night?0.55:0.18;                                                              // 물에 비친 랜드마크
-  [[Math.round(bw*0.88),night?'#e8f0ff':'#ffffff',3],[Math.round(bw*0.3),night?'#ffe08a':'#f2d08a',5],[nx,night?'#ff9ac0':'#ffffff',2]].forEach(function(rf){ for(var yy=wt+1; yy<wb-2; yy+=2) if(rnd(yy*1.3+rf[0])>0.25) R(g,rf[0]-Math.floor(rf[2]/2)+(yy%4?0:1),yy,rf[2],1,rf[1]); });
+  [[Math.round(bw*0.88),night?'#e8f0ff':'#ffffff',3],[x63,night?'#ffe08a':'#f2d08a',5],[nx,night?'#ff9ac0':'#ffffff',2]].forEach(function(rf){ for(var yy=wt+1; yy<wb-2; yy+=2) if(rnd(yy*1.3+rf[0])>0.25) R(g,rf[0]-Math.floor(rf[2]/2)+(yy%4?0:1),yy,rf[2],1,rf[1]); });
   if(night) for(var j=0;j<Math.round(bw*0.3);j++){ var lx2=Math.floor(rnd(j*7.7)*bw); for(var yy2=wt+1; yy2<wt+12; yy2+=2) if(rnd(j+yy2)>0.4) P(g,lx2,yy2,'#ffd98a'); }
   g.restore();
   if(!night){ var bx=Math.floor((now*0.0006)%(bw+40))-20, by=wt+Math.round((wb-wt)*0.6); R(g,bx,by,14,3,'#f4f4f0'); R(g,bx+3,by-2,8,2,'#3a5ab0'); R(g,bx+4,by-2,2,1,'#bfe0ee'); R(g,bx-4,by+2,4,1,sh(wc,0.3)); }   // 유람선
