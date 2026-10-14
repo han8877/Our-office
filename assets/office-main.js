@@ -202,7 +202,7 @@
     t.setAttribute('y', (36.5 + fs * 0.30).toFixed(2));
   }
   function fitAllPlates(){ staff.forEach(function(s){ fitPlate(s.id); }); }
-  fitAllPlates();
+  (window.requestIdleCallback || function(f){ return setTimeout(f, 200); })(fitAllPlates);   // 첫 화면을 띄운 뒤 한가할 때 맞춘다 (글자 길이를 재느라 시작이 늦어지지 않게)
   deskLayer.addEventListener('click', function(e){
     var target = e.target.closest ? e.target.closest('[data-plate-for]') : null;
     if(target) openProfile(target.getAttribute('data-plate-for'));

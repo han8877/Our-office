@@ -35,19 +35,20 @@ function vgrad(g,x,y,w,h,c0,c1,steps){ for(var i=0;i<h;i++) R(g,x,y+i,w,1,mix(c0
 
 // 외곽선: 투명한 칸이 채워진 칸과 닿으면 그 색을 어둡게 한 선을 두른다 (셀아웃)
 function outline(c, dark){
-  var g=c.getContext('2d'), w=c.width, h=c.height, id=g.getImageData(0,0,w,h), d=id.data, o=new Uint8ClampedArray(d);
-  var DK=h2r(dark||'#4a3444'), t=0.66;
-  for(var y=0;y<h;y++) for(var x=0;x<w;x++){ var i=(y*w+x)*4; if(d[i+3]>40) continue; var j=-1;
-    if(y+1<h && d[((y+1)*w+x)*4+3]>170) j=((y+1)*w+x)*4;
-    else if(x+1<w && d[(y*w+x+1)*4+3]>170) j=(y*w+x+1)*4;
-    else if(x>0 && d[(y*w+x-1)*4+3]>170) j=(y*w+x-1)*4;
-    else if(y>0 && d[((y-1)*w+x)*4+3]>170) j=((y-1)*w+x)*4;
-    if(j<0) continue;
-    o[i]=Math.round(d[j]*(1-t)+DK[0]*t); o[i+1]=Math.round(d[j+1]*(1-t)+DK[1]*t); o[i+2]=Math.round(d[j+2]*(1-t)+DK[2]*t); o[i+3]=255; }
-  id.data.set(o); g.putImageData(id,0,0); return c;
+  var g=c.getContext('2d',{willReadFrequently:true}), w=c.width, h=c.height, id=g.getImageData(0,0,w,h), d=id.data, o=new Uint8ClampedArray(d);
+  var DK=h2r(dark||'#4a3444'), t=0.66, u=1-t, k0=DK[0]*t, k1=DK[1]*t, k2=DK[2]*t, W4=w*4, changed=false;
+  for(var y=0;y<h;y++){ var row=y*W4;
+    for(var x=0;x<w;x++){ var i=row+x*4; if(d[i+3]>40) continue; var j=-1;
+      if(y+1<h && d[i+W4+3]>170) j=i+W4;
+      else if(x+1<w && d[i+7]>170) j=i+4;
+      else if(x>0 && d[i-1]>170) j=i-4;
+      else if(y>0 && d[i-W4+3]>170) j=i-W4;
+      if(j<0) continue;
+      o[i]=d[j]*u+k0+0.5; o[i+1]=d[j+1]*u+k1+0.5; o[i+2]=d[j+2]*u+k2+0.5; o[i+3]=255; changed=true; } }
+  if(changed){ id.data.set(o); g.putImageData(id,0,0); } return c;
 }
 // 물건 하나를 작은 캔버스에 그리고 외곽선을 두른다. 둘레 1px 는 외곽선 자리
-function obj(w,h,paint,noLine){ var c=cv(w+2,h+2), g=c.getContext('2d'); g.save(); g.translate(1,1); paint(g,w,h); g.restore(); if(!noLine) outline(c); return c; }
+function obj(w,h,paint,noLine){ var c=cv(w+2,h+2), g=c.getContext('2d',noLine?undefined:{willReadFrequently:true}); g.save(); g.translate(1,1); paint(g,w,h); g.restore(); if(!noLine) outline(c); return c; }
 
 // =====================================================================
 //  바닥 · 카펫 · 벽 — 파스텔
@@ -1342,7 +1343,7 @@ function drawCarry(g,p,dir,hx){
   else if(it==='paper'){ R(g,hx-1,32,6,8,'#ffffff'); R(g,hx,34,4,1,'#b8b2a6'); R(g,hx,36,3,1,'#b8b2a6'); }
 }
 function buildChar(p, dir, frame, blink, sit){
-  var c=cv(SPR_W,SPR_H), g=c.getContext('2d'), K=KIND[p.kind], d=dir==='right'?'left':dir;
+  var c=cv(SPR_W,SPR_H), g=c.getContext('2d',{willReadFrequently:true}), K=KIND[p.kind], d=dir==='right'?'left':dir;
   g.translate(1,SPR_TOP+(sit?SIT_DROP:0));
   drawBody(g,K,p,d,frame,sit); drawHead(g,K,p,d,blink);
   outline(c,'#3a2436');
@@ -1354,12 +1355,15 @@ function buildHead(p){
   var c=cv(SPR_W,SPR_W), g=c.getContext('2d'), K=KIND[p.kind]; g.translate(1,SPR_TOP);
   drawHead(g,K,p,'down',false); outline(c,'#3a2436'); return c;
 }
-function buildSprites(p){
-  p.pantsC = p.pants || PANTS[hash(p.id)%PANTS.length];
-  var S={}; ['down','up','left','right'].forEach(function(d){ S[d]=[0,1,2].map(function(f){ return buildChar(p,d,f,false); }); });
-  S.blink = buildChar(p,'down',0,true);
-  // 소파·의자에 앉은 모습: 몸이 SIT_DROP만큼 내려앉고 무릎·구두 끝이 보인다
-  S.sit={}; ['down','up','left','right'].forEach(function(d){ S.sit[d]=buildChar(p,d,0,false,true); }); S.sitBlink=buildChar(p,'down',0,true,true);
+function buildSprites(p0){
+  var p={}; for(var k in p0) p[k]=p0[k]; p0.pantsC = p.pantsC = p.pants || PANTS[hash(p.id)%PANTS.length];
+  // 그림은 처음 쓰일 때 그린다 (출근할 때 모든 층 사람의 18장씩을 미리 그리지 않게). 방향마다 걷는 3장 · 눈 감은 1장 · 앉은 모습
+  var S={}, C={}, SIT={}, CS={};
+  function lazy(o,key,make){ Object.defineProperty(o,key,{ enumerable:true, configurable:true, get:function(){ var v=make(); Object.defineProperty(o,key,{ value:v, enumerable:true, configurable:true, writable:true }); return v; }, set:function(v){ Object.defineProperty(o,key,{ value:v, enumerable:true, configurable:true, writable:true }); } }); }
+  ['down','up','left','right'].forEach(function(d){ lazy(S,d,function(){ return [0,1,2].map(function(f){ return buildChar(p,d,f,false); }); });
+    lazy(SIT,d,function(){ return buildChar(p,d,0,false,true); }); });   // 소파·의자에 앉은 모습: 몸이 SIT_DROP만큼 내려앉고 무릎·구두 끝이 보인다
+  lazy(S,'blink',function(){ return buildChar(p,'down',0,true); });
+  S.sit=SIT; lazy(S,'sitBlink',function(){ return buildChar(p,'down',0,true,true); });
   return S;
 }
 
@@ -3856,7 +3860,8 @@ useMap(MAP3);
 return MAP1;
 }
 
-var MAP1=buildMap1({logo:SHOPLOGO});
+var MAP1=null;                                                       // 1층은 처음 쓰일 때 그린다 (출근 화면을 빨리 띄우려고)
+function map1(){ if(!MAP1){ MAP1=buildMap1({logo:SHOPLOGO}); useMap(MAP3); } return MAP1; }
 
 useMap(MAP3);
 
@@ -3867,6 +3872,7 @@ window.PixOffice={
   SIGNS:SIGNS, SWITCH:SWITCH, AQ:AQ, WIN:WIN, CLOCK:CLOCK,
   STAFF:STAFF, SEATS:SEATS, VISITORS:VISITORS, KIND:KIND, SPR_W:SPR_W, SPR_H:SPR_H, SPR_TOP:SPR_TOP,
   buildSprites:buildSprites, buildHead:buildHead, BALLOONS:BALLOONS, pRobot:pRobot, bfs:bfs,
-  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, CU_BOX:CU_BOX, drawCuTag:drawCuTag, BRONZE_TROPHY:BRONZE_TROPHY, TOKYO_RECT:TOKYO_RECT, tokyoBackBig:tokyoBackBig, trophyBig:trophyBig, MAP5:MAP5, MAP1:MAP1, buildMap1:function(){ return buildMap1({logo:SHOPLOGO}); }, fontReady:fontReady, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
+  phase:phase, SKY:SKY, TINT:TINT, drawArtEye:drawArtEye, drawArtArrow:drawArtArrow, CU_BOX:CU_BOX, drawCuTag:drawCuTag, BRONZE_TROPHY:BRONZE_TROPHY, TOKYO_RECT:TOKYO_RECT, tokyoBackBig:tokyoBackBig, trophyBig:trophyBig, MAP5:MAP5, map1Ready:function(){ return !!MAP1; }, buildMap1:function(){ return buildMap1({logo:SHOPLOGO}); }, fontReady:fontReady, drawLab5Fx:drawLab5Fx, oldTint:oldTint, drawVacuum:drawVacuum, drawR0:drawR0, drawWetSign:drawWetSign, memoBoardBig:memoBoardBig, HIDDEN_SW:HIDDEN_SW, CAB_RECT:{x:CAB_X,y:CAB_Y,w:64,h:72}, drawWindow:drawWindow, drawClock:drawClock, drawFish:drawFish, drawBigTank:drawBigTank
 };
+Object.defineProperty(window.PixOffice,'MAP1',{ get:map1, enumerable:true, configurable:true });
 })();

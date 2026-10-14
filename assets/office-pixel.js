@@ -141,7 +141,7 @@ var FLOORS = {
     home:function(){ return null; }, seat:function(){ return null; }, bubble:function(){ return null; },
     robotEl:null, robotBub:null, light:null, switchEl:null, switchRect:{x:-99,y:-99,w:0,h:0} },
   // 1층 판매샵·카페: 직원·손님은 그림에서만 둔다 (f1Tick)
-  '1': !PO.MAP1 ? { key:'1', svg:null } : { key:'1', svg:byId('f1Svg'), map:PO.MAP1, anch:[], lobby:PO.MAP1.LOBBY,
+  '1': !PO.buildMap1 ? { key:'1', svg:null } : { key:'1', svg:byId('f1Svg'), get map(){ return this._map||PO.MAP1; }, set map(v){ this._map=v; }, anch:[], get lobby(){ return this.map.LOBBY; },   // 지도는 처음 쓸 때 그린다
     query:'.f1-nobody', idOf:function(el){ return el.id; }, present:function(){ return false; }, look:function(){ return null; },
     home:function(){ return null; }, seat:function(){ return null; }, bubble:function(){ return null; },
     robotEl:null, robotBub:null, light:null, switchEl:null, switchRect:{x:-99,y:-99,w:0,h:0} }
@@ -2232,7 +2232,7 @@ function frame(now){
   if(lastFrameT && (lastFrameT<0 || now-lastFrameT>5000)){ try{ catchUp(now); }catch(e){ if(window.console) console.warn('pixOffice catchUp', e); } }
   lastFrameT=now;
   if(FLOORS.B1 && FLOORS.B1.svg){ try{ b1Tick(FLOORS.B1,now,F!==FLOORS.B1); }catch(e){ if(window.console) console.warn('pixOffice b1', e); } }
-  if(FLOORS['1'] && FLOORS['1'].svg){ try{ f1Tick(FLOORS['1'],now,F!==FLOORS['1']); }catch(e){ if(window.console) console.warn('pixOffice f1', e); } }
+  if(FLOORS['1'] && FLOORS['1'].svg && (F===FLOORS['1'] || !PO.map1Ready || PO.map1Ready())){ try{ f1Tick(FLOORS['1'],now,F!==FLOORS['1']); }catch(e){ if(window.console) console.warn('pixOffice f1', e); } }
   if(FLOORS['5'] && FLOORS['5'].svg){ try{ lab5Tick(FLOORS['5'],now,F!==FLOORS['5']); }catch(e){ if(window.console) console.warn('pixOffice lab5', e); } }
   if(FLOORS.L && FLOORS.L.svg){ try{ roofTick(FLOORS.L,now,F!==FLOORS.L); }catch(e){ if(window.console) console.warn('pixOffice roof', e); } }
   if(FLOORS['2'].svg){ try{ if(now-(FLOORS['2'].npcT||0)>140){ FLOORS['2'].npcT=now; npcTick(FLOORS['2'],now); } barStep(FLOORS['2'].actors.npcBartender,now); f2Meets(FLOORS['2'],now,F!==FLOORS['2']); f2HanTrip(FLOORS['2'],now,F!==FLOORS['2']); f2Buyers(FLOORS['2'],now,F!==FLOORS['2']); }catch(e){ if(window.console) console.warn('pixOffice npc', e); } }
@@ -2412,7 +2412,7 @@ function hitProfile(F,p){
 }
 function onSwitch(F,p){ var s=F.switchRect; return p.x>=s.x-6&&p.x<=s.x+s.w+6&&p.y>=s.y-6&&p.y<=s.y+s.h+6; }
 // 엘리베이터를 누르면 메뉴의 '엘리베이터'와 같이 층 고르는 창이 뜬다 (3층은 왼쪽 아래 홀, 2층은 왼쪽 위)
-var ELEV_RECT={ '3':{x:32,y:22*T,w:128,h:96}, '2':{x:32,y:0,w:128,h:96}, 'L':PO.MAPR.ELEV, 'B1':PO.MAPB.ELEV, '5':PO.MAP5?PO.MAP5.ELEV:{x:-99,y:-99,w:0,h:0}, '1':PO.MAP1?PO.MAP1.ELEV:{x:-99,y:-99,w:0,h:0} };
+var ELEV_RECT={ '3':{x:32,y:22*T,w:128,h:96}, '2':{x:32,y:0,w:128,h:96}, 'L':PO.MAPR.ELEV, 'B1':PO.MAPB.ELEV, '5':PO.MAP5?PO.MAP5.ELEV:{x:-99,y:-99,w:0,h:0}, '1':PO.buildMap1?{x:32,y:0,w:128,h:96}:{x:-99,y:-99,w:0,h:0} };
 function onElevator(F,p){ var r=ELEV_RECT[F.key]; return !!r && p.x>=r.x&&p.x<=r.x+r.w&&p.y>=r.y&&p.y<=r.y+r.h; }
 // ---- 실장실 수납장 뒤 숨은 스위치 ----
 // 일지를 23쪽까지 읽었고 최실장이 방에 없을 때만, 수납장을 세 번 누르면 옆으로 밀린다.
@@ -2522,5 +2522,6 @@ cvs.addEventListener('mousemove', function(e){ var F=activeFloor(); if(!F) retur
   cvs.style.cursor=(sw||onSwitch(F,p)||onElevator(F,p)||hitProfile(F,p))?'pointer':'default'; });
 
 requestAnimationFrame(frame);
+setTimeout(function(){ var go=function(){ try{ PO.MAP1; }catch(e){} }; if(window.requestIdleCallback) requestIdleCallback(go,{timeout:800}); else go(); }, 1200);   // 1층 지도는 첫 화면이 뜬 뒤 한가할 때 미리 그려 둔다
 window.__pixOffice = { floors:FLOORS, actors:FLOORS['3'].actors, robot:FLOORS['3'].robot };
 })();
