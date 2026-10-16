@@ -3610,11 +3610,34 @@ function pShopPOS(){ return obj(128,72,function(g){ R(g,0,20,128,16,'#7a4c32'); 
   [[74,ORG],[90,COB],[106,EMR]].forEach(function(b){ R(g,b[0],6,14,16,b[1]); R(g,b[0]+4,2,6,5,INKB); R(g,b[0],6,14,2,'rgba(255,255,255,0.5)'); }); tx(g,'끄적끄적문구',64,54,7,'#f0dcc0','center'); mushLamp(g,6,20); }); }
 onTile(pShopPOS(),9,22,12,23);
 onTile(pKiosk1(ORG),13,22,13,23);
-// ⑨ 쇼윈도 (거리 쪽 유리창 앞): 나무 단 위 노트 탑 · 로고 고양이 인형
-function pWindowShow(){ return obj(192,56,function(g){ R(g,0,30,192,26,'#6a4230'); R(g,0,30,192,3,'#8a5a3c'); R(g,0,52,192,4,'#40261a');
-  for(var t=0;t<3;t++){ var x=12+t*62; for(var h=0;h<5;h++) patCover(g,x+(h%2),26-h*5,26,5,t*5+h); }
-  var cx=160, cy=14; disc(g,cx,cy,10,'#ffffff'); tri(g,cx-9,cy-4,cx-6,cy-14,cx-2,cy-6,'#ffffff'); tri(g,cx+2,cy-6,cx+6,cy-14,cx+9,cy-4,'#ffffff'); R(g,cx-4,cy-1,2,2,INKB); R(g,cx+3,cy-1,2,2,INKB); P(g,cx,cy+2,'#e87090'); R(g,cx-10,cy+8,20,12,'#f2d098'); }); }
-onTile(pWindowShow(),2,27,7,27);
+// ⑨ 입구 옆 유리 진열장: 고급 문진 · 종이공예품 · 탁상달력 · 색연필 · 잉크병 · 실링왁스 (가을엔 위에 단풍 모빌)
+function pGiftVitrine(){ return obj(192,66,function(g){ var y0=10;
+  ell(g,96,64,94,3,'rgba(0,0,0,0.22)'); R(g,0,y0+30,192,24,WN); R(g,0,y0+30,192,2,WNL); R(g,0,y0+52,192,2,WND);                         // 월넛 받침 · 서랍
+  for(var d=0;d<4;d++){ var dx=6+d*46; R(g,dx,y0+34,42,14,'#5a3826'); R(g,dx,y0+34,42,1,WNL); R(g,dx+19,y0+40,4,2,'#d8b468'); }
+  R(g,0,y0-2,192,32,WND); R(g,3,y0,186,28,'#2c1c14'); R(g,3,y0+26,186,2,'#4a3022');                                                    // 유리 상자 안 (짙은 벨벳)
+  // 문진: 유리 돔 속 소용돌이 · 황동 문진
+  [[16,'#3a7ad0','#f2c84a'],[34,'#c83a5a','#f8e0a0']].forEach(function(p){ var cx=p[0], cy=y0+18; disc(g,cx,cy,6,'rgba(200,230,250,0.55)'); for(var k=0;k<6;k++) P(g,cx-3+k,cy-1+Math.round(Math.sin(k)*2),k%2?p[1]:p[2]); P(g,cx-2,cy-3,'#ffffff'); R(g,cx-5,cy+5,11,2,'rgba(0,0,0,0.3)'); });
+  R(g,46,y0+16,12,8,'#c9a25c'); R(g,46,y0+16,12,1,'#f2d890'); R(g,50,y0+13,4,3,'#a8823c');                                              // 황동 문진
+  // 종이공예품: 종이학 · 접은 별 · 팝업 카드
+  tri(g,66,y0+20,74,y0+10,76,y0+22,'#f28ab0'); tri(g,74,y0+10,84,y0+20,76,y0+22,'#f8c8d8'); tri(g,68,y0+14,74,y0+10,72,y0+20,'#e86a9a');
+  disc(g,94,y0+16,5,'#f5c83a'); for(var s=0;s<5;s++) line(g,94,y0+16,94+Math.round(Math.cos(s*1.26-1.57)*7),y0+16+Math.round(Math.sin(s*1.26-1.57)*7),'#f5c83a'); P(g,94,y0+16,'#fff4c8');
+  R(g,104,y0+12,16,12,'#fbfaf6'); tri(g,104,y0+12,112,y0+5,120,y0+12,'#3a5ab0'); R(g,110,y0+16,4,8,'#c8323a'); R(g,104,y0+23,16,1,'rgba(0,0,0,0.2)');   // 팝업 집
+  // 탁상달력 (10월)
+  R(g,126,y0+6,22,18,'#fbfaf6'); R(g,126,y0+6,22,5,'#c8323a'); for(var r=0;r<3;r++) for(var c=0;c<5;c++) P(g,129+c*4,y0+14+r*3,(r===1&&c===2)?'#c8323a':'#6a5a4a'); R(g,128,y0+5,1,2,'#3a3a3a'); R(g,145,y0+5,1,2,'#3a3a3a');
+  tx(g,'10',137,y0+8,5,'#ffffff','center'); line(g,126,y0+24,122,y0+27,'#8a7a64'); line(g,148,y0+24,152,y0+27,'#8a7a64');
+  // 색연필 틴케이스 · 잉크병 · 실링왁스
+  R(g,154,y0+14,30,11,'#2a4a3a'); R(g,155,y0+15,28,9,'#e8e2d0'); for(var q=0;q<9;q++){ R(g,156+q*3,y0+15,2,9,'hsl('+(q*40)+',70%,55%)'); P(g,156+q*3,y0+15,'#f2d0a0'); }
+  R(g,170,y0+4,8,9,'#1e2a4a'); R(g,171,y0+2,6,2,'#2a2a2e'); R(g,171,y0+6,6,1,'rgba(255,255,255,0.4)');                                   // 잉크병
+  disc(g,160,y0+8,3,'#a8232a'); R(g,159,y0+2,2,4,'#6a4a2a');                                                                              // 실링왁스 도장
+  for(var t=0;t<8;t++) R(g,8+t*23,y0+24,10,3,'#fbf8f0');                                                                                 // 가격표
+  g.fillStyle='rgba(205,232,245,0.22)'; g.fillRect(3,y0,186,28); R(g,3,y0,186,1,'rgba(255,255,255,0.75)'); for(var gl=0;gl<3;gl++) line(g,20+gl*60,y0+26,44+gl*60,y0+2,'rgba(255,255,255,0.28)');   // 유리 반사
+  R(g,0,y0-3,192,2,'#c9a25c'); R(g,0,y0-3,192,1,'#f2d890'); }); }                                                                        // 황동 테두리
+function mapleLeaf(g,x,y,c){ var d=sh(c,-0.3); P(g,x,y-3,c); R(g,x-1,y-2,3,2,c); R(g,x-3,y-1,7,2,c); P(g,x-4,y-2,c); P(g,x+4,y-2,c); R(g,x-2,y+1,5,1,c); P(g,x-3,y+2,c); P(g,x+3,y+2,c); P(g,x,y+2,d); P(g,x,y+3,'#6a3a1a'); P(g,x,y-1,d); }
+function drawMapleMobile(g,x,y,t){ var m=new Date().getMonth(); if(m<8||m>10) return;                                                    // 9~11월: 천장에 매단 단풍 모빌이 천천히 흔들린다
+  var bx=x+96, by=y-34; R(g,bx-60,by,120,2,'#c9a25c'); R(g,bx,by-14,1,14,'rgba(80,60,40,0.6)'); P(g,bx-60,by,'#f2d890');
+  var L=[[-54,14,'#d8442a'],[-36,22,'#f08a2a'],[-18,12,'#f2b830'],[0,26,'#c83a2a'],[18,14,'#e86a2a'],[36,20,'#f2c84a'],[54,12,'#b8322a']];
+  L.forEach(function(l,i){ var sw=Math.round(Math.sin(t*0.0012+i*0.9)*2), lx=bx+l[0]+sw, ly=by+l[1]; R(g,bx+l[0],by+2,1,l[1]-4,'rgba(80,60,40,0.45)'); mapleLeaf(g,lx,ly,l[2]); if(i%2===0) mapleLeaf(g,lx+Math.round(sw/2),ly+10,['#f2b830','#e86a2a','#d8442a','#f08a2a'][i%4]); }); }
+onTileFx(pGiftVitrine(),2,27,7,27,drawMapleMobile);
 onTile(pPlant('tall','#ffffff'),5,8,5,8); onTile(pTrash(),12,26,12,26);
 // 천장 링 조명: 바닥에 번지는 따뜻한 빛 (링은 사람 위에 그린다)
 things.push({sy:30*T, draw:function(g){ RINGS1.forEach(function(rp,i){ var rx=i===2?30:24, ry=i===2?9:7;   // 천장에 매달린 원형 링 조명 (위에서 본 모습: 빛나는 고리)
