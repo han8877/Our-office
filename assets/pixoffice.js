@@ -3368,8 +3368,8 @@ function leafClump(g,x,y,r,seed){ for(var i=0;i<r*2;i++){ var a=rnd(seed+i*1.3)*
 
 // ---------------- 바닥 ----------------
 // 가게: 밝은 꿀색 티크 헤링본 (가구는 짙은 월넛이라 또렷하게 뜬다)
-(function(){ var x0=T, y0=3*T, w=16*T, h=26*T; R(bgc,x0,y0,w,h,'#a8743f');
-  for(var y=0;y<h;y+=8) for(var x=((y/8)%2)*16-16; x<w; x+=32){ var b=['#b27c48','#a26e3c','#bc8752','#a97441'][(Math.floor(x/32)+y/8)%4];
+(function(){ var x0=T, y0=3*T, w=16*T, h=26*T; R(bgc,x0,y0,w,h,'#bc8a54');
+  for(var y=0;y<h;y+=8) for(var x=((y/8)%2)*16-16; x<w; x+=32){ var b=['#c48f5a','#b5824e','#cd9b64','#bb8853'][(Math.floor(x/32)+y/8)%4];
     for(var i=0;i<16;i++){ var px=x0+x+i, py=y0+y+Math.floor(i/2); if(px>=x0&&px<x0+w&&py<y0+h) R(bgc,px,py,1,8,b); } }
   for(var y2=0;y2<h;y2+=16) R(bgc,x0,y0+y2,w,1,'rgba(40,20,10,0.18)');
   for(var q=0;q<w*h/90;q++){ var gx2=x0+Math.floor(rnd(q*1.37)*w), gy2=y0+Math.floor(rnd(q*2.11)*h); R(bgc,gx2,gy2,1,3+Math.floor(rnd(q)*4),rnd(q*7)<0.5?'rgba(90,50,20,0.20)':'rgba(255,230,190,0.14)'); }   // 나뭇결
