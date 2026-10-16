@@ -3367,13 +3367,13 @@ function mottle(x0,y0,w,h,seed,n,cols){ var m=cv(w,h), mg=m.getContext('2d');   
 function leafClump(g,x,y,r,seed){ for(var i=0;i<r*2;i++){ var a=rnd(seed+i*1.3)*Math.PI*2, d=rnd(seed*2+i)*r; ell(g,x+Math.round(Math.cos(a)*d),y+Math.round(Math.sin(a)*d*0.8),3,2,[LEAF,LEAF2,LEAF3,'#86c86a'][i%4]); } }
 
 // ---------------- 바닥 ----------------
-// 가게: 짙은 월넛 헤링본 (반들반들 · 조명이 비친다)
-(function(){ var x0=T, y0=3*T, w=16*T, h=26*T; R(bgc,x0,y0,w,h,'#7a4a2e');
-  for(var y=0;y<h;y+=8) for(var x=((y/8)%2)*16-16; x<w; x+=32){ var b=['#84522f','#74452a','#8c5a36','#7a4b2c'][(Math.floor(x/32)+y/8)%4];
+// 가게: 밝은 꿀색 티크 헤링본 (가구는 짙은 월넛이라 또렷하게 뜬다)
+(function(){ var x0=T, y0=3*T, w=16*T, h=26*T; R(bgc,x0,y0,w,h,'#a8743f');
+  for(var y=0;y<h;y+=8) for(var x=((y/8)%2)*16-16; x<w; x+=32){ var b=['#b27c48','#a26e3c','#bc8752','#a97441'][(Math.floor(x/32)+y/8)%4];
     for(var i=0;i<16;i++){ var px=x0+x+i, py=y0+y+Math.floor(i/2); if(px>=x0&&px<x0+w&&py<y0+h) R(bgc,px,py,1,8,b); } }
   for(var y2=0;y2<h;y2+=16) R(bgc,x0,y0+y2,w,1,'rgba(40,20,10,0.18)');
-  for(var q=0;q<w*h/90;q++){ var gx2=x0+Math.floor(rnd(q*1.37)*w), gy2=y0+Math.floor(rnd(q*2.11)*h); R(bgc,gx2,gy2,1,3+Math.floor(rnd(q)*4),rnd(q*7)<0.5?'rgba(40,20,10,0.18)':'rgba(255,220,180,0.10)'); }   // 나뭇결
-  mottle(x0,y0,w,h,11,60,['40,20,10,0.10','255,225,185,0.10']);
+  for(var q=0;q<w*h/90;q++){ var gx2=x0+Math.floor(rnd(q*1.37)*w), gy2=y0+Math.floor(rnd(q*2.11)*h); R(bgc,gx2,gy2,1,3+Math.floor(rnd(q)*4),rnd(q*7)<0.5?'rgba(90,50,20,0.20)':'rgba(255,230,190,0.14)'); }   // 나뭇결
+  mottle(x0,y0,w,h,11,60,['80,40,15,0.10','255,235,200,0.14']);
   for(var sx=x0+20; sx<x0+w; sx+=64){ var sg=bgc.createLinearGradient(0,y0+h,0,y0+h-7*T); sg.addColorStop(0,'rgba(255,240,220,0.16)'); sg.addColorStop(1,'rgba(255,240,220,0)'); bgc.fillStyle=sg; bgc.fillRect(sx,y0+h-7*T,40,7*T); } })();   // 유리창 빛이 반들한 바닥에 비친다
 // 카페: 밝은 오크 헤링본
 (function(){ var x0=18*T, y0=3*T, w=17*T, h=26*T; R(bgc,x0,y0,w,h,OAK);
@@ -3415,7 +3415,10 @@ function mushLamp(g,x,y){ R(g,x+5,y-2,2,6,'#c9a25c'); ell(g,x+6,y-6,6,5,'#fbf4e2
 var ORG='#f07a2a', COB='#2f5fd0', EMR='#1f9a6a', ROSE='#f28ab0', LEM='#f5c83a', INKB='#23262e', CRM='#f6f0e4', SS='#c9cdd1', SSL='#eef0f2', SSD='#9aa0a6';
 function patCover(g,x,y,w,h,k){ var P1=[ORG,COB,EMR,ROSE,LEM,INKB][k%6], P2=[CRM,LEM,ROSE,CRM,COB,ORG][k%6]; R(g,x,y,w,h,P1);        // 굵은 무늬 표지 (줄 · 원 · 삼각 · 격자)
   var t=k%4; if(t===0){ for(var i=1;i<w;i+=3) R(g,x+i,y,1,h,P2); } else if(t===1){ disc(g,x+Math.floor(w/2),y+Math.floor(h/2),Math.floor(Math.min(w,h)/3),P2); }
-  else if(t===2){ tri(g,x,y+h,x+Math.floor(w/2),y+1,x+w,y+h,P2); } else { for(var a=1;a<w;a+=3) for(var b=1;b<h;b+=3) P(g,x+a,y+b,P2); } R(g,x,y,w,1,'rgba(255,255,255,0.4)'); }
+  else if(t===2){ tri(g,x,y+h,x+Math.floor(w/2),y+1,x+w,y+h,P2); } else { for(var a=1;a<w;a+=3) for(var b=1;b<h;b+=3) P(g,x+a,y+b,P2); } R(g,x,y,w,1,'rgba(255,255,255,0.4)');
+  R(g,x,y,1,h,'rgba(0,0,0,0.18)'); R(g,x,y+h-1,w,1,'rgba(0,0,0,0.15)');                                                             // 책등 그늘 · 아래 그늘
+  if(w>=8){ R(g,x+w-1,y+1,1,h-1,'#f6f0e2'); } if(w>=8&&h>=10){ R(g,x+2,y+Math.round(h*0.62),w-5,Math.max(2,Math.round(h*0.16)),'#fbf8f0'); R(g,x+3,y+Math.round(h*0.62)+1,Math.max(1,w-8),1,'rgba(60,40,30,0.45)'); }   // 종이 단면 · 제목 라벨
+  if(h>=12 && k%3===0) R(g,x+w-3,y,1,h,'rgba(30,24,22,0.7)'); }                                                                       // 고무줄 밴드
 // 1층 대형 통창: 길 건너 가게 1층 · 2차선 도로(차가 오간다) · 가까운 인도와 가로수 밑동(보호 덮개) · 유리 반사 · 밤엔 어둡고 차 불빛
 var STREET_CARS=[{c:'#f4f4f0',w:32,v:0.028,o:0,ln:0},{c:'#9aa0a6',w:34,v:0.022,o:150,ln:0},{c:'#2f5fd0',w:30,v:0.031,o:60,ln:1},{c:'#f4f4f0',w:32,v:0.026,o:210,ln:1},{c:'#8a9098',w:36,v:0.02,o:120,ln:1}];   // 흰색 · 회색 · 파란색 차만
 function drawStreetWindow(g,x,y,w,h,t){
@@ -3484,18 +3487,19 @@ function pEnvelopeShelf(h){ return obj(40,h,function(g,w,hh){ R(g,0,0,40,hh,'#5e
     R(g,ex+1,y+9,6,2,kc[0]); disc(g,ex+4,y+10,2,kc[1]); R(g,ex+3,y+3,2,4,'#3a3640'); } R(g,2,y+23,36,3,'#fbfaf6'); R(g,2,y+23,36,1,'#ffffff'); } }); }
 put(pEnvelopeShelf(7*T),T+2,15*T,22*T,[1,15,1,21]);
 // ④ 스테인리스 이동식 진열 모듈 여섯 (유리 선반 · 굵은 무늬 노트 · 펜 · 다이어리)
-function pModule(seed){ return obj(96,78,function(g){ g.translate(0,14); ell(g,48,62,46,3,'rgba(0,0,0,0.22)');
+function pModule(seed){ return obj(96,106,function(g){ g.translate(0,42); ell(g,48,62,46,3,'rgba(0,0,0,0.22)');
   R(g,2,18,92,44,WN); R(g,2,18,92,2,WNL); R(g,2,60,92,2,WND);                                                                         // 월넛 몸체
   for(var d=0;d<3;d++){ var dx=5+d*30; R(g,dx,26,28,14,WND); R(g,dx+1,27,26,12,'#5a3826'); R(g,dx+1,27,26,1,WNL); R(g,dx+12,32,4,2,'#d8b468'); R(g,dx+12,32,4,1,'#f2d890');   // 서랍 · 황동 손잡이
     R(g,dx,43,28,14,WND); R(g,dx+1,44,26,12,'#5a3826'); R(g,dx+1,44,26,1,WNL); R(g,dx+12,49,4,2,'#d8b468'); }
   R(g,2,2,92,16,WND); R(g,4,4,88,12,'#2a1a12');                                                                                        // 유리 진열칸 (안은 어둡게, 물건이 빛난다)
   var t=seed%3;
-  if(t===0){ for(var r=0;r<2;r++) for(var k=0;k<10;k++){ var x=8+k*8+(r%2)*3, y=7+r*5, c='hsl('+((k*37+r*90+seed*20)%360)+',55%,'+(70+(k%3)*6)+'%)'; ell(g,x,y,3,2,c); P(g,x,y,'#2a1a12'); } }   // 마스킹테이프 줄
+  if(t===0){ for(var r=0;r<2;r++) for(var k=0;k<10;k++){ var x=8+k*8+(r%2)*3, y=7+r*5, c='hsl('+((k*37+r*90+seed*20)%360)+',55%,'+(70+(k%3)*6)+'%)'; ell(g,x,y,3,2,c); P(g,x-2,y-1,'rgba(255,255,255,0.6)');
+    if((k+r)%3===0){ P(g,x+2,y,sh(c,-0.3)); P(g,x-1,y+1,sh(c,-0.3)); } else if((k+r)%3===1) P(g,x+1,y-1,'#ffffff'); R(g,x-1,y,2,1,'#efe6d4'); P(g,x,y,'#2a1a12'); } }   // 마스킹테이프 롤 (무늬 · 종이 심)
   else if(t===1){ for(var k2=0;k2<8;k2++){ var x2=7+k2*10; R(g,x2,6,8,8,'#d8c8a8'); R(g,x2,6,8,1,'#efe2c8'); R(g,x2+2,8,4,4,['#5a3a2a','#3a2a22','#7a4a3a'][k2%3]); } }       // 나무 도장
   else { for(var k3=0;k3<6;k3++){ var x3=8+k3*14; R(g,x3,6,12,8,['#f28ab0','#2f5fd0','#f5c83a','#1f9a6a','#e8e4dc','#f07a2a'][(k3+seed)%6]); R(g,x3,6,12,1,'rgba(255,255,255,0.5)'); R(g,x3+2,9,8,1,'#ffffff'); } }   // 스티커 · 메모 팩
   g.fillStyle='rgba(200,230,245,0.22)'; g.fillRect(4,4,88,12); R(g,4,4,88,1,'rgba(255,255,255,0.7)'); line(g,10,15,40,4,'rgba(255,255,255,0.35)');   // 유리 반사
   R(g,6,-16,84,4,WN); R(g,6,-16,84,1,WNL); R(g,10,-12,2,14,'#c9a25c'); R(g,84,-12,2,14,'#c9a25c');                                    // 뒤 선반 (황동 기둥)
-  for(var u=0;u<5;u++){ var ux=12+u*15; if((u+seed)%2){ R(g,ux,-27,10,11,'rgba(220,240,250,0.45)'); R(g,ux,-27,10,1,'rgba(255,255,255,0.8)'); for(var q=0;q<4;q++) R(g,ux+1+q*2,-31+(q%2)*2,1,14,['#c83a3a','#2f5fd0','#1f9a6a','#f5c83a','#23262e'][(q+u)%5]); }   // 유리병에 꽂힌 펜
+  for(var u=0;u<5;u++){ var ux=12+u*15; if((u+seed)%2){ R(g,ux,-27,10,11,'rgba(220,240,250,0.45)'); R(g,ux,-27,10,1,'rgba(255,255,255,0.8)'); for(var q=0;q<4;q++){ var pc=['#c83a3a','#2f5fd0','#1f9a6a','#f5c83a','#23262e','#f28ab0'][(q+u)%6], py=-32+(q%2)*2; R(g,ux+1+q*2,py,2,14,pc); R(g,ux+1+q*2,py,2,3,sh(pc,-0.35)); P(g,ux+1+q*2,py+3,'#e8e4dc'); } R(g,ux+8,-27,1,10,'rgba(255,255,255,0.6)'); }   // 유리병에 꽂힌 펜 (뚜껑 · 반사)
     else patCover(g,ux,-28,11,12,seed*5+u); } }); }
 function pToteModule(){ return obj(96,78,function(g){ g.translate(0,14); ell(g,48,62,44,3,'rgba(0,0,0,0.12)');                       // 에코백 판매대: 걸린 가방 · 접어 쌓은 가방
   R(g,2,20,92,30,WN); R(g,2,20,92,2,WNL); for(var x=2;x<94;x+=3) R(g,x,24,1,24,'rgba(255,255,255,0.18)'); R(g,2,48,92,3,WND); R(g,4,51,5,11,WND); R(g,87,51,5,11,WND); disc(g,6,62,2,INKB); disc(g,89,62,2,INKB);
@@ -3617,7 +3621,7 @@ things.push({sy:30*T, draw:function(g){ RINGS1.forEach(function(rp,i){ var rx=i=
   g.save(); g.globalAlpha=0.35; g.strokeStyle='#ffd696'; g.lineWidth=5; g.beginPath(); g.ellipse(rp[0],rp[1],rx,ry,0,0,Math.PI*2); g.stroke(); g.restore();
   for(var k=0;k<96;k++){ var t=k/96*Math.PI*2, x=Math.round(rp[0]+Math.cos(t)*rx), y=Math.round(rp[1]+Math.sin(t)*ry); P(g,x,y,'#fff6dc'); P(g,x,y+1,'#f2c88a'); }
   R(g,rp[0],rp[1]-ry-40,1,40-0,'rgba(60,40,30,0.35)'); }); }});
-(function(){ RINGS1.forEach(function(rp){ var gr=bgc.createRadialGradient(rp[0],rp[1]+40,4,rp[0],rp[1]+40,80); gr.addColorStop(0,'rgba(255,214,150,0.22)'); gr.addColorStop(1,'rgba(255,214,150,0)'); bgc.fillStyle=gr; bgc.fillRect(rp[0]-80,rp[1]-40,160,160); }); })();
+(function(){ RINGS1.forEach(function(rp){ var gr=bgc.createRadialGradient(rp[0],rp[1]+40,4,rp[0],rp[1]+40,100); gr.addColorStop(0,'rgba(255,222,160,0.34)'); gr.addColorStop(0.6,'rgba(255,214,150,0.12)'); gr.addColorStop(1,'rgba(255,214,150,0)'); bgc.fillStyle=gr; bgc.fillRect(rp[0]-100,rp[1]-60,200,200); }); })();
 
 // ---- 가게와 카페 사이: 반쯤 열린 식물 선반 ----
 function pPlantShelf(len){ return obj(20,len,function(g,w,h){ R(g,0,0,20,h,OAKD); R(g,2,0,16,h,OAK); for(var y=10;y<h;y+=40){ R(g,0,y,20,4,OAKD); R(g,5,y-8,10,8,POT); leafClump(g,10,y-12,7,y); } }); }
