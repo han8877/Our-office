@@ -3638,6 +3638,19 @@ function drawMapleMobile(g,x,y,t){ var m=new Date().getMonth(); if(m<8||m>10) re
   var L=[[-54,14,'#d8442a'],[-36,22,'#f08a2a'],[-18,12,'#f2b830'],[0,26,'#c83a2a'],[18,14,'#e86a2a'],[36,20,'#f2c84a'],[54,12,'#b8322a']];
   L.forEach(function(l,i){ var sw=Math.round(Math.sin(t*0.0012+i*0.9)*2), lx=bx+l[0]+sw, ly=by+l[1]; R(g,bx+l[0],by+2,1,l[1]-4,'rgba(80,60,40,0.45)'); mapleLeaf(g,lx,ly,l[2]); if(i%2===0) mapleLeaf(g,lx+Math.round(sw/2),ly+10,['#f2b830','#e86a2a','#d8442a','#f08a2a'][i%4]); }); }
 onTileFx(pGiftVitrine(),2,27,7,27,drawMapleMobile);
+// 가을 꽃 화분 셋: 코스모스 · 해바라기 · 거베라 (통로 끝 · 벽 구석이라 지나가는 길과 진열대를 가리지 않는다)
+function pFlowerPot(kind){ return obj(30,58,function(g){ var pot=kind==='sun'?'#c8a27a':kind==='cos'?'#e8e2d6':'#3a4a5a', pd=sh(pot,-0.25);
+  ell(g,15,56,11,2,'rgba(0,0,0,0.2)'); R(g,7,42,16,14,pot); R(g,6,40,18,3,sh(pot,0.15)); R(g,21,43,2,13,pd); R(g,8,42,14,1,'#5a3a24');   // 화분 · 흙
+  function fl(x,y,r,pc,cc){ for(var a=0;a<8;a++){ var t=a/8*Math.PI*2; ell(g,x+Math.round(Math.cos(t)*r),y+Math.round(Math.sin(t)*r*0.8),Math.max(1,Math.round(r/2)),Math.max(1,Math.round(r/2.6)),pc); } disc(g,x,y,Math.max(1,Math.round(r/2)),cc); }
+  if(kind==='cos'){                                                                                                                  // 코스모스: 가는 줄기 · 깃털 잎 · 분홍 · 흰 · 자주 꽃
+    [[8,10,'#f28ab0'],[15,5,'#fbf4f6'],[22,12,'#c8327a'],[11,20,'#f8b8d0'],[20,22,'#fbf4f6'],[15,15,'#e85a9a']].forEach(function(f,i){ line(g,15+(i%3)-1,41,f[0],f[1]+3,'#5aa84a'); line(g,f[0],f[1]+8,f[0]+(i%2?3:-3),f[1]+11,'#7ac860'); fl(f[0],f[1],3,f[2],'#f5c83a'); }); }
+  else if(kind==='sun'){                                                                                                             // 해바라기: 굵은 줄기 · 넓은 잎 · 큰 노란 꽃 둘
+    R(g,14,14,2,28,'#4a8a3a'); R(g,10,20,1,22,'#4a8a3a'); ell(g,9,32,5,3,'#5aa84a'); ell(g,21,28,6,3,'#5aa84a'); ell(g,20,36,5,2,'#4a9a3e');
+    [[15,9,6],[9,18,4]].forEach(function(f){ for(var a=0;a<12;a++){ var t=a/12*Math.PI*2; ell(g,f[0]+Math.round(Math.cos(t)*f[2]),f[1]+Math.round(Math.sin(t)*f[2]*0.85),2,1,a%2?'#f5c83a':'#f2b020'); } disc(g,f[0],f[1],Math.round(f[2]*0.6),'#6a3e1a'); P(g,f[0]-1,f[1]-1,'#8a5a2a'); }); }
+  else {                                                                                                                             // 거베라: 바닥 잎 · 긴 줄기 · 선명한 빨강 · 주황 · 분홍
+    ell(g,10,38,6,3,'#4a9a3e'); ell(g,20,38,6,3,'#5aa84a'); ell(g,15,36,5,2,'#3e8a36');
+    [[8,14,'#e83a3a'],[22,12,'#f58a2a'],[15,6,'#f28ab0']].forEach(function(f){ line(g,15,38,f[0],f[1]+4,'#5aa84a'); fl(f[0],f[1],4,f[2],'#4a2a1a'); P(g,f[0],f[1],'#f5c83a'); }); } }); }
+onTile(pFlowerPot('cos'),1,22,1,22); onTile(pFlowerPot('sun'),2,9,2,9); onTile(pFlowerPot('ger'),16,12,16,12);
 onTile(pPlant('tall','#ffffff'),5,8,5,8); onTile(pTrash(),12,26,12,26);
 // 천장 링 조명: 바닥에 번지는 따뜻한 빛 (링은 사람 위에 그린다)
 things.push({sy:30*T, draw:function(g){ RINGS1.forEach(function(rp,i){ var rx=i===2?30:24, ry=i===2?9:7;   // 천장에 매달린 원형 링 조명 (위에서 본 모습: 빛나는 고리)
