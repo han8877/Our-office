@@ -2266,7 +2266,7 @@ function frame(now){
   else if(F.key==='2') list.push({sy:28*T+0.5, draw:function(gg){ PO.drawBigTank(gg,now); }});
   else if(F.key==='B1'){ b1Trays(F,list,now); b1Washing(F,list,now); }
   else if(F.key==='L') ccDraw(F,list,now);
-  if((F.key==='B1'||F.key==='5'||F.key==='1') && (roofWx==='rain'||roofWx==='snow')) list.push({sy:5*T-1, draw:function(gg){ PO.drawWetSign(gg,T+16,5*T); }});   // 비·눈 오는 날: 엘리베이터 앞 '미끄럼 주의'
+  if((F.key==='B1'||F.key==='5') && (roofWx==='rain'||roofWx==='snow')) list.push({sy:5*T-1, draw:function(gg){ PO.drawWetSign(gg,T+16,5*T); }});   // 비·눈 오는 날: 엘리베이터 앞 '미끄럼 주의'
   if(F.key==='5' && F.vac){ var vv=F.vac; list.push({ sy:vv.feet-14, draw:function(gg){ PO.drawVacuum(gg,Math.round(vv.x)+15,Math.round(vv.feet)-6,now,!!vv.path); } }); }
   for(var aid in F.actors){ var a=F.actors[aid]; if(a.visible) list.push({actor:a, sy:((F.key==='1' || a.ph==='meet') && a.onFurn && !a.path && a.dir!=='up') ? a.feet+8 : a.feet}); }   // 1층: 앞·옆을 보고 앉은 사람은 의자 등받이 앞에
   if(F.robot.goal) list.push({robot:true, sy:F.robot.feet});
