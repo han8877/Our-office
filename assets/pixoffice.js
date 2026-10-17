@@ -3643,15 +3643,18 @@ function bloomMound(g,cx,cy,rx,ry,pal,seed,n){                                  
   ell(g,cx,cy+2,rx,ry,'#3e6a2e'); ell(g,cx,cy,rx-1,ry-1,'#4f8a3a'); for(var i=0;i<rx*ry/3;i++){ var a=rnd(seed+i*1.7)*Math.PI*2, d=Math.sqrt(rnd(seed*3+i))*0.95; P(g,cx+Math.round(Math.cos(a)*rx*d),cy+Math.round(Math.sin(a)*ry*d),['#5a9a44','#3a6a2a','#6aaa4e'][i%3]); }
   for(var k=0;k<n;k++){ var a2=rnd(seed+k*2.3)*Math.PI*2, d2=Math.sqrt(rnd(seed*7+k*1.1))*0.98, x=cx+Math.round(Math.cos(a2)*rx*d2), y=cy+Math.round(Math.sin(a2)*ry*d2)-1, f=pal[k%pal.length], r=f[2]||2;
     if(r>=3){ for(var q=0;q<8;q++){ var t=q/8*Math.PI*2; P(g,x+Math.round(Math.cos(t)*r),y+Math.round(Math.sin(t)*(r-1)),sh(f[0],-0.12)); } } disc(g,x,y,r-1,f[0]); P(g,x-1,y-1,sh(f[0],0.35)); if(f[1]) P(g,x,y,f[1]); } }
-function pAutumnPot(kind){ return obj(56,72,function(g){ ell(g,28,70,24,3,'rgba(0,0,0,0.22)');
+function pAutumnPot(kind){ return obj(56,72,pAutumnPot.paint(kind)); }
+pAutumnPot.paint=function(kind){ return function(g){ ell(g,28,70,24,3,'rgba(0,0,0,0.22)');
   function cream(){ for(var y=48;y<68;y++){ var w=Math.round(18-(y-48)*0.3); R(g,28-w,y,w*2,1,'#ece4d2'); P(g,28-w,y,'#f8f4ea'); P(g,28-w+1,y,'#f8f4ea'); P(g,28+w-1,y,'#cfc4ae'); } R(g,9,46,38,3,'#f8f4ea'); R(g,9,48,38,1,'#d8ccb4'); }
   function terra(){ for(var y=48;y<68;y++){ var w=Math.round(17-(y-48)*0.25); R(g,28-w,y,w*2,1,'#c8693a'); P(g,28-w,y,'#e08a5a'); P(g,28+w-1,y,'#9a4a28'); } R(g,9,45,38,5,'#d87a48'); R(g,9,45,38,1,'#ec9a68'); R(g,9,49,38,1,'#a85230'); }
   function box(){ R(g,5,46,46,22,'#d8b07a'); for(var x=5;x<51;x+=5){ R(g,x,46,1,22,'#b88a52'); R(g,x+1,46,1,22,'#e8c48e'); } R(g,4,45,48,2,'#c89a62'); R(g,5,66,46,2,'#a87a48'); }
   if(kind==='box'){ for(var p=0;p<8;p++){ var px=9+p*5, tx0=px-2+p%3, ty=6+(p%3)*4; line(g,px,40,tx0,ty+3,'#b8a888'); ell(g,tx0,ty,2,4,'#e8dcc0'); P(g,tx0,ty-3,'#f6eedc'); }   // 버니테일 이삭
     box(); bloomMound(g,28,36,25,14,[['#f07a1a','#a8401a',4],['#fbfaf2','#f5c83a',3],['#7a9ae8','#4a6ac8',3],['#e8541a','#8a2a10',4],['#f5c83a','#c88a10',3],['#b89ae0','#7a5ab0',3],['#c8322a','#7a1a10',4],['#fbfaf2','#f5c83a',3]],11,70); }
   else if(kind==='cream'){ cream(); bloomMound(g,28,32,24,19,[['#f07a1a','#a8401a',4],['#e8541a','#8a2a10',4],['#c8322a','#7a1a10',4],['#f5c83a','#c88a10',3],['#f29a2a','#a85a10',4],['#f07a1a','#a8401a',3]],23,80); }
-  else { terra(); bloomMound(g,28,32,23,18,kind==='aster'?[['#8a6ad8','#f5c83a',3],['#a88ae8','#f5c83a',4],['#6a4ab8','#f5c83a',3],['#c8b0f0','#f5c83a',3],['#b48ae8','#f5c83a',4]]:[['#f5c83a','#c88a10',4],['#f2a820','#a86a10',3],['#fbe07a','#d89a20',4],['#e8b820','#a87010',3],['#fff0a0','#d8a020',3]],kind==='aster'?37:53,78); } }); }
-onTile(pAutumnPot('box'),1,4,1,4); onTile(pAutumnPot('cream'),14,3,14,3); onTile(pAutumnPot('aster'),1,22,1,22); onTile(pAutumnPot('mum'),16,12,16,12);
+  else { terra(); bloomMound(g,28,32,23,18,kind==='aster2'?[['#9a7ae0','#f5c83a',4],['#7a5ac8','#f5c83a',3],['#c8b0f0','#f5c83a',3],['#b090e8','#f5c83a',4],['#6a4ab8','#f5c83a',3]]:kind==='aster'?[['#8a6ad8','#f5c83a',3],['#a88ae8','#f5c83a',4],['#6a4ab8','#f5c83a',3],['#c8b0f0','#f5c83a',3],['#b48ae8','#f5c83a',4]]:[['#f5c83a','#c88a10',4],['#f2a820','#a86a10',3],['#fbe07a','#d89a20',4],['#e8b820','#a87010',3],['#fff0a0','#d8a020',3]],kind==='aster2'?71:kind==='aster'?37:53,78); } }; };
+function shrinkObj(src,k){ var w=Math.round((src.width-2)*k), h=Math.round((src.height-2)*k), c=cv(w+2,h+2), g=c.getContext('2d',{willReadFrequently:true}); g.imageSmoothingEnabled=false; g.drawImage(src,1,1,src.width-2,src.height-2,1,1,w,h); return outline(c); }   // 0.8배 화분: 테두리 없이 그려 줄인 뒤 테두리
+function potSmall(kind){ var full=obj(56,72,pAutumnPot.paint(kind),true); return shrinkObj(full,0.8); }
+onTile(potSmall('aster2'),1,4,1,4); onTile(potSmall('aster'),1,22,1,22); onTile(potSmall('mum'),16,12,16,12);
 onTile(pPlant('tall','#ffffff'),5,8,5,8); onTile(pTrash(),12,26,12,26);
 // 천장 링 조명: 바닥에 번지는 따뜻한 빛 (링은 사람 위에 그린다)
 things.push({sy:30*T, draw:function(g){ RINGS1.forEach(function(rp,i){ var rx=i===2?30:24, ry=i===2?9:7;   // 천장에 매달린 원형 링 조명 (위에서 본 모습: 빛나는 고리)
